@@ -2,3 +2,49 @@ body {
   padding: 10px;
   font-family: sans-serif;
 }
+
+header {
+  background: #d2edf4;
+  background-image: linear-gradient(to bottom, #d0edf5, #e1e5f0 100%);
+  padding: 20px 15px 15px 15px;
+  position: relative;
+}
+
+li {
+  position: relative;
+  list-style: none;
+  padding: 15px;
+  border-bottom: #eee solid 1px;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  background: white;
+}
+
+# Senseurs 
+li.senseur div.location {
+  display: block;
+}
+
+li.senseur div.numerique {
+  display: inline-block;
+  width: 5em;
+  text-align: right;
+}
+
+@media (max-width: 300px) {
+  li {
+    padding: 12px 15px;
+  }
+ 
+  .search {
+    width: 150px;
+    clear: both;
+  }
+ 
+  .new-task input {
+    padding-bottom: 5px;
+  }
+}

@@ -24,15 +24,14 @@
 </template>
 
 <template name="senseur">
-  <li>
+  <li class="senseur">
     <div class="location">{{location}}</div>
     <div class="numerique temperature">{{temperature}}&deg;C</div>
     {{#if humidite_existe}}
-    <div class="numerique humidite">{{humidite}} %</div>
+    <div class="numerique humidite">{{humidite}}%</div>
     {{/if}}
     {{#if pression_existe}}
       <div class="numerique pression">{{pression}} kPa</div>
     {{/if}}
-    <div class="date temps_lecture">{{temps_lecture}}</div>
   </li>
 </template>
