@@ -1,0 +1,38 @@
+<body>
+  <div class="container">
+    <h1>Senseurs Passifs</h1>
+  </div>
+
+  {{#each noeuds}}
+    {{> noeud}}
+  {{/each}}
+</body>
+
+<template name="noeud">
+  <div class="noeud">
+    <h2>Noeud {{noeud}}</h2>
+    {{> sectionSenseurs}}
+  </div>
+</template>
+
+<template name="sectionSenseurs">
+  <ul classe="listeSenseurs">
+    {{#each senseurs}}
+      {{> senseur}}
+    {{/each}}
+  </ul>
+</template>
+
+<template name="senseur">
+  <li>
+    <div class="location">{{location}}</div>
+    <div class="numerique temperature">{{temperature}}&deg;C</div>
+    {{#if humidite_existe}}
+    <div class="numerique humidite">{{humidite}} %</div>
+    {{/if}}
+    {{#if pression_existe}}
+      <div class="numerique pression">{{pression}} kPa</div>
+    {{/if}}
+    <div class="date temps_lecture">{{temps_lecture}}</div>
+  </li>
+</template>
