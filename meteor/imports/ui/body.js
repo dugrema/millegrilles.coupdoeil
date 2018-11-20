@@ -1,8 +1,13 @@
+import { Meteor } from 'meteor/meteor';
 import { Template } from 'meteor/templating';
 
 import { SenseursPassifs } from '../api/mgdomaines_appareils_SenseursPassifs.js';
 
 import './body.html';
+
+Template.body.onCreated(function bodyOnCreated() {
+  Meteor.subscribe('noeuds');
+});
 
 Template.body.helpers({
   noeuds() {
