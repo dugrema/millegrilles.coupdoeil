@@ -8,4 +8,8 @@ if (Meteor.isServer) {
   Meteor.publish('noeuds', function noeudsPublication() {
     return SenseursPassifs.find({'_mg-libelle': 'noeud.individuel'});
   });
+  Meteor.publish('senseurs', function senseursPublication() {
+    return SenseursPassifs.find({'_mg-libelle': 'senseur.individuel'});
+  });
+
 }
