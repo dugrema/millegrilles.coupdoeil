@@ -1,0 +1,6 @@
+REPO=registry.maple.mdugre.info:5000
+NAME=millegrilles_coupdoeil
+BRANCH=v0.1
+BUILD=1
+
+VERSION=$BRANCH.$BUILD
