@@ -10,12 +10,12 @@ Template.body.onCreated(function bodyOnCreated() {
   Meteor.subscribe('senseurs');
 });
 
-Template.senseurDetail.helpers({
-  senseurs() {
+Template.body.helpers({
+  senseur() {
     var noeud = FlowRouter.getParam('noeud');
     var no_senseur = parseInt(FlowRouter.getParam('senseur'));
-    console.log('Noeud ' + noeud + ' senseur ' + no_senseur);
-    var senseurdocs = SenseursPassifs.find({
+//    console.log('Noeud ' + noeud + ' senseur ' + no_senseur);
+    var senseurdocs = SenseursPassifs.findOne({
       'noeud': noeud, 
       'senseur': no_senseur, 
       '_mg-libelle': 'senseur.individuel'
