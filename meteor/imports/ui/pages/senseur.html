@@ -1,0 +1,14 @@
+<body>
+  Salut, je suis dans le body de senseur!
+  <div class="senseurDetail">
+    {{> senseurDetail}}
+  </div>
+</body>
+
+<template name="senseurDetail">
+  {{#each senseurs}}
+    <div>
+      Senseur {{location}}
+    </div>
+  {{/each}}
+</template>
