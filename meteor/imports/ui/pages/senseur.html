@@ -1,15 +1,24 @@
 <template name="Senseur_show_page">
-  Salut, je suis dans le body de senseurDetail_page!
-
-  <div>
-    Senseur Unique:
-    {{> senseurDetailUnique senseur }}
-  </div>
+  {{> senseurDetailUnique senseur }}
 </template>
 
 <template name="senseurDetailUnique">
-  <div>
-    Senseur {{location}}
-  </div>
+  <h1>Senseur {{location}}</h1>
+
+  {{> senseur_historique_horaire }}
 </template>
 
+<template name="senseur_historique_horaire">
+  {{#each moyennes_dernier_jour}}
+    <li class="senseur">
+      <div class="numerique periode">{{periode_short}}</div>
+      <div class="numerique temperature">{{temperature_moyenne}}&deg;C</div>
+      {{#if humidite_moyenne}}
+      <div class="numerique humidite">{{humidite_moyenne}}%</div>
+      {{/if}}
+      {{#if pression_moyenne}}
+        <div class="numerique pression">{{pression_moyenne}} kPa</div>
+      {{/if}}
+    </li>
+  {{/each}}
+</template>
