@@ -25,7 +25,11 @@
 
 <template name="senseur">
   <li class="senseur">
-    <div class="location">{{location}}</div>
+    <div class="location">
+      <a href="{{pathFor 'Senseur.show' noeud=noeud.noeud senseur=no_senseur}}" title="{{location}}">
+        {{location}}
+      </a>
+    </div>
     <div class="numerique temperature">{{temperature}}&deg;C</div>
     {{#if humidite_existe}}
     <div class="numerique humidite">{{humidite}}%</div>
