@@ -1,15 +1,15 @@
 import { Meteor } from 'meteor/meteor';
 import { Template } from 'meteor/templating';
 
-import { SenseursPassifs } from '../api/mgdomaines_appareils_SenseursPassifs.js';
+import { SenseursPassifs } from '../../api/mgdomaines_appareils_SenseursPassifs.js';
 
-import './body.html';
+import './noeuds.html';
 
-Template.body.onCreated(function bodyOnCreated() {
+Template.Noeuds_show_page.onCreated(function noeudsOnCreated() {
   Meteor.subscribe('noeuds');
 });
 
-Template.body.helpers({
+Template.Noeuds_show_page.helpers({
   noeuds() {
     return SenseursPassifs.find({'_mg-libelle': 'noeud.individuel'});
   },

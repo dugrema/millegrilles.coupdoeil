@@ -4,7 +4,7 @@ import { BlazeLayout } from 'meteor/kadira:blaze-layout';
 // Import to load these templates
 import '../../ui/layouts/app-body.js';
 import '../../ui/pages/root-redirector.js';
-import '../../ui/body.js';
+import '../../ui/pages/noeuds.js';
 import '../../ui/pages/senseur.js';
 
 /*

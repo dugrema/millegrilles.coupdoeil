@@ -6,11 +6,11 @@ import { SenseursPassifs } from '../../api/mgdomaines_appareils_SenseursPassifs.
 
 import './senseur.html'
 
-Template.body.onCreated(function bodyOnCreated() {
+Template.Senseur_show_page.onCreated(function bodyOnCreated() {
   Meteor.subscribe('senseurs');
 });
 
-Template.body.helpers({
+Template.Senseur_show_page.helpers({
   senseur() {
     var noeud = FlowRouter.getParam('noeud');
     var no_senseur = parseInt(FlowRouter.getParam('senseur'));
