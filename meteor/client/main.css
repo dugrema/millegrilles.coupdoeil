@@ -13,7 +13,7 @@ header {
 li {
   position: relative;
   list-style: none;
-  padding: 15px;
+  padding: 6px;
   border-bottom: #eee solid 1px;
 }
 
@@ -30,7 +30,13 @@ li.senseur div.location {
 
 li.senseur div.numerique {
   display: inline-block;
-  width: 5em;
+  width: 6em;
+  text-align: right;
+}
+
+li.senseur div.temps {
+  display: inline-block;
+  width: 10em;
   text-align: right;
 }
 

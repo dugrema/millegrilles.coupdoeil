@@ -5,7 +5,7 @@ source image_info.txt
 MG_MONGO_HOST=192.168.1.28
 MG_NOM_MILLEGRILLE=maple
 MG_MONGO_USER=coupdoeilmeteor
-MG_MONGO_PASSWORD=MONGO_PWD
+MG_MONGO_PASSWORD=higCYUD096aQUI67
 
 docker run -d \
   -e ROOT_URL=http://dev2.maple.mdugre.info \

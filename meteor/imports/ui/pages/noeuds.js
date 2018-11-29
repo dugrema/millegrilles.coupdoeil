@@ -53,4 +53,7 @@ Template.senseur.helpers({
   pression_existe(){
     return this.pression > 0;
   },
+  temps_lecture_formatte(){
+    return moment(this.temps_lecture).format("MMM-DD HH:mm:ss");
+  },
 });
