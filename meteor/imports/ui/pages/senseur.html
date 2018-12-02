@@ -11,6 +11,10 @@
 
   {{> senseur_historique_quotidien }}
 
+  <a href="{{pathFor 'Noeuds.show'}}" title="Liste noeuds">
+    Liste noeuds
+  </a>
+
 </template>
 
 <template name="senseur_actuel">
@@ -20,7 +24,12 @@
 
   <div>Noeud: {{noeud}}</div>
   <div>Numero senseur: {{senseur}}</div>
-  <div>Batterie: {{millivolt}} mV</div>
+  {{#if batterie_existe}}
+    <div>Batterie: {{millivolt}} mV</div>
+  {{/if}}
+  {{#if tendance_existe}}
+    <div class="tendance">Tendance pression atmospherique: {{tendance_formattee}}</div>
+  {{/if}}
 
   <ul>
     <li class="senseur">

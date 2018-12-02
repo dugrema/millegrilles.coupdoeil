@@ -16,8 +16,8 @@ Template.Senseur_show_page.helpers({
     var no_senseur = parseInt(FlowRouter.getParam('senseur'));
 //    console.log('Noeud ' + noeud + ' senseur ' + no_senseur);
     var senseurdocs = SenseursPassifs.findOne({
-      'noeud': noeud, 
-      'senseur': no_senseur, 
+      'noeud': noeud,
+      'senseur': no_senseur,
       '_mg-libelle': 'senseur.individuel'
     });
 
@@ -26,15 +26,32 @@ Template.Senseur_show_page.helpers({
 });
 
 Template.senseur_actuel.helpers({
+  tendance_existe(){
+    return this.pression_tendance !== null;
+  },
   humidite_existe(){
     return this.humidite > 0;
   },
   pression_existe(){
     return this.pression > 0;
   },
+  batterie_existe(){
+    return this.millivolt > 0;
+  },
   temps_lecture_formatte(){
     return moment(this.temps_lecture).format("MMM-DD HH:mm:ss");
   },
+  tendance_formattee(){
+    var pression = this.pression_tendance;
+
+    if(pression !== null) {
+      if(pression === '+') return "Hausse";
+      if(pression === '-') return "Baisse";
+      if(pression === '=') return "Stable";
+    }
+
+    return "N/A";
+  }
 });
 
 Template.senseur_historique_horaire.helpers({
