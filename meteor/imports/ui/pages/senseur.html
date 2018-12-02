@@ -5,13 +5,46 @@
 <template name="senseurDetailUnique">
   <h1>Senseur {{location}}</h1>
 
+  {{> senseur_actuel }}
+
   {{> senseur_historique_horaire }}
+
+  {{> senseur_historique_quotidien }}
+
+</template>
+
+<template name="senseur_actuel">
+  <h2>
+    Valeurs actuelles
+  </h2>
+
+  <div>Noeud: {{noeud}}</div>
+  <div>Numero senseur: {{senseur}}</div>
+  <div>Batterie: {{millivolt}} mV</div>
+
+  <ul>
+    <li class="senseur">
+      <div class="temps">{{temps_lecture_formatte}}</div>
+      <div class="numerique temperature">{{temperature}}&deg;C</div>
+      {{#if humidite_existe}}
+        <div class="numerique humidite">{{humidite}}%</div>
+      {{/if}}
+      {{#if pression_existe}}
+          <div class="numerique pression">{{pression}} kPa</div>
+      {{/if}}
+    </li>
+  </ul>
+
 </template>
 
 <template name="senseur_historique_horaire">
+  <h2>
+    Historique 24 heures
+  </h2>
+  <ul>
   {{#each moyennes_dernier_jour}}
     <li class="senseur">
-      <div class="numerique periode">{{periode_short}}</div>
+      <div class="numerique periode">{{periode_tzlocal}}</div>
       <div class="numerique temperature">{{temperature_moyenne}}&deg;C</div>
       {{#if humidite_moyenne}}
       <div class="numerique humidite">{{humidite_moyenne}}%</div>
@@ -21,4 +54,38 @@
       {{/if}}
     </li>
   {{/each}}
+  </ul>
+</template>
+
+<template name="senseur_historique_quotidien">
+  <h2>
+    Historique 31 jours
+  </h2>
+  <ul>
+    <li class="senseur">
+      <div class="numerique periode">Jour</div>
+      <div class="numerique temperature">Temp Min</div>
+      <div class="numerique temperature">Max</div>
+      <div class="numerique humidite">Hum Min</div>
+      <div class="numerique humidite">Max</div>
+      <div class="numerique pression">Press min</div>
+      <div class="numerique pression">Max</div>
+    </li>
+
+  {{#each extremes_dernier_mois}}
+    <li class="senseur">
+      <div class="numerique periode">{{periode_jour}}</div>
+      <div class="numerique temperature">{{temperature_minimum}}&deg;C</div>
+      <div class="numerique temperature">{{temperature_maximum}}&deg;C</div>
+      {{#if humidite_minimum}}
+      <div class="numerique humidite">{{humidite_minimum}}%</div>
+      <div class="numerique humidite">{{humidite_maximum}}%</div>
+      {{/if}}
+      {{#if pression_minimum}}
+        <div class="numerique pression">{{pression_minimum}} kPa</div>
+        <div class="numerique pression">{{pression_maximum}} kPa</div>
+      {{/if}}
+    </li>
+  {{/each}}
+  </ul>
 </template>
