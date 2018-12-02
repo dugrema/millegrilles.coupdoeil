@@ -1,8 +1,10 @@
 import { Meteor } from 'meteor/meteor';
 import { FlowRouter } from 'meteor/kadira:flow-router';
 import { Template } from 'meteor/templating';
+//import { d3 } from 'meteor/d3';
 
 import { SenseursPassifs } from '../../api/mgdomaines_appareils_SenseursPassifs.js';
+import { Circles } from '../../api/mgdomaines_appareils_SenseursPassifs.js';
 
 import './senseur.html'
 
@@ -112,3 +114,52 @@ Template.senseur_historique_quotidien.helpers({
     return pression
   },
 });
+
+//var Circles = new Mongo.Collection('circles');
+var datapoints = [18, 2, 12, 9, 5];
+
+Template.vis.rendered = function () {
+  var svg, width = 500, height = 75, x;
+
+  //var data = Circles.findOne().data;
+  d3.select("#circles").append('p').text( "Allo!" );
+
+  svg = d3.select('#circles').append('svg')
+    .attr('width', width)
+    .attr('height', height);
+
+  var drawCircles = function (update) {
+    console.log("Data " + datapoints);
+    var circles = svg.selectAll('circle').data(datapoints);
+    if (!update) {
+      circles = circles.enter().append('circle')
+        .attr('cx', function (d, i) { return x(i); })
+        .attr('cy', height / 2);
+    } else {
+      circles = circles.transition().duration(1000);
+    }
+    circles.attr('r', function (d) { return d; });
+  };
+
+
+//  function () {
+
+    x = d3.scale.ordinal()
+      .domain(d3.range(datapoints.length))
+      .rangePoints([0, width], 1);
+    drawCircles(false);
+//  };
+
+  /*
+  Circles.find().observe({
+    added: function () {
+      console.log("observe added");
+
+      x = d3.scale.ordinal()
+        .domain(d3.range(Circles.findOne().data.length))
+        .rangePoints([0, width], 1);
+      drawCircles(false);
+    },
+    changed: _.partial(drawCircles, true)
+  });*/
+};
