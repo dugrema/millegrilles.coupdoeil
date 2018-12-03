@@ -84,7 +84,7 @@ Template.senseur_historique_horaire.helpers({
   },
   maj_graphique() {
     var donnees = this['moyennes_dernier_jour'];
-    console.log(donnees);
+    // console.log(donnees);
 
     // data
     // Get the data
@@ -113,17 +113,15 @@ Template.senseur_historique_horaire.helpers({
           .y(function(d) { return y(d["temperature-moyenne"]); });
 
       // Adds the svg canvas
-      var svg = d3.select("#circles")
+      d3.select("#graphique_horaire svg").remove();
+      // console.log("Creation SVG");
+      var svg = d3.select("#graphique_horaire")
           .append("svg")
               .attr("width", width + margin.left + margin.right)
               .attr("height", height + margin.top + margin.bottom)
           .append("g")
               .attr("transform",
                     "translate(" + margin.left + "," + margin.top + ")");
-
-      donnees.forEach(function(data) {
-        console.log("Data periode: " + data["periode"] + " temp: " + data["temperature-moyenne"]);
-      });
 
       // Scale the range of the data
       x.domain(d3.extent(donnees, function(d) { return d["periode"]; }));
@@ -185,6 +183,74 @@ Template.senseur_historique_quotidien.helpers({
     var pression = this['pression-maximum'];
     return pression
   },
+  maj_graphique() {
+    var donnees = this['extremes_dernier_mois'];
+
+    // data
+    // Get the data
+    //d3.csv("data.csv", function(error, data) {
+    if(donnees !== undefined) {
+
+      // Set the dimensions of the canvas / graph
+      var margin = {top: 30, right: 20, bottom: 30, left: 50},
+          width = 600 - margin.left - margin.right,
+          height = 270 - margin.top - margin.bottom;
+
+      // Set the ranges
+      var x = d3.time.scale().range([0, width]);
+      var y = d3.scale.linear().range([height, 0]);
+
+      // Define the axes
+      var xAxis = d3.svg.axis().scale(x)
+          .orient("bottom").ticks(5);
+
+      var yAxis = d3.svg.axis().scale(y)
+          .orient("left").ticks(5);
+
+      // Define the line
+      var valueline = d3.svg.line()
+          .x(function(d) { return x(d["periode"]); })
+          .y(function(d) { return y(d["temperature-maximum"]); });
+
+      // Adds the svg canvas
+      d3.select("#graphique_quotidien svg").remove();
+      var svg = d3.select("#graphique_quotidien")
+          .append("svg")
+              .attr("width", width + margin.left + margin.right)
+              .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+              .attr("transform",
+                    "translate(" + margin.left + "," + margin.top + ")");
+
+      // Scale the range of the data
+      x.domain(d3.extent(donnees, function(d) { return d["periode"]; }));
+      y.domain([0, d3.max(donnees, function(d) { return d["temperature-maximum"]; })]);
+
+      // Add the valueline path.
+      svg.append("path")
+          .attr("class", "line")
+          .attr("d", valueline(donnees));
+
+      // Add the scatterplot
+      svg.selectAll("dot")
+          .data(donnees)
+        .enter().append("circle")
+          .attr("r", 3.5)
+          .attr("cx", function(d) { return x(d["periode"]); })
+          .attr("cy", function(d) { return y(d["temperature-maximum"]); });
+
+      // Add the X Axis
+      svg.append("g")
+          .attr("class", "x axis")
+          .attr("transform", "translate(0," + height + ")")
+          .call(xAxis);
+
+      // Add the Y Axis
+      svg.append("g")
+          .attr("class", "y axis")
+          .call(yAxis);
+    }
+  }
 });
 
 /*Template.senseur_historique_horaire.rendered = function () {
