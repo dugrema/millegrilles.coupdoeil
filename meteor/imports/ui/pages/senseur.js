@@ -84,14 +84,14 @@ Template.senseur_historique_horaire.helpers({
     return false;
   },
   donnees_changees() {
-    console.log("Changement donnees senseur_historique_horaire");
+    // console.log("Changement donnees senseur_historique_horaire");
     if(Template.instance() !== undefined) {
       var graphiqueHoraire = Template.instance().graphiqueHoraire;
       var donnees = Template.instance().data;
       if(graphiqueHoraire !== undefined && donnees !== undefined) {
         if(graphiqueHoraire.svg !== undefined && donnees['moyennes_dernier_jour'] !== undefined) {
-          console.log("senseur_historique_horaire.donnees_changees On a des donnees")
-          maj_graphique(graphiqueHoraire, donnees['moyennes_dernier_jour']);
+          // console.log("senseur_historique_horaire.donnees_changees On a des donnees")
+          maj_graphique_horaire(graphiqueHoraire, donnees['moyennes_dernier_jour']);
         }
       }
     }
@@ -202,11 +202,9 @@ Template.senseur_historique_quotidien.helpers({
 });
 
 Template.senseur_historique_horaire.onCreated(() => {
-  console.log("senseur_historique_horaire.onCreated");
-  var graphiqueHoraireData = new ReactiveVar()
+  // console.log("senseur_historique_horaire.onCreated");
   var graphiqueHoraire = new Object();
   Template.instance().graphiqueHoraire = graphiqueHoraire;
-  Template.instance().graphiqueHoraireData = graphiqueHoraireData;
 
   // Set the dimensions of the canvas / graph
   graphiqueHoraire.margin = {top: 30, right: 20, bottom: 30, left: 50};
@@ -226,12 +224,12 @@ Template.senseur_historique_horaire.onCreated(() => {
       .x(function(d) { return graphiqueHoraire.x_range(d["periode"]); })
       .y(function(d) { return graphiqueHoraire.y_range(d["temperature-moyenne"]); });
 
-  console.log("senseur_historique_horaire.onCreated done");
+  // console.log("senseur_historique_horaire.onCreated done");
 
 });
 
 Template.senseur_historique_horaire.onRendered(() => {
-  console.log("senseur_historique_horaire.onRendered");
+  // console.log("senseur_historique_horaire.onRendered");
 
   var graphiqueHoraire = Template.instance().graphiqueHoraire;
 
@@ -248,27 +246,34 @@ Template.senseur_historique_horaire.onRendered(() => {
     var donnees = Template.instance().data;
     if(donnees !== undefined) {
       if(donnees['moyennes_dernier_jour'] !== undefined) {
-        console.log("senseur_historique_horaire.onRendered On a des donnees")
-        maj_graphique(graphiqueHoraire, donnees['moyennes_dernier_jour']);
+        // console.log("senseur_historique_horaire.onRendered On a des donnees")
+        maj_graphique_horaire(graphiqueHoraire, donnees['moyennes_dernier_jour']);
       }
     }
   }
 
-  console.log("senseur_historique_horaire.onRendered done");
+  // console.log("senseur_historique_horaire.onRendered done");
 });
 
-function maj_graphique(graphiqueHoraire, donnees) {
+function maj_graphique_horaire(graphiqueHoraire, donnees) {
   // Get the data
   if(donnees !== undefined && graphiqueHoraire !== undefined) {
-    console.log("senseur_historique_horaire.maj_graphique On a des donnees")
+    // console.log("senseur_historique_horaire.maj_graphique On a des donnees")
 
     var graphiqueHoraire = Template.instance().graphiqueHoraire;
 
     // Scale the range of the data
-    graphiqueHoraire.x_range.domain(d3.extent(donnees, function(d) { return d["periode"]; }));
+    graphiqueHoraire.x_range.domain(
+      d3.extent(donnees, function(d) { return d["periode"]; })
+    );
+
+    range_y_extremes = [
+      {"temperature-moyenne": -10}, // Mettre les extremes habituels
+      {"temperature-moyenne": 20}]  // de temperature
+      .concat(donnees); // Ajouter donnees reeles pour allonger au besoin
     graphiqueHoraire.y_range.domain([
-      d3.min(donnees, function(d) { return d["temperature-moyenne"]; }),
-      d3.max(donnees, function(d) { return d["temperature-moyenne"]; })
+      d3.min(range_y_extremes, function(d) { return d["temperature-moyenne"]; }),
+      d3.max(range_y_extremes, function(d) { return d["temperature-moyenne"]; })
     ]);
 
     // Add the valueline path.
@@ -296,7 +301,7 @@ function maj_graphique(graphiqueHoraire, donnees) {
         .attr("class", "y axis")
         .call(graphiqueHoraire.yAxis);
   } else {
-    if(donnees === undefined) console.log("senseur_historique_horaire.maj_graphique: Pas de donnees");
-    if(graphiqueHoraire === undefined) console.log("senseur_historique_horaire.maj_graphique: Pas de graphiqueHoraire");
+    // if(donnees === undefined) console.log("senseur_historique_horaire.maj_graphique: Pas de donnees");
+    // if(graphiqueHoraire === undefined) console.log("senseur_historique_horaire.maj_graphique: Pas de graphiqueHoraire");
   }
 }
