@@ -7,8 +7,6 @@
 
   {{> senseur_actuel }}
 
-  {{> vis }}
-
   {{> senseur_historique_horaire }}
 
   {{> senseur_historique_quotidien }}
@@ -48,14 +46,12 @@
 
 </template>
 
-<template name="vis">
-  <div id="circles"></div>
-</template>
-
 <template name="senseur_historique_horaire">
   <h2>
     Historique 24 heures
   </h2>
+
+  <div id="circles"></div>
 
   <ul>
   {{#each moyennes_dernier_jour}}

@@ -118,11 +118,26 @@ Template.senseur_historique_quotidien.helpers({
 //var Circles = new Mongo.Collection('circles');
 var datapoints = [18, 2, 12, 9, 5];
 
-Template.vis.rendered = function () {
-  var svg, width = 500, height = 75, x;
+var datapoints_2 = new Array([
+  {date: new Date('2018-01-01'), temp: 15},
+  {date: new Date('2018-01-02'), temp: 16},
+  {date: new Date('2018-01-03'), temp: 17},
+  {date: new Date('2018-01-04'), temp: 18},
+  {date: new Date('2018-01-05'), temp: 14},
+  {date: new Date('2018-01-06'), temp: 19},
+  {date: new Date('2018-01-07'), temp: 11},
+  {date: new Date('2018-01-08'), temp: 6},
+  {date: new Date('2018-01-09'), temp: 18},
+  {date: new Date('2018-01-10'), temp: 9},
+  {date: new Date('2018-01-11'), temp: 21},
+]);
 
-  //var data = Circles.findOne().data;
-  d3.select("#circles").append('p').text( "Allo!" );
+Template.senseur_historique_horaire.rendered = function () {
+
+  /*
+  var svg, width = 500, height = 250, x;
+
+  d3.select("#circles").append('p').text( "Graphique" );
 
   svg = d3.select('#circles').append('svg')
     .attr('width', width)
@@ -141,25 +156,80 @@ Template.vis.rendered = function () {
     circles.attr('r', function (d) { return d; });
   };
 
+  x = d3.scale.ordinal()
+    .domain(d3.range(datapoints.length))
+    .rangePoints([0, width], 1);
+  drawCircles(false);
+  */
 
-//  function () {
+  // Set the dimensions of the canvas / graph
+  var margin = {top: 30, right: 20, bottom: 30, left: 50},
+      width = 600 - margin.left - margin.right,
+      height = 270 - margin.top - margin.bottom;
 
-    x = d3.scale.ordinal()
-      .domain(d3.range(datapoints.length))
-      .rangePoints([0, width], 1);
-    drawCircles(false);
-//  };
+  // Parse the date / time
+  //var parseDate = d3.time.format("%d-%b-%y").parse;
 
-  /*
-  Circles.find().observe({
-    added: function () {
-      console.log("observe added");
+  // Set the ranges
+  var x = d3.time.scale().range([0, width]);
+  var y = d3.scale.linear().range([height, 0]);
 
-      x = d3.scale.ordinal()
-        .domain(d3.range(Circles.findOne().data.length))
-        .rangePoints([0, width], 1);
-      drawCircles(false);
-    },
-    changed: _.partial(drawCircles, true)
-  });*/
+  // Define the axes
+  var xAxis = d3.svg.axis().scale(x)
+      .orient("bottom").ticks(5);
+
+  var yAxis = d3.svg.axis().scale(y)
+      .orient("left").ticks(5);
+
+  // Define the line
+  var valueline = d3.svg.line()
+      .x(function(d) { return x(d.date); })
+      .y(function(d) { return y(d.temp); });
+
+  // Adds the svg canvas
+  var svg = d3.select("#circles")
+      .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+          .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+  // data
+  // Get the data
+  //d3.csv("data.csv", function(error, data) {
+    datapoints_2.forEach(function(data) {
+        //d.date = parseDate(d.date);
+        //d.close = +d.close;
+    //});
+
+    // Scale the range of the data
+    x.domain(d3.extent(data, function(d) { return d.date; }));
+    y.domain([0, d3.max(data, function(d) { return d.temp; })]);
+
+    // Add the valueline path.
+    svg.append("path")
+        .attr("class", "line")
+        .attr("d", valueline(data));
+
+    // Add the scatterplot
+    svg.selectAll("dot")
+        .data(data)
+      .enter().append("circle")
+        .attr("r", 3.5)
+        .attr("cx", function(d) { return x(d.date); })
+        .attr("cy", function(d) { return y(d.temp); });
+
+    // Add the X Axis
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+
+    // Add the Y Axis
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
+
+  });
+
 };
