@@ -84,48 +84,27 @@ Template.senseur_historique_horaire.helpers({
   },
   maj_graphique() {
     var donnees = this['moyennes_dernier_jour'];
-    // console.log(donnees);
+    var graphiqueHoraire = Template.instance().graphiqueHoraire;
 
-    // data
     // Get the data
-    //d3.csv("data.csv", function(error, data) {
-    if(donnees !== undefined) {
+    if(donnees !== undefined && graphiqueHoraire !== undefined) {
+      console.log("senseur_historique_horaire.maj_graphique On a des donnees")
 
-      // Set the dimensions of the canvas / graph
-      var margin = {top: 30, right: 20, bottom: 30, left: 50},
-          width = 600 - margin.left - margin.right,
-          height = 270 - margin.top - margin.bottom;
-
-      // Set the ranges
-      var x = d3.time.scale().range([0, width]);
-      var y = d3.scale.linear().range([height, 0]);
-
-      // Define the axes
-      var xAxis = d3.svg.axis().scale(x)
-          .orient("bottom").ticks(5);
-
-      var yAxis = d3.svg.axis().scale(y)
-          .orient("left").ticks(5);
-
-      // Define the line
-      var valueline = d3.svg.line()
-          .x(function(d) { return x(d["periode"]); })
-          .y(function(d) { return y(d["temperature-moyenne"]); });
-
-      // Adds the svg canvas
-      d3.select("#graphique_horaire svg").remove();
-      // console.log("Creation SVG");
-      var svg = d3.select("#graphique_horaire")
-          .append("svg")
-              .attr("width", width + margin.left + margin.right)
-              .attr("height", height + margin.top + margin.bottom)
-          .append("g")
-              .attr("transform",
-                    "translate(" + margin.left + "," + margin.top + ")");
+      var graphiqueHoraire = Template.instance().graphiqueHoraire;
+      var height = graphiqueHoraire.height,
+          x_range = graphiqueHoraire.x_range,
+          y_range = graphiqueHoraire.y_range,
+          xAxis = graphiqueHoraire.xAxis,
+          yAxis = graphiqueHoraire.yAxis,
+          svg = graphiqueHoraire.svg,
+          valueline = graphiqueHoraire.valueline;
 
       // Scale the range of the data
-      x.domain(d3.extent(donnees, function(d) { return d["periode"]; }));
-      y.domain([0, d3.max(donnees, function(d) { return d["temperature-moyenne"]; })]);
+      x_range.domain(d3.extent(donnees, function(d) { return d["periode"]; }));
+      y_range.domain([
+        d3.min(donnees, function(d) { return d["temperature-moyenne"]; }),
+        d3.max(donnees, function(d) { return d["temperature-moyenne"]; })
+      ]);
 
       // Add the valueline path.
       svg.append("path")
@@ -135,10 +114,11 @@ Template.senseur_historique_horaire.helpers({
       // Add the scatterplot
       svg.selectAll("dot")
           .data(donnees)
-        .enter().append("circle")
+          .enter()
+          .append("circle")
           .attr("r", 3.5)
-          .attr("cx", function(d) { return x(d["periode"]); })
-          .attr("cy", function(d) { return y(d["temperature-moyenne"]); });
+          .attr("cx", function(d) { return x_range(d["periode"]); })
+          .attr("cy", function(d) { return y_range(d["temperature-moyenne"]); });
 
       // Add the X Axis
       svg.append("g")
@@ -207,6 +187,9 @@ Template.senseur_historique_quotidien.helpers({
       var yAxis = d3.svg.axis().scale(y)
           .orient("left").ticks(5);
 
+      Template.instance()._xAxis = xAxis;
+      Template.instance()._yAxis = yAxis;
+
       // Define the line
       var valueline = d3.svg.line()
           .x(function(d) { return x(d["periode"]); })
@@ -251,6 +234,50 @@ Template.senseur_historique_quotidien.helpers({
           .call(yAxis);
     }
   }
+});
+
+Template.senseur_historique_horaire.onRendered(() => {
+  console.log("senseur_historique_horaire.onRendered");
+
+  var graphiqueHoraire = new Object();
+  Template.instance().graphiqueHoraire = graphiqueHoraire;
+
+  // Set the dimensions of the canvas / graph
+  graphiqueHoraire.margin = {top: 30, right: 20, bottom: 30, left: 50};
+  graphiqueHoraire.width = 600 - graphiqueHoraire.margin.left - graphiqueHoraire.margin.right;
+  graphiqueHoraire.height = 270 - graphiqueHoraire.margin.top - graphiqueHoraire.margin.bottom;
+
+/*  Template.instance()._margin = margin;
+  Template.instance()._width = width;
+  Template.instance()._height = height;*/
+  console.log("Set margin (top): " + graphiqueHoraire.margin.top);
+
+  // Set the ranges
+  graphiqueHoraire.x_range = d3.time.scale().range([0, graphiqueHoraire.width]);
+  graphiqueHoraire.y_range = d3.scale.linear().range([graphiqueHoraire.height, 0]);
+
+  // Define the axes
+  graphiqueHoraire.xAxis = d3.svg.axis().scale(graphiqueHoraire.x_range).orient("bottom").ticks(5);
+  graphiqueHoraire.yAxis = d3.svg.axis().scale(graphiqueHoraire.y_range).orient("left").ticks(5);
+
+  // Define the line
+  graphiqueHoraire.valueline = d3.svg.line()
+      .x(function(d) { return graphiqueHoraire.x_range(d["periode"]); })
+      .y(function(d) { return graphiqueHoraire.y_range(d["temperature-moyenne"]); });
+
+  // Adds the svg canvas
+  //d3.select("#graphique_horaire svg").remove();
+  // console.log("Creation SVG");
+  graphiqueHoraire.svg = d3.select("#graphique_horaire")
+      .append("svg")
+      .attr("width", graphiqueHoraire.width + graphiqueHoraire.margin.left + graphiqueHoraire.margin.right)
+      .attr("height", graphiqueHoraire.height + graphiqueHoraire.margin.top + graphiqueHoraire.margin.bottom)
+      .append("g")
+      .attr("transform",
+            "translate(" + graphiqueHoraire.margin.left + "," + graphiqueHoraire.margin.top + ")");
+
+  console.log("senseur_historique_horaire SVG setup done")
+
 });
 
 /*Template.senseur_historique_horaire.rendered = function () {
