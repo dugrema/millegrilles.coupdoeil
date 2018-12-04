@@ -6,10 +6,9 @@ export class GraphiqueCharte2D {
     this.svg_pret = false;
     this.donnees_affichees = false;
 
-    this.nomVariableOrdonnee1 = 'temperature-moyenne';
-
-    // Preparer l'objet et dimensions du graphique
-    this.preparer_graphique();
+    // Defaults
+    this.idDiv = '#graphique_horaire';
+    this.nomVariableOrdonnee1 = 'temperature-maximum';
   }
 
   preparer_graphique() {
@@ -39,8 +38,9 @@ export class GraphiqueCharte2D {
 
   attacher_svg() {
     const graphique = this.graphique;
+    const idDiv = this.idDiv;
 
-    graphique.svg = d3.select("#graphique_horaire")
+    graphique.svg = d3.select(idDiv)
         .append("svg")
         .attr("width", graphique.width + graphique.margin.left + graphique.margin.right)
         .attr("height", graphique.height + graphique.margin.top + graphique.margin.bottom)
@@ -64,9 +64,12 @@ export class GraphiqueCharte2D {
         d3.extent(donnees, function(d) { return d["periode"]; })
       );
 
+      // Simuler des donnees pour introduire le range -20 a 10 celsius.
+      let temp_moins10 = {}; temp_moins10[nomVariableOrdonnee1] = -10;
+      let temp_plus20 = {}; temp_plus20[nomVariableOrdonnee1] = 20;
       let range_y_extremes = [
-        {nomVariableOrdonnee1: -10}, // Mettre les extremes habituels
-        {nomVariableOrdonnee1: 20}]  // de temperature
+        temp_moins10, // Mettre les extremes habituels
+        temp_plus20]  // de temperature
         .concat(donnees); // Ajouter donnees reeles pour allonger au besoin
       graphique.y_range.domain([
         d3.min(range_y_extremes, function(d) { return d[nomVariableOrdonnee1]; }),

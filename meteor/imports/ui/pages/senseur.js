@@ -96,7 +96,11 @@ Template.senseur_historique_horaire.helpers({
 });
 
 Template.senseur_historique_horaire.onCreated(() => {
-  Template.instance().graphiqueHoraireObj = new GraphiqueCharte2D();
+  const graphiqueHoraireObj = new GraphiqueCharte2D();
+  Template.instance().graphiqueHoraireObj = graphiqueHoraireObj;
+  graphiqueHoraireObj.idDiv = "#graphique_horaire";
+  graphiqueHoraireObj.nomVariableOrdonnee1 = "temperature-moyenne";
+  graphiqueHoraireObj.preparer_graphique();
 });
 
 Template.senseur_historique_horaire.onRendered(() => {
@@ -107,8 +111,6 @@ Template.senseur_historique_horaire.onRendered(() => {
     var donnees = Template.instance().data;
     if(donnees !== undefined) {
       if(donnees['moyennes_dernier_jour'] !== undefined) {
-        // console.log("senseur_historique_horaire.onRendered On a des donnees")
-        //maj_graphique_horaire(graphiqueHoraire, donnees['moyennes_dernier_jour']);
         graphiqueHoraireObj.appliquerDonnees(donnees['moyennes_dernier_jour']);
       }
     }
@@ -145,119 +147,34 @@ Template.senseur_historique_quotidien.helpers({
     return pression
   },
   donnees_changees() {
-    // console.log("Changement donnees senseur_historique_horaire");
     if(Template.instance() !== undefined) {
-      var graphiqueQuotidien = Template.instance().graphiqueQuotidien;
       var donnees = Template.instance().data;
-      if(graphiqueQuotidien !== undefined && donnees !== undefined) {
-        if(graphiqueQuotidien.svg !== undefined && donnees['extremes_dernier_mois'] !== undefined) {
-          // console.log("senseur_historique_horaire.donnees_changees On a des donnees")
-          maj_graphique_quotidien(graphiqueQuotidien, donnees['extremes_dernier_mois']);
-        }
+      if(donnees !== undefined) {
+        const graphiqueQuotidienObj = Template.instance().graphiqueQuotidienObj;
+        graphiqueQuotidienObj.appliquerDonnees(donnees['extremes_dernier_mois']);
       }
     }
   },
 });
 
 Template.senseur_historique_quotidien.onCreated(() => {
-  // console.log("senseur_historique_horaire.onCreated");
-  var graphique = new Object();
-  Template.instance().graphiqueQuotidien = graphique;
-
-  // Set the dimensions of the canvas / graph
-  graphique.margin = {top: 30, right: 20, bottom: 30, left: 50};
-  graphique.width = 600 - graphique.margin.left - graphique.margin.right;
-  graphique.height = 270 - graphique.margin.top - graphique.margin.bottom;
-
-  // Set the ranges
-  graphique.x_range = d3.time.scale().range([0, graphique.width]);
-  graphique.y_range = d3.scale.linear().range([graphique.height, 0]);
-
-  // Define the axes
-  graphique.xAxis = d3.svg.axis().scale(graphique.x_range).orient("bottom").ticks(5);
-  graphique.yAxis = d3.svg.axis().scale(graphique.y_range).orient("left").ticks(5);
-
-  // Define the line
-  graphique.valueline = d3.svg.line()
-      .x(function(d) { return graphique.x_range(d["periode"]); })
-      .y(function(d) { return graphique.y_range(d["temperature-maximum"]); });
-
-  // console.log("senseur_historique_horaire.onCreated done");
-
+  let graphiqueQuotidienObj = new GraphiqueCharte2D();
+  Template.instance().graphiqueQuotidienObj = graphiqueQuotidienObj;
+  graphiqueQuotidienObj.idDiv = "#graphique_quotidien";
+  graphiqueQuotidienObj.nomVariableOrdonnee1 = "temperature-maximum";
+  graphiqueQuotidienObj.preparer_graphique();
 });
 
 Template.senseur_historique_quotidien.onRendered(() => {
-  // console.log("senseur_historique_horaire.onRendered");
-
-  var graphique = Template.instance().graphiqueQuotidien;
-
-  // Adds the svg canvas
-  graphique.svg = d3.select("#graphique_quotidien")
-      .append("svg")
-      .attr("width", graphique.width + graphique.margin.left + graphique.margin.right)
-      .attr("height", graphique.height + graphique.margin.top + graphique.margin.bottom)
-      .append("g")
-      .attr("transform",
-            "translate(" + graphique.margin.left + "," + graphique.margin.top + ")");
+  const graphiqueQuotidienObj = Template.instance().graphiqueQuotidienObj;
+  graphiqueQuotidienObj.attacher_svg();
 
   if(Template.instance() !== undefined) {
     var donnees = Template.instance().data;
     if(donnees !== undefined) {
       if(donnees['extremes_dernier_mois'] !== undefined) {
-        // console.log("senseur_historique_horaire.onRendered On a des donnees")
-        maj_graphique_quotidien(graphique, donnees['extremes_dernier_mois']);
+        graphiqueQuotidienObj.appliquerDonnees(donnees['extremes_dernier_mois']);
       }
     }
   }
-
-  // console.log("senseur_historique_horaire.onRendered done");
 });
-
-function maj_graphique_quotidien(graphique, donnees) {
-  // Get the data
-  if(donnees !== undefined && graphique !== undefined) {
-    // console.log("senseur_historique_horaire.maj_graphique On a des donnees")
-
-    // Scale the range of the data
-    graphique.x_range.domain(
-      d3.extent(donnees, function(d) { return d["periode"]; })
-    );
-
-    range_y_extremes = [
-      {"temperature-maximum": -10}, // Mettre les extremes habituels
-      {"temperature-maximum": 20}]  // de temperature
-      .concat(donnees); // Ajouter donnees reeles pour allonger au besoin
-    graphique.y_range.domain([
-      d3.min(range_y_extremes, function(d) { return d["temperature-maximum"]; }),
-      d3.max(range_y_extremes, function(d) { return d["temperature-maximum"]; })
-    ]);
-
-    // Add the valueline path.
-    graphique.svg.append("path")
-        .attr("class", "line")
-        .attr("d", graphique.valueline(donnees));
-
-    // Add the scatterplot
-    graphique.svg.selectAll("dot")
-        .data(donnees)
-        .enter()
-        .append("circle")
-        .attr("r", 3.5)
-        .attr("cx", function(d) { return graphique.x_range(d["periode"]); })
-        .attr("cy", function(d) { return graphique.y_range(d["temperature-maximum"]); });
-
-    // Add the X Axis
-    graphique.svg.append("g")
-        .attr("class", "x axis")
-        .attr("transform", "translate(0," + graphique.height + ")")
-        .call(graphique.xAxis);
-
-    // Add the Y Axis
-    graphique.svg.append("g")
-        .attr("class", "y axis")
-        .call(graphique.yAxis);
-  } else {
-    // if(donnees === undefined) console.log("senseur_historique_horaire.maj_graphique: Pas de donnees");
-    // if(graphiqueHoraire === undefined) console.log("senseur_historique_horaire.maj_graphique: Pas de graphiqueHoraire");
-  }
-}
