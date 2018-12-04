@@ -65,7 +65,7 @@ Template.senseur_historique_horaire.helpers({
   },
   periode_tzlocal() {
     var periode = moment(this['periode']);
-    return periode.format('hh:mm');
+    return periode.format('HH:mm');
   },
   temperature_moyenne() {
     return (Math.round(this['temperature-moyenne'] * 10) / 10).toFixed(1);
@@ -84,37 +84,24 @@ Template.senseur_historique_horaire.helpers({
     }
     return false;
   },
-  donnees_changees() {
-    if(Template.instance() !== undefined) {
-      var donnees = Template.instance().data;
-      if(donnees !== undefined) {
-        const graphiqueHoraireObj = Template.instance().graphiqueHoraireObj;
-        graphiqueHoraireObj.appliquerDonnees(donnees['moyennes_dernier_jour']);
-      }
-    }
+  donnees_changees(donnees) {
+    const graphiqueHoraireObj = Template.instance().graphiqueHoraireObj;
+    graphiqueHoraireObj.appliquerDonnees(donnees);
   },
 });
 
-Template.senseur_historique_horaire.onCreated(() => {
+Template.senseur_historique_horaire.onCreated( function() {
   const graphiqueHoraireObj = new GraphiqueCharte2D();
-  Template.instance().graphiqueHoraireObj = graphiqueHoraireObj;
+  this.graphiqueHoraireObj = graphiqueHoraireObj;
   graphiqueHoraireObj.idDiv = "#graphique_horaire";
   graphiqueHoraireObj.nomVariableOrdonnee1 = "temperature-moyenne";
   graphiqueHoraireObj.preparer_graphique();
 });
 
-Template.senseur_historique_horaire.onRendered(() => {
-  const graphiqueHoraireObj = Template.instance().graphiqueHoraireObj;
+Template.senseur_historique_horaire.onRendered( function() {
+  // Attacher l'element SVG pour le graphique 24 heures
+  const graphiqueHoraireObj = this.graphiqueHoraireObj;
   graphiqueHoraireObj.attacher_svg();
-
-  if(Template.instance() !== undefined) {
-    var donnees = Template.instance().data;
-    if(donnees !== undefined) {
-      if(donnees['moyennes_dernier_jour'] !== undefined) {
-        graphiqueHoraireObj.appliquerDonnees(donnees['moyennes_dernier_jour']);
-      }
-    }
-  }
 });
 
 Template.senseur_historique_quotidien.helpers({
@@ -146,35 +133,22 @@ Template.senseur_historique_quotidien.helpers({
     var pression = this['pression-maximum'];
     return pression
   },
-  donnees_changees() {
-    if(Template.instance() !== undefined) {
-      var donnees = Template.instance().data;
-      if(donnees !== undefined) {
-        const graphiqueQuotidienObj = Template.instance().graphiqueQuotidienObj;
-        graphiqueQuotidienObj.appliquerDonnees(donnees['extremes_dernier_mois']);
-      }
-    }
+  donnees_changees(donnees) {
+    const graphiqueQuotidienObj = Template.instance().graphiqueQuotidienObj;
+    graphiqueQuotidienObj.appliquerDonnees(donnees);
   },
 });
 
-Template.senseur_historique_quotidien.onCreated(() => {
-  let graphiqueQuotidienObj = new GraphiqueCharte2D();
-  Template.instance().graphiqueQuotidienObj = graphiqueQuotidienObj;
+Template.senseur_historique_quotidien.onCreated( function() {
+  const graphiqueQuotidienObj = new GraphiqueCharte2D();
+  this.graphiqueQuotidienObj = graphiqueQuotidienObj;
   graphiqueQuotidienObj.idDiv = "#graphique_quotidien";
   graphiqueQuotidienObj.nomVariableOrdonnee1 = "temperature-maximum";
   graphiqueQuotidienObj.preparer_graphique();
 });
 
-Template.senseur_historique_quotidien.onRendered(() => {
-  const graphiqueQuotidienObj = Template.instance().graphiqueQuotidienObj;
+Template.senseur_historique_quotidien.onRendered( function() {
+  // Attacher l'element SVG pour le graphique 31 jours
+  const graphiqueQuotidienObj = this.graphiqueQuotidienObj;
   graphiqueQuotidienObj.attacher_svg();
-
-  if(Template.instance() !== undefined) {
-    var donnees = Template.instance().data;
-    if(donnees !== undefined) {
-      if(donnees['extremes_dernier_mois'] !== undefined) {
-        graphiqueQuotidienObj.appliquerDonnees(donnees['extremes_dernier_mois']);
-      }
-    }
-  }
 });

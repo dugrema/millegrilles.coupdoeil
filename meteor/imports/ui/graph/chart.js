@@ -4,7 +4,7 @@ export class GraphiqueCharte2D {
 
   constructor() {
     this.svg_pret = false;
-    this.donnees_affichees = false;
+    this.donnees = null;
 
     // Defaults
     this.idDiv = '#graphique_horaire';
@@ -49,14 +49,26 @@ export class GraphiqueCharte2D {
               "translate(" + graphique.margin.left + "," + graphique.margin.top + ")");
 
     this.svg_pret = true;
+
+    // Le rendering a lieu apres l'application des donnees (deja sauvegardees)
+    // On lance le calcul d'affichage immediatement.
+    if(this.donnees !== null) {
+      this.appliquerDonnees(this.donnees);
+      this.donnees = null;
+    }
   }
 
   appliquerDonnees(donnees) {
     const graphique = this.graphique;
     const nomVariableOrdonnee1 = this.nomVariableOrdonnee1;
 
+    // Sauvegarder les donnees temporairement pour affichage des que le
+    // rendering est pret.
+    this.donnees = donnees;
+
     // Get the data
-    if(donnees !== undefined && this.svg_pret) {
+    if(this.svg_pret) {
+      this.donnees = null;
       // console.log("senseur_historique_horaire.maj_graphique On a des donnees")
 
       // Scale the range of the data
@@ -100,12 +112,7 @@ export class GraphiqueCharte2D {
       graphique.svg.append("g")
           .attr("class", "y axis")
           .call(graphique.yAxis);
-    } else {
-      // if(donnees === undefined) console.log("senseur_historique_horaire.maj_graphique: Pas de donnees");
-      // if(graphique === undefined) console.log("senseur_historique_horaire.maj_graphique: Pas de graphique");
     }
-
-    this.donnees_affichees = true;
   }
 
 };
