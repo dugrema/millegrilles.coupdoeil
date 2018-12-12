@@ -1,0 +1,20 @@
+<template name="Notifications_show_page">
+  <h1>Notifications</h1>
+
+  {{>Notification_liste}}
+</template>
+
+<template name="Notification_liste">
+  <div>
+    <p>Liste des notifications</p>
+    {{#each notifications_regles_simples}}
+      {{> Notification_ligne}}
+    {{/each}}
+  </div>
+</template>
+
+<template name="Notification_ligne">
+  <div>Notification</div>
+  <div>{{ regle }}</div>
+  <div>{{ format_date_moisheure derniere_notification }}</div>
+</template>

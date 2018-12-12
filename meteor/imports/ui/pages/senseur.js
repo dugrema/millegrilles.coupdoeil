@@ -5,7 +5,6 @@ import { Template } from 'meteor/templating';
 //import { d3 } from 'meteor/d3';
 
 import { SenseursPassifs } from '../../api/mgdomaines_appareils_SenseursPassifs.js';
-import { Circles } from '../../api/mgdomaines_appareils_SenseursPassifs.js';
 
 import { GraphiqueCharte2D } from '../graph/chart.js';
 import './senseur.html'

@@ -18,7 +18,7 @@ Template.Noeuds_show_page.helpers({
 Template.sectionSenseurs.helpers({
   senseurs(){
     // Preparer une liste de tous les senseurs du noeuds. Injecter le
-    // no_senseur dans la liste (cle du dict). Aussi passer une reference 
+    // no_senseur dans la liste (cle du dict). Aussi passer une reference
     // vers le noeud.
     var liste = [];
     for(var no_senseur in this.dict_senseurs) {
@@ -52,8 +52,5 @@ Template.senseur.helpers({
   },
   pression_existe(){
     return this.pression > 0;
-  },
-  temps_lecture_formatte(){
-    return moment(this.temps_lecture).format("MMM-DD HH:mm:ss");
   },
 });

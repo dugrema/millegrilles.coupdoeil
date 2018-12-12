@@ -6,12 +6,32 @@ import '../../ui/layouts/app-body.js';
 import '../../ui/pages/root-redirector.js';
 import '../../ui/pages/noeuds.js';
 import '../../ui/pages/senseur.js';
+import '../../ui/pages/notifications.js'
 
 /*
 // Import to override accounts templates
 import '../../ui/accounts/accounts-templates.js';
 
 */
+
+FlowRouter.route('/', {
+  name: 'App.home',
+  action() {
+    BlazeLayout.render('App_body', { main: 'app_rootRedirector' });
+  },
+});
+
+// millegrilles.domaines.Notifications
+
+FlowRouter.route('/notifications/', {
+  name: 'Notifications.show',
+  action() {
+    BlazeLayout.render('App_body', { main: 'Notifications_show_page' });
+  },
+});
+
+// mgdomaines.appareils.SenseursPassifs
+
 FlowRouter.route('/noeuds/', {
   name: 'Noeuds.show',
   action() {
@@ -23,13 +43,6 @@ FlowRouter.route('/senseur/:noeud/:senseur', {
   name: 'Senseur.show',
   action() {
     BlazeLayout.render('App_body', { main: 'Senseur_show_page' });
-  },
-});
-
-FlowRouter.route('/', {
-  name: 'App.home',
-  action() {
-    BlazeLayout.render('App_body', { main: 'app_rootRedirector' });
   },
 });
 
