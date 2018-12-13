@@ -40,8 +40,14 @@ Template.sectionSenseurs.helpers({
       let loc_a = senseur_a['location'],
           loc_b = senseur_b['location'];
 
-      // Traiter le cas ou loc_a est undefined
-      if(loc_a === loc_b) return 0;  // Les deux objets peuvent etre undefined.
+      if(loc_a === loc_b) {
+        // Les deux locations peuvent etre undefined. Trier par numero senseur.
+        let no_senseur_a = senseur_a.no_senseur,
+            no_senseur_b = senseur_b.no_senseur;
+        return no_senseur_a - no_senseur_b;
+      }
+
+      // Traiter le cas ou seul loc_a est undefined
       if(loc_a === undefined) return 1;  // loc_a !== loc_b, est undefined
       return loc_a.localeCompare(loc_b);
     });
@@ -56,5 +62,9 @@ Template.senseur.helpers({
   },
   pression_existe(){
     return this.pression > 0;
+  },
+  libelle_senseur(){
+    if(this.location !== undefined) return this.location;
+    return 'Senseur ' + this.no_senseur;
   },
 });
