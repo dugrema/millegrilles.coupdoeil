@@ -17,11 +17,14 @@
       <i class="fa fa-home w3-margin-right"></i>
       Coup D'Oeil
     </a>
-    <a href="#" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" title="News">
-      <i class="fa fa-globe"></i>
+    <a href="#" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" title="Mes tâches">
+      <i class="fa fa-calendar-check-o"></i>
     </a>
-    <a href="#" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" title="Account Settings">
-      <i class="fa fa-user"></i>
+    <a href="#" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" title="Mon horaire">
+      <i class="fa fa-calendar"></i>
+    </a>
+    <a href="#" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" title="Les participants">
+      <i class="fa fa-users"></i>
     </a>
     <a href="#" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" title="Messages">
       <i class="fa fa-envelope"></i>
@@ -29,12 +32,11 @@
     <div class="w3-dropdown-hover w3-hide-small">
       <button class="w3-button w3-padding-large" title="Notifications">
         <i class="fa fa-bell"></i>
-        <span class="w3-badge w3-right w3-small w3-green">10</span>
+        <span class="w3-badge w3-right w3-small w3-green">2</span>
       </button>
       <div class="w3-dropdown-content w3-card-4 w3-bar-block" style="width:300px">
-        <a href="#" class="w3-bar-item w3-button">One new friend request</a>
-        <a href="#" class="w3-bar-item w3-button">John Doe posted on your wall</a>
-        <a href="#" class="w3-bar-item w3-button">Jane likes your post</a>
+        <a href="#" class="w3-bar-item w3-button">Cuisine 8.5&deg;C</a>
+        <a href="#" class="w3-bar-item w3-button">Refrigerateur 2733mV</a>
       </div>
     </div>
     <a href="#" class="w3-bar-item w3-button w3-hide-small w3-right w3-padding-large w3-hover-white" title="My Account">
@@ -95,20 +97,20 @@
   <div class="w3-card w3-round">
     <div class="w3-white">
       <button class="w3-button w3-block w3-theme-l1 w3-left-align">
-        <i class="fa fa-circle-o-notch fa-fw w3-margin-right"></i>
-        Mes tâches
-      </button>
-      <button class="w3-button w3-block w3-theme-l1 w3-left-align">
-        <i class="fa fa-calendar-check-o fa-fw w3-margin-right"></i>
-        Mon horaire
-      </button>
-      <button class="w3-button w3-block w3-theme-l1 w3-left-align">
-        <i class="fa fa-users fa-fw w3-margin-right"></i>
-        Les participants
+        <i class="fa fa-globe fa-fw w3-margin-right"></i>
+        Activité
       </button>
       <button class="w3-button w3-block w3-theme-l1 w3-left-align">
         <i class="fa fa-wifi fa-fw w3-margin-right"></i>
         MilleGrilles associées
+      </button>
+      <button class="w3-button w3-block w3-theme-l1 w3-left-align">
+        <i class="fa fa-code-fork fa-fw w3-margin-right"></i>
+        Processus
+      </button>
+      <button class="w3-button w3-block w3-theme-l1 w3-left-align">
+        <i class="fa fa-sliders fa-fw w3-margin-right"></i>
+        Paramètres
       </button>
     </div>
   </div>
@@ -142,8 +144,15 @@
     <span onclick="this.parentElement.style.display='none'" class="w3-button w3-theme-l3 w3-display-topright">
       <i class="fa fa-remove"></i>
     </span>
-    <p><strong>Hey!</strong></p>
-    <p>People are looking at your profile. Find out who.</p>
+    <p><strong>Beignes en danger!</strong></p>
+    <p>Tsunami en route pour la beignière.</p>
+  </div>
+  <div class="w3-container w3-display-container w3-round w3-theme-l4 w3-border w3-theme-border w3-margin-bottom w3-hide-small">
+    <span onclick="this.parentElement.style.display='none'" class="w3-button w3-theme-l3 w3-display-topright">
+      <i class="fa fa-remove"></i>
+    </span>
+    <p><strong>Alerte!</strong></p>
+    <p>Manger de la poutine, c'est bon.</p>
   </div>
 </template>
 
@@ -161,83 +170,53 @@
   </div>
 
   <div class="w3-container w3-card w3-white w3-round w3-margin"><br>
-    <img src="/w3images/avatar2.png" alt="Avatar" class="w3-left w3-circle w3-margin-right" style="width:60px">
-    <span class="w3-right w3-opacity">1 min</span>
-    <h4>John Doe</h4><br>
+    <span class="w3-right w3-opacity">17 mins</span>
+    <h4>Ottawa (Richmond - Metcalfe) - Weather - Environment Canada</h4><br>
     <hr class="w3-clear">
-    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-      <div class="w3-row-padding" style="margin:0 -16px">
-        <div class="w3-half">
-          <img src="/w3images/lights.jpg" style="width:100%" alt="Northern Lights" class="w3-margin-bottom">
-        </div>
-        <div class="w3-half">
-          <img src="/w3images/nature.jpg" style="width:100%" alt="Nature" class="w3-margin-bottom">
-      </div>
-    </div>
-    <button type="button" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-thumbs-up"></i> &nbsp;Like</button>
-    <button type="button" class="w3-button w3-theme-d2 w3-margin-bottom"><i class="fa fa-comment"></i> &nbsp;Comment</button>
+    <p>
+      <b>Observed at:</b> Ottawa Macdonald-Cartier Int'l Airport 12:00 PM EST Thursday 13 December 2018 <br/>
+      <b>Condition:</b> Mostly Cloudy <br/>
+      <b>Temperature:</b> -11.2&deg;C <br/>
+      <b>Pressure / Tendency:</b> 102.9 kPa rising<br/>
+      <b>Visibility:</b> 24.1 km<br/>
+      <b>Humidity:</b> 69 %<br/>
+      <b>Wind Chill:</b> -18 <br/>
+      <b>Dewpoint:</b> -15.9&deg;C <br/>
+      <b>Wind:</b> NE 15 km/h<br/>
+      <b>Air Quality Health Index:</b> N/A <br/>
+    </p>
+
+    <ul>
+      <li>Thursday: Increasing cloudiness. High minus 5.</li>
+      <li>Thursday night: Periods of freezing drizzle. Low minus 6. POP 60%</li>
+      <li>Friday: Chance of showers. High plus 4. POP 60%</li>
+      <li>Friday night: Chance of flurries. Low zero. POP 40%</li>
+      <li>Saturday: Chance of rain showers or flurries. High plus 2. POP 40%</li>
+      <li>Saturday night: Chance of flurries. Low minus 6. POP 30%</li>
+      <li>Sunday: A mix of sun and cloud. High plus 1.</li>
+      <li>Sunday night: Cloudy periods. Low minus 2.</li>
+      <li>Monday: A mix of sun and cloud. High minus 1.</li>
+      <li>Monday night: Clear. Low minus 13.</li>
+      <li>Tuesday: Sunny. High minus 6.</li>
+      <li>Tuesday night: Cloudy periods. Low minus 8.</li>
+      <li>Wednesday: Cloudy. High minus 1.</li>
+    </ul>
   </div>
 
-  <div class="w3-container w3-card w3-white w3-round w3-margin"><br>
-    <img src="/w3images/avatar5.png" alt="Avatar" class="w3-left w3-circle w3-margin-right" style="width:60px">
-    <span class="w3-right w3-opacity">16 min</span>
-    <h4>Jane Doe</h4><br>
-    <hr class="w3-clear">
-    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-    <button type="button" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-thumbs-up"></i> &nbsp;Like</button>
-    <button type="button" class="w3-button w3-theme-d2 w3-margin-bottom"><i class="fa fa-comment"></i> &nbsp;Comment</button>
-  </div>
-
-  <div class="w3-container w3-card w3-white w3-round w3-margin"><br>
-    <img src="/w3images/avatar6.png" alt="Avatar" class="w3-left w3-circle w3-margin-right" style="width:60px">
-    <span class="w3-right w3-opacity">32 min</span>
-    <h4>Angie Jane</h4><br>
-    <hr class="w3-clear">
-    <p>Have you seen this?</p>
-    <img src="/w3images/nature.jpg" style="width:100%" class="w3-margin-bottom">
-    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-    <button type="button" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-thumbs-up"></i> &nbsp;Like</button>
-    <button type="button" class="w3-button w3-theme-d2 w3-margin-bottom"><i class="fa fa-comment"></i> &nbsp;Comment</button>
-  </div>
 </template>
 
 <template name="App_3colonnes_droite">
+
   <div class="w3-card w3-round w3-white w3-center">
     <div class="w3-container">
-      <p>Upcoming Events:</p>
-      <img src="/w3images/forest.jpg" alt="Forest" style="width:100%;">
-      <p><strong>Holiday</strong></p>
-      <p>Friday 15:00</p>
+      <p>Blarghs</p>
+      <p><strong>Marjjgxs</strong></p>
+      <p>Heuille!</p>
       <p><button class="w3-button w3-block w3-theme-l4">Info</button></p>
     </div>
   </div>
   <br>
 
-  <div class="w3-card w3-round w3-white w3-center">
-    <div class="w3-container">
-      <p>Friend Request</p>
-      <img src="/w3images/avatar6.png" alt="Avatar" style="width:50%"><br>
-      <span>Jane Doe</span>
-      <div class="w3-row w3-opacity">
-        <div class="w3-half">
-          <button class="w3-button w3-block w3-green w3-section" title="Accept"><i class="fa fa-check"></i></button>
-        </div>
-        <div class="w3-half">
-          <button class="w3-button w3-block w3-red w3-section" title="Decline"><i class="fa fa-remove"></i></button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <br>
-
-  <div class="w3-card w3-round w3-white w3-padding-16 w3-center">
-    <p>ADS</p>
-  </div>
-  <br>
-
-  <div class="w3-card w3-round w3-white w3-padding-32 w3-center">
-    <p><i class="fa fa-bug w3-xxlarge"></i></p>
-  </div>
 </template>
 
 <template name="App_3colonnes_footer">
