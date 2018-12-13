@@ -1,0 +1,91 @@
+<template name="Principal_show_page">
+  <!-- Middle Column -->
+  <div class="w3-col m7">
+    {{> Principal_colonne_milieu}}
+  <!-- End Middle Column -->
+  </div>
+  <!-- Right Column -->
+  <div class="w3-col m2">
+    {{> Principal_colonne_droite}}
+  <!-- End Right Column -->
+  </div>
+</template>
+
+<template name="Principal_colonne_milieu">
+  <div class="w3-row-padding">
+    <div class="w3-col m12">
+      <div class="w3-card w3-round w3-white">
+        <div class="w3-container w3-padding">
+          <h6 class="w3-opacity">Ajouter une tâche</h6>
+          <p contenteditable="true" class="w3-border w3-padding">Nom de la tâche</p>
+          <button type="button" class="w3-button w3-theme"><i class="fa fa-pencil"></i> &nbsp;Ajouter</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="w3-container w3-card w3-white w3-round w3-margin"><br>
+    <span class="w3-right w3-opacity">17 mins</span>
+    <h4>Ottawa (Richmond - Metcalfe) - Weather - Environment Canada</h4><br>
+    <hr class="w3-clear">
+    <p>
+      <b>Observed at:</b> Ottawa Macdonald-Cartier Int'l Airport 12:00 PM EST Thursday 13 December 2018 <br/>
+      <b>Condition:</b> Mostly Cloudy <br/>
+      <b>Temperature:</b> -11.2&deg;C <br/>
+      <b>Pressure / Tendency:</b> 102.9 kPa rising<br/>
+      <b>Visibility:</b> 24.1 km<br/>
+      <b>Humidity:</b> 69 %<br/>
+      <b>Wind Chill:</b> -18 <br/>
+      <b>Dewpoint:</b> -15.9&deg;C <br/>
+      <b>Wind:</b> NE 15 km/h<br/>
+      <b>Air Quality Health Index:</b> N/A <br/>
+    </p>
+
+    <ul>
+      <li>Thursday: Increasing cloudiness. High minus 5.</li>
+      <li>Thursday night: Periods of freezing drizzle. Low minus 6. POP 60%</li>
+      <li>Friday: Chance of showers. High plus 4. POP 60%</li>
+      <li>Friday night: Chance of flurries. Low zero. POP 40%</li>
+      <li>Saturday: Chance of rain showers or flurries. High plus 2. POP 40%</li>
+      <li>Saturday night: Chance of flurries. Low minus 6. POP 30%</li>
+      <li>Sunday: A mix of sun and cloud. High plus 1.</li>
+      <li>Sunday night: Cloudy periods. Low minus 2.</li>
+      <li>Monday: A mix of sun and cloud. High minus 1.</li>
+      <li>Monday night: Clear. Low minus 13.</li>
+      <li>Tuesday: Sunny. High minus 6.</li>
+      <li>Tuesday night: Cloudy periods. Low minus 8.</li>
+      <li>Wednesday: Cloudy. High minus 1.</li>
+    </ul>
+  </div>
+
+</template>
+
+<template name="Principal_colonne_droite">
+
+  <div class="w3-card w3-round w3-white w3-center">
+    <div class="w3-container">
+      <p>Blarghs</p>
+      <p><strong>Marjjgxs</strong></p>
+      <p>Heuille!</p>
+      <p><button class="w3-button w3-block w3-theme-l4">Info</button></p>
+    </div>
+  </div>
+  <br>
+
+</template>
+
+<template name="App_3colonnes_footer">
+  <footer class="w3-container w3-theme-d3 w3-padding-16">
+    <h5>Coup D'Oeil version 0.9.0</h5>
+    Coup D'Oeil fait partie du groupe de logiciels
+    <a href="https://www.millegrilles.com">MilleGrilles</a>.
+  </footer>
+
+  <footer class="w3-container w3-theme-d5">
+    <p>
+        Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank">w3.css</a>,
+         Meteor, node.js, MongoDB, RabbitMQ, Python, nginx, docker, letsencrypt,
+         d3, RaspberryPi, Intel Xeon, Debian, Font Awesome, git.
+    </p>
+  </footer>
+</template>

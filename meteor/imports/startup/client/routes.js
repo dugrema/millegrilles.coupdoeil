@@ -7,7 +7,8 @@ import '../../ui/layouts/app-3colonnes.js'
 import '../../ui/pages/root-redirector.js';
 import '../../ui/pages/noeuds.js';
 import '../../ui/pages/senseur.js';
-import '../../ui/pages/notifications.js'
+import '../../ui/pages/notifications.js';
+import '../../ui/pages/principal.js';
 
 /*
 // Import to override accounts templates
@@ -51,7 +52,7 @@ FlowRouter.route('/senseur/:noeud/:senseur', {
 FlowRouter.route('/principal', {
   name: 'App.principal',
   action() {
-    BlazeLayout.render('App_3colonnes');
+    BlazeLayout.render('App_3colonnes', { main: 'Principal_show_page' });
   },
 });
 
