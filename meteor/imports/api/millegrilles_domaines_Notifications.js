@@ -11,5 +11,5 @@ if (Meteor.isServer) {
   Meteor.publish('notifications_regles_simples', function notificationsPublication() {
     return Notifications.find({'_mg-libelle': 'regle_simple'});
   });
-  
+
 }

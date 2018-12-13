@@ -1,15 +1,19 @@
 <template name="Notifications_show_page">
-  <div class="w3-col m9">
+  <div class="w3-col m7">
     <div class="w3-row-padding">
       <div class="w3-col m12">
+        <h1 class="w3-opacity">Notifications</h1>
         {{>Notification_liste}}
       </div>
     </div>
   </div>
+
+  <div class="w3-col m2">
+    {{>notifications_liens}}
+  </div>
 </template>
 
 <template name="Notification_liste">
-  <h6 class="w3-opacity">Notifications</h6>
   {{#each notifications_regles_simples}}
     {{> UI.dynamic template=source._collection }}
   {{/each}}
@@ -42,4 +46,14 @@
 
 <template name="mgdomaines_appareils_SenseursPassifs_millivolt">
   <div class="numerique">{{valeurs.valeur}} mV</div>
+</template>
+
+<template name="notifications_liens">
+  <div class="w3-card w3-round w3-white w3-center">
+    <div class="w3-container">
+      <p>Liens</p>
+      <p><button class="w3-button w3-block w3-theme-l4" onclick="document.href='/noeuds'">Notif. actives</button></p>
+      <p><button class="w3-button w3-block w3-theme-l4" onclick="document.href='/noeuds'">Notif. en attente</button></p>
+    </div>
+  </div>
 </template>
