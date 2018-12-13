@@ -1,15 +1,34 @@
 <template name="Senseur_show_page">
-  {{> senseurDetailUnique senseur }}
+  <!-- Middle Column -->
+  <div class="w3-col m7">
+    {{> senseurDetailUnique senseur }}
+  </div>
+
+  <div class="w3-col m2">
+    {{> senseur_liens}}
+  <!-- End Right Column -->
+  </div>
 </template>
 
 <template name="senseurDetailUnique">
-  <h1>Senseur {{location}}</h1>
+  <div class="w3-row-padding">
+    <div class="w3-col m12">
+      <div class="w3-card w3-round w3-white">
+        <div class="w3-container w3-padding">
+          <h6 class="w3-opacity">Senseur {{location}}</h6>
+            {{> senseur_actuel }}
+        </div>
+      </div>
+    </div>
+  </div>
 
-  {{> senseur_actuel }}
+  <div class="w3-container w3-card w3-white w3-round w3-margin"><br>
+    {{> senseur_historique_horaire }}
+  </div>
 
-  {{> senseur_historique_horaire }}
-
-  {{> senseur_historique_quotidien }}
+  <div class="w3-container w3-card w3-white w3-round w3-margin"><br>
+    {{> senseur_historique_quotidien }}
+  </div>
 
   <a href="{{pathFor 'Noeuds.show'}}" title="Liste noeuds">
     Liste noeuds
@@ -18,10 +37,6 @@
 </template>
 
 <template name="senseur_actuel">
-  <h2>
-    Valeurs actuelles
-  </h2>
-
   <div>Noeud: {{noeud}}</div>
   <div>Numero senseur: {{senseur}}</div>
   {{#if batterie_existe}}
@@ -47,13 +62,14 @@
 </template>
 
 <template name="senseur_historique_horaire">
-  <h2>
-    Historique 24 heures
-  </h2>
+  <h6 class="w3-opacity">
+    Historique 24 heures {{location}}
+  </h6>
 
   {{donnees_changees moyennes_dernier_jour}}
   <div id="graphique_horaire"></div>
 
+  <!--
   <ul>
   {{#each moyennes_dernier_jour}}
     <li class="senseur">
@@ -68,16 +84,18 @@
     </li>
   {{/each}}
   </ul>
+  -->
 </template>
 
 <template name="senseur_historique_quotidien">
-  <h2>
-    Historique 31 jours
-  </h2>
+  <h6 class="w3-opacity">
+    Historique 31 jours {{location}}
+  </h6>
 
   {{donnees_changees extremes_dernier_mois}}
   <div id="graphique_quotidien"></div>
 
+  <!--
   <ul>
     <li class="senseur">
       <div class="numerique periode">Jour</div>
@@ -105,4 +123,14 @@
     </li>
   {{/each}}
   </ul>
+  -->
+</template>
+
+<template name="senseur_liens">
+  <div class="w3-card w3-round w3-white w3-center">
+    <div class="w3-container">
+      <p>Liens</p>
+      <p><button class="w3-button w3-block w3-theme-l4" onclick="document.href='/noeuds'">Noeuds</button></p>
+    </div>
+  </div>
 </template>

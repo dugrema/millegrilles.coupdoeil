@@ -1,18 +1,25 @@
 <template name="Noeuds_show_page">
-  <div class="container">
-    <h1>Senseurs Passifs</h1>
+  <!-- Middle Column -->
+  <div class="w3-col m9">
+    <div class="w3-row-padding">
+      <div class="w3-col m12">
+        {{#each noeuds}}
+          {{> noeud}}
+        {{/each}}
+      </div>
+    </div>
+  <!-- End Middle Column -->
   </div>
-
-  {{#each noeuds}}
-    {{> noeud}}
-  {{/each}}
 </template>
 
 <template name="noeud">
-  <div class="noeud">
-    <h2>Noeud {{noeud}}</h2>
-    {{> sectionSenseurs}}
-  </div>
+    <div class="w3-card w3-round w3-white">
+      <div class="w3-container w3-padding">
+        <h6 class="w3-opacity">Noeud {{noeud}}</h6>
+        {{> sectionSenseurs}}
+      </div>
+    </div>
+    <br/>
 </template>
 
 <template name="sectionSenseurs">

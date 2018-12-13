@@ -37,14 +37,14 @@ FlowRouter.route('/notifications/', {
 FlowRouter.route('/noeuds/', {
   name: 'Noeuds.show',
   action() {
-    BlazeLayout.render('App_body', { main: 'Noeuds_show_page' });
+    BlazeLayout.render('App_3colonnes', { main: 'Noeuds_show_page' });
   },
 });
 
 FlowRouter.route('/senseur/:noeud/:senseur', {
   name: 'Senseur.show',
   action() {
-    BlazeLayout.render('App_body', { main: 'Senseur_show_page' });
+    BlazeLayout.render('App_3colonnes', { main: 'Senseur_show_page' });
   },
 });
 
