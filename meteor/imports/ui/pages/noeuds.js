@@ -37,8 +37,12 @@ Template.sectionSenseurs.helpers({
 
     // Trier la liste par location
     liste = liste.sort(function (senseur_a, senseur_b) {
-      var loc_a = senseur_a['location'];
-      var loc_b = senseur_b['location'];
+      let loc_a = senseur_a['location'],
+          loc_b = senseur_b['location'];
+
+      // Traiter le cas ou loc_a est undefined
+      if(loc_a === loc_b) return 0;  // Les deux objets peuvent etre undefined.
+      if(loc_a === undefined) return 1;  // loc_a !== loc_b, est undefined
       return loc_a.localeCompare(loc_b);
     });
 
