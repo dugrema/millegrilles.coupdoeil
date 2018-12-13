@@ -40,6 +40,23 @@ li.senseur div.temps {
   text-align: right;
 }
 
+# Notifications
+li.notification div.location {
+  display: block;
+}
+
+li.notification div.numerique {
+  display: inline-block;
+  width: 6em;
+  text-align: right;
+}
+
+li.notification div.temps {
+  display: inline-block;
+  width: 10em;
+  text-align: right;
+}
+
 @media (max-width: 300px) {
   li {
     padding: 12px 15px;

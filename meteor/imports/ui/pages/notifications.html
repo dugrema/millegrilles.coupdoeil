@@ -5,16 +5,36 @@
 </template>
 
 <template name="Notification_liste">
-  <div>
+  <ul>
     <p>Liste des notifications</p>
     {{#each notifications_regles_simples}}
-      {{> Notification_ligne}}
+      {{> UI.dynamic template=source._collection }}
     {{/each}}
-  </div>
+  </ul>
 </template>
 
-<template name="Notification_ligne">
-  <div>Notification</div>
-  <div>{{ regle }}</div>
-  <div>{{ format_date_moisheure derniere_notification }}</div>
+<template name="mgdomaines_appareils_SenseursPassifs">
+  <li class="notification">
+    {{#with charger_senseur source }}
+      <div class="location">{{ location }}</div>
+    {{/with}}
+    {{> UI.dynamic template=nom_variable }}
+    <div class="temps">{{ format_date_moisheure derniere_notification }}</div>
+  </li>
+</template>
+
+<template name="mgdomaines_appareils_SenseursPassifs_temperature">
+  <div class="numerique">{{valeurs.valeur}}&deg;C</div>
+</template>
+
+<template name="mgdomaines_appareils_SenseursPassifs_humidite">
+  <div class="numerique">{{valeurs.valeur}}%</div>
+</template>
+
+<template name="mgdomaines_appareils_SenseursPassifs_pression">
+  <div class="numerique">{{valeurs.valeur}} kPa</div>
+</template>
+
+<template name="mgdomaines_appareils_SenseursPassifs_millivolt">
+  <div class="numerique">{{valeurs.valeur}} mV</div>
 </template>
