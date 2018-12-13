@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { Template } from 'meteor/templating';
+import { FlowRouter } from 'meteor/kadira:flow-router';
 
 import { Notifications } from '../../api/millegrilles_domaines_Notifications.js';
 import { SenseursPassifs } from '../../api/mgdomaines_appareils_SenseursPassifs.js';
@@ -30,4 +31,13 @@ Template.App_navbar.helpers({
     if(element === 'pression') return ' kPa';
     if(element === 'millivolt') return ' mV';
   }
+});
+
+Template.App_navbar.events({
+  'click button.Notifications'() {
+    FlowRouter.go('Notifications.show');
+  },
+  'click A.Notification'(senseur) {
+    console.log("Notification " + this.source._id);
+  },
 });
