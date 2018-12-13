@@ -10,14 +10,14 @@ header {
   position: relative;
 }
 
-li {
+li.senseurs {
   position: relative;
   list-style: none;
   padding: 6px;
   border-bottom: #eee solid 1px;
 }
 
-ul {
+ul.senseurs {
   margin: 0;
   padding: 0;
   background: white;

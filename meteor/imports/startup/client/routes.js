@@ -3,6 +3,7 @@ import { BlazeLayout } from 'meteor/kadira:blaze-layout';
 
 // Import to load these templates
 import '../../ui/layouts/app-body.js';
+import '../../ui/layouts/app-3colonnes.js'
 import '../../ui/pages/root-redirector.js';
 import '../../ui/pages/noeuds.js';
 import '../../ui/pages/senseur.js';
@@ -43,6 +44,14 @@ FlowRouter.route('/senseur/:noeud/:senseur', {
   name: 'Senseur.show',
   action() {
     BlazeLayout.render('App_body', { main: 'Senseur_show_page' });
+  },
+});
+
+// Application 3 3colonnes
+FlowRouter.route('/principal', {
+  name: 'App.principal',
+  action() {
+    BlazeLayout.render('App_3colonnes');
   },
 });
 
