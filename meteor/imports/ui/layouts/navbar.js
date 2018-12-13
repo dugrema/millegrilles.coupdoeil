@@ -40,4 +40,7 @@ Template.App_navbar.events({
   'click A.Notification'(senseur) {
     console.log("Notification " + this.source._id);
   },
+  'click A.Principal'() {
+    FlowRouter.go('App.principal');
+  },
 });
