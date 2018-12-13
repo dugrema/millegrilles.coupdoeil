@@ -28,7 +28,7 @@ FlowRouter.route('/', {
 FlowRouter.route('/notifications/', {
   name: 'Notifications.show',
   action() {
-    BlazeLayout.render('App_body', { main: 'Notifications_show_page' });
+    BlazeLayout.render('App_3colonnes', { main: 'Notifications_show_page' });
   },
 });
 

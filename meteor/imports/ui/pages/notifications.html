@@ -1,12 +1,16 @@
 <template name="Notifications_show_page">
-  <h1>Notifications</h1>
-
-  {{>Notification_liste}}
+  <div class="w3-col m9">
+    <div class="w3-row-padding">
+      <div class="w3-col m12">
+        {{>Notification_liste}}
+      </div>
+    </div>
+  </div>
 </template>
 
 <template name="Notification_liste">
+  <h6 class="w3-opacity">Notifications</h6>
   <ul>
-    <p>Liste des notifications</p>
     {{#each notifications_regles_simples}}
       {{> UI.dynamic template=source._collection }}
     {{/each}}
