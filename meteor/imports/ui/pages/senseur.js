@@ -151,3 +151,9 @@ Template.senseur_historique_quotidien.onRendered( function() {
   const graphiqueQuotidienObj = this.graphiqueQuotidienObj;
   graphiqueQuotidienObj.attacher_svg();
 });
+
+Template.senseur_liens.events({
+  'click button.Noeuds'() {
+    FlowRouter.go('Noeuds.show');
+  },
+});
