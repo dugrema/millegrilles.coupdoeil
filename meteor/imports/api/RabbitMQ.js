@@ -45,7 +45,7 @@ class RabbitMQWrapper {
   }
 
   setChannel(channel) {
-    // console.log("Channel ouvert");
+    console.log("Channel RabbitMQ ouvert");
     this.channel = channel;
   }
 
