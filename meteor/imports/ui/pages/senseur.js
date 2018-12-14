@@ -28,6 +28,13 @@ Template.Senseur_show_page.helpers({
   },
 });
 
+Template.senseurDetailUnique.events({
+  'change .location'(bouton) {
+    console.log(bouton.currentTarget.value);
+    Meteor.call('SenseursPassifs.location.update', this._id, bouton.currentTarget.value);
+  },
+});
+
 Template.senseur_actuel.helpers({
   tendance_existe(){
     return this.pression_tendance !== null;
