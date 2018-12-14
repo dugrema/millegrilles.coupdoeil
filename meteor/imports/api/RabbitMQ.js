@@ -14,10 +14,17 @@ class RabbitMQWrapper {
 
   connect(connection) {
     var fs = require('fs');
-    var sscert = fs.readFileSync('/home/mathieu/git/MilleGrilles.coupdoeil/cert/dev2.cer');
+
+    let mq_cert = process.env.MG_MQ_CERT;
 
     if(this.connection === null) {
-      var open = this.amqp.connect(connection, {ca: [sscert]});
+      let options = {}
+      if(mq_cert !== undefined) {
+        var sscert = fs.readFileSync(mq_cert);
+        options['ca'] = [sscert];
+      }
+
+      var open = this.amqp.connect(connection, options);
       open.then(function (conn) {
         RabbitMQ.setConnection(conn);
         RabbitMQ.ouvrirChannel();

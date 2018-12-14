@@ -13,7 +13,8 @@ MG_MQ_HOST=dev2.maple.mdugre.info
 MG_MQ_PORT=5671
 MG_MQ_USER=coupdoeil
 MG_MQ_PASSWORD=gLOUj3xLAj82
+MG_MQ_CERT='/home/mathieu/git/MilleGrilles.coupdoeil/cert/dev2.cer'
 
-export MONGO_URL MONGO_OPLOG_URL MG_MQ_HOST MG_MQ_PORT MG_MQ_USER MG_MQ_PASSWORD
+export MONGO_URL MONGO_OPLOG_URL MG_MQ_HOST MG_MQ_PORT MG_MQ_USER MG_MQ_PASSWORD MG_MQ_CERT
 
 meteor --port $PORT
