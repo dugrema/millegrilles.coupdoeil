@@ -86,8 +86,14 @@ if (Meteor.isServer) {
   let mq_host = process.env.MG_MQ_HOST,
       mq_port = process.env.MG_MQ_PORT,
       mq_user = process.env.MG_MQ_USER,
-      mq_password = process.env.MG_MQ_PASSWORD;
+      mq_password = process.env.MG_MQ_PASSWORD,
+      mq_protocol = process.env.MG_MQ_PROTOCOL;
+
+  if(mq_protocol === undefined) {
+    mq_protocol = 'amqps';
+  }
+
   RabbitMQ.connect(
-    'amqps://'+mq_user+':'+mq_password+'@'+mq_host+':'+mq_port
+    mq_protocol + '://'+mq_user+':'+mq_password+'@'+mq_host+':'+mq_port
   );
 }
