@@ -38,8 +38,6 @@ Meteor.methods({
       infoTransaction['estampille'] = tempsLecture;
 
       // Trigger pour propager le changement de nom via un workflow.
-      let nomMilleGrille = process.env.MG_NOM_MILLEGRILLE;
-
       if(process.env.MG_NOM_MILLEGRILLE !== undefined) {
         nomMilleGrille = process.env.MG_NOM_MILLEGRILLE;
       } else {
