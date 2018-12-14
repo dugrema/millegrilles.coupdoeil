@@ -117,7 +117,7 @@ class RabbitMQWrapper {
 
     if (Meteor.isServer) {
       // Le code doit uniquement etre execute sur le serveur
-      console.log("Message: routing=" + routingKey + " message=" + jsonMessage);
+      // console.log("Message: routing=" + routingKey + " message=" + jsonMessage);
       try {
         this.channel.publish(
           'millegrilles.evenements',
