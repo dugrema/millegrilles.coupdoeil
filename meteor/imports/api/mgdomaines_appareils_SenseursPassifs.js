@@ -16,15 +16,36 @@ if (Meteor.isServer) {
 }
 
 Meteor.methods({
-  'SenseursPassifs.location.update'(id_senseur, texte_location) {
-    check(id_senseur, Mongo.ObjectID);
+  'SenseursPassifs.location.update'(senseur, texte_location) {
+    check(senseur._id, Mongo.ObjectID);
     check(texte_location, String);
 
-    let charge_utile = { location: texte_location };
+    let tempsLecture = Math.trunc((new Date).getTime()/1000);
 
-    SenseursPassifs.update(id_senseur, {$set: charge_utile });
+    let message = {};
+    let infoTransaction = {};
+    infoTransaction['source-systeme'] = 'coupdoeil@dev2.maple.mdugre.info';
+    infoTransaction['uuid-transaction'] = "";
+    infoTransaction['estampille'] = tempsLecture;
+    infoTransaction['signature_contenu'] = "";
+    infoTransaction['domaine'] = "mgdomaines.appareils.SenseursPassifs.manuel";
+
+    let chargeUtile = {
+      'filtre': {
+        '_mg-libelle': 'senseur.individuel',
+        'noeud': senseur.noeud,
+        'senseur': senseur.senseur
+      },
+      'set': {
+        'location': texte_location
+      }
+    };
+    message['charge-utile'] = chargeUtile;
+    message['info-transaction'] = infoTransaction;
 
     // Trigger pour propager le changement de nom via un workflow.
-    RabbitMQ.transmettreTransaction('test', charge_utile);
+    routingKey = 'mg-sansnom.transaction.nouvelle';
+    routingKey = 'test';
+    RabbitMQ.transmettreTransaction(routingKey, message);
   },
 });

@@ -43,11 +43,14 @@ class RabbitMQWrapper {
     let jsonMessage = JSON.stringify(message);
     console.log(jsonMessage);
 
-    this.channel.publish(
-      'millegrilles.evenements',
-      routingKey,
-       new Buffer(jsonMessage)
-    );
+    if (Meteor.isServer) {
+      // Le code doit uniquement etre execute sur le serveur
+      this.channel.publish(
+        'millegrilles.evenements',
+        routingKey,
+         new Buffer(jsonMessage)
+      );
+    }
   }
 
   log_error(e) {
@@ -55,10 +58,16 @@ class RabbitMQWrapper {
   }
 }
 
+// Creer une instance de RabbitMQ
 export const RabbitMQ = new RabbitMQWrapper();
 
 if (Meteor.isServer) {
+  // Connecter RabbitMQ sur le serveur uniquement
+  let mq_host = process.env.MG_MQ_HOST,
+      mq_port = process.env.MG_MQ_PORT,
+      mq_user = process.env.MG_MQ_USER,
+      mq_password = process.env.MG_MQ_PASSWORD;
   RabbitMQ.connect(
-    'amqps://coupdoeil:gLOUj3xLAj82@dev2.maple.mdugre.info:5671'
+    'amqps://'+mq_user+':'+mq_password+'@'+mq_host+':'+mq_port
   );
 }
