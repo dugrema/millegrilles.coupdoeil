@@ -16,9 +16,16 @@ class RabbitMQWrapper {
       var open = this.amqp.connect(connection, {ca: [sscert]});
       open.then(function (conn) {
         RabbitMQ.setConnection(conn);
-        RabbitMQ.ouvrir_exchange()
+        RabbitMQ.ouvrirChannel();
       });
     }
+  }
+
+  ouvrirChannel() {
+    let openchannel = this.connection.createChannel();
+    openchannel.then(function (ch) {
+      RabbitMQ.setChannel(ch);
+    });
   }
 
   setConnection(connection) {
@@ -26,13 +33,21 @@ class RabbitMQWrapper {
     this.connection = connection;
   }
 
-  ouvrir_exchange() {
-    this.channel = this.connection.createChannel();
+  setChannel(channel) {
+    console.log("Channel ouvert");
+    this.channel = channel;
   }
 
-  transmettre_transaction(message) {
+  transmettreTransaction(routingKey, message) {
     console.log("Nouvelle transaction:");
-    console.log(message);
+    let jsonMessage = JSON.stringify(message);
+    console.log(jsonMessage);
+
+    this.channel.publish(
+      'millegrilles.evenements',
+      routingKey,
+       new Buffer(jsonMessage)
+    );
   }
 
   log_error(e) {

@@ -25,6 +25,6 @@ Meteor.methods({
     SenseursPassifs.update(id_senseur, {$set: charge_utile });
 
     // Trigger pour propager le changement de nom via un workflow.
-    RabbitMQ.transmettre_transaction(charge_utile);
+    RabbitMQ.transmettreTransaction('test', charge_utile);
   },
 });
