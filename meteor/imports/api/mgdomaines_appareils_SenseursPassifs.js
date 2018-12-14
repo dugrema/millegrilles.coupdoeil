@@ -18,17 +18,23 @@ if (Meteor.isServer) {
 Meteor.methods({
   'SenseursPassifs.location.update'(senseur, texte_location) {
     check(senseur._id, Mongo.ObjectID);
+    check(senseur.noeud, String);
+    check(senseur.senseur, Number);
     check(texte_location, String);
 
-    let tempsLecture = Math.trunc((new Date).getTime()/1000);
+    let infoTransaction = {
+      'domaine': "mgdomaines.appareils.SenseursPassifs.modificationManuelle"
+    };
 
-    let message = {};
-    let infoTransaction = {};
-    infoTransaction['source-systeme'] = 'coupdoeil@dev2.maple.mdugre.info';
-    infoTransaction['uuid-transaction'] = "";
-    infoTransaction['estampille'] = tempsLecture;
-    infoTransaction['signature_contenu'] = "";
-    infoTransaction['domaine'] = "mgdomaines.appareils.SenseursPassifs.manuel";
+    if(Meteor.server) {
+      // Ces valeurs n'ont de sens que sur le serveur.
+      let tempsLecture = Math.trunc((new Date).getTime()/1000);
+
+      infoTransaction['source-systeme'] = 'coupdoeil@' + RabbitMQ.getHostname();
+      infoTransaction['signature_contenu'] = "";
+      infoTransaction['uuid-transaction'] = RabbitMQ.genererUUID();
+      infoTransaction['estampille'] = tempsLecture;
+    }
 
     let chargeUtile = {
       'filtre': {
@@ -40,12 +46,15 @@ Meteor.methods({
         'location': texte_location
       }
     };
+
+    // Preparer la structure du message
+    let message = {};
     message['charge-utile'] = chargeUtile;
     message['info-transaction'] = infoTransaction;
 
     // Trigger pour propager le changement de nom via un workflow.
-    routingKey = 'mg-sansnom.transaction.nouvelle';
-    routingKey = 'test';
+    routingKey = 'sansnom.transaction.nouvelle';
+    //routingKey = 'test';
     RabbitMQ.transmettreTransaction(routingKey, message);
   },
 });

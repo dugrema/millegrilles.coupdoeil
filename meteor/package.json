@@ -11,7 +11,8 @@
     "@babel/runtime": "^7.0.0",
     "d3": "^5.7.0",
     "meteor-node-stubs": "^0.4.1",
-    "node-amqp": "^1.2.1"
+    "node-amqp": "^1.2.1",
+    "uuid": "^3.3.2"
   },
   "meteor": {
     "mainModule": {

@@ -6,6 +6,10 @@ class RabbitMQWrapper {
     this.connection = null;
     this.channel = null;
     this.exchange = null;
+
+    this.uuidv4 = require('uuid/v4');
+    this.os = require('os');
+    this.dns = require('dns');
   }
 
   connect(connection) {
@@ -36,6 +40,15 @@ class RabbitMQWrapper {
   setChannel(channel) {
     console.log("Channel ouvert");
     this.channel = channel;
+  }
+
+  genererUUID() {
+    return this.uuidv4();
+  }
+
+  getHostname() {
+    let hostname = this.os.hostname();
+    return hostname;
   }
 
   transmettreTransaction(routingKey, message) {
