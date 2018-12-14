@@ -15,8 +15,11 @@
     <div class="w3-col m12">
       <div class="w3-card w3-round w3-white">
         <div class="w3-container w3-padding">
-          <h6 class="w3-opacity">Senseur {{location}}</h6>
-            {{> senseur_actuel }}
+          <h6 class="w3-opacity">
+            Senseur
+            <input type="text" class="location" name="location" value="{{location}}"/>
+          </h6>
+          {{> senseur_actuel }}
         </div>
       </div>
     </div>

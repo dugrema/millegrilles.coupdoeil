@@ -7,6 +7,7 @@ import './noeuds.html';
 
 Template.Noeuds_show_page.onCreated(function noeudsOnCreated() {
   Meteor.subscribe('noeuds');
+  Meteor.subscribe('senseurs');
 });
 
 Template.Noeuds_show_page.helpers({
