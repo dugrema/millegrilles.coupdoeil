@@ -26,6 +26,8 @@ Meteor.methods({
       'domaine': "mgdomaines.appareils.SenseursPassifs.modificationManuelle"
     };
 
+    let nomMilleGrille = 'sansnom';
+
     if(Meteor.server) {
       // Ces valeurs n'ont de sens que sur le serveur.
       let tempsLecture = Math.trunc((new Date).getTime()/1000);
@@ -34,6 +36,16 @@ Meteor.methods({
       infoTransaction['signature_contenu'] = "";
       infoTransaction['uuid-transaction'] = RabbitMQ.genererUUID();
       infoTransaction['estampille'] = tempsLecture;
+
+      // Trigger pour propager le changement de nom via un workflow.
+      let nomMilleGrille = process.env.MG_NOM_MILLEGRILLE;
+
+      if(process.env.MG_NOM_MILLEGRILLE !== undefined) {
+        nomMilleGrille = process.env.MG_NOM_MILLEGRILLE;
+      } else {
+        console.warn("Nom de la millegrille non defini, defaut sansnom");
+      }
+
     }
 
     let chargeUtile = {
@@ -52,10 +64,9 @@ Meteor.methods({
     message['charge-utile'] = chargeUtile;
     message['info-transaction'] = infoTransaction;
 
-    console.log(message);
+    // console.log(message);
 
-    // Trigger pour propager le changement de nom via un workflow.
-    routingKey = 'sansnom.transaction.nouvelle';
+    routingKey = nomMilleGrille + '.transaction.nouvelle';
     //routingKey = 'test';
     RabbitMQ.transmettreTransaction(routingKey, message);
   },
