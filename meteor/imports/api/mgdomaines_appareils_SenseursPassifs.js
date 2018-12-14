@@ -52,6 +52,8 @@ Meteor.methods({
     message['charge-utile'] = chargeUtile;
     message['info-transaction'] = infoTransaction;
 
+    console.log(message);
+
     // Trigger pour propager le changement de nom via un workflow.
     routingKey = 'sansnom.transaction.nouvelle';
     //routingKey = 'test';
