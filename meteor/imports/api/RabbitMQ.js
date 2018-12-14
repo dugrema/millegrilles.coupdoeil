@@ -3,9 +3,11 @@ import { Meteor } from 'meteor/meteor';
 class RabbitMQWrapper {
   constructor() {
     this.amqp = require('amqplib');
+    this.params = null;
     this.connection = null;
     this.channel = null;
-    this.exchange = null;
+
+    this.reconnectTimeout = null; // Timer de reconnexion - null si inactif
 
     this.uuidv4 = require('uuid/v4');
     this.os = require('os');
@@ -13,6 +15,11 @@ class RabbitMQWrapper {
   }
 
   connect(connection) {
+    this.params = connection;
+    this._connect();
+  }
+
+  _connect() {
     var fs = require('fs');
 
     let mq_cert = process.env.MG_MQ_CERT;
@@ -24,11 +31,26 @@ class RabbitMQWrapper {
         options['ca'] = [sscert];
       }
 
-      var open = this.amqp.connect(connection, options);
+      var open = this.amqp.connect(this.params, options);
       open.then(function (conn) {
         RabbitMQ.setConnection(conn);
         RabbitMQ.ouvrirChannel();
       });
+    }
+
+    this.reconnectTimeout = null;
+  }
+
+  reconnect() {
+    RabbitMQ.closeConnection();
+
+    if(this.reconnectTimeout === null) {
+      this.reconnectTimeout = setTimeout(function() {
+          console.log("Reconnecting to RabbitMQ");
+          RabbitMQ._connect();
+        },
+        5000
+      );
     }
   }
 
@@ -42,6 +64,36 @@ class RabbitMQWrapper {
   setConnection(connection) {
     // console.log("Connexion RabbitMQ etablie");
     this.connection = connection;
+
+    this.connection.on("error", function(err) {
+      console.error("Erreur connexion MQ");
+      console.error(err);
+      RabbitMQ.reconnect();
+    });
+
+    this.connection.on("close", function() {
+      console.error("RabbitMQ connection closed. Reconnecting.");
+      RabbitMQ.reconnect();
+    });
+  }
+
+  closeConnection() {
+    let connection = this.connection;
+    let channel = this.channel;
+    this.connection = null;
+    this.channel = null;
+
+    try {
+      channel.close();
+    } catch (e) {
+      console.warn("Erreur fermeture channel RabbitMQ");
+    }
+
+    try {
+      connection.close();
+    } catch (e) {
+      console.warn("Erreur fermeture connexion RabbitMQ");
+    }
   }
 
   setChannel(channel) {
@@ -65,11 +117,23 @@ class RabbitMQWrapper {
 
     if (Meteor.isServer) {
       // Le code doit uniquement etre execute sur le serveur
-      this.channel.publish(
-        'millegrilles.evenements',
-        routingKey,
-         new Buffer(jsonMessage)
-      );
+      console.log("Message: routing=" + routingKey + " message=" + jsonMessage);
+      try {
+        this.channel.publish(
+          'millegrilles.evenements',
+          routingKey,
+           new Buffer(jsonMessage),
+           {},
+           function(err, ok) {
+             console.error("Erreur MQ Callback");
+             console.error(err);
+           }
+        );
+      }
+      catch (e) {
+        console.error("Erreur MQ");
+        console.error(e);
+      }
     }
   }
 
