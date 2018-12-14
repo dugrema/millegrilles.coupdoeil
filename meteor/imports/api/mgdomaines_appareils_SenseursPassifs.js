@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
+import { RabbitMQ } from './RabbitMQ.js';
 
 export const SenseursPassifs = new Mongo.Collection('mgdomaines_appareils_SenseursPassifs');
 
@@ -19,9 +20,11 @@ Meteor.methods({
     check(id_senseur, Mongo.ObjectID);
     check(texte_location, String);
 
-    SenseursPassifs.update(id_senseur, {$set: { location: texte_location } });
+    let charge_utile = { location: texte_location };
+
+    SenseursPassifs.update(id_senseur, {$set: charge_utile });
 
     // Trigger pour propager le changement de nom via un workflow.
-
+    RabbitMQ.transmettre_transaction(charge_utile);
   },
 });
