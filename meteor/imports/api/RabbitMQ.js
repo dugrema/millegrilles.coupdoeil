@@ -33,12 +33,12 @@ class RabbitMQWrapper {
   }
 
   setConnection(connection) {
-    console.log("Connexion RabbitMQ etablie");
+    // console.log("Connexion RabbitMQ etablie");
     this.connection = connection;
   }
 
   setChannel(channel) {
-    console.log("Channel ouvert");
+    // console.log("Channel ouvert");
     this.channel = channel;
   }
 
@@ -52,9 +52,9 @@ class RabbitMQWrapper {
   }
 
   transmettreTransaction(routingKey, message) {
-    console.log("Nouvelle transaction:");
+    // console.log("Nouvelle transaction:");
     let jsonMessage = JSON.stringify(message);
-    console.log(jsonMessage);
+    // console.log(jsonMessage);
 
     if (Meteor.isServer) {
       // Le code doit uniquement etre execute sur le serveur

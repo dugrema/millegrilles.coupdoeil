@@ -30,7 +30,7 @@ Template.Senseur_show_page.helpers({
 
 Template.senseurDetailUnique.events({
   'change .location'(bouton) {
-    console.log(bouton.currentTarget.value);
+    // console.log(bouton.currentTarget.value);
     Meteor.call('SenseursPassifs.location.update', this, bouton.currentTarget.value);
   },
 });
