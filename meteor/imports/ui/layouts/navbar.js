@@ -36,6 +36,9 @@ Template.App_navbar.helpers({
     if(element === 'humidite') return '%';
     if(element === 'pression') return ' kPa';
     if(element === 'millivolt') return ' mV';
+  },
+  compte_notification_gt0(nb_notifications) {
+    return nb_notifications > 0;
   }
 });
 

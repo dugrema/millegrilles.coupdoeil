@@ -26,7 +26,11 @@
     <div class="w3-dropdown-hover w3-hide-small">
       <button class="w3-button w3-padding-large Notifications" title="Notifications">
         <i class="fa fa-bell"></i>
-        <span class="w3-badge w3-right w3-small w3-green">{{ compte_notifications }}</span>
+        {{#let nb_notifications=compte_notifications}}
+          {{#if compte_notification_gt0 nb_notifications}}
+            <span class="w3-badge w3-right w3-small w3-green">{{ nb_notifications }}</span>
+          {{/if}}
+        {{/let}}
       </button>
       <div class="w3-dropdown-content w3-card-4 w3-bar-block" style="width:300px">
         {{#each notifications_regles_simples}}
