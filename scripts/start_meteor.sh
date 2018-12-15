@@ -9,7 +9,7 @@ PORT=192.168.1.110:3000
 MONGO_URL='mongodb://coupdoeil:p1234@192.168.1.110/mg-sansnom?ssl=true'
 MONGO_OPLOG_URL='mongodb://coupdoeil:p1234@192.168.1.110/local?ssl=true&authSource=mg-sansnom'
 
-MG_NOM_MILLEGRILLE=sansnom1
+MG_NOM_MILLEGRILLE=sansnom
 MG_MQ_HOST=dev2.maple.mdugre.info
 MG_MQ_PORT=5671
 MG_MQ_USER=coupdoeil

@@ -12,6 +12,8 @@ class RabbitMQWrapper {
     this.uuidv4 = require('uuid/v4');
     this.os = require('os');
     this.dns = require('dns');
+
+    this.nomMilleGrille = this._trouverNomMilleGrille()
   }
 
   connect(connection) {
@@ -119,6 +121,7 @@ class RabbitMQWrapper {
       // Le code doit uniquement etre execute sur le serveur
       // console.log("Message: routing=" + routingKey + " message=" + jsonMessage);
       try {
+        console.log("Message a transmettre: " + routingKey + " = " + jsonMessage);
         this.channel.publish(
           'millegrilles.evenements',
           routingKey,
@@ -137,8 +140,48 @@ class RabbitMQWrapper {
     }
   }
 
+  // Utiliser cette methode pour simplifier le formattage d'une transaction.
+  // Il faut fournir le contenu de la transaction et le domaine (routing)
+  transmettreTransactionFormattee(message, domaine) {
+    let infoTransaction = this._formatterInfoTransaction(domaine);
+    let message_formatte = {
+      'info-transaction': infoTransaction,
+      'charge-utile': message
+    }
+    let routingKey = this.nomMilleGrille + '.transaction.nouvelle';
+    this.transmettreTransaction(routingKey, message_formatte);
+  }
+
   log_error(e) {
     console.error(e);
+  }
+
+  _trouverNomMilleGrille() {
+    let nomMilleGrille = 'sansnom';
+    if(Meteor.isServer) {
+      if(process.env.MG_NOM_MILLEGRILLE !== undefined) {
+        nomMilleGrille = process.env.MG_NOM_MILLEGRILLE;
+      } else {
+        console.warn("Nom de la millegrille non defini, defaut sansnom");
+      }
+    }
+    return nomMilleGrille;
+  }
+
+  _formatterInfoTransaction(domaine) {
+    // Ces valeurs n'ont de sens que sur le serveur.
+    // Calculer secondes UTC (getTime retourne millisecondes locales)
+    let dateUTC = (new Date().getTime()/1000) + new Date().getTimezoneOffset()*60;
+    let tempsLecture = Math.trunc(dateUTC);
+    let infoTransaction = {
+      'domaine': domaine,
+      'source-systeme': 'coupdoeil@' + RabbitMQ.getHostname(),
+      'signature_contenu': "",
+      'uuid-transaction': RabbitMQ.genererUUID(),
+      'estampille': tempsLecture
+    };
+
+    return infoTransaction;
   }
 }
 

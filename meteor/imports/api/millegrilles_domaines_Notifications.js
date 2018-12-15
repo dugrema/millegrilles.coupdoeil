@@ -14,3 +14,10 @@ if (Meteor.isServer) {
   });
 
 }
+
+Meteor.methods({
+  'Notifications.actionUsager'(messageActionNotification) {
+    domaine = 'millegrilles.domaines.Notifications.actionUsager';
+    RabbitMQ.transmettreTransactionFormattee(messageActionNotification, domaine);
+  },
+})

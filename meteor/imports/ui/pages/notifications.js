@@ -35,3 +35,27 @@ Template.mgdomaines_appareils_SenseursPassifs.helpers({
     return template_variable;
   }
 })
+
+Template.Notification_liste.events({
+  'click DIV.boutonsNotifications button.Vue'() {
+    messageActionNotification = {
+      'id_notification': this._id._str,
+      'action': 'vue'
+    };
+    Meteor.call('Notifications.actionUsager', messageActionNotification);
+  },
+  'click DIV.boutonsNotifications button.Rappeler'() {
+    messageActionNotification = {
+      'id_notification': this._id._str,
+      'action': 'rappel'
+    };
+    Meteor.call('Notifications.actionUsager', messageActionNotification);
+  },
+  'click DIV.boutonsNotifications button.Surveiller'() {
+    messageActionNotification = {
+      'id_notification': this._id._str,
+      'action': 'surveille'
+    };
+    Meteor.call('Notifications.actionUsager', messageActionNotification);
+  },
+});

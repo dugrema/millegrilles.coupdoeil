@@ -15,21 +15,27 @@
 
 <template name="Notification_liste">
   {{#each notifications_regles_simples}}
-    {{> UI.dynamic template=source._collection }}
+    <div class="w3-card w3-round w3-white">
+      <div class="w3-container w3-padding">
+        {{> UI.dynamic template=source._collection }}
+
+        <div class="boutonsNotifications">
+          <button class="w3-button w3-theme-l1 Vue">Vue</button>
+          <button class="w3-button w3-theme-l2 Rappeler">Rappeller</button>
+          <button class="w3-button w3-theme-l2 Surveiller">Surveiller</button>
+        </div>
+      </div>
+    </div>
+    <br/>
   {{/each}}
 </template>
 
 <template name="mgdomaines_appareils_SenseursPassifs">
-  <div class="w3-card w3-round w3-white">
-    <div class="w3-container w3-padding">
-      {{#with charger_senseur source }}
-        <div class="location">{{ location }}</div>
-      {{/with}}
-      {{> UI.dynamic template=nom_variable }}
-      <div class="temps">{{ format_date_moisheure derniere_notification }}</div>
-    </div>
-  </div>
-  <br/>
+  {{#with charger_senseur source }}
+    <div class="location">{{ location }}</div>
+  {{/with}}
+  {{> UI.dynamic template=nom_variable }}
+  <div class="temps">{{ format_date_moisheure derniere_notification }}</div>
 </template>
 
 <template name="mgdomaines_appareils_SenseursPassifs_temperature">
