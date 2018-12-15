@@ -13,10 +13,16 @@ Template.App_navbar.onCreated(function bodyOnCreated() {
 
 Template.App_navbar.helpers({
   compte_notifications() {
-    return Notifications.find({'_mg-libelle': 'regle_simple'}).count();
+    return Notifications.find({
+      '_mg-libelle': 'regle_simple',
+      'etat_notification': {'$in': ['active']}
+    }).count();
   },
   notifications_regles_simples() {
-    return Notifications.find({'_mg-libelle': 'regle_simple'});
+    return Notifications.find({
+      '_mg-libelle': 'regle_simple',
+      'etat_notification': {'$in': ['active']}
+    });
   },
   charger_senseur(source) {
     // return [{"senseur": "Ah!", "source_id": source._id}];

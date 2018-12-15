@@ -15,7 +15,10 @@ Template.Notifications_show_page.onCreated(function bodyOnCreated() {
 
 Template.Notification_liste.helpers({
   notifications_regles_simples() {
-    return Notifications.find({'_mg-libelle': 'regle_simple'});
+    return Notifications.find({
+      '_mg-libelle': 'regle_simple',
+      'etat_notification': {'$in': ['active']}
+    });
   },
 });
 
