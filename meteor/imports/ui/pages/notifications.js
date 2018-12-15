@@ -28,6 +28,7 @@ Template.mgdomaines_appareils_SenseursPassifs.helpers({
     return document_senseur;
   },
   nom_variable() {
-    return 'mgdomaines_appareils_SenseursPassifs_' + this.valeurs.element;
+    let template_variable = this.source._collection + '_' + this.valeurs.element;
+    return template_variable;
   }
 })
