@@ -18,7 +18,15 @@
     <div class="w3-card w3-round w3-white">
       <div class="w3-container w3-padding">
         {{> UI.dynamic template=source._collection }}
-
+        <div>
+          Compte: {{compteur}}
+          {{#if est_rappel}}
+            Rappel
+          {{/if}}
+          {{#if est_surveillance_activee}}
+            Surveillance - notification réactivée
+          {{/if}}
+        </div>
         <div class="boutonsNotifications">
           <button class="w3-button w3-theme-l1 Vue">Vue</button>
           <button class="w3-button w3-theme-l2 Rappeler">Rappeller</button>

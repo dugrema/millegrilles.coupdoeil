@@ -20,6 +20,12 @@ Template.Notification_liste.helpers({
       'etat_notification': {'$in': ['active']}
     });
   },
+  est_rappel() {
+    return this.derniere_action === 'rappel';
+  },
+  est_surveillance_activee() {
+    return this.derniere_action === 'surveille';
+  }
 });
 
 Template.mgdomaines_appareils_SenseursPassifs.helpers({
@@ -33,7 +39,7 @@ Template.mgdomaines_appareils_SenseursPassifs.helpers({
   nom_variable() {
     let template_variable = this.source._collection + '_' + this.valeurs.element;
     return template_variable;
-  }
+  },
 })
 
 Template.Notification_liste.events({
