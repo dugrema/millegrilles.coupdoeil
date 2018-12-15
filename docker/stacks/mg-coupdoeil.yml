@@ -5,7 +5,7 @@ services:
 
   # Application Meteor pour Coup D'Oeil
   coupdoeilmeteor:
-    image: registry.maple.mdugre.info:5000/coupdoeil_meteor.x86_64:v0.9.3
+    image:  registry.maple.mdugre.info:5000/coupdoeil_meteor.x86_64:v0.9.12
     hostname: coupdoeilmeteor.maple.millegrilles.mdugre.info
     deploy:
       replicas: 1
@@ -23,8 +23,14 @@ services:
     ports:
       - "3001:3000"
     environment:
+      MG_NOM_MILLEGRILLE: maple
       MONGO_URL: mongodb://coupdoeilmeteor:higCYUD096aQUI67@mongo/mg-maple?ssl=true
       MONGO_OPLOG_URL: mongodb://coupdoeilmeteor:higCYUD096aQUI67@mongo/local?ssl=true&authSource=admin
+      MG_MQ_HOST: mq
+      MG_MQ_PORT: 5672
+      MG_MQ_USER: coupdoeil
+      MG_MQ_PASSWORD: gLOUj3xLAj82
+      MG_MQ_PROTOCOL: amqp
     networks:
       - mg_net
 
