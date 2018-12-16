@@ -24,39 +24,20 @@
     </div>
   </div>
 
-  <div class="w3-container w3-card w3-white w3-round w3-margin"><br>
-    <span class="w3-right w3-opacity">17 mins</span>
-    <h4>Ottawa (Richmond - Metcalfe) - Weather - Environment Canada</h4><br>
-    <hr class="w3-clear">
-    <p>
-      <b>Observed at:</b> Ottawa Macdonald-Cartier Int'l Airport 12:00 PM EST Thursday 13 December 2018 <br/>
-      <b>Condition:</b> Mostly Cloudy <br/>
-      <b>Temperature:</b> -11.2&deg;C <br/>
-      <b>Pressure / Tendency:</b> 102.9 kPa rising<br/>
-      <b>Visibility:</b> 24.1 km<br/>
-      <b>Humidity:</b> 69 %<br/>
-      <b>Wind Chill:</b> -18 <br/>
-      <b>Dewpoint:</b> -15.9&deg;C <br/>
-      <b>Wind:</b> NE 15 km/h<br/>
-      <b>Air Quality Health Index:</b> N/A <br/>
-    </p>
+  {{#let rapport=rapport_previsions}}
+    <div class="w3-container w3-card w3-white w3-round w3-margin"><br>
+<!--      <span class="w3-right w3-opacity"></span> -->
+      <h4>{{ rapport.titre }}</h4><br>
+      <hr class="w3-clear">
+      <p>{{{ rapport.previsions_courantes }}}</p>
 
-    <ul>
-      <li>Thursday: Increasing cloudiness. High minus 5.</li>
-      <li>Thursday night: Periods of freezing drizzle. Low minus 6. POP 60%</li>
-      <li>Friday: Chance of showers. High plus 4. POP 60%</li>
-      <li>Friday night: Chance of flurries. Low zero. POP 40%</li>
-      <li>Saturday: Chance of rain showers or flurries. High plus 2. POP 40%</li>
-      <li>Saturday night: Chance of flurries. Low minus 6. POP 30%</li>
-      <li>Sunday: A mix of sun and cloud. High plus 1.</li>
-      <li>Sunday night: Cloudy periods. Low minus 2.</li>
-      <li>Monday: A mix of sun and cloud. High minus 1.</li>
-      <li>Monday night: Clear. Low minus 13.</li>
-      <li>Tuesday: Sunny. High minus 6.</li>
-      <li>Tuesday night: Cloudy periods. Low minus 8.</li>
-      <li>Wednesday: Cloudy. High minus 1.</li>
-    </ul>
-  </div>
+      <ul>
+        {{#each rapport.previsions}}
+          <li>{{ this }}</li>
+        {{/each}}
+      </ul>
+    </div>
+  {{/let}}
 
 </template>
 
