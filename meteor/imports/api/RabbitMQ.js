@@ -200,7 +200,13 @@ if (Meteor.isServer) {
     mq_protocol = 'amqps';
   }
 
-  RabbitMQ.connect(
-    mq_protocol + '://'+mq_user+':'+mq_password+'@'+mq_host+':'+mq_port
-  );
+  let mqConnectionUrl =
+    mq_protocol + '://' +
+    mq_user + ':' + mq_password + '@' +
+    mq_host + ':' + mq_port +
+    '/' + RabbitMQ.nomMilleGrille;
+
+  console.log("URL Connexion " + mqConnectionUrl)
+
+  RabbitMQ.connect(mqConnectionUrl);
 }
