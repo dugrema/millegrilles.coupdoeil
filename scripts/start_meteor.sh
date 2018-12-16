@@ -12,8 +12,8 @@ MONGO_OPLOG_URL='mongodb://coupdoeil:p1234@192.168.1.110/local?ssl=true&authSour
 MG_NOM_MILLEGRILLE=sansnom
 MG_MQ_HOST=dev2.maple.mdugre.info
 MG_MQ_PORT=5671
-MG_MQ_USER=coupdoeil
-MG_MQ_PASSWORD=gLOUj3xLAj82
+MG_MQ_USER=dev
+MG_MQ_PASSWORD=dev_user1
 MG_MQ_CERT='/home/mathieu/git/MilleGrilles.coupdoeil/cert/dev2.cer'
 #MG_MQ_PROTOCOL='amqp'
 
