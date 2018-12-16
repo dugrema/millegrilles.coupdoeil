@@ -148,7 +148,7 @@ class RabbitMQWrapper {
       'info-transaction': infoTransaction,
       'charge-utile': message
     }
-    let routingKey = this.nomMilleGrille + '.transaction.nouvelle';
+    let routingKey = 'transaction.nouvelle';
     this.transmettreTransaction(routingKey, message_formatte);
   }
 

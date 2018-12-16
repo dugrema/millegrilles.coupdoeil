@@ -64,7 +64,7 @@ Meteor.methods({
 
     // console.log(message);
 
-    routingKey = nomMilleGrille + '.transaction.nouvelle';
+    routingKey = 'transaction.nouvelle';
     //routingKey = 'test';
     RabbitMQ.transmettreTransaction(routingKey, message);
   },
