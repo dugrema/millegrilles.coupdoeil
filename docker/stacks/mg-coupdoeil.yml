@@ -16,15 +16,15 @@ services:
       resources:
        limits:
           cpus: "1.00"
-          memory: 1G
+          memory: 512M
       restart_policy:
         condition: any
         delay: 30s
     ports:
       - "3001:3000"
     environment:
-      MG_NOM_MILLEGRILLE: maple
-      MONGO_URL: mongodb://coupdoeilmeteor:higCYUD096aQUI67@mongo/mg-maple?ssl=true
+      MG_NOM_MILLEGRILLE: pivoine
+      MONGO_URL: mongodb://coupdoeilmeteor:higCYUD096aQUI67@mongo/mg-pivoine?ssl=true
       MONGO_OPLOG_URL: mongodb://coupdoeilmeteor:higCYUD096aQUI67@mongo/local?ssl=true&authSource=admin
       MG_MQ_HOST: mq
       MG_MQ_PORT: 5672
