@@ -34,6 +34,34 @@ services:
     networks:
       - mg_net
 
+  # Proxy avec nginx
+  coupdoeilnginx:
+    image: registry.maple.mdugre.info:5000/mg_nginx.x86_64:v1.1-pivoine.1-pivoine
+    hostname: www.pivoine.millegrilles.mdugre.info
+    volumes:
+      - /usr/share/nginx/pivoine.millegrilles/conf.d:/etc/nginx/conf.d
+      - /usr/share/nginx/pivoine.millegrilles/html:/etc/nginx/html
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.netzone.public == true
+      resources:
+        limits:
+          cpus: "1.00"
+          memory: 192M
+      restart_policy:
+        condition: any
+        delay: 30s
+    ports:
+     - "30080:80"
+     - "30443:443"
+    networks:
+      - mg_net
+    secrets:
+      - ssl.pivoine.millegrilles.cert
+      - ssl.pivoine.millegrilles.key
+
 networks:
   mg_net:
     external: true
