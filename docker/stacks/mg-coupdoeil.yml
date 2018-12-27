@@ -53,6 +53,8 @@ services:
       restart_policy:
         condition: any
         delay: 30s
+    depends:
+     - coupdoeilmeteor
     ports:
      - "30080:80"
      - "30443:443"
@@ -70,10 +72,8 @@ networks:
 secrets:
   ssl.pivoine.millegrilles.cert:
     external: true
-    name: ssl.pivoine.millegrilles.fullchain.20181224
+    name: ssl.pivoine.millegrilles.fullchain.20181226
   ssl.pivoine.millegrilles.key:
     external: true
-    name: ssl.pivoine.millegrilles.key.20181224
-  ssl.pivoine.millegrilles.key_cert:
-    external: true
-    name: ssl.pivoine.millegrilles.key_cert.20181224
+    name: ssl.pivoine.millegrilles.privkey.20181226
+
