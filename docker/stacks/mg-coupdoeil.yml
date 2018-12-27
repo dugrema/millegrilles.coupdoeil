@@ -66,3 +66,14 @@ networks:
   mg_net:
     external: true
     name: mg_net
+
+secrets:
+  ssl.pivoine.millegrilles.cert:
+    external: true
+    name: ssl.pivoine.millegrilles.fullchain.20181224
+  ssl.pivoine.millegrilles.key:
+    external: true
+    name: ssl.pivoine.millegrilles.key.20181224
+  ssl.pivoine.millegrilles.key_cert:
+    external: true
+    name: ssl.pivoine.millegrilles.key_cert.20181224
