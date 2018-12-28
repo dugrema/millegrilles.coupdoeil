@@ -23,7 +23,6 @@ ul.senseurs {
   background: white;
 }
 
-# Senseurs
 li.senseur div.location {
   display: block;
 }
@@ -40,7 +39,6 @@ li.senseur div.temps {
   text-align: right;
 }
 
-# Notifications
 li.notification div.location {
   display: block;
 }
@@ -55,6 +53,11 @@ li.notification div.temps {
   display: inline-block;
   width: 10em;
   text-align: right;
+}
+
+/* Domaines */
+.mg-bouton {
+  margin-bottom: 3px;
 }
 
 @media (max-width: 300px) {
