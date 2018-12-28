@@ -18,6 +18,34 @@ Template.App_3colonnes_gauche.helpers({
   },
 });
 
+Template.App_3colonnes_gauche_domaines.helpers({
+  configuration() {
+    return Principale.findOne({
+      '_mg-libelle': 'configuration'
+    });
+  },
+  liste_domaines(domaines) {
+    let resultats = [];
+    for (let nom_domaine in domaines) {
+      domaine = {
+        'nom_domaine': nom_domaine,
+        'parametres': domaines[nom_domaine]
+      };
+      resultats.push(domaine);
+    }
+
+    // Trier par rang
+    resultats.sort(function(a,b) {
+      let ranga = a.parametres.rang, rangb = b.parametres.rang;
+      if(ranga === rangb) return 0;
+      if(ranga === undefined) return -1;
+      return ranga - rangb;
+    });
+
+    return resultats;
+  },
+});
+
 Template.App_3colonnes_gauche_domaines.events({
   'click SPAN.SenseursPassifs'() {
     console.log("SenseursPassifs");
@@ -29,5 +57,9 @@ Template.App_3colonnes_gauche_domaines.events({
   'click SPAN.Notifications'() {
     console.log("Notifications");
     FlowRouter.go('Notifications.show');
+  },
+  'click SPAN.Principale'() {
+    console.log("Principale");
+    FlowRouter.go('App.principal');
   },
 });

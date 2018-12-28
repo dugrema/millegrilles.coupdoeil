@@ -59,24 +59,29 @@
 </template>
 
 <template name="App_3colonnes_gauche_domaines">
-  <div class="w3-card w3-round w3-white w3-hide-small">
-    <div class="w3-container">
-      <p>Domaines</p>
-      <p>
-        <span class="w3-tag w3-small w3-theme-d5 SenseursPassifs">SenseursPassifs</span>
-        <span class="w3-tag w3-small w3-theme-d4 WebPoll">WebPoll</span>
-        <span class="w3-tag w3-small w3-theme-d3 Notifications">Notifications</span>
-        <!--
-        <span class="w3-tag w3-small w3-theme-d2">Games</span>
-        <span class="w3-tag w3-small w3-theme-d1">Friends</span>
-        <span class="w3-tag w3-small w3-theme">Games</span>
-        <span class="w3-tag w3-small w3-theme-l1">Friends</span>
-        <span class="w3-tag w3-small w3-theme-l2">Food</span>
-        <span class="w3-tag w3-small w3-theme-l3">Design</span>
-        <span class="w3-tag w3-small w3-theme-l4">Art</span>
-        <span class="w3-tag w3-small w3-theme-l5">Photos</span>
-        -->
-      </p>
+  {{#let configuration_doc=configuration}}
+    <div class="w3-card w3-round w3-white w3-hide-small">
+      <div class="w3-container">
+        <p>Domaines</p>
+        <p>
+          {{#each liste_domaines configuration_doc.domaines}}
+            <span class="w3-tag w3-small w3-theme {{nom_domaine}}">{{parametres.description}}</span>
+          {{/each}}
+          <!--
+          <span class="w3-tag w3-small w3-theme-d5 SenseursPassifs">SenseursPassifs</span>
+          <span class="w3-tag w3-small w3-theme-d4 WebPoll">WebPoll</span>
+          <span class="w3-tag w3-small w3-theme-d3 Notifications">Notifications</span>
+          <span class="w3-tag w3-small w3-theme-d2">Games</span>
+          <span class="w3-tag w3-small w3-theme-d1">Friends</span>
+          <span class="w3-tag w3-small w3-theme">Games</span>
+          <span class="w3-tag w3-small w3-theme-l1">Friends</span>
+          <span class="w3-tag w3-small w3-theme-l2">Food</span>
+          <span class="w3-tag w3-small w3-theme-l3">Design</span>
+          <span class="w3-tag w3-small w3-theme-l4">Art</span>
+          <span class="w3-tag w3-small w3-theme-l5">Photos</span>
+          -->
+        </p>
+      </div>
     </div>
-  </div>
+  {{/let}}
 </template>
