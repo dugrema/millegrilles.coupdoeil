@@ -1,56 +1,61 @@
 <template name="App_3colonnes_gauche">
   <!-- Profile -->
-  <div class="w3-card w3-round w3-white">
-    <div class="w3-container">
-     <h4 class="w3-center">Maple</h4>
-     <hr>
-     <p><i class="fa fa-home fa-fw w3-margin-right w3-text-theme"></i> maple.millegrilles.mdugre.info</p>
+  {{#let configuration=configuration}}
+    <div class="w3-card w3-round w3-white">
+      <div class="w3-container">
+        <h4 class="w3-center">{{configuration.nom_millegrille}}</h4>
+       <hr>
+       <p>
+         <i class="fa fa-home fa-fw w3-margin-right w3-text-theme"></i>
+         {{configuration.adresse_url_base}}
+       </p>
+      </div>
     </div>
-  </div>
-  <br>
+    <br>
 
-  <!-- Accordion -->
-  <div class="w3-card w3-round">
-    <div class="w3-white">
-      <button class="w3-button w3-block w3-theme-l1 w3-left-align">
-        <i class="fa fa-globe fa-fw w3-margin-right"></i>
-        Activité
-      </button>
-      <button class="w3-button w3-block w3-theme-l1 w3-left-align">
-        <i class="fa fa-wifi fa-fw w3-margin-right"></i>
-        MilleGrilles associées
-      </button>
-      <button class="w3-button w3-block w3-theme-l1 w3-left-align">
-        <i class="fa fa-code-fork fa-fw w3-margin-right"></i>
-        Processus
-      </button>
-      <button class="w3-button w3-block w3-theme-l1 w3-left-align">
-        <i class="fa fa-sliders fa-fw w3-margin-right"></i>
-        Paramètres
-      </button>
+    <!-- Accordion -->
+    <div class="w3-card w3-round">
+      <div class="w3-white">
+        <button class="w3-button w3-block w3-theme-l1 w3-left-align">
+          <i class="fa fa-globe fa-fw w3-margin-right"></i>
+          Activité
+        </button>
+        <button class="w3-button w3-block w3-theme-l1 w3-left-align">
+          <i class="fa fa-wifi fa-fw w3-margin-right"></i>
+          MilleGrilles associées
+        </button>
+        <button class="w3-button w3-block w3-theme-l1 w3-left-align">
+          <i class="fa fa-code-fork fa-fw w3-margin-right"></i>
+          Processus
+        </button>
+        <button class="w3-button w3-block w3-theme-l1 w3-left-align">
+          <i class="fa fa-sliders fa-fw w3-margin-right"></i>
+          Paramètres
+        </button>
+      </div>
     </div>
-  </div>
-  <br>
+    <br>
 
-  <!-- Domaines -->
-  {{> App_3colonnes_gauche_domaines}}
-  <br>
+    <!-- Domaines -->
+    {{> App_3colonnes_gauche_domaines}}
+    <br>
 
-  <!-- Alert Box -->
-  <div class="w3-container w3-display-container w3-round w3-theme-l4 w3-border w3-theme-border w3-margin-bottom w3-hide-small">
-    <span onclick="this.parentElement.style.display='none'" class="w3-button w3-theme-l3 w3-display-topright">
-      <i class="fa fa-remove"></i>
-    </span>
-    <p><strong>Beignes en danger!</strong></p>
-    <p>Tsunami en route pour la beignière.</p>
-  </div>
-  <div class="w3-container w3-display-container w3-round w3-theme-l4 w3-border w3-theme-border w3-margin-bottom w3-hide-small">
-    <span onclick="this.parentElement.style.display='none'" class="w3-button w3-theme-l3 w3-display-topright">
-      <i class="fa fa-remove"></i>
-    </span>
-    <p><strong>Alerte!</strong></p>
-    <p>Manger de la poutine, c'est bon.</p>
-  </div>
+    <!-- Alert Box -->
+    <div class="w3-container w3-display-container w3-round w3-theme-l4 w3-border w3-theme-border w3-margin-bottom w3-hide-small">
+      <span onclick="this.parentElement.style.display='none'" class="w3-button w3-theme-l3 w3-display-topright">
+        <i class="fa fa-remove"></i>
+      </span>
+      <p><strong>Beignes en danger!</strong></p>
+      <p>Tsunami en route pour la beignière.</p>
+    </div>
+    <div class="w3-container w3-display-container w3-round w3-theme-l4 w3-border w3-theme-border w3-margin-bottom w3-hide-small">
+      <span onclick="this.parentElement.style.display='none'" class="w3-button w3-theme-l3 w3-display-topright">
+        <i class="fa fa-remove"></i>
+      </span>
+      <p><strong>Alerte!</strong></p>
+      <p>Manger de la poutine, c'est bon.</p>
+    </div>
+  {{/let}}
 </template>
 
 <template name="App_3colonnes_gauche_domaines">
