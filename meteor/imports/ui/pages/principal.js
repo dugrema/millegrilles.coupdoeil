@@ -15,8 +15,7 @@ Template.Principal_show_page.onCreated(function noeudsOnCreated() {
 Template.Principal_colonne_milieu.helpers({
   rapport_previsions() {
     return Rapports.findOne({
-      '_mg-libelle': 'meteo_envcanada',
-      'url': 'https://weather.gc.ca/rss/city/on-52_e.xml'
+      '_mg-libelle': 'meteo_envcanada'
     });
   },
 });
