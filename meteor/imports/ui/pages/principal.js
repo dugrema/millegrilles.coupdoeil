@@ -11,7 +11,6 @@ Template.Principal_show_page.onCreated(function noeudsOnCreated() {
   Meteor.subscribe('rapports_meteo');
 });
 
-
 Template.Principal_colonne_milieu.helpers({
   rapport_previsions() {
     return Rapports.findOne({

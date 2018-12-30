@@ -1,13 +1,31 @@
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
+import { check } from 'meteor/check';
+import { RabbitMQ } from './RabbitMQ.js';
 
 export const Principale = new Mongo.Collection('millegrilles_domaines_Principale');
 
 if (Meteor.isServer) {
 
-  // Notifications de type regles_simples
+  // Publications
   Meteor.publish('principale_configurations', function () {
-    return Principale.find({'_mg-libelle': 'configuration'});
+    return Principale.find({
+      '_mg-libelle': {'$in': ['configuration', 'alertes']}
+    });
   });
-
 }
+
+Meteor.methods({
+  'Principale.alerte.close'(alerte) {
+    check(alerte.ts, Number);
+
+    let domaine = "millegrilles.domaines.Principale.fermerAlerte";
+
+    // Utiliser le timestamp de l'alerte (en ms) pour l'effacer
+    let chargeUtile = {
+      "alerte": alerte
+    };
+
+    RabbitMQ.transmettreTransactionFormattee(chargeUtile, domaine);
+  },
+});

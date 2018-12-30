@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import { Template } from 'meteor/templating';
 import { FlowRouter } from 'meteor/kadira:flow-router';
 
-import { Principale } from '../../api//millegrilles_domaines_Principale.js'
+import { Principale } from '../../api/millegrilles_domaines_Principale.js'
 
 import './menu_gauche.html';
 
@@ -14,6 +14,11 @@ Template.App_3colonnes_gauche.helpers({
   configuration() {
     return Principale.findOne({
       '_mg-libelle': 'configuration'
+    });
+  },
+  alertes() {
+    return Principale.findOne({
+      '_mg-libelle': 'alertes'
     });
   },
 });
@@ -46,20 +51,23 @@ Template.App_3colonnes_gauche_domaines.helpers({
   },
 });
 
+Template.App_3colonnes_gauche.events({
+  'click SPAN.alert-close'() {
+    Meteor.call('Principale.alerte.close', this);
+  },
+});
+
 Template.App_3colonnes_gauche_domaines.events({
   'click SPAN.SenseursPassifs'() {
-    console.log("SenseursPassifs");
     FlowRouter.go('Noeuds.show');
   },
   'click SPAN.WebPoll'() {
-    console.log("WebPoll");
+    console.warn("WebPoll pas implemente");
   },
   'click SPAN.Notifications'() {
-    console.log("Notifications");
     FlowRouter.go('Notifications.show');
   },
   'click SPAN.Principale'() {
-    console.log("Principale");
     FlowRouter.go('App.principal');
   },
 });

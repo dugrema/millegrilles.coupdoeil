@@ -112,7 +112,9 @@ class RabbitMQWrapper {
     return hostname;
   }
 
-  transmettreTransaction(routingKey, message) {
+  // Methode qui permet de transmettre une transaction au backend RabbitMQ
+  // Les metadonnees sont ajoutees automatiquement
+  _transmettreTransaction(routingKey, message) {
     // console.log("Nouvelle transaction:");
     let jsonMessage = JSON.stringify(message);
     // console.log(jsonMessage);
@@ -136,6 +138,7 @@ class RabbitMQWrapper {
       catch (e) {
         console.error("Erreur MQ");
         console.error(e);
+        this.reconnect(); // Tenter de se reconnecter
       }
     }
   }
@@ -149,7 +152,7 @@ class RabbitMQWrapper {
       'charge-utile': message
     }
     let routingKey = 'transaction.nouvelle';
-    this.transmettreTransaction(routingKey, message_formatte);
+    this._transmettreTransaction(routingKey, message_formatte);
   }
 
   log_error(e) {
@@ -176,7 +179,6 @@ class RabbitMQWrapper {
     let infoTransaction = {
       'domaine': domaine,
       'source-systeme': 'coupdoeil@' + RabbitMQ.getHostname(),
-      'signature_contenu': "",
       'uuid-transaction': RabbitMQ.genererUUID(),
       'estampille': tempsLecture
     };
