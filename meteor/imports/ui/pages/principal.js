@@ -14,7 +14,8 @@ Template.Principal_show_page.onCreated(function noeudsOnCreated() {
 
 Template.Principal_colonne_milieu.onRendered(function preparerMenu() {
   let menu = new MenuGauche($('.menu-domaine-gauche'));
-  menu.ajouterMenu('menu-parametres', 'fa-globe', 'Paramètres');
+  menu.ajouterMenu('App.principal', 'fa-globe', 'Sommaire');
+  menu.ajouterMenu('App.principal.parametres', 'fa-sliders', 'Paramètres');
   menu.appliquer();
 });
 

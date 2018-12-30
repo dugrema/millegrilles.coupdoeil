@@ -71,3 +71,13 @@ Template.App_3colonnes_gauche_domaines.events({
     FlowRouter.go('App.principal');
   },
 });
+
+Template.App_3colonnes_gauche_menu_domaine.events({
+  'click button.bouton-menu-gauche'(bouton) {
+    let data = bouton.currentTarget.firstChild.data;
+    let regexp_route = /route="(.+)"/g;
+    let matcher = regexp_route.exec(data);
+    let route = matcher[1];
+    FlowRouter.go(route);
+  },
+});

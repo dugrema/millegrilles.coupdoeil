@@ -4,16 +4,17 @@ export class MenuGauche {
   constructor(divMenu) {
     this.divMenu = divMenu;
     this.menu_item_template =
-      '<button class="w3-button w3-block w3-theme-l1 w3-left-align %CLASSE%">'
+      '<button class="w3-button w3-block w3-theme-l1 w3-left-align bouton-menu-gauche">'
+      + '<!-- route="%ROUTE%" -->'
       + '<i class="fa %ICON% fa-fw w3-margin-right"></i>'
       + '%LIBELLE%'
       + '</button>';
     this.menuItems = [];
   };
 
-  ajouterMenu(classe, icon, libelle) {
+  ajouterMenu(route, icon, libelle) {
     let menu_item = this.menu_item_template
-      .replace(/%CLASSE%/, classe)
+      .replace(/%ROUTE%/, route)
       .replace(/%ICON%/, icon)
       .replace(/%LIBELLE%/, libelle);
 
