@@ -28,4 +28,16 @@ Meteor.methods({
 
     RabbitMQ.transmettreTransactionFormattee(chargeUtile, domaine);
   },
+  'Principale.alerte.creer'(message) {
+    check(message, String);
+
+    let domaine = "millegrilles.domaines.Principale.creerAlerte";
+
+    // Utiliser le timestamp de l'alerte (en ms) pour l'effacer
+    let chargeUtile = {
+      "message": message
+    };
+
+    RabbitMQ.transmettreTransactionFormattee(chargeUtile, domaine);
+  },
 });
