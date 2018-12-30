@@ -17,6 +17,23 @@ export class ConfigurationMenu {
 
     this.menuItems = [];
     this.initialise = false;
+    this.parent = null;
+  }
+
+  clone() {
+    let menu2 = new ConfigurationMenu();
+    menu2.menuItems = this.menuItems.slice(0);
+    return menu2;
+  }
+
+  // Permet d'ajouter des menus sous un parent
+  setParent(route) {
+    for(let item_idx in this.menuItems) {
+      let item = this.menuItems[item_idx];
+      if(item.route === route) {
+        this.parent = item_idx+1;
+      }
+    }
   }
 
   ajouterMenuItem(route, icon, libelle, niveau=1, parametres={}) {
@@ -28,7 +45,11 @@ export class ConfigurationMenu {
       niveau: niveau
     };
 
-    this.menuItems.push(params);
+    if(this.parent === null) {
+      this.menuItems.push(params);
+    } else {
+      this.menuItems.splice(this.parent++, 0, params);
+    }
   }
 
   getItems() {
@@ -57,6 +78,26 @@ export class ConfigurationMenu {
       // Appliquer au menu de gauche dans la page web
       divMenu.append(menu_item_html);
     }
+  }
+
+  setParametres(route, parametres) {
+    for(let item_idx in this.menuItems) {
+      let item = this.menuItems[item_idx];
+      if(item.route === route) {
+        item.parametres = parametres;
+      }
+    }
+  }
+
+  getParametres(route) {
+    for(let item_idx in this.menuItems) {
+      let item = this.menuItems[item_idx];
+      if(item.route === route) {
+        return item.parametres;
+      }
+    }
+
+    return {};
   }
 
   html() {
@@ -91,7 +132,7 @@ if(!MenuPrincipale.isInitialise()) {
 export const MenuSenseursPassifs = new ConfigurationMenu();
 if(!MenuSenseursPassifs.isInitialise()) {
   MenuSenseursPassifs.ajouterMenuItem('SenseursPassifs.show', 'fa-globe', 'Liste noeuds');
-  MenuSenseursPassifs.ajouterMenuItem('SenseursPassifs.Senseur.show', 'fa-sliders', 'Senseur');
+  MenuSenseursPassifs.ajouterMenuItem('SenseursPassifs.Configuration.show', 'fa-sliders', 'Configuration');
   MenuSenseursPassifs.setInitialise();
 } else {
   console.warn("MenuSenseursPassifs deja initialise");

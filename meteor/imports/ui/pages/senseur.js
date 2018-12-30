@@ -31,7 +31,18 @@ Template.Senseur_show_page.helpers({
 });
 
 Template.Senseur_show_page.onRendered(function preparerMenu() {
-  menuCourant.set(MenuSenseursPassifs);
+  var menuSenseurs = MenuSenseursPassifs.clone();
+  let parametres = {
+    noeud: FlowRouter.getParam('noeud'),
+    senseur: FlowRouter.getParam('senseur')
+  };
+
+  menuSenseurs.setParent('SenseursPassifs.show');
+  menuSenseurs.ajouterMenuItem('SenseursPassifs.Noeud.show', 'fa-sliders', 'Noeud', 2, parametres);
+  menuSenseurs.ajouterMenuItem('SenseursPassifs.Senseur.show', 'fa-sliders', 'Senseur', 3, parametres);
+  menuSenseurs.ajouterMenuItem('SenseursPassifs.SenseurHistorique.show', 'fa-sliders', 'Historique', 3, parametres);
+  menuSenseurs.ajouterMenuItem('SenseursPassifs.SenseurParametres.show', 'fa-sliders', 'Paramètres', 3, parametres);
+  menuCourant.set(menuSenseurs);
 
   /*
   var noeud = FlowRouter.getParam('noeud');

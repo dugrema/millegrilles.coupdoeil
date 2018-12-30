@@ -85,6 +85,10 @@ Template.App_3colonnes_gauche_menu_domaine.events({
     let regexp_route = /route="(.+)"/g;
     let matcher = regexp_route.exec(data);
     let route = matcher[1];
-    FlowRouter.go(route);
+
+    let menuConfig = menuCourant.get();
+    parametres = menuConfig.getParametres(route);
+
+    FlowRouter.go(route, parametres);
   },
 });
