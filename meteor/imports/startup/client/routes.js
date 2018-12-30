@@ -35,14 +35,14 @@ FlowRouter.route('/notifications/', {
 // mgdomaines.appareils.SenseursPassifs
 
 FlowRouter.route('/noeuds/', {
-  name: 'Noeuds.show',
+  name: 'SenseursPassifs.show',
   action() {
     BlazeLayout.render('App_3colonnes', { main: 'Noeuds_show_page' });
   },
 });
 
 FlowRouter.route('/senseur/:noeud/:senseur', {
-  name: 'Senseur.show',
+  name: 'SenseursPassifs.Senseur.show',
   action() {
     BlazeLayout.render('App_3colonnes', { main: 'Senseur_show_page' });
   },
@@ -50,7 +50,7 @@ FlowRouter.route('/senseur/:noeud/:senseur', {
 
 // Application 3 3colonnes
 FlowRouter.route('/principal', {
-  name: 'App.principal',
+  name: 'Principale.show',
   action() {
     BlazeLayout.render('App_3colonnes', { main: 'Principal_show_page' });
   },

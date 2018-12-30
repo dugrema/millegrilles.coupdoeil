@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import { Template } from 'meteor/templating';
 
 import { SenseursPassifs } from '../../api/mgdomaines_appareils_SenseursPassifs.js';
+import { menuCourant, MenuSenseursPassifs } from '../layouts/menuHelpers.js';
 
 import './noeuds.html';
 
@@ -14,6 +15,10 @@ Template.Noeuds_show_page.helpers({
   noeuds() {
     return SenseursPassifs.find({'_mg-libelle': 'noeud.individuel'});
   },
+});
+
+Template.Noeuds_show_page.onRendered(function preparerMenu() {
+  menuCourant.set(MenuSenseursPassifs);
 });
 
 Template.sectionSenseurs.helpers({

@@ -35,7 +35,7 @@
 <template name="senseur">
   <li class="senseur">
     <div class="location">
-      <a href="{{pathFor 'Senseur.show' noeud=noeud.noeud senseur=no_senseur}}" title="{{libelle_senseur}}">{{libelle_senseur}}</a>
+      <a href="{{pathFor 'SenseursPassifs.Senseur.show' noeud=noeud.noeud senseur=no_senseur}}" title="{{libelle_senseur}}">{{libelle_senseur}}</a>
     </div>
     <div class="numerique temperature">{{temperature}}&deg;C</div>
     {{#if humidite_existe}}

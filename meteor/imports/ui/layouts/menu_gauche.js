@@ -3,6 +3,7 @@ import { Template } from 'meteor/templating';
 import { FlowRouter } from 'meteor/kadira:flow-router';
 
 import { Principale } from '../../api/millegrilles_domaines_Principale.js'
+import { menuCourant } from '../layouts/menuHelpers.js';
 
 import './menu_gauche.html';
 
@@ -59,7 +60,7 @@ Template.App_3colonnes_gauche.events({
 
 Template.App_3colonnes_gauche_domaines.events({
   'click SPAN.SenseursPassifs'() {
-    FlowRouter.go('Noeuds.show');
+    FlowRouter.go('SenseursPassifs.show');
   },
   'click SPAN.WebPoll'() {
     console.warn("WebPoll pas implemente");
@@ -68,7 +69,13 @@ Template.App_3colonnes_gauche_domaines.events({
     FlowRouter.go('Notifications.show');
   },
   'click SPAN.Principale'() {
-    FlowRouter.go('App.principal');
+    FlowRouter.go('Principale.show');
+  },
+});
+
+Template.App_3colonnes_gauche_menu_domaine.helpers({
+  menuCourant() {
+    return menuCourant;
   },
 });
 

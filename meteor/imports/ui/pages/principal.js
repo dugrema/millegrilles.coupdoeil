@@ -3,7 +3,7 @@ import { Template } from 'meteor/templating';
 
 import { Principale } from '../../api/millegrilles_domaines_Principale.js';
 import { Rapports } from '../../api/millegrilles_domaines_Rapports.js';
-import { MenuGauche } from '../layouts/menuHelpers.js';
+import { menuCourant, MenuPrincipale } from '../layouts/menuHelpers.js';
 
 import './principal.html';
 
@@ -13,10 +13,7 @@ Template.Principal_show_page.onCreated(function noeudsOnCreated() {
 });
 
 Template.Principal_colonne_milieu.onRendered(function preparerMenu() {
-  let menu = new MenuGauche($('.menu-domaine-gauche'));
-  menu.ajouterMenu('App.principal', 'fa-globe', 'Sommaire');
-  menu.ajouterMenu('App.principal.parametres', 'fa-sliders', 'Paramètres');
-  menu.appliquer();
+  menuCourant.set(MenuPrincipale);
 });
 
 Template.Principal_colonne_milieu.helpers({

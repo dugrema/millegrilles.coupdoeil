@@ -7,6 +7,8 @@ import { Template } from 'meteor/templating';
 import { SenseursPassifs } from '../../api/mgdomaines_appareils_SenseursPassifs.js';
 
 import { GraphiqueCharte2D } from '../graph/chart.js';
+import { menuCourant, MenuSenseursPassifs } from '../layouts/menuHelpers.js';
+
 import './senseur.html'
 
 Template.Senseur_show_page.onCreated(function bodyOnCreated() {
@@ -26,6 +28,22 @@ Template.Senseur_show_page.helpers({
 
     return senseurdocs;
   },
+});
+
+Template.Senseur_show_page.onRendered(function preparerMenu() {
+  menuCourant.set(MenuSenseursPassifs);
+
+  /*
+  var noeud = FlowRouter.getParam('noeud');
+  var no_senseur = parseInt(FlowRouter.getParam('senseur'));
+  let menu = new MenuGauche($('.menu-domaine-gauche'));
+  menu.ajouterMenu('Noeuds.show', 'fa-globe', 'Liste noeuds', 2);
+  menu.ajouterMenu('Noeuds.show', 'fa-globe', 'Noeud', 3);
+  menu.ajouterMenu('SenseursPassifs.Senseur.show', 'fa-globe', 'Senseur', 1);
+  menu.ajouterMenu('Noeuds.show', 'fa-globe', 'Courant', 4);
+  menu.ajouterMenu('Noeuds.show', 'fa-globe', 'Historique', 4);
+  menu.appliquer();
+  */
 });
 
 Template.senseurDetailUnique.events({
