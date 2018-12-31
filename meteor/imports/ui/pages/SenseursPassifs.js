@@ -4,20 +4,20 @@ import { Template } from 'meteor/templating';
 import { SenseursPassifs } from '../../api/mgdomaines_appareils_SenseursPassifs.js';
 import { menuCourant, MenuSenseursPassifs } from '../layouts/menuHelpers.js';
 
-import './noeuds.html';
+import './SenseursPassifs.html';
 
-Template.Noeuds_show_page.onCreated(function noeudsOnCreated() {
+Template.SenseursPassifs_show_page.onCreated(function noeudsOnCreated() {
   Meteor.subscribe('noeuds');
   Meteor.subscribe('senseurs');
 });
 
-Template.Noeuds_show_page.helpers({
+Template.SenseursPassifs_show_page.helpers({
   noeuds() {
     return SenseursPassifs.find({'_mg-libelle': 'noeud.individuel'});
   },
 });
 
-Template.Noeuds_show_page.onRendered(function preparerMenu() {
+Template.SenseursPassifs_show_page.onRendered(function preparerMenu() {
   menuCourant.set(MenuSenseursPassifs);
 });
 

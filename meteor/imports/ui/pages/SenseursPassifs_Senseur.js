@@ -9,7 +9,7 @@ import { SenseursPassifs } from '../../api/mgdomaines_appareils_SenseursPassifs.
 import { GraphiqueCharte2D } from '../graph/chart.js';
 import { menuCourant, MenuSenseursPassifs } from '../layouts/menuHelpers.js';
 
-import './senseur.html'
+import './SenseursPassifs_Senseur.html'
 
 Template.Senseur_show_page.onCreated(function bodyOnCreated() {
   Meteor.subscribe('senseurs');
@@ -39,8 +39,8 @@ Template.Senseur_show_page.onRendered(function preparerMenu() {
   menuSenseurs.setParent('SenseursPassifs.show');
   menuSenseurs.ajouterMenuItem('SenseursPassifs.Noeud.show', 'fa-sliders', 'Noeud', 2, parametres);
   menuSenseurs.ajouterMenuItem('SenseursPassifs.Senseur.show', 'fa-sliders', 'Senseur', 3, parametres);
-  menuSenseurs.ajouterMenuItem('SenseursPassifs.SenseurHistorique.show', 'fa-sliders', 'Historique', 3, parametres);
-  menuSenseurs.ajouterMenuItem('SenseursPassifs.SenseurParametres.show', 'fa-sliders', 'Paramètres', 3, parametres);
+  menuSenseurs.ajouterMenuItem('SenseursPassifs.Senseur.Historique.show', 'fa-sliders', 'Historique', 3, parametres);
+  menuSenseurs.ajouterMenuItem('SenseursPassifs.Senseur.Parametres.show', 'fa-sliders', 'Paramètres', 3, parametres);
   menuCourant.set(menuSenseurs);
 });
 
