@@ -19,7 +19,6 @@ Template.Senseur_show_page.helpers({
   senseur() {
     var noeud = FlowRouter.getParam('noeud');
     var no_senseur = parseInt(FlowRouter.getParam('senseur'));
-//    console.log('Noeud ' + noeud + ' senseur ' + no_senseur);
     var senseurdocs = SenseursPassifs.findOne({
       'noeud': noeud,
       'senseur': no_senseur,
@@ -43,23 +42,10 @@ Template.Senseur_show_page.onRendered(function preparerMenu() {
   menuSenseurs.ajouterMenuItem('SenseursPassifs.SenseurHistorique.show', 'fa-sliders', 'Historique', 3, parametres);
   menuSenseurs.ajouterMenuItem('SenseursPassifs.SenseurParametres.show', 'fa-sliders', 'Paramètres', 3, parametres);
   menuCourant.set(menuSenseurs);
-
-  /*
-  var noeud = FlowRouter.getParam('noeud');
-  var no_senseur = parseInt(FlowRouter.getParam('senseur'));
-  let menu = new MenuGauche($('.menu-domaine-gauche'));
-  menu.ajouterMenu('Noeuds.show', 'fa-globe', 'Liste noeuds', 2);
-  menu.ajouterMenu('Noeuds.show', 'fa-globe', 'Noeud', 3);
-  menu.ajouterMenu('SenseursPassifs.Senseur.show', 'fa-globe', 'Senseur', 1);
-  menu.ajouterMenu('Noeuds.show', 'fa-globe', 'Courant', 4);
-  menu.ajouterMenu('Noeuds.show', 'fa-globe', 'Historique', 4);
-  menu.appliquer();
-  */
 });
 
 Template.senseurDetailUnique.events({
   'change .location'(bouton) {
-    // console.log(bouton.currentTarget.value);
     Meteor.call('SenseursPassifs.location.update', this, bouton.currentTarget.value);
   },
 });
