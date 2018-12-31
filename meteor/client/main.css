@@ -23,17 +23,17 @@ ul.senseurs {
   background: white;
 }
 
-li.senseur div.location {
+.senseur div.location {
   display: block;
 }
 
-li.senseur div.numerique {
+.senseur div.numerique {
   display: inline-block;
   width: 6em;
   text-align: right;
 }
 
-li.senseur div.temps {
+.senseur div.temps {
   display: inline-block;
   width: 10em;
   text-align: right;

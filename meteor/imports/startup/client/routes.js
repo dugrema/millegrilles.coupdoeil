@@ -54,14 +54,14 @@ FlowRouter.route('/SenseursPassifs/Configuration', {
   },
 });
 
-FlowRouter.route('/SenseursPassifs_Noeud/:noeud', {
+FlowRouter.route('/SenseursPassifs/:noeud', {
   name: 'SenseursPassifs.Noeud.show',
   action() {
     BlazeLayout.render('App_3colonnes', { main: 'SenseurPassifs_Noeud' });
   },
 });
 
-FlowRouter.route('/SenseursPassifs_Senseur/:noeud/:senseur', {
+FlowRouter.route('/SenseursPassifs/:noeud/:senseur', {
   name: 'SenseursPassifs.Senseur.show',
   action() {
     BlazeLayout.render('App_3colonnes', { main: 'Senseur_show_page' });
@@ -78,7 +78,7 @@ FlowRouter.route('/SenseursPassifs/:noeud/:senseur/parametres', {
 FlowRouter.route('/SenseursPassifs/:noeud/:senseur/historique', {
   name: 'SenseursPassifs.Senseur.Historique.show',
   action() {
-    BlazeLayout.render('App_3colonnes', { main: 'SenseurPassifs_Senseur_Historique' });
+    BlazeLayout.render('App_3colonnes', { main: 'SenseursPassifs_Senseur_Historique' });
   },
 });
 

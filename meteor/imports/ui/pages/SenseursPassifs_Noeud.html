@@ -1,6 +1,48 @@
 <template name="SenseurPassifs_Noeud">
   <!-- Middle/Right Column -->
   <div class="w3-col m9">
-    Allo
+    <div class="w3-row-padding">
+      <div class="w3-col m12">
+        {{> SenseurPassifs_Noeud_Show noeud=noeud }}
+      </div>
+    </div>
+  </div>
+</template>
+
+<template name="SenseurPassifs_Noeud_Show">
+    <div class="w3-card w3-round w3-white">
+      <div class="w3-container w3-padding">
+        <h4 class="w3-opacity">
+          Noeud {{noeud.noeud}}
+        </h4>
+        <p>
+          Dernière modification: {{ derniere_modification noeud }} <br/>
+          Nombre de senseurs: {{ compte_senseurs noeud }}
+        </p>
+      </div>
+    </div>
+    <br/>
+    {{#if noeud}}
+      {{#each senseurs noeud}}
+        {{> SenseurPassifs_Senseur_Show senseur=this}}
+      {{/each}}
+    {{/if}}
+</template>
+
+<template name="SenseurPassifs_Senseur_Show">
+  <div class="w3-card w3-round w3-white">
+    <div class="w3-container w3-padding senseur">
+      <h6 class="w3-opacity">
+        Senseur <a href="{{pathFor 'SenseursPassifs.Senseur.show' noeud=senseur.noeud.noeud senseur=senseur.no_senseur}}" title="{{libelle_senseur senseur}}">{{libelle_senseur senseur}}</a>
+      </h6>
+      <div class="numerique temperature">{{senseur.temperature}}&deg;C</div>
+      {{#if humidite_existe senseur}}
+        <div class="numerique humidite">{{senseur.humidite}}%</div>
+      {{/if}}
+      {{#if pression_existe senseur}}
+        <div class="numerique pression">{{senseur.pression}} kPa</div>
+      {{/if}}
+      <div class="temps">{{format_date_moisheure temps_lecture senseur}}</div>
+    </div>
   </div>
 </template>
