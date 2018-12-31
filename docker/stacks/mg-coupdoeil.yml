@@ -5,7 +5,7 @@ services:
 
   # Application Meteor pour Coup D'Oeil
   coupdoeilmeteor:
-    image:  registry.maple.mdugre.info:5000/coupdoeil_meteor.x86_64:v0.10.2
+    image:  registry.maple.mdugre.info:5000/coupdoeil_meteor.x86_64:v1.2-pivoine.0
     hostname: coupdoeilmeteor.maple.millegrilles.mdugre.info
     deploy:
       replicas: 1
@@ -53,8 +53,6 @@ services:
       restart_policy:
         condition: any
         delay: 30s
-    depends:
-     - coupdoeilmeteor
     ports:
      - "30080:80"
      - "30443:443"
