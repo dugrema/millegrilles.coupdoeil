@@ -20,6 +20,9 @@
         <h6 class="w3-opacity">
           <a href="{{pathFor 'SenseursPassifs.Noeud.show' noeud=noeud}}">Noeud {{noeud}}</a>
         </h6>
+        <div>
+          Dernière modification: {{ format_date_moisheure (derniere_modification noeud) }}
+        </div>
         {{> sectionSenseurs}}
       </div>
     </div>
@@ -39,7 +42,9 @@
     <div class="location">
       <a href="{{pathFor 'SenseursPassifs.Senseur.show' noeud=noeud.noeud senseur=no_senseur}}" title="{{libelle_senseur}}">{{libelle_senseur}}</a>
     </div>
-    <div class="numerique temperature">{{temperature}}&deg;C</div>
+    {{#if temperature_existe}}
+      <div class="numerique temperature">{{temperature}}&deg;C</div>
+    {{/if}}
     {{#if humidite_existe}}
     <div class="numerique humidite">{{humidite}}%</div>
     {{/if}}

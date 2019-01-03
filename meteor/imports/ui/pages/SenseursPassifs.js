@@ -21,6 +21,17 @@ Template.SenseursPassifs_show_page.onRendered(function preparerMenu() {
   menuCourant.set(MenuSenseursPassifs);
 });
 
+Template.noeud.helpers({
+  derniere_modification(noeud) {
+    if(noeud === undefined) {
+      return null;
+    }
+    let derniereModification = noeud['_mg-derniere-modification'];
+    return derniereModification;
+    // return moment(derniereModification).format("MMM-DD HH:mm:ss");
+  },
+});
+
 Template.sectionSenseurs.helpers({
   senseurs(){
     // Preparer une liste de tous les senseurs du noeuds. Injecter le
@@ -63,6 +74,9 @@ Template.sectionSenseurs.helpers({
 });
 
 Template.senseur.helpers({
+  temperature_existe(){
+    return this.temperature > 0;
+  },
   humidite_existe(){
     return this.humidite > 0;
   },

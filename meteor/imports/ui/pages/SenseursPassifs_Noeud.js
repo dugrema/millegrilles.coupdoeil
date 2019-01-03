@@ -91,11 +91,17 @@ Template.SenseurPassifs_Noeud_Show.helpers({
 });
 
 Template.SenseurPassifs_Senseur_Show.helpers({
+  temperature_existe(senseur){
+    return senseur.temperature > 0;
+  },
   humidite_existe(senseur){
     return senseur.humidite > 0;
   },
   pression_existe(senseur){
     return senseur.pression > 0;
+  },
+  millivolt_existe(senseur){
+    return senseur.millivolt > 0;
   },
   libelle_senseur(senseur){
     if(senseur.location !== undefined) return senseur.location;
