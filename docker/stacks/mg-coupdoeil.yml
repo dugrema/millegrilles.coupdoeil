@@ -5,7 +5,7 @@ services:
 
   # Application Meteor pour Coup D'Oeil
   coupdoeilmeteor:
-    image:  registry.maple.mdugre.info:5000/coupdoeil_meteor.x86_64:v1.2-pivoine.0
+    image:  registry.maple.mdugre.info:5000/coupdoeil_meteor.x86_64:v1.2-pivoine.1
     hostname: coupdoeilmeteor.maple.millegrilles.mdugre.info
     deploy:
       replicas: 1
