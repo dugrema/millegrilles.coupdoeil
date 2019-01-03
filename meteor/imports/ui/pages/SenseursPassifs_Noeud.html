@@ -42,7 +42,7 @@
       {{#if pression_existe senseur}}
         <div class="numerique pression">{{senseur.pression}} kPa</div>
       {{/if}}
-      <div class="temps">{{format_date_moisheure temps_lecture senseur}}</div>
+      <div class="temps">{{format_date_moisheure senseur.temps_lecture}}</div>
     </div>
   </div>
 </template>
