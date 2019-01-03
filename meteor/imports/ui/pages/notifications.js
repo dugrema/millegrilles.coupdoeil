@@ -4,7 +4,7 @@ import { FlowRouter } from 'meteor/kadira:flow-router';
 import { Template } from 'meteor/templating';
 
 import { Notifications } from '../../api/millegrilles_domaines_Notifications.js';
-import { SenseursPassifs } from '../../api/mgdomaines_appareils_SenseursPassifs.js';
+import { SenseursPassifs } from '../../api/millegrilles_domaines_SenseursPassifs.js';
 
 import './notifications.html'
 
@@ -28,7 +28,7 @@ Template.Notification_liste.helpers({
   }
 });
 
-Template.mgdomaines_appareils_SenseursPassifs.helpers({
+Template.millegrilles_domaines_SenseursPassifs.helpers({
   charger_senseur(source) {
     // return [{"senseur": "Ah!", "source_id": source._id}];
     let document_senseur = SenseursPassifs.findOne({

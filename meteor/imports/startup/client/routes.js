@@ -38,7 +38,7 @@ FlowRouter.route('/notifications/', {
   },
 });
 
-// mgdomaines.appareils.SenseursPassifs
+// millegrilles.domaines.SenseursPassifs
 
 FlowRouter.route('/SenseursPassifs/', {
   name: 'SenseursPassifs.show',

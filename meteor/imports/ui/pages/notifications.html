@@ -38,7 +38,7 @@
   {{/each}}
 </template>
 
-<template name="mgdomaines_appareils_SenseursPassifs">
+<template name="millegrilles_domaines_SenseursPassifs">
   {{#with charger_senseur source }}
     <div class="location">{{ location }}</div>
   {{/with}}
@@ -46,19 +46,19 @@
   <div class="temps">{{ format_date_moisheure derniere_notification }}</div>
 </template>
 
-<template name="mgdomaines_appareils_SenseursPassifs_temperature">
+<template name="millegrilles_domaines_SenseursPassifs_temperature">
   <div class="numerique">{{valeurs.valeur}}&deg;C</div>
 </template>
 
-<template name="mgdomaines_appareils_SenseursPassifs_humidite">
+<template name="millegrilles_domaines_SenseursPassifs_humidite">
   <div class="numerique">{{valeurs.valeur}}%</div>
 </template>
 
-<template name="mgdomaines_appareils_SenseursPassifs_pression">
+<template name="millegrilles_domaines_SenseursPassifs_pression">
   <div class="numerique">{{valeurs.valeur}} kPa</div>
 </template>
 
-<template name="mgdomaines_appareils_SenseursPassifs_millivolt">
+<template name="millegrilles_domaines_SenseursPassifs_millivolt">
   <div class="numerique">{{valeurs.valeur}} mV</div>
 </template>
 

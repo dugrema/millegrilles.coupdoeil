@@ -4,7 +4,7 @@ import { FlowRouter } from 'meteor/kadira:flow-router';
 import { Template } from 'meteor/templating';
 //import { d3 } from 'meteor/d3';
 
-import { SenseursPassifs } from '../../api/mgdomaines_appareils_SenseursPassifs.js';
+import { SenseursPassifs } from '../../api/millegrilles_domaines_SenseursPassifs.js';
 
 import { GraphiqueCharte2D } from '../graph/chart.js';
 import { menuCourant, MenuSenseursPassifs } from '../layouts/menuHelpers.js';

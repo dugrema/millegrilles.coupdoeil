@@ -3,7 +3,7 @@ import { ReactiveVar } from 'meteor/reactive-var'
 import { FlowRouter } from 'meteor/kadira:flow-router';
 import { Template } from 'meteor/templating';
 
-import { SenseursPassifs } from '../../api/mgdomaines_appareils_SenseursPassifs.js';
+import { SenseursPassifs } from '../../api/millegrilles_domaines_SenseursPassifs.js';
 
 import { menuCourant, MenuSenseursPassifs } from '../layouts/menuHelpers.js';
 

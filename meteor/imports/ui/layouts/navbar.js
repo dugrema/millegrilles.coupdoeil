@@ -3,7 +3,7 @@ import { Template } from 'meteor/templating';
 import { FlowRouter } from 'meteor/kadira:flow-router';
 
 import { Notifications } from '../../api/millegrilles_domaines_Notifications.js';
-import { SenseursPassifs } from '../../api/mgdomaines_appareils_SenseursPassifs.js';
+import { SenseursPassifs } from '../../api/millegrilles_domaines_SenseursPassifs.js';
 
 import './navbar.html';
 
