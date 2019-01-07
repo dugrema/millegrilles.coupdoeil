@@ -199,6 +199,7 @@ class RabbitMQWrapper {
 
 // Creer une instance de RabbitMQ
 export const RabbitMQ = new RabbitMQWrapper();
+import { Mongo } from 'meteor/mongo';
 
 if (Meteor.isServer) {
   // Connecter RabbitMQ sur le serveur uniquement
