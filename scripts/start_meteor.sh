@@ -26,11 +26,7 @@ MG_MONGO_CERTFILE=/usr/local/etc/millegrilles/certs/dev1.cert.pem
 MG_MONGO_KEYFILE=/home/mathieu/certificates/millegrilles/privkeys/dev1.pem
 export MG_MONGO_CAFILE MG_MONGO_CERTFILE MG_MONGO_KEYFILE
 
-export MONGO_URL # MONGO_OPLOG_URL
+export MONGO_URL MONGO_OPLOG_URL
 export MG_MQ_HOST MG_MQ_PORT MG_MQ_USER MG_MQ_PASSWORD MG_NOM_MILLEGRILLE MG_MQ_PROTOCOL
-#export MG_MQ_CERT
-
-# METEOR_SETTINGS=/home/mathieu/git/MilleGrilles.coupdoeil/meteor/dev_settings.json
 
 meteor --port $PORT
-# --settings $METEOR_SETTINGS
