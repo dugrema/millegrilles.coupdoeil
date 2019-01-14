@@ -1,4 +1,5 @@
 import '../imports/api/MongoSecurity.js';
+import '../imports/api/pki.js';
 import '../imports/api/RabbitMQ.js';
 import '../imports/api/millegrilles_domaines_SenseursPassifs.js';
 import '../imports/api/millegrilles_domaines_Notifications.js';

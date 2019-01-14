@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor';
+import { PKI } from './pki.js'
 
 class RabbitMQWrapper {
   constructor() {
@@ -48,6 +49,7 @@ class RabbitMQWrapper {
         RabbitMQ.setConnection(conn);
         RabbitMQ.ouvrirChannel();
       });
+
     }
 
     this.reconnectTimeout = null;
@@ -157,16 +159,23 @@ class RabbitMQWrapper {
   // Il faut fournir le contenu de la transaction et le domaine (routing)
   transmettreTransactionFormattee(message, domaine) {
     let infoTransaction = this._formatterInfoTransaction(domaine);
-    let message_formatte = {
-      'info-transaction': infoTransaction,
-      'charge-utile': message
-    }
+    let messageFormatte = message;  // Meme objet si ca cause pas de problemes
+    messageFormatte['en-tete'] = infoTransaction;
+
+    // Signer le message
+    this._signerMessage(messageFormatte);
+
     let routingKey = 'transaction.nouvelle';
-    this._transmettreTransaction(routingKey, message_formatte);
+    this._transmettreTransaction(routingKey, messageFormatte);
   }
 
   log_error(e) {
     console.error(e);
+  }
+
+  _signerMessage(message) {
+    let signature = PKI.signerTransaction(message);
+    message['_signature'] = signature;
   }
 
   _trouverNomMilleGrille() {
@@ -190,7 +199,9 @@ class RabbitMQWrapper {
       'domaine': domaine,
       'source-systeme': 'coupdoeil@' + RabbitMQ.getHostname(),
       'uuid-transaction': RabbitMQ.genererUUID(),
-      'estampille': tempsLecture
+      'estampille': tempsLecture,
+      'certificat': '',
+      'version': 2
     };
 
     return infoTransaction;
