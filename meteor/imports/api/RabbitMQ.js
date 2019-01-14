@@ -214,7 +214,7 @@ class RabbitMQWrapper {
       'uuid-transaction': RabbitMQ.genererUUID(),
       'estampille': tempsLecture,
       'certificat': pki.getFingerprint(),
-      'version': 2
+      'version': 3
     };
 
     return infoTransaction;
