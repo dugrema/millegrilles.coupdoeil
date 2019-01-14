@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor';
-import { PKI } from './pki.js'
+import { pki } from './pki.js'
 
 class RabbitMQWrapper {
   constructor() {
@@ -12,9 +12,14 @@ class RabbitMQWrapper {
 
     this.uuidv4 = require('uuid/v4');
     this.os = require('os');
-    this.dns = require('dns');
 
-    this.nomMilleGrille = this._trouverNomMilleGrille()
+    if(Meteor.isServer) {
+      this.nomMilleGrille = this._trouverNomMilleGrille()
+      this.setHostname();
+    } else {
+      this.nomMilleGrille = "NA";
+      this.hostname = "NA";
+    }
   }
 
   connect(connection) {
@@ -120,8 +125,13 @@ class RabbitMQWrapper {
   }
 
   getHostname() {
-    let hostname = this.os.hostname();
-    return hostname;
+    return this.hostname;
+  }
+
+  setHostname() {
+    const fqdn = require('node-fqdn');
+    this.hostname = fqdn();
+    console.log("FQDN: " + this.hostname);
   }
 
   // Methode qui permet de transmettre une transaction au backend RabbitMQ
@@ -158,9 +168,12 @@ class RabbitMQWrapper {
   // Utiliser cette methode pour simplifier le formattage d'une transaction.
   // Il faut fournir le contenu de la transaction et le domaine (routing)
   transmettreTransactionFormattee(message, domaine) {
-    let infoTransaction = this._formatterInfoTransaction(domaine);
     let messageFormatte = message;  // Meme objet si ca cause pas de problemes
-    messageFormatte['en-tete'] = infoTransaction;
+
+    if(Meteor.isServer) {
+      let infoTransaction = this._formatterInfoTransaction(domaine);
+      messageFormatte['en-tete'] = infoTransaction;
+    }
 
     // Signer le message
     this._signerMessage(messageFormatte);
@@ -174,7 +187,7 @@ class RabbitMQWrapper {
   }
 
   _signerMessage(message) {
-    let signature = PKI.signerTransaction(message);
+    let signature = pki.signerTransaction(message);
     message['_signature'] = signature;
   }
 
@@ -200,7 +213,7 @@ class RabbitMQWrapper {
       'source-systeme': 'coupdoeil@' + RabbitMQ.getHostname(),
       'uuid-transaction': RabbitMQ.genererUUID(),
       'estampille': tempsLecture,
-      'certificat': '',
+      'certificat': pki.getFingerprint(),
       'version': 2
     };
 

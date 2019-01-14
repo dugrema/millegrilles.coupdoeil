@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 
 class PKIUtils {
+  // Classe qui supporte des operations avec certificats et cles privees.
 
   constructor() {
     let mq_cacert = process.env.MG_MQ_CAFILE,
@@ -16,6 +17,7 @@ class PKIUtils {
 
     if(Meteor.isServer) {
       this.chargerPEMs();
+      this._verifierCertificat();
     }
   }
 
@@ -23,11 +25,30 @@ class PKIUtils {
     const fs = require('fs');
     console.log("PKI: Chargement cle " + this.keyFile + " et cert " + this.certFile);
     this.cle = fs.readFileSync(this.keyFile);
-    //this.cert = fs.readFileSync(this.certFile);
+    this.chargerFingerprint();
   }
 
   _verifierCertificat() {
+    this.getFingerprint();
+  }
 
+  chargerFingerprint() {
+    const x509 = require('x509');
+    let parsedCert = x509.parseCert(this.certFile);
+    let fingerprint = parsedCert['fingerPrint'];
+
+    // Pour correspondre au format Python, enlever les colons (:) et
+    // mettre en lowercase.
+    fingerprint = fingerprint.replace(/:/g, '').toLowerCase();
+
+    console.log("Certificat fingerprint: " + fingerprint);
+    //console.log(parsedCert);
+
+    this.fingerprint = fingerprint;
+  }
+
+  getFingerprint() {
+    return this.fingerprint;
   }
 
   signerTransaction(transaction) {
@@ -40,11 +61,15 @@ class PKIUtils {
 
       // Stringify en json trie
       let transactionJson = stringify(transaction);
-      console.log("Message utilise pour signature: " + transactionJson);
+      // console.log("Message utilise pour signature: " + transactionJson);
 
       // Creer algo signature et signer
       sign.write(transactionJson);
-      signature = sign.sign(this.cle, 'base64');
+      let parametresSignature = {
+        "key": this.cle,
+        "padding": crypto.constants.RSA_PKCS1_PSS_PADDING
+      }
+      signature = sign.sign(parametresSignature, 'base64');
     }
 
     return signature;
@@ -52,4 +77,4 @@ class PKIUtils {
 
 };
 
-export const PKI = new PKIUtils();
+export const pki = new PKIUtils();
