@@ -187,6 +187,12 @@ class RabbitMQWrapper {
   }
 
   _signerMessage(message) {
+    // Produire le hachage du contenu avant de signer - le hash doit
+    // etre inclus dans l'entete pour faire partie de la signature.
+    let hachage = pki.hacherTransaction(message);
+    message['en-tete']['hachage-contenu'] = hachage;
+
+    // Signer la transaction. Ajoute l'information du certificat dans l'entete.
     let signature = pki.signerTransaction(message);
     message['_signature'] = signature;
   }
@@ -214,7 +220,8 @@ class RabbitMQWrapper {
       'uuid-transaction': RabbitMQ.genererUUID(),
       'estampille': tempsLecture,
       'certificat': pki.getFingerprint(),
-      'version': 3
+      'hachage-contenu': '',  // Doit etre calcule a partir du contenu
+      'version': 4
     };
 
     return infoTransaction;

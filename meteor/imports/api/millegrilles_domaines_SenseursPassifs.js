@@ -3,7 +3,7 @@ import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
 import { RabbitMQ } from './RabbitMQ.js';
 
-export const SenseursPassifs = new Mongo.Collection('millegrilles_domaines_SenseursPassifs');
+export const SenseursPassifs = new Mongo.Collection('millegrilles.domaines.SenseursPassifs');
 
 if (Meteor.isServer) {
   // This code only runs on the server

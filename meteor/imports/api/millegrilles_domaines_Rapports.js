@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 
-export const Rapports = new Mongo.Collection('millegrilles_domaines_Rapports');
+export const Rapports = new Mongo.Collection('millegrilles.domaines.Rapports');
 
 if (Meteor.isServer) {
 

@@ -3,7 +3,7 @@ import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
 import { RabbitMQ } from './RabbitMQ.js';
 
-export const Principale = new Mongo.Collection('millegrilles_domaines_Principale');
+export const Principale = new Mongo.Collection('millegrilles.domaines.Principale');
 
 if (Meteor.isServer) {
 

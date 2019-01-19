@@ -75,6 +75,35 @@ class PKIUtils {
     return signature;
   }
 
+  hacherTransaction(transaction) {
+    let hachage_transaction = 'N/A';
+    if(Meteor.isServer) {
+      const crypto = require('crypto');
+      const hash = crypto.createHash('sha256');
+      const stringify = require('json-stable-stringify');
+
+      // Copier transaction sans l'entete
+      let copie_transaction = {};
+      for(let elem in transaction) {
+        if (elem != 'en-tete') {
+          copie_transaction[elem] = transaction[elem];
+        }
+      }
+
+      // Stringify en json trie
+      let transactionJson = stringify(copie_transaction);
+      console.log("Message utilise pour hachage: " + transactionJson);
+
+      // Creer algo signature et signer
+      hash.write(transactionJson);
+      //hash.end();
+
+      hachage_transaction = hash.digest('base64')
+    }
+
+    return hachage_transaction;
+  }
+
 };
 
 export const pki = new PKIUtils();
