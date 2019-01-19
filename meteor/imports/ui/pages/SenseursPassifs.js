@@ -75,13 +75,13 @@ Template.sectionSenseurs.helpers({
 
 Template.senseur.helpers({
   temperature_existe(){
-    return this.temperature > 0;
+    return !isNaN(this.temperature);
   },
   humidite_existe(){
-    return this.humidite > 0;
+    return !isNaN(this.humidite);
   },
   pression_existe(){
-    return this.pression > 0;
+    return !isNaN(this.pression);
   },
   libelle_senseur(){
     if(this.location !== undefined) return this.location;

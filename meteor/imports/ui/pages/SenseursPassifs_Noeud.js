@@ -92,16 +92,16 @@ Template.SenseurPassifs_Noeud_Show.helpers({
 
 Template.SenseurPassifs_Senseur_Show.helpers({
   temperature_existe(senseur){
-    return senseur.temperature > 0;
+    return !isNaN(senseur.temperature);
   },
   humidite_existe(senseur){
-    return senseur.humidite > 0;
+    return !isNaN(senseur.humidite);
   },
   pression_existe(senseur){
-    return senseur.pression > 0;
+    return !isNaN(senseur.pression);
   },
   millivolt_existe(senseur){
-    return senseur.millivolt > 0;
+    return !isNaN(senseur.millivolt);
   },
   libelle_senseur(senseur){
     if(senseur.location !== undefined) return senseur.location;

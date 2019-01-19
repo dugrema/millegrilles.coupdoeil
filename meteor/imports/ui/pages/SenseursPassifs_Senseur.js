@@ -51,17 +51,20 @@ Template.senseurDetailUnique.events({
 });
 
 Template.senseur_actuel.helpers({
+  temperature_existe(){
+    return !isNaN(this.temperature);
+  },
   tendance_existe(){
     return this.pression_tendance !== null;
   },
   humidite_existe(){
-    return this.humidite > 0;
+    return !isNaN(this.humidite);
   },
   pression_existe(){
-    return this.pression > 0;
+    return !isNaN(this.pression);
   },
   batterie_existe(){
-    return this.millivolt > 0;
+    return !isNaN(this.millivolt);
   },
   temps_lecture_formatte(){
     return moment(this.temps_lecture).format("MMM-DD HH:mm:ss");
