@@ -247,11 +247,12 @@ if (Meteor.isServer) {
 
   let mqConnectionUrl =
     mq_protocol + '://' +
-    mq_user + ':' + mq_password + '@' +
+    mq_user + ':%PASSWORD%@' +
     mq_host + ':' + mq_port +
     '/' + RabbitMQ.nomMilleGrille;
 
   console.log("URL Connexion " + mqConnectionUrl)
+  mqConnectionUrl = mqConnectionUrl.replace('%PASSWORD%', mq_password);
 
   RabbitMQ.connect(mqConnectionUrl);
 }

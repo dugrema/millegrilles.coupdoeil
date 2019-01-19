@@ -44,9 +44,9 @@ class PKIUtils {
     fingerprint = fingerprint.replace(/:/g, '').toLowerCase();
     console.log("Certificat fingerprint: " + fingerprint);
 
-    //console.log(parsedCert);
-    this.commonName = parsedCert.issuer.commonName;
-    //console.log("Issuer CN: " + this.commonName)
+    console.log(parsedCert);
+    this.commonName = parsedCert.subject.commonName;
+    console.log("Certificat du noeud, sujet CN: " + this.commonName)
 
     this.fingerprint = fingerprint;
   }
