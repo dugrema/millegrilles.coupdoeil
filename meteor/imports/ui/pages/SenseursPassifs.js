@@ -40,8 +40,8 @@ Template.sectionSenseurs.helpers({
     var liste = [];
     for(var no_senseur in this.dict_senseurs) {
       var dict = {};
-      dict['no_senseur'] = no_senseur; // Cle du dictionnaire, on l'ajoute a la liste
-      dict['noeud'] = this; // Reference vers le noeud
+      // dict['no_senseur'] = no_senseur; // Cle du dictionnaire, on l'ajoute a la liste
+      // dict['noeud'] = this; // Reference vers le noeud
 
       var valeurs_senseur = this.dict_senseurs[no_senseur]
       for(var cle_valeurs in valeurs_senseur) {
@@ -74,17 +74,8 @@ Template.sectionSenseurs.helpers({
 });
 
 Template.senseur.helpers({
-  temperature_existe(){
-    return !isNaN(this.temperature);
-  },
-  humidite_existe(){
-    return !isNaN(this.humidite);
-  },
-  pression_existe(){
-    return !isNaN(this.pression);
-  },
-  libelle_senseur(){
-    if(this.location !== undefined) return this.location;
-    return 'Senseur ' + this.no_senseur;
+  libelle_senseur(senseur){
+    if(senseur.location !== undefined) return senseur.location;
+    return 'Senseur ' + senseur.senseur;
   },
 });

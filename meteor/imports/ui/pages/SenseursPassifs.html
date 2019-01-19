@@ -32,7 +32,7 @@
 <template name="sectionSenseurs">
   <ul classe="listeSenseurs">
     {{#each senseurs}}
-      {{> senseur}}
+      {{> senseur senseur=this}}
     {{/each}}
   </ul>
 </template>
@@ -40,17 +40,19 @@
 <template name="senseur">
   <li class="senseur">
     <div class="location">
-      <a href="{{pathFor 'SenseursPassifs.Senseur.show' noeud=noeud senseur=no_senseur}}" title="{{libelle_senseur}}">{{libelle_senseur}}</a>
+      <a
+        href="{{pathFor 'SenseursPassifs.Senseur.show' noeud=senseur.noeud senseur=senseur.senseur}}"
+        title="{{libelle_senseur senseur}}">{{libelle_senseur senseur}}</a>
     </div>
-    {{#if temperature_existe}}
-      <div class="numerique temperature">{{temperature}}&deg;C</div>
+    {{#if est_nombre senseur.temperature}}
+      <div class="numerique temperature">{{senseur.temperature}}&deg;C</div>
     {{/if}}
-    {{#if humidite_existe}}
-    <div class="numerique humidite">{{humidite}}%</div>
+    {{#if est_nombre senseur.humidite}}
+    <div class="numerique humidite">{{senseur.humidite}}%</div>
     {{/if}}
-    {{#if pression_existe}}
-      <div class="numerique pression">{{pression}} kPa</div>
+    {{#if est_nombre senseur.pression}}
+      <div class="numerique pression">{{senseur.pression}} kPa</div>
     {{/if}}
-    <div class="temps">{{format_date_moisheure temps_lecture}}</div>
+    <div class="temps">{{format_date_moisheure senseur.temps_lecture}}</div>
   </li>
 </template>

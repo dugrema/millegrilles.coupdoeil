@@ -57,8 +57,8 @@ Template.SenseurPassifs_Noeud_Show.helpers({
     var liste = [];
     for(var no_senseur in noeud.dict_senseurs) {
       var dict = {};
-      dict['no_senseur'] = no_senseur; // Cle du dictionnaire, on l'ajoute a la liste
-      dict['noeud'] = noeud; // Reference vers le noeud
+      // dict['no_senseur'] = no_senseur; // Cle du dictionnaire, on l'ajoute a la liste
+      // dict['noeud'] = noeud; // Reference vers le noeud
 
       var valeurs_senseur = noeud.dict_senseurs[no_senseur]
       for(var cle_valeurs in valeurs_senseur) {
@@ -91,18 +91,6 @@ Template.SenseurPassifs_Noeud_Show.helpers({
 });
 
 Template.SenseurPassifs_Senseur_Show.helpers({
-  temperature_existe(senseur){
-    return !isNaN(senseur.temperature);
-  },
-  humidite_existe(senseur){
-    return !isNaN(senseur.humidite);
-  },
-  pression_existe(senseur){
-    return !isNaN(senseur.pression);
-  },
-  millivolt_existe(senseur){
-    return !isNaN(senseur.millivolt);
-  },
   libelle_senseur(senseur){
     if(senseur.location !== undefined) return senseur.location;
     return 'Senseur ' + senseur.no_senseur;

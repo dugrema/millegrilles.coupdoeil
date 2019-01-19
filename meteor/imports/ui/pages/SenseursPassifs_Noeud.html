@@ -34,18 +34,18 @@
   <div class="w3-card w3-round w3-white">
     <div class="w3-container w3-padding senseur">
       <h6 class="w3-opacity">
-        Senseur <a href="{{pathFor 'SenseursPassifs.Senseur.show' noeud=senseur.noeud senseur=senseur.no_senseur}}" title="{{libelle_senseur senseur}}">{{libelle_senseur senseur}}</a>
+        Senseur <a href="{{pathFor 'SenseursPassifs.Senseur.show' noeud=senseur.noeud senseur=senseur.senseur}}" title="{{libelle_senseur senseur}}">{{libelle_senseur senseur}}</a>
       </h6>
-      {{#if temperature_existe senseur}}
+      {{#if est_nombre senseur.temperature}}
         <div class="numerique temperature">{{senseur.temperature}}&deg;C</div>
       {{/if}}
-      {{#if humidite_existe senseur}}
+      {{#if est_nombre senseur.humidite}}
         <div class="numerique humidite">{{senseur.humidite}}%</div>
       {{/if}}
-      {{#if pression_existe senseur}}
+      {{#if est_nombre senseur.pression}}
         <div class="numerique pression">{{senseur.pression}} kPa</div>
       {{/if}}
-      {{#if millivolt_existe senseur}}
+      {{#if est_nombre senseur.millivolt}}
         <div class="numerique pression">{{senseur.millivolt}} mV</div>
       {{/if}}
       <div class="temps">{{format_date_moisheure senseur.temps_lecture}}</div>
