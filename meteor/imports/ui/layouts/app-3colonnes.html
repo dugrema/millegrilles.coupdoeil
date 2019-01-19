@@ -25,9 +25,11 @@
 
 <template name="App_3colonnes_footer">
   <footer class="w3-container w3-theme-d3 w3-padding-16">
-    <h5>Coup D'Oeil version 1.3.5</h5>
-    Coup D'Oeil fait partie du groupe de logiciels
-    <a href="https://www.millegrilles.com">MilleGrilles</a>.
+    {{#let configuration=configuration}}
+      <h5>Coup D'Oeil version {{ configuration.coupdoeil.version }}</h5>
+      Coup D'Oeil fait partie du groupe de logiciels
+      <a href="https://www.millegrilles.com">MilleGrilles</a>.
+    {{/let}}
   </footer>
 
   <footer class="w3-container w3-theme-d5">

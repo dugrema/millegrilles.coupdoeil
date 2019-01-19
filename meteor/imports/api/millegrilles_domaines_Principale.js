@@ -7,6 +7,9 @@ export const Principale = new Mongo.Collection('millegrilles.domaines.Principale
 
 if (Meteor.isServer) {
 
+  // Set version coupdoeil_meteor
+  //Principale.update({'_mg-libelle': 'configuration'}, {'coupdoeil.version': '1.2.3'})
+
   // Publications
   Meteor.publish('principale_configurations', function () {
     return Principale.find({
