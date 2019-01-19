@@ -25,14 +25,16 @@ class PKIUtils {
     const fs = require('fs');
     console.log("PKI: Chargement cle " + this.keyFile + " et cert " + this.certFile);
     this.cle = fs.readFileSync(this.keyFile);
-    this.chargerFingerprint();
+
+    // Charger le certificat pour conserver commonName, fingerprint
+    this.chargerCertificat();
   }
 
   _verifierCertificat() {
     this.getFingerprint();
   }
 
-  chargerFingerprint() {
+  chargerCertificat() {
     const x509 = require('x509');
     let parsedCert = x509.parseCert(this.certFile);
     let fingerprint = parsedCert['fingerPrint'];
@@ -40,15 +42,21 @@ class PKIUtils {
     // Pour correspondre au format Python, enlever les colons (:) et
     // mettre en lowercase.
     fingerprint = fingerprint.replace(/:/g, '').toLowerCase();
-
     console.log("Certificat fingerprint: " + fingerprint);
+
     //console.log(parsedCert);
+    this.commonName = parsedCert.issuer.commonName;
+    //console.log("Issuer CN: " + this.commonName)
 
     this.fingerprint = fingerprint;
   }
 
   getFingerprint() {
     return this.fingerprint;
+  }
+
+  getCommonName() {
+    return this.commonName;
   }
 
   signerTransaction(transaction) {

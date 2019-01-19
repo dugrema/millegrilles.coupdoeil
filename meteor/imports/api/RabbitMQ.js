@@ -214,9 +214,10 @@ class RabbitMQWrapper {
     // Calculer secondes UTC (getTime retourne millisecondes locales)
     let dateUTC = (new Date().getTime()/1000) + new Date().getTimezoneOffset()*60;
     let tempsLecture = Math.trunc(dateUTC);
+    let sourceSystem = 'coupdoeil/' + RabbitMQ.getHostname() + "@" + pki.getCommonName();
     let infoTransaction = {
       'domaine': domaine,
-      'source-systeme': 'coupdoeil@' + RabbitMQ.getHostname(),
+      'source-systeme': sourceSystem,
       'uuid-transaction': RabbitMQ.genererUUID(),
       'estampille': tempsLecture,
       'certificat': pki.getFingerprint(),
