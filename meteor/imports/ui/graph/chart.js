@@ -15,7 +15,8 @@ export class GraphiqueCharte2D {
     const graphique = new Object();
     this.graphique = graphique;
 
-    const nomVariableOrdonnee1 = this.nomVariableOrdonnee1;
+    const nomVariableOrdonnee1 = this.nomVariableOrdonnee1,
+          nomVariableOrdonnee2 = this.nomVariableOrdonnee2;
 
     // Set the dimensions of the canvas / graph
     graphique.margin = {top: 30, right: 20, bottom: 30, left: 50};
@@ -34,6 +35,10 @@ export class GraphiqueCharte2D {
     graphique.valueline = d3.svg.line()
         .x(function(d) { return graphique.x_range(d["periode"]); })
         .y(function(d) { return graphique.y_range(d[nomVariableOrdonnee1]); });
+
+    graphique.valueline2 = d3.svg.line()
+        .x(function(d) { return graphique.x_range(d["periode"]); })
+        .y(function(d) { return graphique.y_range(d[nomVariableOrdonnee2]); });
   }
 
   attacher_svg() {
@@ -60,7 +65,8 @@ export class GraphiqueCharte2D {
 
   appliquerDonnees(donnees) {
     const graphique = this.graphique;
-    const nomVariableOrdonnee1 = this.nomVariableOrdonnee1;
+    const nomVariableOrdonnee1 = this.nomVariableOrdonnee1,
+          nomVariableOrdonnee2 = this.nomVariableOrdonnee2;
 
     // Sauvegarder les donnees temporairement pour affichage des que le
     // rendering est pret.
@@ -98,9 +104,23 @@ export class GraphiqueCharte2D {
           .data(donnees)
           .enter()
           .append("circle")
+          .attr("class", "maximum")
           .attr("r", 3.5)
           .attr("cx", function(d) { return graphique.x_range(d["periode"]); })
           .attr("cy", function(d) { return graphique.y_range(d[nomVariableOrdonnee1]); });
+
+      graphique.svg.append("path")
+          .attr("class", "line")
+          .attr("d", graphique.valueline2(donnees));
+
+      graphique.svg.selectAll("dot")
+          .data(donnees)
+          .enter()
+          .append("circle")
+          .attr("class", "minimum")
+          .attr("r", 3.5)
+          .attr("cx", function(d) { return graphique.x_range(d["periode"]); })
+          .attr("cy", function(d) { return graphique.y_range(d[nomVariableOrdonnee2]); });
 
       // Add the X Axis
       graphique.svg.append("g")

@@ -75,11 +75,13 @@ li.notification div.temps {
   }
 }
 
-/*
-svg circle {
-  fill: #663399;
+svg circle.minimum {
+  fill: blue;
 }
-*/
+
+svg circle.maximum {
+  fill: red;
+}
 
 path {
     stroke: steelblue;

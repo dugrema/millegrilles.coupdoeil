@@ -110,7 +110,7 @@ Template.senseur_historique_horaire.helpers({
   },
   donnees_changees(donnees) {
     const graphiqueHoraireObj = Template.instance().graphiqueHoraireObj;
-    graphiqueHoraireObj.appliquerDonnees(donnees);
+    //graphiqueHoraireObj.appliquerDonnees(donnees);
   },
 });
 
@@ -158,23 +158,48 @@ Template.senseur_historique_quotidien.helpers({
     return pression
   },
   donnees_changees(donnees) {
-    const graphiqueQuotidienObj = Template.instance().graphiqueQuotidienObj;
-    graphiqueQuotidienObj.appliquerDonnees(donnees);
+    const graphiqueQuotidienTemperatureObj = Template.instance().graphiqueQuotidienTemperatureObj,
+          graphiqueQuotidienHumiditeObj = Template.instance().graphiqueQuotidienHumiditeObj,
+          graphiqueQuotidienPressionObj = Template.instance().graphiqueQuotidienPressionObj;
+
+    graphiqueQuotidienTemperatureObj.appliquerDonnees(donnees);
+    graphiqueQuotidienHumiditeObj.appliquerDonnees(donnees);
+    graphiqueQuotidienPressionObj.appliquerDonnees(donnees);
   },
 });
 
 Template.senseur_historique_quotidien.onCreated( function() {
-  const graphiqueQuotidienObj = new GraphiqueCharte2D();
-  this.graphiqueQuotidienObj = graphiqueQuotidienObj;
-  graphiqueQuotidienObj.idDiv = "#graphique_quotidien";
-  graphiqueQuotidienObj.nomVariableOrdonnee1 = "temperature-maximum";
-  graphiqueQuotidienObj.preparer_graphique();
+  const graphiqueQuotidienTemperatureObj = new GraphiqueCharte2D();
+  this.graphiqueQuotidienTemperatureObj = graphiqueQuotidienTemperatureObj;
+  graphiqueQuotidienTemperatureObj.idDiv = "#graphique_quotidien_temperature";
+  graphiqueQuotidienTemperatureObj.nomVariableOrdonnee1 = "temperature-maximum";
+  graphiqueQuotidienTemperatureObj.nomVariableOrdonnee2 = "temperature-minimum";
+  graphiqueQuotidienTemperatureObj.preparer_graphique();
+
+  const graphiqueQuotidienHumiditeObj = new GraphiqueCharte2D();
+  this.graphiqueQuotidienHumiditeObj = graphiqueQuotidienHumiditeObj;
+  graphiqueQuotidienHumiditeObj.idDiv = "#graphique_quotidien_humidite";
+  graphiqueQuotidienHumiditeObj.nomVariableOrdonnee1 = "humidite-maximum";
+  graphiqueQuotidienHumiditeObj.nomVariableOrdonnee2 = "humidite-minimum";
+  graphiqueQuotidienHumiditeObj.preparer_graphique();
+
+  const graphiqueQuotidienPressionObj = new GraphiqueCharte2D();
+  this.graphiqueQuotidienPressionObj = graphiqueQuotidienPressionObj;
+  graphiqueQuotidienPressionObj.idDiv = "#graphique_quotidien_pression";
+  graphiqueQuotidienPressionObj.nomVariableOrdonnee1 = "pression-maximum";
+  graphiqueQuotidienPressionObj.nomVariableOrdonnee2 = "pression-minimum";
+  graphiqueQuotidienPressionObj.preparer_graphique();
+
 });
 
 Template.senseur_historique_quotidien.onRendered( function() {
   // Attacher l'element SVG pour le graphique 31 jours
-  const graphiqueQuotidienObj = this.graphiqueQuotidienObj;
-  graphiqueQuotidienObj.attacher_svg();
+  const graphiqueQuotidienTemperatureObj = this.graphiqueQuotidienTemperatureObj,
+        graphiqueQuotidienHumiditeObj = Template.instance().graphiqueQuotidienHumiditeObj,
+        graphiqueQuotidienPressionObj = Template.instance().graphiqueQuotidienPressionObj;
+  graphiqueQuotidienTemperatureObj.attacher_svg();
+  graphiqueQuotidienHumiditeObj.attacher_svg();
+  graphiqueQuotidienPressionObj.attacher_svg();
 });
 
 Template.senseur_liens.events({
