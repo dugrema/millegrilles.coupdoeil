@@ -36,19 +36,19 @@
       <h6 class="w3-opacity">
         Senseur <a href="{{pathFor 'SenseursPassifs.Senseur.show' noeud=senseur.noeud senseur=senseur.senseur}}" title="{{libelle_senseur senseur}}">{{libelle_senseur senseur}}</a>
       </h6>
+      <div>Derniere lecture: {{format_date_moisheure senseur.temps_lecture}}</div>
+      {{#if est_nombre senseur.millivolt}}
+        <div>Batterie: {{senseur.millivolt}} mV</div>
+      {{/if}}
       {{#if est_nombre senseur.temperature}}
-        <div class="numerique temperature">{{senseur.temperature}}&deg;C</div>
+        <div class="temperature">Temperature: {{senseur.temperature}}&deg;C</div>
       {{/if}}
       {{#if est_nombre senseur.humidite}}
-        <div class="numerique humidite">{{senseur.humidite}}%</div>
+        <div class="humidite">Humidite: {{senseur.humidite}}%</div>
       {{/if}}
       {{#if est_nombre senseur.pression}}
-        <div class="numerique pression">{{senseur.pression}} kPa</div>
+          <div class="pression">Pression atmospherique: {{senseur.pression}} kPa ({{senseur.tendance_formattee}})</div>
       {{/if}}
-      {{#if est_nombre senseur.millivolt}}
-        <div class="numerique pression">{{senseur.millivolt}} mV</div>
-      {{/if}}
-      <div class="temps">{{format_date_moisheure senseur.temps_lecture}}</div>
     </div>
   </div>
 </template>

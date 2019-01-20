@@ -33,25 +33,22 @@
 <template name="senseur_actuel">
   <div>Noeud: {{noeud}}</div>
   <div>Numero senseur: {{senseur}}</div>
+  <div class="temps">Derniere lecture: {{temps_lecture_formatte}}</div>
   {{#if batterie_existe}}
     <div>Batterie: {{millivolt}} mV</div>
+  {{/if}}
+  {{#if est_nombre temperature}}
+    <div class="numerique temperature">Temperature: {{temperature}}&deg;C</div>
+  {{/if}}
+  {{#if est_nombre humidite}}
+    <div class="numerique humidite">Humidite: {{humidite}}%</div>
+  {{/if}}
+  {{#if est_nombre pression}}
+      <div class="numerique pression">Pression atmospherique: {{pression}} kPa</div>
   {{/if}}
   {{#if tendance_existe}}
     <div class="tendance">Tendance pression atmospherique: {{tendance_formattee}}</div>
   {{/if}}
-
-  <ul>
-    <li class="senseur">
-      <div class="temps">{{temps_lecture_formatte}}</div>
-      <div class="numerique temperature">{{temperature}}&deg;C</div>
-      {{#if humidite_existe}}
-        <div class="numerique humidite">{{humidite}}%</div>
-      {{/if}}
-      {{#if pression_existe}}
-          <div class="numerique pression">{{pression}} kPa</div>
-      {{/if}}
-    </li>
-  </ul>
 
 </template>
 
