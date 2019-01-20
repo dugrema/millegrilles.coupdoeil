@@ -56,12 +56,19 @@
 </template>
 
 <template name="senseur_historique_horaire">
-  <h6 class="w3-opacity">
+  <h5 class="w3-opacity">
     Historique 24 heures {{location}}
-  </h6>
+  </h5>
 
-  <!-- {{donnees_changees moyennes_dernier_jour}} -->
-  <div id="graphique_horaire"></div>
+  {{donnees_changees moyennes_dernier_jour}}
+  <h6>Temperature</h6>
+  <div id="graphique_horaire_temperature"></div>
+
+  <h6>Humidite</h6>
+  <div id="graphique_horaire_humidite"></div>
+
+  <h6>Pression</h6>
+  <div id="graphique_horaire_pression"></div>
 
   <!--
   <ul>

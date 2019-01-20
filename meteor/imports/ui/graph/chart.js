@@ -2,13 +2,19 @@
 
 export class GraphiqueCharte2D {
 
-  constructor() {
+  constructor(parametres) {
     this.svg_pret = false;
     this.donnees = null;
 
     // Defaults
     this.idDiv = '#graphique_horaire';
     this.nomVariableOrdonnee1 = 'temperature-maximum';
+    this.nomVariableOrdonnee1 = 'temperature-minimum';
+    this.nombreSeriesDonnees = 1;
+
+    this.ordonnee_base_max = 100;
+    this.ordonnee_base_min = 0;
+
   }
 
   preparer_graphique() {
@@ -36,9 +42,11 @@ export class GraphiqueCharte2D {
         .x(function(d) { return graphique.x_range(d["periode"]); })
         .y(function(d) { return graphique.y_range(d[nomVariableOrdonnee1]); });
 
-    graphique.valueline2 = d3.svg.line()
-        .x(function(d) { return graphique.x_range(d["periode"]); })
-        .y(function(d) { return graphique.y_range(d[nomVariableOrdonnee2]); });
+    if (this.nombreSeriesDonnees > 1) {
+      graphique.valueline2 = d3.svg.line()
+          .x(function(d) { return graphique.x_range(d["periode"]); })
+          .y(function(d) { return graphique.y_range(d[nomVariableOrdonnee2]); });
+    }
   }
 
   attacher_svg() {
@@ -83,15 +91,21 @@ export class GraphiqueCharte2D {
       );
 
       // Simuler des donnees pour introduire le range -20 a 10 celsius.
-      let temp_moins10 = {}; temp_moins10[nomVariableOrdonnee1] = -10;
-      let temp_plus20 = {}; temp_plus20[nomVariableOrdonnee1] = 20;
+      let val_base_min = {}; val_base_min[nomVariableOrdonnee1] = this.ordonnee_base_min;
+      let val_base_max = {}; val_base_max[nomVariableOrdonnee1] = this.ordonnee_base_max;
       let range_y_extremes = [
-        temp_moins10, // Mettre les extremes habituels
-        temp_plus20]  // de temperature
+        val_base_min, // Mettre les extremes habituels
+        val_base_max]  // de temperature
         .concat(donnees); // Ajouter donnees reeles pour allonger au besoin
       graphique.y_range.domain([
-        d3.min(range_y_extremes, function(d) { return d[nomVariableOrdonnee1]; }),
-        d3.max(range_y_extremes, function(d) { return d[nomVariableOrdonnee1]; })
+        d3.min(range_y_extremes, function(d) {
+          if(d[nomVariableOrdonnee2] !== undefined) return Math.min(d[nomVariableOrdonnee1], d[nomVariableOrdonnee2]);
+          else return d[nomVariableOrdonnee1];
+        }),
+        d3.max(range_y_extremes, function(d) {
+          if(d[nomVariableOrdonnee2] !== undefined) return Math.max(d[nomVariableOrdonnee1], d[nomVariableOrdonnee2]);
+          else return d[nomVariableOrdonnee1];
+        })
       ]);
 
       // Add the valueline path.
@@ -109,18 +123,20 @@ export class GraphiqueCharte2D {
           .attr("cx", function(d) { return graphique.x_range(d["periode"]); })
           .attr("cy", function(d) { return graphique.y_range(d[nomVariableOrdonnee1]); });
 
-      graphique.svg.append("path")
-          .attr("class", "line")
-          .attr("d", graphique.valueline2(donnees));
+      if (this.nombreSeriesDonnees > 1) {
+        graphique.svg.append("path")
+            .attr("class", "line")
+            .attr("d", graphique.valueline2(donnees));
 
-      graphique.svg.selectAll("dot")
-          .data(donnees)
-          .enter()
-          .append("circle")
-          .attr("class", "minimum")
-          .attr("r", 3.5)
-          .attr("cx", function(d) { return graphique.x_range(d["periode"]); })
-          .attr("cy", function(d) { return graphique.y_range(d[nomVariableOrdonnee2]); });
+        graphique.svg.selectAll("dot")
+            .data(donnees)
+            .enter()
+            .append("circle")
+            .attr("class", "minimum")
+            .attr("r", 3.5)
+            .attr("cx", function(d) { return graphique.x_range(d["periode"]); })
+            .attr("cy", function(d) { return graphique.y_range(d[nomVariableOrdonnee2]); });
+      }
 
       // Add the X Axis
       graphique.svg.append("g")

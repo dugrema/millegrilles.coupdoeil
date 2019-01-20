@@ -109,23 +109,52 @@ Template.senseur_historique_horaire.helpers({
     return false;
   },
   donnees_changees(donnees) {
-    const graphiqueHoraireObj = Template.instance().graphiqueHoraireObj;
-    //graphiqueHoraireObj.appliquerDonnees(donnees);
+    const graphiqueHoraireTemperatureObj = Template.instance().graphiqueHoraireTemperatureObj,
+          graphiqueHoraireHumiditeObj = Template.instance().graphiqueHoraireHumiditeObj,
+          graphiqueHorairePressionObj = Template.instance().graphiqueHorairePressionObj;
+
+    graphiqueHoraireTemperatureObj.appliquerDonnees(donnees);
+    graphiqueHoraireHumiditeObj.appliquerDonnees(donnees);
+    graphiqueHorairePressionObj.appliquerDonnees(donnees);
   },
 });
 
 Template.senseur_historique_horaire.onCreated( function() {
-  const graphiqueHoraireObj = new GraphiqueCharte2D();
-  this.graphiqueHoraireObj = graphiqueHoraireObj;
-  graphiqueHoraireObj.idDiv = "#graphique_horaire";
-  graphiqueHoraireObj.nomVariableOrdonnee1 = "temperature-moyenne";
-  graphiqueHoraireObj.preparer_graphique();
+  const graphiqueHoraireTemperatureObj = new GraphiqueCharte2D();
+  this.graphiqueHoraireTemperatureObj = graphiqueHoraireTemperatureObj;
+  graphiqueHoraireTemperatureObj.idDiv = "#graphique_horaire_temperature";
+  graphiqueHoraireTemperatureObj.nomVariableOrdonnee1 = "temperature-moyenne";
+  graphiqueHoraireTemperatureObj.ordonnee_base_max = 20;
+  graphiqueHoraireTemperatureObj.ordonnee_base_min = -10;
+  graphiqueHoraireTemperatureObj.preparer_graphique();
+
+  const graphiqueHoraireHumiditeObj = new GraphiqueCharte2D();
+  this.graphiqueHoraireHumiditeObj = graphiqueHoraireHumiditeObj;
+  graphiqueHoraireHumiditeObj.idDiv = "#graphique_horaire_humidite";
+  graphiqueHoraireHumiditeObj.nomVariableOrdonnee1 = "humidite-moyenne";
+  graphiqueHoraireHumiditeObj.ordonnee_base_max = 20;
+  graphiqueHoraireHumiditeObj.ordonnee_base_min = -10;
+  graphiqueHoraireHumiditeObj.preparer_graphique();
+
+  const graphiqueHorairePressionObj = new GraphiqueCharte2D();
+  this.graphiqueHorairePressionObj = graphiqueHorairePressionObj;
+  graphiqueHorairePressionObj.idDiv = "#graphique_horaire_pression";
+  graphiqueHorairePressionObj.nomVariableOrdonnee1 = "pression-moyenne";
+  graphiqueHorairePressionObj.ordonnee_base_max = 20;
+  graphiqueHorairePressionObj.ordonnee_base_min = -10;
+  graphiqueHorairePressionObj.preparer_graphique();
+
 });
 
 Template.senseur_historique_horaire.onRendered( function() {
   // Attacher l'element SVG pour le graphique 24 heures
-  const graphiqueHoraireObj = this.graphiqueHoraireObj;
-  graphiqueHoraireObj.attacher_svg();
+  const graphiqueHoraireTemperatureObj = this.graphiqueHoraireTemperatureObj,
+        graphiqueHoraireHumiditeObj = Template.instance().graphiqueHoraireHumiditeObj,
+        graphiqueHorairePressionObj = Template.instance().graphiqueHorairePressionObj;;
+
+  graphiqueHoraireTemperatureObj.attacher_svg();
+  graphiqueHoraireHumiditeObj.attacher_svg();
+  graphiqueHorairePressionObj.attacher_svg();
 });
 
 Template.senseur_historique_quotidien.helpers({
@@ -174,6 +203,9 @@ Template.senseur_historique_quotidien.onCreated( function() {
   graphiqueQuotidienTemperatureObj.idDiv = "#graphique_quotidien_temperature";
   graphiqueQuotidienTemperatureObj.nomVariableOrdonnee1 = "temperature-maximum";
   graphiqueQuotidienTemperatureObj.nomVariableOrdonnee2 = "temperature-minimum";
+  graphiqueQuotidienTemperatureObj.ordonnee_base_max = 20;
+  graphiqueQuotidienTemperatureObj.ordonnee_base_min = -10;
+  graphiqueQuotidienTemperatureObj.nombreSeriesDonnees = 2;
   graphiqueQuotidienTemperatureObj.preparer_graphique();
 
   const graphiqueQuotidienHumiditeObj = new GraphiqueCharte2D();
@@ -181,6 +213,9 @@ Template.senseur_historique_quotidien.onCreated( function() {
   graphiqueQuotidienHumiditeObj.idDiv = "#graphique_quotidien_humidite";
   graphiqueQuotidienHumiditeObj.nomVariableOrdonnee1 = "humidite-maximum";
   graphiqueQuotidienHumiditeObj.nomVariableOrdonnee2 = "humidite-minimum";
+  graphiqueQuotidienHumiditeObj.ordonnee_base_max = 70;
+  graphiqueQuotidienHumiditeObj.ordonnee_base_min = 30;
+  graphiqueQuotidienHumiditeObj.nombreSeriesDonnees = 2;
   graphiqueQuotidienHumiditeObj.preparer_graphique();
 
   const graphiqueQuotidienPressionObj = new GraphiqueCharte2D();
@@ -188,6 +223,9 @@ Template.senseur_historique_quotidien.onCreated( function() {
   graphiqueQuotidienPressionObj.idDiv = "#graphique_quotidien_pression";
   graphiqueQuotidienPressionObj.nomVariableOrdonnee1 = "pression-maximum";
   graphiqueQuotidienPressionObj.nomVariableOrdonnee2 = "pression-minimum";
+  graphiqueQuotidienPressionObj.ordonnee_base_max = 104;
+  graphiqueQuotidienPressionObj.ordonnee_base_min = 96;
+  graphiqueQuotidienPressionObj.nombreSeriesDonnees = 2;
   graphiqueQuotidienPressionObj.preparer_graphique();
 
 });
