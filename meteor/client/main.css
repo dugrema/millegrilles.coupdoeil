@@ -60,6 +60,10 @@ li.notification div.temps {
   margin-bottom: 3px;
 }
 
+span.avertissement {
+  font-weight: bolder;
+}
+
 @media (max-width: 300px) {
   li {
     padding: 12px 15px;

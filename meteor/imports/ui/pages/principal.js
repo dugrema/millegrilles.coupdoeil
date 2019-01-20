@@ -22,4 +22,18 @@ Template.Principal_colonne_milieu.helpers({
       '_mg-libelle': 'meteo_envcanada'
     });
   },
+  rapport_est_prevision(prevision) {
+    if(prevision === undefined) return false;
+    if (prevision.indexOf('Observ') > -1) {
+      return false;
+    }
+    return true;
+  },
+  rapport_est_avertissement(prevision) {
+    if(prevision === undefined) return false;
+    if (prevision.indexOf('No watches or warnings') > -1) {
+      return false;
+    }
+    return true;
+  }
 });

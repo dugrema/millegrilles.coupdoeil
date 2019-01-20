@@ -23,11 +23,25 @@
 <!--      <span class="w3-right w3-opacity"></span> -->
       <h4>{{ rapport.titre }}</h4><br>
       <hr class="w3-clear">
-      <p>{{{ rapport.previsions_courantes }}}</p>
+
+      {{#if rapport_est_avertissement rapport.avertissements }}
+        <p class="w3-amber">
+          <span class="avertissement w3-text-light-grey">Avertissement:</span>
+          {{ rapport.avertissements }}
+        </p>
+      {{/if}}
+
+      {{#unless rapport_est_avertissement rapport.previsions_courantes }}
+        <p>{{{ rapport.previsions_courantes }}}</p>
+      {{/unless}}
 
       <ul>
         {{#each rapport.previsions}}
-          <li>{{ this }}</li>
+          {{#if rapport_est_prevision this}}
+            <li>{{ this }}</li>
+          {{else}}
+            <li>{{{this}}}</li>
+          {{/if}}
         {{/each}}
       </ul>
     </div>
