@@ -4,7 +4,7 @@ import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { RabbitMQ } from './RabbitMQ.js';
 
-export const Notifications = new Mongo.Collection('millegrilles.domaines.Notifications');
+export const Notifications = new Mongo.Collection('millegrilles.domaines.Notifications/documents');
 
 if (Meteor.isServer) {
 
