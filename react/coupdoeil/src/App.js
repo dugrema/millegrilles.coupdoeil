@@ -1,8 +1,10 @@
 import React from 'react';
+import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import logo from './logo.svg';
 import './App.css';
+import Authentification from './authentification'
 
-function App() {
+function Index() {
   return (
     <div className="App">
       <header className="App-header">
@@ -23,4 +25,26 @@ function App() {
   );
 }
 
-export default App;
+function AppRouter() {
+  return (
+    <Router>
+      <div>
+        <nav>
+          <ul>
+            <li>
+              <Link to="/">Home</Link>
+            </li>
+            <li>
+              <Link to="/authentification/">Authentification</Link>
+            </li>
+          </ul>
+        </nav>
+
+        <Route path="/" exact component={Index} />
+        <Route path="/authentification/" component={Authentification} />
+      </div>
+    </Router>
+  );
+}
+
+export default AppRouter;
