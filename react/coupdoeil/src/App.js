@@ -2,6 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import logo from './logo.svg';
 import './App.css';
+
+// Pages a importer
 import Authentification from './authentification'
 
 function Index() {
