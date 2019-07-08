@@ -47,29 +47,41 @@ function Authentification() {
 
 const fakeAuth = {
   isAuthenticated: false,
+  challenge: null,
+  key: null,
+  id: 'a1ID',
+  email: 'test@test.com',
   async authenticate(cb) {
-    this.isAuthenticated = true;
-    // setTimeout(cb, 100); // fake async
+    const id = this.id;
+    const email = this.email;
+    console.log("Authenticate");
+    console.log(this.key);
+    const assertionChallenge = generateLoginChallenge(this.key);
+    console.log(assertionChallenge);
 
-    const id = 'a1ID';
-    const email = 'test@test.com';
+    this.challenge = assertionChallenge.challenge;
+    console.log("Login credentials, parse request");
+    const credentials = await solveLoginChallenge(assertionChallenge);
+    console.log(credentials);
+    const loggedIn = verifyAuthenticatorAssertion(credentials, this.key);
+
+    if (loggedIn) {
+      this.isAuthenticated = true;
+    } else {
+      this.isAuthenticated = false;
+    }
 
     cb(); // Callback
 
   },
   async register(cb) {
-    this.isAuthenticated = true;
-    // setTimeout(cb, 100); // fake async
-
-    const id = 'a1ID';
-    const email = 'test@test.com';
+    const id = this.id;
+    const email = this.email;
 
     const challengeResponse = generateRegistrationChallenge({
         relyingParty: { name: 'ACME' },
         user: { id, name: email }
     });
-    // const crjson = JSON.stringify(challengeResponse);
-    // const cr_parsed = JSON.parse(crjson);
 
     console.log(challengeResponse);
     console.log("On applique les credentials");
@@ -77,14 +89,13 @@ const fakeAuth = {
     console.log("Credentials recu?")
     console.log(credentials);
 
-    // const json_creds = JSON.stringify(credentials);
-    // console.log(json_creds);
-    // const creds_var = JSON.parse(json_creds);
-
     const { key, challenge } = parseRegisterRequest(credentials);
+    this.key = key;
     console.log("Creds parsed key / challenge");
     console.log(key);
     console.log(challenge);
+
+    this.isAuthenticated = true;
 
     cb(); // Callback
 
