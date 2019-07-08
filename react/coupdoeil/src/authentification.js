@@ -54,6 +54,16 @@ const fakeAuth = {
     const id = 'a1ID';
     const email = 'test@test.com';
 
+    cb(); // Callback
+
+  },
+  async register(cb) {
+    this.isAuthenticated = true;
+    // setTimeout(cb, 100); // fake async
+
+    const id = 'a1ID';
+    const email = 'test@test.com';
+
     const challengeResponse = generateRegistrationChallenge({
         relyingParty: { name: 'ACME' },
         user: { id, name: email }
@@ -63,9 +73,18 @@ const fakeAuth = {
 
     console.log(challengeResponse);
     console.log("On applique les credentials");
-    const credentials = solveRegistrationChallenge(challengeResponse);
+    const credentials = await solveRegistrationChallenge(challengeResponse);
     console.log("Credentials recu?")
     console.log(credentials);
+
+    // const json_creds = JSON.stringify(credentials);
+    // console.log(json_creds);
+    // const creds_var = JSON.parse(json_creds);
+
+    const { key, challenge } = parseRegisterRequest(credentials);
+    console.log("Creds parsed key / challenge");
+    console.log(key);
+    console.log(challenge);
 
     cb(); // Callback
 
@@ -125,9 +144,17 @@ function Protected() {
 class Login extends Component {
   state = { redirectToReferrer: false };
 
+  register = () => {
+    fakeAuth.register(() => {
+      this.setState({ redirectToReferrer: true });
+      console.log("Callback register complete");
+    });
+  };
+
   login = () => {
     fakeAuth.authenticate(() => {
       this.setState({ redirectToReferrer: true });
+      console.log("Callback authenticate complete");
     });
   };
 
@@ -141,6 +168,8 @@ class Login extends Component {
       <div>
         <p>You must log in to view the page at {from.pathname}</p>
         <button onClick={this.login}>Log in</button>
+        <p>Register now!</p>
+        <button onClick={this.register}>Register</button>
       </div>
     );
   }
