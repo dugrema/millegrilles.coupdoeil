@@ -8,6 +8,16 @@ import {
   withRouter
 } from "react-router-dom";
 
+import {
+    generateRegistrationChallenge,
+    parseRegisterRequest,
+    generateLoginChallenge,
+    parseLoginRequest,
+    verifyAuthenticatorAssertion,
+} from "@webauthn/server"
+
+import { solveRegistrationChallenge, solveLoginChallenge } from '@webauthn/client';
+
 ////////////////////////////////////////////////////////////
 // 1. Click the public page
 // 2. Click the protected page
@@ -37,9 +47,28 @@ function Authentification() {
 
 const fakeAuth = {
   isAuthenticated: false,
-  authenticate(cb) {
+  async authenticate(cb) {
     this.isAuthenticated = true;
-    setTimeout(cb, 100); // fake async
+    // setTimeout(cb, 100); // fake async
+
+    const id = 'a1ID';
+    const email = 'test@test.com';
+
+    const challengeResponse = generateRegistrationChallenge({
+        relyingParty: { name: 'ACME' },
+        user: { id, name: email }
+    });
+    // const crjson = JSON.stringify(challengeResponse);
+    // const cr_parsed = JSON.parse(crjson);
+
+    console.log(challengeResponse);
+    console.log("On applique les credentials");
+    const credentials = solveRegistrationChallenge(challengeResponse);
+    console.log("Credentials recu?")
+    console.log(credentials);
+
+    cb(); // Callback
+
   },
   signout(cb) {
     this.isAuthenticated = false;
