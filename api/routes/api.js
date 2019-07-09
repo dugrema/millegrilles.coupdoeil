@@ -35,12 +35,23 @@ router.post('/requete', function(req, res, next) {
   var open = amqp.connect(mqConnectionUrl, options);
   console.log("OK!");
 
-  // Attendre la reponse - callback?
+  // Attendre la reponse - callback apres 1 seconde si erreur (timeout)
   reponse = {
     'doc_json': true,
     'dict': {'value': 1, 'autre': 'Poutine'},
     'requete': req.body
   };
+
+  var repondu = false;
+  reponse_fonction = function() {
+    if(!repondu) {
+      repondu = true;
+      res.json(reponse);
+    } else {
+      console.log("Reponse redondante");
+    }
+  }
+  setTimeout(reponse_fonction, 1000);
 
   let conn, channel, ch;
   open
@@ -60,7 +71,7 @@ router.post('/requete', function(req, res, next) {
           console.log(ch);
 
           // Transmettre reponse
-          res.json(reponse);
+          reponse_fonction();
 
         })
         .catch( (err) => {
