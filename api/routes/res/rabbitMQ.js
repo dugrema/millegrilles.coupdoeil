@@ -43,8 +43,7 @@ class RabbitMQWrapper {
         options['key'] = key;
       }
 
-      var open = Amqplib.connect(this.url, options);
-      open
+      Amqplib.connect(this.url, options)
         .then( conn => {
           console.debug("Connexion a RabbitMQ reussie");
           this.connection = conn;
@@ -66,12 +65,28 @@ class RabbitMQWrapper {
         this.channel = ch;
         console.log("Channel ouvert");
         console.log(ch);
+
+        this.ecouter();
       })
       .catch( (err) => {
         this.channel = null;
         console.log("Erreur ouverture channel!");
         console.error(err);
       })
+  }
+
+  ecouter() {
+    this.channel.consume(
+      'erreurs_processus',
+      (msg) => {
+        console.log("Message: ");
+        console.log(msg);
+
+        console.log("Routing key: " + msg.fields.routingKey);
+        console.log("Message: " + decodeURIComponent(escape(msg.content)));
+      },
+      {noAck: true}
+    );
   }
 
   // Utiliser cette methode pour simplifier le formattage d'une transaction.

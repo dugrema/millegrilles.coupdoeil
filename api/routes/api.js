@@ -35,7 +35,7 @@ router.post('/requete', function(req, res, next) {
   // var open = amqp.connect(mqConnectionUrl, options);
   // console.log("OK!");
 
-  rabbitMQ.singleton.transmettreTransactionFormattee({'test': 'valeur'}, 'test');
+  rabbitMQ.singleton.transmettreTransactionFormattee({'requete': req.body});
 
   // Attendre la reponse - callback apres 1 seconde si erreur (timeout)
   reponse = {
