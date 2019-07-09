@@ -17,6 +17,7 @@ const Spdy = require('spdy');
  */
 
 var port = normalizePort(process.env.PORT || '3000');
+const hostIp = process.env.HOST || 'dev2.maple.mdugre.info';
 const key_path = process.env.PRIVKEY;
 const cert_path = process.env.CERT;
 
@@ -25,7 +26,7 @@ const cert_path = process.env.CERT;
  */
 
 const config = {
-    hostIp: "dev2.maple.mdugre.info",
+    hostIp: hostIp,
     cert: FS.readFileSync(cert_path),
     key: FS.readFileSync(key_path)
 };
