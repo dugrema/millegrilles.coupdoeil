@@ -4,30 +4,35 @@
  * Module dependencies.
  */
 
-var app = require('../app');
-var debug = require('debug')('api:server');
-var http = require('http');
+const app = require('../app');
+const debug = require('debug')('api:server');
+//var http = require('http');
+const FS = require("fs");
+const Path = require('path');
+const Spdy = require('spdy');
+
 
 /**
  * Get port from environment and store in Express.
  */
 
 var port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
+const key_path = process.env.PRIVKEY;
+const cert_path = process.env.CERT;
 
 /**
- * Create HTTP server.
+ * Create SPDY/http2 server.
  */
 
-var server = http.createServer(app);
+const config = {
+    hostIp: "dev2.maple.mdugre.info",
+    cert: FS.readFileSync(cert_path),
+    key: FS.readFileSync(key_path)
+};
 
-/**
- * Listen on provided port, on all network interfaces.
- */
-
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+const server = Spdy.createServer(config, app).listen(port, () => {
+    console.log('Server is listening at https://localhost:' + port + '. Ctrl^C to stop it.');
+});
 
 /**
  * Normalize a port into a number, string, or false.
@@ -47,44 +52,4 @@ function normalizePort(val) {
   }
 
   return false;
-}
-
-/**
- * Event listener for HTTP server "error" event.
- */
-
-function onError(error) {
-  if (error.syscall !== 'listen') {
-    throw error;
-  }
-
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
-
-  // handle specific listen errors with friendly messages
-  switch (error.code) {
-    case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
-      process.exit(1);
-      break;
-    case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
-      process.exit(1);
-      break;
-    default:
-      throw error;
-  }
-}
-
-/**
- * Event listener for HTTP server "listening" event.
- */
-
-function onListening() {
-  var addr = server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('Listening on ' + bind);
 }
