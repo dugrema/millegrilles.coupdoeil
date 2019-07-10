@@ -9,6 +9,7 @@ class RabbitMQWrapper {
     this.url = null;
     this.connection = null;
     this.channel = null;
+    this.reply_q = null;
 
     this.reconnectTimeout = null; // Timer de reconnexion - null si inactif
 
@@ -87,6 +88,7 @@ class RabbitMQWrapper {
     .then( (q) => {
       console.log("Queue cree"),
       console.log(q);
+      this.reply_q = q;
 
       this.channel.bindQueue(q.queue, 'millegrilles.noeuds', 'test.routing');
 
@@ -180,15 +182,15 @@ class RabbitMQWrapper {
         delete pendingResponses[correlation];
         clearTimeout(timeout);
 
-        // console.log("Message recu dans callback");
-        // console.log(msg);
-        if(!msg || err) {
-          reject(err);
-        } else {
+        if(msg && !err) {
           resolve(msg);
+        } else {
+          reject(err);
         }
       };
 
+      // Exporter la fonction de callback dans l'objet RabbitMQ.
+      // Permet de faire la correlation lorsqu'on recoit la reponse.
       pendingResponses[correlation] = fonction_callback;
 
       // Faire la publication
@@ -197,7 +199,8 @@ class RabbitMQWrapper {
         routingKey,
         new Buffer(jsonMessage),
         {
-          correlationId: message['correlation']
+          correlationId: message['correlation'],
+          replyTo: this.reply_q.queue,
         },
         function(err, ok) {
           console.error("Erreur MQ Callback");
@@ -208,9 +211,11 @@ class RabbitMQWrapper {
 
     });
 
+    // Lancer un timer pour permettre d'eviter qu'une requete ne soit
+    // jamais nettoyee ou repondue.
     timeout = setTimeout(
       () => {fonction_callback(null, {'err': 'mq.timeout'})},
-      2000
+      15000
     );
 
     return promise;
