@@ -4,9 +4,6 @@ var router = express.Router();
 var amqp = require('amqplib');
 var fs = require('fs');
 
-let mqConnectionUrl = 'amqps://dev2:5673/dev2';
-rabbitMQ.singleton.connect(mqConnectionUrl);
-
 /* Sample. */
 router.get('/', function(req, res, next) {
   res.json({'doc_json': true, 'dict': {'value': 1, 'autre': 'Poutine'}});
@@ -53,5 +50,10 @@ router.post('/requete', function(req, res, next) {
   });
 
 });
+
+// Initialisation, connexions
+// Creer les connexions
+let mqConnectionUrl = process.env.MG_MQ_URL || 'amqps://mq:5673/';
+rabbitMQ.singleton.connect(mqConnectionUrl);
 
 module.exports = router;
