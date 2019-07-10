@@ -4,7 +4,7 @@ var router = express.Router();
 var amqp = require('amqplib');
 var fs = require('fs');
 
-let mqConnectionUrl = 'amqps://dev2:dev2@dev2:5673/dev2';
+let mqConnectionUrl = 'amqps://dev2:5673/dev2';
 rabbitMQ.singleton.connect(mqConnectionUrl);
 
 /* Sample. */
@@ -39,6 +39,8 @@ router.post('/requete', function(req, res, next) {
       'requete': req.body,
       'correlationId': correlationId,
     };
+
+    reponse['correlationId'] = correlationId;
     res.json(reponse);
   })
   .catch(err => {

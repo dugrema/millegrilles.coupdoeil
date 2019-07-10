@@ -47,6 +47,7 @@ class RabbitMQWrapper {
         var key = fs.readFileSync(mq_key);
         options['key'] = key;
       }
+      options['credentials'] = amqplib.credentials.external();
 
       amqplib.connect(this.url, options)
         .then( conn => {
