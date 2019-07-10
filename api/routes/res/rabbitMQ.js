@@ -166,25 +166,30 @@ class RabbitMQWrapper {
     let correlation = uuidv4();
     message['correlation'] = correlation;
     let jsonMessage = JSON.stringify(message);
-    console.log("Message a transmettre: " + routingKey + " = " + jsonMessage);
+    // console.log("Message a transmettre: " + routingKey + " = " + jsonMessage);
+
+    // Setup variables pour timeout, callback
+    let timeout, fonction_callback;
 
     let promise = new Promise((resolve, reject) => {
 
       var processed = false;
       const pendingResponses = this.pendingResponses;
-      pendingResponses[correlation] = function(msg, err) {
-        processed = true;
+      fonction_callback = function(msg, err) {
         // Cleanup du callback
         delete pendingResponses[correlation];
+        clearTimeout(timeout);
+
         // console.log("Message recu dans callback");
         // console.log(msg);
-
-        if(!err) {
-          resolve(msg);
-        } else {
+        if(!msg || err) {
           reject(err);
+        } else {
+          resolve(msg);
         }
       };
+
+      pendingResponses[correlation] = fonction_callback;
 
       // Faire la publication
       this.channel.publish(
@@ -203,7 +208,10 @@ class RabbitMQWrapper {
 
     });
 
-    // Attendre la reponse a la Requete
+    timeout = setTimeout(
+      () => {fonction_callback(null, {'err': 'mq.timeout'})},
+      2000
+    );
 
     return promise;
   }

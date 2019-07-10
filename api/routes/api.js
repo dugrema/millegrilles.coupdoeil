@@ -39,7 +39,7 @@ router.post('/requete', function(req, res, next) {
       console.log("Reponse redondante");
     }
   }
-  setTimeout(reponse_fonction, 1000);
+  // setTimeout(reponse_fonction, 1000);
 
   reponse_serveur = rabbitMQ.singleton.transmettreRequete(
     'test.routing',
@@ -57,6 +57,10 @@ router.post('/requete', function(req, res, next) {
   .catch(err => {
     console.error("Erreur!");
     console.error(err);
+
+    // Transmettre message erreur de traitement
+    res.status(500);
+    res.json(err);
   });
 
 });
