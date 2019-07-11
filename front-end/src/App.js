@@ -10,7 +10,34 @@ const fakeAuth = {
   id: 'a1ID',
   email: 'test@test.com',
   async authenticate(cb) {
-    this.isAuthenticated = true;
+    const challenge = await fetch('https://dev2.maple.mdugre.info:3002/api/login', {
+        method: 'POST',
+        headers: {
+            'content-type': 'Application/Json'
+        },
+        body: JSON.stringify({ email: 'test@test' })
+    })
+    .then(response => response.json());
+
+    const credentials = await solveLoginChallenge(challenge);
+    const { loggedIn } = await fetch(
+        'https://dev2.maple.mdugre.info:3002/api/login-challenge',
+        {
+            method: 'POST',
+            headers: {
+                'content-type': 'Application/Json'
+            },
+            body: JSON.stringify(credentials)
+        }
+    ).then(response => response.json());
+
+    if (loggedIn) {
+      this.isAuthenticated = true;
+      console.debug('You are logged in');
+      return;
+    }
+    console.error('Invalid credential');
+
     cb(); // Callback
   },
   async register(cb) {

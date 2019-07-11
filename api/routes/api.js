@@ -87,6 +87,102 @@ router.post('/effectuer-empreinte', (req, res) => {
     return res.send({ loggedIn: true });
 });
 
+router.post('/login', (req, res) => {
+
+  let filtre = {"_mg-libelle": "profil.usager"};
+  rabbitMQ.singleton.get_document(
+    'millegrilles.domaines.Principale', filtre)
+  .then( doc => {
+    // console.log(doc);
+    if (!doc || doc.empreinte_absente) {
+        return res.sendStatus(400);
+    }
+
+    let challenge = generateLoginChallenge(doc.cles);
+    console.log("Challenge login");
+    console.debug(challenge);
+
+    challenge_conserve = challenge.challenge;
+    console.debug("Challlenge conserve login: ");
+    console.debug(challenge_conserve);
+    return res.send(challenge);
+
+  }).catch( err => {
+    console.error("Erreur login")
+    console.error(err);
+    return res.sendStatus(500);
+  });
+
+});
+
+router.post('/login-challenge', (req, res) => {
+  console.log("/login-challenge appele");
+  console.log(req.body);
+
+    const { challenge, keyId } = parseLoginRequest(req.body);
+    if (!challenge) {
+      console.debug("Challenge pas recu")
+      return res.sendStatus(400);
+    }
+
+    console.debug("Challlenge recu login: ");
+    console.debug(challenge);
+
+    if (challenge_conserve !== challenge) {
+      console.debug("Challenge ne match pas")
+      return res.sendStatus(400);
+    }
+
+    let filtre = {"_mg-libelle": "profil.usager"};
+    rabbitMQ.singleton.get_document(
+      'millegrilles.domaines.Principale', filtre)
+    .then( doc => {
+      // console.log(doc);
+      if (!doc || doc.empreinte_absente) {
+        console.debug("Doc absent ou empreinte_absente trouvee");
+        return res.sendStatus(400);
+      }
+
+      // Trouve la bonne cle a verifier dans la collection de toutes les cles
+      var cle_match;
+      let cle_id_utilisee = req.body.rawId;
+      console.log("Document profil, cles");
+      console.log(doc['cles']);
+      console.log("\n\n");
+
+      let cles = doc['cles'];
+      for(var i_cle in cles) {
+        let cle = cles[i_cle];
+        let credID = cle['credID'];
+        credID = credID.substring(0, cle_id_utilisee.length);
+        console.log("Cle: ");
+        console.log(credID);
+
+        if(credID === cle_id_utilisee) {
+          cle_match = cle;
+          console.log("Cle choisie");
+          console.log(cle);
+          break;
+        }
+      }
+
+      if(!cle_match) {
+        console.error("Clee inconnue: " + cle_id_utilisee);
+        console.error(cle_id_utilisee);
+        return res.sendStatus(400);
+      }
+
+      const loggedIn = verifyAuthenticatorAssertion(req.body, cle_match);
+      console.log("Logged in? " + loggedIn);
+      return res.send({ loggedIn });
+    }).catch( err => {
+      console.error("Erreur login")
+      console.error(err);
+      return res.sendStatus(500);
+    });
+
+});
+
 /* Requete */
 router.post('/requete', function(req, res, next) {
   // Formater la requete et transmettre a RabbitMQ
