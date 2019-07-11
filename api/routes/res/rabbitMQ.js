@@ -245,7 +245,7 @@ class RabbitMQWrapper {
       this.channel.publish(
         'millegrilles.noeuds',
         routingKey,
-        new Buffer(jsonMessage),
+        Buffer.from(jsonMessage),
         {
           correlationId: correlationId,
           replyTo: this.reply_q.queue,
@@ -287,11 +287,11 @@ class RabbitMQWrapper {
     .then((msg) => {
       let messageContent = decodeURIComponent(escape(msg.content));
       let json_message = JSON.parse(messageContent);
-      console.log("JSON Message!\n\n\n");
-      console.log(json_message);
+      // console.log("JSON Message!\n\n\n");
+      // console.log(json_message);
       let document_recu = json_message['resultats'][0][0];
-      console.log("Resultats!\n\n\n");
-      console.log(document_recu);
+      // console.log("Resultats!\n\n\n");
+      // console.log(document_recu);
       return(document_recu);
     })
 
