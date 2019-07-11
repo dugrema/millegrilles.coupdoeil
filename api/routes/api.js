@@ -34,7 +34,14 @@ router.post('/initialiser-empreinte', (req, res) => {
         return res.sendStatus(400);
       }
 
-      return res.json({"allo": "Poutine!"});
+      // Transmettre le challenge
+      const challengeResponse = generateRegistrationChallenge({
+          relyingParty: { name: 'coupdoeil' },
+          user: { id, name: email }
+      });
+      challenge_conserve = challengeResponse.challenge;
+
+      res.send(challengeResponse);
     })
     .catch( err => {
       console.error("Erreur initialiser-empreinte");
@@ -42,15 +49,6 @@ router.post('/initialiser-empreinte', (req, res) => {
       return res.sendStatus(500);
     });
 
-    //
-    // // Transmettre le challenge
-    // const challengeResponse = generateRegistrationChallenge({
-    //     relyingParty: { name: 'coupdoeil' },
-    //     user: { id, name: email }
-    // });
-    // challenge_conserve = challengeResponse.challenge;
-    //
-    // res.send(challengeResponse);
 });
 
 router.post('/effectuer-empreinte', (req, res) => {
@@ -73,6 +71,7 @@ router.post('/effectuer-empreinte', (req, res) => {
         'cle': key
     }
 
+    // Noter que la transaction va echouer si l'empreinte a deja ete creee.
     rabbitMQ.singleton.transmettreTransactionFormattee(
         empreinte, 'millegrilles.domaines.Principale.creerEmpreinte')
       .then( msg => {
