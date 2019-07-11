@@ -4,8 +4,6 @@ var router = express.Router();
 var amqp = require('amqplib');
 var fs = require('fs');
 
-const session_timeout = 30 * 1000; // Timeout in millisecs
-
 const {
     generateRegistrationChallenge,
     parseRegisterRequest,
@@ -21,7 +19,61 @@ router.get('/', function(req, res, next) {
 
 var challenge_conserve = null;
 
-var auth_tokens = {};
+class SessionManagement {
+
+  constructor() {
+    this.auth_tokens = {'12345': '0'};
+    this.timer;
+    this.session_timeout = 30 * 1000;
+  }
+
+  start() {
+    this.timer = setInterval(() => this.clean(), 5000);
+  }
+
+  clean() {
+    // console.debug('Session timeout: ' + this.session_timeout);
+    // console.debug("Session cleanup start, " + Object.keys(this.auth_tokens).length + " active sessions");
+
+    // Nettoie les sessions expirees
+    var tokens_expire = []
+    const current_time_ms = (new Date()).getTime();
+    for(var idx_token in this.auth_tokens) {
+      if(this.auth_tokens[idx_token] < current_time_ms) {
+        tokens_expire.push(idx_token);
+      }
+    }
+
+    var token_expire = tokens_expire.pop();
+    while(token_expire) {
+      console.debug("Cleanup token expire " + token_expire);
+      delete this.auth_tokens[token_expire];
+      token_expire = tokens_expire.pop();
+    }
+
+  }
+
+  addSession(token) {
+    this.auth_tokens[token] = (new Date()).getTime() + this.session_timeout;
+  }
+
+  checkUpdateToken(token) {
+    var token_timeout = this.auth_tokens[token];
+
+    if(!token_timeout || token_timeout < (new Date()).getTime()) {
+      // Token inconnu ou expire
+      delete this.auth_tokens[token];
+      return false;
+    }
+
+    // Token est correct, on met a jour le timeout.
+    this.auth_tokens[token] = (new Date()).getTime() + this.session_timeout;
+    return true;
+  }
+
+}
+const sessionManagement = new SessionManagement();
+sessionManagement.start();
 
 /* Authentification */
 router.post('/initialiser-empreinte', (req, res) => {
@@ -181,7 +233,8 @@ router.post('/login-challenge', (req, res) => {
 
       if(loggedIn) {
         // Session valid for 5 minutes of inactivity
-        auth_tokens[challenge] = (new Date).getTime() + session_timeout;
+        sessionManagement.addSession(challenge);
+        // auth_tokens[challenge] = (new Date).getTime() + session_timeout;
       }
 
       return res.send({ loggedIn });
@@ -198,17 +251,12 @@ router.post('/requete', function(req, res, next) {
 
   // Verifier si le token d'authentification match
   var auth_token = req.headers['auth-token'];
-  var saved_token = auth_tokens[auth_token];
-  console.debug('Saved token timeout' + saved_token);
-  if(saved_token === undefined) {
+  var sessionValid = sessionManagement.checkUpdateToken(auth_token);
+  // var saved_token = auth_tokens[auth_token];
+  console.debug('Session valid?' + sessionValid);
+  if(!sessionValid) {
     res.status(403);
-    return res.json({'error': 'not logged in'});
-  } else if(saved_token < (new Date).getTime()) {
-    res.status(403);
-    return res.json({'error': 'session expired'});
-  } else {
-    // Reset inactivity timer
-    auth_tokens[auth_token] = (new Date).getTime() + session_timeout;
+    return res.json({'error': 'not logged in or session expired'});
   }
 
   // Formater la requete et transmettre a RabbitMQ
