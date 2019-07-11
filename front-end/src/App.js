@@ -33,6 +33,7 @@ const fakeAuth = {
 
     if (loggedIn) {
       this.isAuthenticated = true;
+      this.challenge = challenge.challenge;
       console.debug('You are logged in');
       return;
     }
@@ -83,7 +84,9 @@ const fakeAuth = {
 };
 
 class Login extends React.Component {
-  state = { redirectToReferrer: false };
+  state = {
+    redirectToReferrer: false
+  };
 
   register = () => {
     fakeAuth.register(() => {
@@ -93,9 +96,30 @@ class Login extends React.Component {
   };
 
   login = () => {
-    fakeAuth.authenticate(() => {
-      this.setState({ redirectToReferrer: true });
+    fakeAuth.authenticate((challenge) => {
+      this.setState({ redirectToReferrer: true, challenge: challenge });
       console.log("Callback authenticate complete");
+    });
+  };
+
+  checkStatus = () => {
+    fetch('https://dev2.maple.mdugre.info:3002/api/requete', {
+        method: 'POST',
+        headers: {
+            'content-type': 'Application/Json',
+            'auth-token': fakeAuth.challenge
+        },
+        body: JSON.stringify({
+          "requetes": [
+            {
+              "filtre": {
+                "_mg-libelle": "profil.usager"
+              }
+            }
+          ]
+        })
+    }).then(response => {
+      console.log("Status login: " + response);
     });
   };
 
@@ -108,6 +132,8 @@ class Login extends React.Component {
         <button onClick={this.login}>Log in</button>
         <p>Register now!</p>
         <button onClick={this.register}>Register</button>
+        <p>Check status</p>
+        <button onClick={this.checkStatus}>Check</button>
       </div>
     );
   }

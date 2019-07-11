@@ -4,6 +4,8 @@ var router = express.Router();
 var amqp = require('amqplib');
 var fs = require('fs');
 
+const session_timeout = 30 * 1000; // Timeout in millisecs
+
 const {
     generateRegistrationChallenge,
     parseRegisterRequest,
@@ -18,6 +20,8 @@ router.get('/', function(req, res, next) {
 });
 
 var challenge_conserve = null;
+
+var auth_tokens = {};
 
 /* Authentification */
 router.post('/initialiser-empreinte', (req, res) => {
@@ -146,9 +150,9 @@ router.post('/login-challenge', (req, res) => {
       // Trouve la bonne cle a verifier dans la collection de toutes les cles
       var cle_match;
       let cle_id_utilisee = req.body.rawId;
-      console.log("Document profil, cles");
-      console.log(doc['cles']);
-      console.log("\n\n");
+      console.debug("Document profil, cles");
+      console.debug(doc['cles']);
+      console.debug("\n\n");
 
       let cles = doc['cles'];
       for(var i_cle in cles) {
@@ -173,7 +177,13 @@ router.post('/login-challenge', (req, res) => {
       }
 
       const loggedIn = verifyAuthenticatorAssertion(req.body, cle_match);
-      console.log("Logged in? " + loggedIn);
+      console.debug("Logged in? " + loggedIn);
+
+      if(loggedIn) {
+        // Session valid for 5 minutes of inactivity
+        auth_tokens[challenge] = (new Date).getTime() + session_timeout;
+      }
+
       return res.send({ loggedIn });
     }).catch( err => {
       console.error("Erreur login")
@@ -185,6 +195,22 @@ router.post('/login-challenge', (req, res) => {
 
 /* Requete */
 router.post('/requete', function(req, res, next) {
+
+  // Verifier si le token d'authentification match
+  var auth_token = req.headers['auth-token'];
+  var saved_token = auth_tokens[auth_token];
+  console.debug('Saved token timeout' + saved_token);
+  if(saved_token === undefined) {
+    res.status(403);
+    return res.json({'error': 'not logged in'});
+  } else if(saved_token < (new Date).getTime()) {
+    res.status(403);
+    return res.json({'error': 'session expired'});
+  } else {
+    // Reset inactivity timer
+    auth_tokens[auth_token] = (new Date).getTime() + session_timeout;
+  }
+
   // Formater la requete et transmettre a RabbitMQ
   console.log("POST /requete: ")
   console.log(req.body);
