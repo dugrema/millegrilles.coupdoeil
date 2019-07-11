@@ -2,6 +2,7 @@ var amqplib = require('amqplib');
 var os = require('os');
 var fs = require('fs');
 uuidv4 = require('uuid/v4');
+var pki = require('./pki.js');
 
 class RabbitMQWrapper {
 
@@ -150,7 +151,10 @@ class RabbitMQWrapper {
         'millegrilles.noeuds',
         routingKey,
          new Buffer(jsonMessage),
-         {},
+         {
+           correlationId: message['correlation'],
+           replyTo: this.reply_q.queue,
+         },
          function(err, ok) {
            console.error("Erreur MQ Callback");
            console.error(err);

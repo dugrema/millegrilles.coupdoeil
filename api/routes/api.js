@@ -37,11 +37,25 @@ router.post('/effectuer-empreinte', (req, res) => {
     console.log("Effectuer empreinte");
     console.log(req);
 
-    const { key, challenge } = parseRegisterRequest(req.body);
+    const { key, challenge_recu } = parseRegisterRequest(req.body);
 
     console.log("Parsed: key, challenge");
     console.log(key);
-    console.log(challenge);
+    console.log(challenge_recu);
+
+    // Note: MilleGrilles fonctionne avec un seul usager. Pas besoin
+    // de matcher l'usager autrement que par le challenge.
+    if (challenge != challenge_recu) {
+      return res.sendStatus(400); // Erreur dans le matching du challenge
+    }
+
+    empreinte = {
+        'cle': key
+    }
+
+    enveloppe_val = rabbitMQ.singleton.transmettreTransactionFormattee(
+        empreinte, 'millegrilles.domaines.Principale.creerEmpreinte',
+        reply_to=self.queue_name, correlation_id='efgh')
 
     /* const user = userRepository.findByChallenge(challenge);
 
@@ -54,8 +68,6 @@ router.post('/effectuer-empreinte', (req, res) => {
     return res.send({ loggedIn: true });
 });
 
-
-
 /* Requete */
 router.post('/requete', function(req, res, next) {
   // Formater la requete et transmettre a RabbitMQ
@@ -63,8 +75,8 @@ router.post('/requete', function(req, res, next) {
   console.log(req.body);
 
   reponse_serveur = rabbitMQ.singleton.transmettreRequete(
-    'test.routing',
-    {'requete': req.body}
+    'requete.millegrilles.domaines.Principale',
+    req.body
   )
   .then((msg) => {
     let correlationId = msg.properties.correlationId;
@@ -73,14 +85,11 @@ router.post('/requete', function(req, res, next) {
 
     // Attendre la reponse - callback apres 1 seconde si erreur (timeout)
     reponse = {
-      'doc_json': true,
-      'dict': {'value': 1, 'autre': 'Poutine'},
       'requete': req.body,
-      'correlationId': correlationId,
+      'reponse': messageContent
     };
 
-    reponse['correlationId'] = correlationId;
-    res.json(reponse);
+    res.json(messageContent);
   })
   .catch(err => {
     console.error("Erreur!");
