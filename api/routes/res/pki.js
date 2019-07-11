@@ -92,7 +92,7 @@ class PKIUtils {
 
     // Stringify en json trie
     let transactionJson = stringify(copie_transaction);
-    console.log("Message utilise pour hachage: " + transactionJson);
+    // console.log("Message utilise pour hachage: " + transactionJson);
 
     // Creer algo signature et signer
     hash.write(transactionJson);

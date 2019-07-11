@@ -102,9 +102,9 @@ class RabbitMQWrapper {
           let routingKey = msg.fields.routingKey;
           // console.log("Message: ");
           // console.log(msg);
-          console.log("Routing key: " + routingKey);
-          console.log("Message: " + messageContent);
-          console.log("CorrelationId: " + correlationId);
+          // console.log("Routing key: " + routingKey);
+          // console.log("Message: " + messageContent);
+          // console.log("CorrelationId: " + correlationId);
 
           let callback = this.pendingResponses[correlationId];
           if(callback) {
@@ -129,13 +129,17 @@ class RabbitMQWrapper {
     let infoTransaction = this._formatterInfoTransaction(domaine);
     const correlation = infoTransaction['uuid-transaction'];
     messageFormatte['en-tete'] = infoTransaction;
+
+    // Signer le message avec le certificat
     this._signerMessage(messageFormatte);
+    const jsonMessage = JSON.stringify(message);
 
-    // Signer le message
-    // this._signerMessage(messageFormatte);
-
+    // Transmettre la nouvelle transaction. La promise permet de traiter
+    // le message de reponse.
     let routingKey = 'transaction.nouvelle';
-    this._transmettreTransaction(routingKey, messageFormatte);
+    let promise = this._transmettre(routingKey, jsonMessage, correlation);
+
+    return promise;
   }
 
   _formatterInfoTransaction(domaine) {
@@ -174,9 +178,9 @@ class RabbitMQWrapper {
     let jsonMessage = JSON.stringify(message);
 
     // Le code doit uniquement etre execute sur le serveur
-    console.log("Message: routing=" + routingKey + " message=" + jsonMessage);
+    // console.log("Message: routing=" + routingKey + " message=" + jsonMessage);
     try {
-      console.log("Message a transmettre: " + routingKey + " = " + jsonMessage);
+      // console.log("Message a transmettre: " + routingKey + " = " + jsonMessage);
       this.channel.publish(
         'millegrilles.noeuds',
         routingKey,
@@ -207,57 +211,9 @@ class RabbitMQWrapper {
 
     const correlation = infoTransaction['uuid-transaction'];
     const jsonMessage = JSON.stringify(message);
+
+    // Transmettre requete - la promise permet de traiter la reponse
     const promise = this._transmettre(routingKey, jsonMessage, correlation);
-    // console.log("Message a transmettre: " + routingKey + " = " + jsonMessage);
-
-    // // Setup variables pour timeout, callback
-    // let timeout, fonction_callback;
-
-    // let promise = new Promise((resolve, reject) => {
-    //
-    //   var processed = false;
-    //   const pendingResponses = this.pendingResponses;
-    //   fonction_callback = function(msg, err) {
-    //     // Cleanup du callback
-    //     delete pendingResponses[correlation];
-    //     clearTimeout(timeout);
-    //
-    //     if(msg && !err) {
-    //       resolve(msg);
-    //     } else {
-    //       reject(err);
-    //     }
-    //   };
-    //
-    //   // Exporter la fonction de callback dans l'objet RabbitMQ.
-    //   // Permet de faire la correlation lorsqu'on recoit la reponse.
-    //   pendingResponses[correlation] = fonction_callback;
-    //
-    //   // Faire la publication
-    //   this.channel.publish(
-    //     'millegrilles.noeuds',
-    //     routingKey,
-    //     new Buffer(jsonMessage),
-    //     {
-    //       correlationId: correlation,
-    //       replyTo: this.reply_q.queue,
-    //     },
-    //     function(err, ok) {
-    //       console.error("Erreur MQ Callback");
-    //       console.error(err);
-    //       delete this.pendingResponses[correlation];
-    //     }
-    //   );
-    //
-    // });
-
-    // // Lancer un timer pour permettre d'eviter qu'une requete ne soit
-    // // jamais nettoyee ou repondue.
-    // timeout = setTimeout(
-    //   () => {fonction_callback(null, {'err': 'mq.timeout'})},
-    //   15000
-    // );
-
     return promise;
   }
 
@@ -298,6 +254,7 @@ class RabbitMQWrapper {
           console.error("Erreur MQ Callback");
           console.error(err);
           delete pendingResponses[correlationId];
+          reject(err);
         }
       );
 
@@ -309,6 +266,34 @@ class RabbitMQWrapper {
       () => {fonction_callback(null, {'err': 'mq.timeout'})},
       15000
     );
+
+    return promise;
+  };
+
+  // Retourne un document en fonction d'un domaine
+  get_document(domaine, filtre) {
+    // Verifier que la MilleGrille n'a pas deja d'empreinte usager
+    let requete = {
+      "requetes": [
+        {
+          "filtre": filtre
+        }
+      ]
+    }
+    let promise = this.transmettreRequete(
+      'requete.' + domaine,
+      requete
+    )
+    .then((msg) => {
+      let messageContent = decodeURIComponent(escape(msg.content));
+      let json_message = JSON.parse(messageContent);
+      console.log("JSON Message!\n\n\n");
+      console.log(json_message);
+      let document_recu = json_message['resultats'][0][0];
+      console.log("Resultats!\n\n\n");
+      console.log(document_recu);
+      return(document_recu);
+    })
 
     return promise;
   }
