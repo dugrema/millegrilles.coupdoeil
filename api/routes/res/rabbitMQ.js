@@ -126,16 +126,46 @@ class RabbitMQWrapper {
   // Il faut fournir le contenu de la transaction et le domaine (routing)
   transmettreTransactionFormattee(message, domaine) {
     let messageFormatte = message;  // Meme objet si ca cause pas de problemes
-
-    //let infoTransaction = this._formatterInfoTransaction(domaine);
-    let infoTransaction = {'entete': 'information inutile!'};
+    let infoTransaction = this._formatterInfoTransaction(domaine);
+    const correlation = infoTransaction['uuid-transaction'];
     messageFormatte['en-tete'] = infoTransaction;
+    this._signerMessage(messageFormatte);
 
     // Signer le message
     // this._signerMessage(messageFormatte);
 
     let routingKey = 'transaction.nouvelle';
     this._transmettreTransaction(routingKey, messageFormatte);
+  }
+
+  _formatterInfoTransaction(domaine) {
+    // Ces valeurs n'ont de sens que sur le serveur.
+    // Calculer secondes UTC (getTime retourne millisecondes locales)
+    let dateUTC = (new Date().getTime()/1000) + new Date().getTimezoneOffset()*60;
+    let tempsLecture = Math.trunc(dateUTC);
+    let sourceSystem = 'coupdoeil/' + 'dev2.maple.mdugre.info' + "@" + pki.getCommonName();
+    let infoTransaction = {
+      'domaine': domaine,
+      'source-systeme': sourceSystem,
+      'uuid-transaction': uuidv4(),
+      'estampille': tempsLecture,
+      'certificat': pki.getFingerprint(),
+      'hachage-contenu': '',  // Doit etre calcule a partir du contenu
+      'version': 4
+    };
+
+    return infoTransaction;
+  }
+
+  _signerMessage(message) {
+    // Produire le hachage du contenu avant de signer - le hash doit
+    // etre inclus dans l'entete pour faire partie de la signature.
+    let hachage = pki.hacherTransaction(message);
+    message['en-tete']['hachage-contenu'] = hachage;
+
+    // Signer la transaction. Ajoute l'information du certificat dans l'entete.
+    let signature = pki.signerTransaction(message);
+    message['_signature'] = signature;
   }
 
   // Methode qui permet de transmettre une transaction au backend RabbitMQ
@@ -170,11 +200,68 @@ class RabbitMQWrapper {
 
   transmettreRequete(routingKey, message) {
 
-    let correlation = uuidv4();
-    message['correlation'] = correlation;
-    let jsonMessage = JSON.stringify(message);
+    const infoTransaction = this._formatterInfoTransaction(routingKey);
+
+    message['en-tete'] = infoTransaction;
+    this._signerMessage(message);
+
+    const correlation = infoTransaction['uuid-transaction'];
+    const jsonMessage = JSON.stringify(message);
+    const promise = this._transmettre(routingKey, jsonMessage, correlation);
     // console.log("Message a transmettre: " + routingKey + " = " + jsonMessage);
 
+    // // Setup variables pour timeout, callback
+    // let timeout, fonction_callback;
+
+    // let promise = new Promise((resolve, reject) => {
+    //
+    //   var processed = false;
+    //   const pendingResponses = this.pendingResponses;
+    //   fonction_callback = function(msg, err) {
+    //     // Cleanup du callback
+    //     delete pendingResponses[correlation];
+    //     clearTimeout(timeout);
+    //
+    //     if(msg && !err) {
+    //       resolve(msg);
+    //     } else {
+    //       reject(err);
+    //     }
+    //   };
+    //
+    //   // Exporter la fonction de callback dans l'objet RabbitMQ.
+    //   // Permet de faire la correlation lorsqu'on recoit la reponse.
+    //   pendingResponses[correlation] = fonction_callback;
+    //
+    //   // Faire la publication
+    //   this.channel.publish(
+    //     'millegrilles.noeuds',
+    //     routingKey,
+    //     new Buffer(jsonMessage),
+    //     {
+    //       correlationId: correlation,
+    //       replyTo: this.reply_q.queue,
+    //     },
+    //     function(err, ok) {
+    //       console.error("Erreur MQ Callback");
+    //       console.error(err);
+    //       delete this.pendingResponses[correlation];
+    //     }
+    //   );
+    //
+    // });
+
+    // // Lancer un timer pour permettre d'eviter qu'une requete ne soit
+    // // jamais nettoyee ou repondue.
+    // timeout = setTimeout(
+    //   () => {fonction_callback(null, {'err': 'mq.timeout'})},
+    //   15000
+    // );
+
+    return promise;
+  }
+
+  _transmettre(routingKey, jsonMessage, correlationId) {
     // Setup variables pour timeout, callback
     let timeout, fonction_callback;
 
@@ -184,7 +271,7 @@ class RabbitMQWrapper {
       const pendingResponses = this.pendingResponses;
       fonction_callback = function(msg, err) {
         // Cleanup du callback
-        delete pendingResponses[correlation];
+        delete pendingResponses[correlationId];
         clearTimeout(timeout);
 
         if(msg && !err) {
@@ -196,7 +283,7 @@ class RabbitMQWrapper {
 
       // Exporter la fonction de callback dans l'objet RabbitMQ.
       // Permet de faire la correlation lorsqu'on recoit la reponse.
-      pendingResponses[correlation] = fonction_callback;
+      pendingResponses[correlationId] = fonction_callback;
 
       // Faire la publication
       this.channel.publish(
@@ -204,13 +291,13 @@ class RabbitMQWrapper {
         routingKey,
         new Buffer(jsonMessage),
         {
-          correlationId: message['correlation'],
+          correlationId: correlationId,
           replyTo: this.reply_q.queue,
         },
         function(err, ok) {
           console.error("Erreur MQ Callback");
           console.error(err);
-          delete this.pendingResponses[correlation];
+          delete pendingResponses[correlationId];
         }
       );
 

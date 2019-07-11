@@ -106,4 +106,4 @@ class PKIUtils {
 };
 
 const pki = new PKIUtils();
-module.exports = {pki};
+module.exports = pki;
