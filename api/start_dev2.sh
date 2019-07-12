@@ -2,6 +2,7 @@
 
 CERT_FOLDER=/home/mathieu/certificates
 
+# export COUPDOEIL_SESSION_TIMEOUT=15000
 export MG_MQ_CAFILE=$CERT_FOLDER/millegrilles/pki.millegrilles.ssl.CAchain
 export MG_MQ_CERTFILE=$CERT_FOLDER/millegrilles/certs/dev2.maple.mdugre.info.cert.pem
 export MG_MQ_KEYFILE=$CERT_FOLDER/millegrilles/privkeys/dev2.maple.mdugre.info.pem

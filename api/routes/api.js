@@ -25,6 +25,7 @@ class SessionManagement {
     this.auth_tokens = {'12345': '0'};
     this.timer;
     this.session_timeout = process.env.COUPDOEIL_SESSION_TIMEOUT || (600 * 1000);
+    this.session_timeout = Number(this.session_timeout);
   }
 
   start() {
@@ -157,11 +158,11 @@ router.post('/login', (req, res) => {
 
     let challenge = generateLoginChallenge(doc.cles);
     console.log("Challenge login");
-    console.debug(challenge);
+    // console.debug(challenge);
 
     challenge_conserve = challenge.challenge;
-    console.debug("Challlenge conserve login: ");
-    console.debug(challenge_conserve);
+    // console.debug("Challenge conserve login: ");
+    // console.debug(challenge_conserve);
     return res.send(challenge);
 
   }).catch( err => {
@@ -178,15 +179,15 @@ router.post('/login-challenge', (req, res) => {
 
     const { challenge, keyId } = parseLoginRequest(req.body);
     if (!challenge) {
-      console.debug("Challenge pas recu")
+      // console.debug("Challenge pas recu")
       return res.sendStatus(400);
     }
 
-    console.debug("Challlenge recu login: ");
-    console.debug(challenge);
+    // console.debug("Challlenge recu login: ");
+    // console.debug(challenge);
 
     if (challenge_conserve !== challenge) {
-      console.debug("Challenge ne match pas")
+      console.warn("Challenge ne match pas")
       return res.sendStatus(400);
     }
 
@@ -196,29 +197,29 @@ router.post('/login-challenge', (req, res) => {
     .then( doc => {
       // console.log(doc);
       if (!doc || doc.empreinte_absente) {
-        console.debug("Doc absent ou empreinte_absente trouvee");
+        console.warn("Doc absent ou empreinte_absente trouvee");
         return res.sendStatus(400);
       }
 
       // Trouve la bonne cle a verifier dans la collection de toutes les cles
       var cle_match;
       let cle_id_utilisee = req.body.rawId;
-      console.debug("Document profil, cles");
-      console.debug(doc['cles']);
-      console.debug("\n\n");
+      // console.debug("Document profil, cles");
+      // console.debug(doc['cles']);
+      // console.debug("\n\n");
 
       let cles = doc['cles'];
       for(var i_cle in cles) {
         let cle = cles[i_cle];
         let credID = cle['credID'];
         credID = credID.substring(0, cle_id_utilisee.length);
-        console.log("Cle: ");
-        console.log(credID);
+        // console.log("Cle: ");
+        // console.log(credID);
 
         if(credID === cle_id_utilisee) {
           cle_match = cle;
-          console.log("Cle choisie");
-          console.log(cle);
+          // console.log("Cle choisie");
+          // console.log(cle);
           break;
         }
       }
@@ -230,7 +231,7 @@ router.post('/login-challenge', (req, res) => {
       }
 
       const loggedIn = verifyAuthenticatorAssertion(req.body, cle_match);
-      console.debug("Logged in? " + loggedIn);
+      // console.debug("Logged in? " + loggedIn);
 
       if(loggedIn) {
         // Session valid for 5 minutes of inactivity
@@ -254,7 +255,7 @@ router.post('/requete', function(req, res, next) {
   var auth_token = req.headers['auth-token'];
   var sessionValid = sessionManagement.checkUpdateToken(auth_token);
   // var saved_token = auth_tokens[auth_token];
-  console.debug('Session valid?' + sessionValid);
+  // console.debug('Session valid?' + sessionValid);
   if(!sessionValid) {
     res.status(403);
     return res.json({'error': 'not logged in or session expired'});
