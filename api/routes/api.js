@@ -24,11 +24,12 @@ class SessionManagement {
   constructor() {
     this.auth_tokens = {'12345': '0'};
     this.timer;
-    this.session_timeout = 30 * 1000;
+    this.session_timeout = process.env.COUPDOEIL_SESSION_TIMEOUT || (600 * 1000);
   }
 
   start() {
-    this.timer = setInterval(() => this.clean(), 5000);
+    // Cleanup des sessions expirees aux 5 minutes
+    this.timer = setInterval(() => this.clean(), 5 * 60000);
   }
 
   clean() {
