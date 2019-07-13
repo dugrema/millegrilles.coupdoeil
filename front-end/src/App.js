@@ -38,11 +38,10 @@ const fakeAuth = {
       this.isAuthenticated = true;
       this.challenge = challenge.challenge;
       console.debug('You are logged in');
-      return;
+    } else {
+      console.error('Invalid credential');
     }
-    console.error('Invalid credential');
-
-    cb(); // Callback
+    cb(this.isAuthenticated); // Callback
   },
   async register(cb) {
 
@@ -88,7 +87,8 @@ const fakeAuth = {
 
 class Login extends React.Component {
   state = {
-    redirectToReferrer: false
+    redirectToReferrer: false,
+    loggedIn: false
   };
 
   register = () => {
@@ -98,12 +98,14 @@ class Login extends React.Component {
     });
   };
 
-  login = () => {
-    fakeAuth.authenticate((challenge) => {
-      this.setState({ redirectToReferrer: true, challenge: challenge });
+  /* login = () => {
+    console.log("Login called: 1")
+    fakeAuth.authenticate(() => {
+      //this.setState({loggedIn: true});
+      this.props.setLoginState(true);
       console.log("Callback authenticate complete");
     });
-  };
+  };*/
 
   checkStatus = () => {
     fetch(urlApi + '/api/requete', {
@@ -132,7 +134,7 @@ class Login extends React.Component {
     return (
       <div>
         <p>You must log in to view the page</p>
-        <button onClick={this.login}>Log in</button>
+        <button onClick={this.props.login_method}>Log in</button>
         <p>Register now!</p>
         <button onClick={this.register}>Register</button>
         <p>Check status</p>
@@ -142,26 +144,59 @@ class Login extends React.Component {
   }
 }
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-        <Login />
-      </header>
-    </div>
-  );
+class App extends React.Component {
+  state = {
+    loggedIn: false
+  }
+
+  login = () => {
+    console.log("Login called: 2")
+    fakeAuth.authenticate(() => {
+      this.setState({loggedIn: true});
+      console.log("Callback authenticate complete");
+    });
+  };
+
+  renderLogin() {
+    // Login page
+    return (
+      <div className="App">
+        <header className="App-header">
+          <Login login_method={this.login}/>
+        </header>
+      </div>
+    );
+  }
+
+  renderApplication() {
+    return (
+      <div className="App">
+        <header className="App-header">
+          <img src={logo} className="App-logo" alt="logo" />
+          <p>
+            Edit <code>src/App.js</code> and save to reload.
+          </p>
+          <a
+            className="App-link"
+            href="https://reactjs.org"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Learn React
+          </a>
+        </header>
+      </div>
+    );
+  }
+
+  render() {
+    if(this.state.loggedIn) {
+      // App principale une fois logged in
+      return this.renderApplication();
+    } else {
+      return this.renderLogin();
+    }
+  }
 }
 
 export default App;
