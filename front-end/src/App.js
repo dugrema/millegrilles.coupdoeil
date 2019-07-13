@@ -3,6 +3,9 @@ import logo from './logo.svg';
 import './App.css';
 import { solveRegistrationChallenge, solveLoginChallenge } from '@webauthn/client';
 
+// const urlApi = 'https://dev2.maple.mdugre.info:3001';  // Autre site, dev.
+const urlApi = '';  // Meme serveur
+
 const fakeAuth = {
   isAuthenticated: false,
   challenge: null,
@@ -10,7 +13,7 @@ const fakeAuth = {
   id: 'a1ID',
   email: 'test@test.com',
   async authenticate(cb) {
-    const challenge = await fetch('https://dev2.maple.mdugre.info:3002/api/login', {
+    const challenge = await fetch(urlApi + '/api/login', {
         method: 'POST',
         headers: {
             'content-type': 'Application/Json'
@@ -21,7 +24,7 @@ const fakeAuth = {
 
     const credentials = await solveLoginChallenge(challenge);
     const { loggedIn } = await fetch(
-        'https://dev2.maple.mdugre.info:3002/api/login-challenge',
+        urlApi + '/api/login-challenge',
         {
             method: 'POST',
             headers: {
@@ -43,7 +46,7 @@ const fakeAuth = {
   },
   async register(cb) {
 
-    const challenge = await fetch('https://dev2.maple.mdugre.info:3002/api/initialiser-empreinte', {
+    const challenge = await fetch(urlApi + '/api/initialiser-empreinte', {
         method: 'POST',
         headers: {
             'content-type': 'Application/Json'
@@ -58,7 +61,7 @@ const fakeAuth = {
     console.log("Transmission de la reponse au challenge");
     console.log(credentials);
     const { loggedIn } = await fetch(
-        'https://dev2.maple.mdugre.info:3002/api/effectuer-empreinte',
+        urlApi + '/api/effectuer-empreinte',
         {
             method: 'POST',
             headers: {
@@ -103,7 +106,7 @@ class Login extends React.Component {
   };
 
   checkStatus = () => {
-    fetch('https://dev2.maple.mdugre.info:3002/api/requete', {
+    fetch(urlApi + '/api/requete', {
         method: 'POST',
         headers: {
             'content-type': 'Application/Json',
