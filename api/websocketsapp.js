@@ -1,3 +1,15 @@
+var rabbitMQ = require('./routes/res/rabbitMQ');
+var fs = require('fs');
+var sessionManagement = require('./routes/res/sessionManagement');
+
+const {
+    generateRegistrationChallenge,
+    parseRegisterRequest,
+    generateLoginChallenge,
+    parseLoginRequest,
+    verifyAuthenticatorAssertion,
+} = require('@webauthn/server');
+
 class WebSocketApp {
 
   constructor() {
@@ -5,7 +17,7 @@ class WebSocketApp {
     this.authenticated_sockets = Object();
     setInterval(()=>{
       this.clean();
-    }, 5000);
+    }, 60000);
   }
 
   clean() {
@@ -25,6 +37,8 @@ class WebSocketApp {
     // Ajoute un socket d'une nouvelle connexion
     console.debug("Nouveau socket!");
     this.new_sockets[socket.id] = socket;
+
+    sessionManagement.addSocketConnection(socket);  // Attache evements auth
   }
 
 }

@@ -35,26 +35,13 @@ const config = {
 const wss_server = io();
 const server = Spdy.createServer(config, app).listen(port, () => {
   wss_server.listen(server);
+  wss_server.on('connection', (socket) => {
+    console.log("Connexion WSS!");
+    websocketsapp.addSocket(socket);
+  });
+
   console.log('Server is listening at https://localhost:' + port + '. Ctrl^C to stop it.');
 });
-
-wss_server.on('connection', (socket) => {
-  console.log("Connexion WSS!");
-  websocketsapp.addSocket(socket);
-  // console.log(socket);
-
-  /*socket.emit('allo', {'un': 'Poutine!'});
-  setTimeout(()=>{
-    socket.emit('allo', {'deux': 'Poutine!'});
-    setTimeout( ()=>{
-      socket.disconnect();
-      console.log("Disconnected");
-    }, 5000);
-  }, 5000);
-  */
-
-});
-
 
 /**
  * Normalize a port into a number, string, or false.

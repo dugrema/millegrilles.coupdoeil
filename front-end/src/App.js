@@ -165,11 +165,52 @@ class App extends React.Component {
   wss_socket;
 
   login = () => {
-    console.log("Login called: 2")
-    fakeAuth.authenticate(() => {
-      this.setState({loggedIn: true});
-      console.log("Callback authenticate complete");
-    });
+    console.log("Login called: 3")
+
+    if(!this.wss_socket) {
+      let socket = openSocket('/');
+
+      // Enregistrer evenements generiques
+      socket.on('erreur', erreur=>{
+        console.error("Erreur recue par WSS");
+        console.error(erreur);
+      })
+      socket.on('disconnect', () => {
+        console.log("Disconnected");
+        this.wss_socket = null;
+      });
+
+      // Gerer l'authentification
+      socket.on('challenge', challenge => {
+        console.debug("Challenge recu");
+        console.debug(challenge);
+
+        socket.on('login', confirmation=>{
+          this.setState({loggedIn: true});
+          console.log("Callback authenticate complete");
+          this.wss_socket = socket;
+        });
+
+        console.debug("On va solver!");
+
+        solveLoginChallenge(challenge)
+        .then(credentials => {
+          console.debug("Tranmission evenement challenge_reply");
+          socket.emit('challenge_reply', credentials);
+        })
+        .catch(err=>{
+          console.error("Erreur challenge reply");
+          console.error(err);
+        });
+
+      });
+
+
+      // socket.emit('authentification', '');
+
+    } else {
+      throw "Login: WebSocket deja ouvert";
+    }
   };
 
   renderLogin() {
