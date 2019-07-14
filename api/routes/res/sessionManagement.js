@@ -61,9 +61,7 @@ class SessionManagement {
         }
 
         let challenge_genere = generateLoginChallenge(doc.cles);
-        console.log("Challenge login");
-
-        // challenge_conserve = challenge.challenge;
+        // console.log("Challenge login");
 
         socket.on('challenge_reply', reply => {
           console.log("/login-challenge appele");

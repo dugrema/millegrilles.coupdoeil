@@ -35,12 +35,11 @@ class WebSocketApp {
 
   addSocket(socket) {
     // Ajoute un socket d'une nouvelle connexion
-    console.debug("Nouveau socket!");
+    // console.debug("Nouveau socket!");
     this.new_sockets[socket.id] = socket;
 
     sessionManagement.addSocketConnection(socket)
     .then(()=>{
-      console.log("!!! YEEEE AWWHHHH!!!!");
       this.saveAuthenticated(socket);
     }).catch(err=>{
       console.error("Erreur traitement socket " + socket.id + ", on le ferme.");
