@@ -2,6 +2,7 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { solveRegistrationChallenge, solveLoginChallenge } from '@webauthn/client';
+import openSocket from 'socket.io-client';
 
 // const urlApi = 'https://dev2.maple.mdugre.info:3001';  // Autre site, dev.
 const urlApi = '';  // Meme serveur
@@ -108,6 +109,17 @@ class Login extends React.Component {
   };*/
 
   checkStatus = () => {
+    let socket = openSocket('/');
+    socket.on('allo', reponse => {
+      console.log("Allo!");
+      console.log(reponse);
+    });
+
+    socket.on('disconnect', () => {
+      console.log("Disconnected");
+    });
+
+    /*
     fetch(urlApi + '/api/requete', {
         method: 'POST',
         headers: {
@@ -126,6 +138,7 @@ class Login extends React.Component {
     }).then(response => {
       console.log("Status login: " + response);
     });
+    */
   };
 
   render() {
@@ -148,6 +161,8 @@ class App extends React.Component {
   state = {
     loggedIn: false
   }
+
+  wss_socket;
 
   login = () => {
     console.log("Login called: 2")
@@ -190,10 +205,12 @@ class App extends React.Component {
   }
 
   render() {
+    // Main render de l'application.
     if(this.state.loggedIn) {
       // App principale une fois logged in
       return this.renderApplication();
     } else {
+      // Authentification et initialisation
       return this.renderLogin();
     }
   }

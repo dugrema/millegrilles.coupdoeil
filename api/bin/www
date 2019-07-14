@@ -10,7 +10,7 @@ const debug = require('debug')('api:server');
 const FS = require("fs");
 const Path = require('path');
 const Spdy = require('spdy');
-
+const io = require('socket.io');
 
 /**
  * Get port from environment and store in Express.
@@ -31,9 +31,26 @@ const config = {
     key: FS.readFileSync(key_path)
 };
 
+const wss_server = io();
 const server = Spdy.createServer(config, app).listen(port, () => {
-    console.log('Server is listening at https://localhost:' + port + '. Ctrl^C to stop it.');
+  wss_server.listen(server);
+  console.log('Server is listening at https://localhost:' + port + '. Ctrl^C to stop it.');
 });
+
+wss_server.on('connection', (socket) => {
+  console.log("Connexion WSS!");
+  // console.log(socket);
+
+  socket.emit('allo', {'un': 'Poutine!'});
+  setTimeout(()=>{
+    socket.emit('allo', {'deux': 'Poutine!'});
+    setTimeout( ()=>{
+      socket.disconnect();
+      console.log("Disconnected");
+    }, 5000);
+  }, 5000);
+});
+
 
 /**
  * Normalize a port into a number, string, or false.
