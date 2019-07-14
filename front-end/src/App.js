@@ -97,8 +97,12 @@ class App extends React.Component {
         console.error(erreur);
       })
       socket.on('disconnect', () => {
-        console.warn("Disconnected");
-        this.setState({wss_socket: null, loggedIn: false});
+        if(this.state.wss_socket === socket) {
+          console.warn("Socket " + socket.id + " disconnected");
+          this.setState({wss_socket: null, loggedIn: false});
+        } else {
+          console.info("Dangling socket closed: " + socket.id);
+        }
       });
 
       // Gerer l'authentification:
