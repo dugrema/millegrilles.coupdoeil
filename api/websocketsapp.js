@@ -13,8 +13,8 @@ const {
 class WebSocketApp {
 
   constructor() {
-    this.new_sockets = [];
-    this.authenticated_sockets = Object();
+    this.new_sockets = {};
+    this.authenticated_sockets = {};
     setInterval(()=>{
       this.clean();
     }, 60000);
@@ -22,7 +22,7 @@ class WebSocketApp {
 
   clean() {
     for(var socket_id in this.new_sockets) {
-      let socket_obj = this.new_sockets[socket_id]
+      let socket_obj = this.new_sockets[socket_id];
       if(!socket_obj.disconnected) {
         console.debug("On deconnecte un socket expire: " + socket_obj.id);
         socket_obj.disconnect();
@@ -30,6 +30,14 @@ class WebSocketApp {
         console.debug("Nettoyage vieux socket deja deconnecte: " + socket_obj.id);
       }
       delete this.new_sockets[socket_id];
+    }
+
+    for(var socket_id in this.authenticated_sockets) {
+      let socket_obj = this.authenticated_sockets[socket_id];
+      if(socket_obj.disconnected) {
+        console.debug("Nettoyage vieux socket authentifie deja deconnecte: " + socket_obj.id);
+        delete this.authenticated_sockets[socket_id];
+      }
     }
   }
 
@@ -51,6 +59,7 @@ class WebSocketApp {
   saveAuthenticated(socket) {
     this.authenticated_sockets[socket.id] = socket;
     delete this.new_sockets[socket.id];
+    console.debug("Moved socket " + socket.id + " from new_sockets to authenticated_sockets");
   }
 
 }

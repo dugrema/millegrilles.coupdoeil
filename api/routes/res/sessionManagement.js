@@ -63,9 +63,9 @@ class SessionManagement {
         let challenge_genere = generateLoginChallenge(doc.cles);
         // console.log("Challenge login");
 
-        socket.on('challenge_reply', reply => {
-          console.log("/login-challenge appele");
-          console.log(reply);
+        socket.emit('challenge', challenge_genere, reply => {
+          // console.log("/login-challenge appele");
+          // console.log(reply);
 
             const { challenge, keyId } = parseLoginRequest(reply);
             if (!challenge) {
@@ -142,7 +142,6 @@ class SessionManagement {
             });
         });
 
-        socket.emit('challenge', challenge_genere);
         return;
 
       }).catch( err => {

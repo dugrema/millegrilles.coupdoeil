@@ -103,7 +103,7 @@ class App extends React.Component {
 
       // Gerer l'authentification:
       // 1. Ecouter le challenge du serveur
-      socket.on('challenge', challenge => {
+      socket.on('challenge', (challenge, cb) => {
 
         socket.on('login', confirmation=>{
           this.setState({loggedIn: confirmation, wss_socket: socket});
@@ -113,7 +113,8 @@ class App extends React.Component {
         solveLoginChallenge(challenge)
         .then(credentials => {
           // console.debug("Tranmission evenement challenge_reply");
-          socket.emit('challenge_reply', credentials);
+          //socket.emit('challenge_reply', credentials);
+          cb(credentials); // Callback du challenge via websocket
         })
         .catch(err=>{
           console.error("Erreur challenge reply");

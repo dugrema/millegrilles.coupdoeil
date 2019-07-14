@@ -36,7 +36,7 @@ const wss_server = io();
 const server = Spdy.createServer(config, app).listen(port, () => {
   wss_server.listen(server);
   wss_server.on('connection', (socket) => {
-    console.log("Connexion WSS!");
+    console.info("Connexion WSS id: " + socket.id + ", remoteAddress: " + socket.conn.remoteAddress);
     websocketsapp.addSocket(socket);
   });
 
