@@ -38,7 +38,20 @@ class WebSocketApp {
     console.debug("Nouveau socket!");
     this.new_sockets[socket.id] = socket;
 
-    sessionManagement.addSocketConnection(socket);  // Attache evements auth
+    sessionManagement.addSocketConnection(socket)
+    .then(()=>{
+      console.log("!!! YEEEE AWWHHHH!!!!");
+      this.saveAuthenticated(socket);
+    }).catch(err=>{
+      console.error("Erreur traitement socket " + socket.id + ", on le ferme.");
+      socket.disconnect();
+      delete this.new_sockets[socket.id];
+    });  // Attache evements auth
+  }
+
+  saveAuthenticated(socket) {
+    this.authenticated_sockets[socket.id] = socket;
+    delete this.new_sockets[socket.id];
   }
 
 }
