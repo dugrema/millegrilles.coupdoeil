@@ -178,6 +178,7 @@ class App extends React.Component {
       socket.on('disconnect', () => {
         console.log("Disconnected");
         this.wss_socket = null;
+        this.setState({loggedIn: false});
       });
 
       // Gerer l'authentification
