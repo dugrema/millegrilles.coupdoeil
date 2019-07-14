@@ -19,6 +19,11 @@ router.get('/', function(req, res, next) {
 
 var challenge_conserve = null;
 
+class SocketSession {
+  constructor() {
+  }
+}
+
 class SessionManagement {
 
   constructor() {
@@ -26,6 +31,7 @@ class SessionManagement {
     this.timer;
     this.session_timeout = process.env.COUPDOEIL_SESSION_TIMEOUT || (600 * 1000);
     this.session_timeout = Number(this.session_timeout);
+    this.webSockets = new Object();
   }
 
   start() {
@@ -53,6 +59,121 @@ class SessionManagement {
       token_expire = tokens_expire.pop();
     }
 
+  }
+
+  addSocketConnection(socket) {
+    // Authentifier le socket
+    socket.on('authentification', params=>{
+      let filtre = {"_mg-libelle": "profil.usager"};
+      rabbitMQ.singleton.get_document(
+        'millegrilles.domaines.Principale', filtre)
+      .then( doc => {
+        // console.log(doc);
+        if (!doc || doc.empreinte_absente) {
+            socket.emit('challenge', {'erreur': 'empreinte_absente'});
+            socket.disconnect();
+            return;
+        }
+
+        let challenge_genere = generateLoginChallenge(doc.cles);
+        console.log("Challenge login");
+
+        // challenge_conserve = challenge.challenge;
+
+        socket.on('challenge_reply', reply => {
+          console.log("/login-challenge appele");
+          console.log(reply);
+
+            const { challenge, keyId } = parseLoginRequest(reply);
+            if (!challenge) {
+              // console.debug("Challenge pas recu")
+              socket.emit('erreur', {'erreur': 'Challenge pas initialise'});
+              socket.disconnect();
+              return;
+            }
+
+            // console.debug("Challlenge recu login: ");
+            // console.debug(challenge);
+
+            if (challenge_genere !== challenge) {
+              console.warn("Challenge ne match pas");
+              socket.emit('erreur', {'erreur': 'Challenge mismatch'});
+              socket.disconnect();
+              return;
+            }
+
+            let filtre = {"_mg-libelle": "profil.usager"};
+            rabbitMQ.singleton.get_document(
+              'millegrilles.domaines.Principale', filtre)
+            .then( doc => {
+              // console.log(doc);
+              if (!doc || doc.empreinte_absente) {
+                console.warn("Doc absent ou empreinte_absente trouvee");
+                socket.emit('erreur', {'erreur': 'Doc absent ou empreinte_absente==true'});
+                socket.disconnect();
+                return;
+              }
+
+              // Trouve la bonne cle a verifier dans la collection de toutes les cles
+              var cle_match;
+              let cle_id_utilisee = reply.rawId;
+              // console.debug("Document profil, cles");
+              // console.debug(doc['cles']);
+              // console.debug("\n\n");
+
+              let cles = doc['cles'];
+              for(var i_cle in cles) {
+                let cle = cles[i_cle];
+                let credID = cle['credID'];
+                credID = credID.substring(0, cle_id_utilisee.length);
+                // console.log("Cle: ");
+                // console.log(credID);
+
+                if(credID === cle_id_utilisee) {
+                  cle_match = cle;
+                  // console.log("Cle choisie");
+                  // console.log(cle);
+                  break;
+                }
+              }
+
+              if(!cle_match) {
+                console.error("Clee inconnue: " + cle_id_utilisee);
+                console.error(cle_id_utilisee);
+                socket.emit('erreur', {'erreur': 'Cle inconnue'});
+                socket.disconnect();
+                return;
+              }
+
+              const loggedIn = verifyAuthenticatorAssertion(req.body, cle_match);
+              // console.debug("Logged in? " + loggedIn);
+
+              if(loggedIn) {
+                // Session valid for 5 minutes of inactivity
+                sessionManagement.addSession(challenge);
+                // auth_tokens[challenge] = (new Date).getTime() + session_timeout;
+              }
+
+              socket.emit('login', loggedIn);
+              return;
+            }).catch( err => {
+              console.error("Erreur login")
+              console.error(err);
+              socket.emit('erreur', {'erreur': 'Erreur login generique'});
+              socket.disconnect();
+              return;
+            });
+        });
+
+        socket.emit('challenge', challenge_genere);
+        return;
+
+      }).catch( err => {
+        console.error("Erreur login")
+        console.error(err);
+        return res.sendStatus(500);
+      });
+    });
   }
 
   addSession(token) {
