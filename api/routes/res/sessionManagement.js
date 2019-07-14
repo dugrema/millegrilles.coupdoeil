@@ -10,41 +10,20 @@ const {
 class SessionManagement {
 
   constructor() {
-    this.auth_tokens = {'12345': '0'};
     this.timer;
     this.session_timeout = process.env.COUPDOEIL_SESSION_TIMEOUT || (600 * 1000);
     this.session_timeout = Number(this.session_timeout);
-    this.webSockets = [];
   }
 
   start() {
     // Cleanup des sessions expirees aux 5 minutes
-    this.timer = setInterval(() => this.clean(), 5 * 60000);
   }
 
   clean() {
-    // console.debug('Session timeout: ' + this.session_timeout);
-    // console.debug("Session cleanup start, " + Object.keys(this.auth_tokens).length + " active sessions");
-
-    // Nettoie les sessions expirees
-    var tokens_expire = []
-    const current_time_ms = (new Date()).getTime();
-    for(var idx_token in this.auth_tokens) {
-      if(this.auth_tokens[idx_token] < current_time_ms) {
-        tokens_expire.push(idx_token);
-      }
-    }
-
-    var token_expire = tokens_expire.pop();
-    while(token_expire) {
-      console.debug("Cleanup token expire " + token_expire);
-      delete this.auth_tokens[token_expire];
-      token_expire = tokens_expire.pop();
-    }
-
   }
 
   addSocketConnection(socket) {
+    // Ajoute un socket et demarre l'authentification.
 
     return new Promise((resolve, reject) => {
       // Authentifier le socket
@@ -124,11 +103,6 @@ class SessionManagement {
 
               const loggedIn = verifyAuthenticatorAssertion(reply, cle_match);
 
-              if(loggedIn) {
-                // Session valid for 5 minutes of inactivity
-                sessionManagement.addSession(challenge);
-              }
-
               socket.emit('login', loggedIn);
               resolve();
               return;
@@ -152,24 +126,6 @@ class SessionManagement {
         reject();
       });
     });
-  }
-
-  addSession(token) {
-    this.auth_tokens[token] = (new Date()).getTime() + this.session_timeout;
-  }
-
-  checkUpdateToken(token) {
-    var token_timeout = this.auth_tokens[token];
-
-    if(!token_timeout || token_timeout < (new Date()).getTime()) {
-      // Token inconnu ou expire
-      delete this.auth_tokens[token];
-      return false;
-    }
-
-    // Token est correct, on met a jour le timeout.
-    this.auth_tokens[token] = (new Date()).getTime() + this.session_timeout;
-    return true;
   }
 
 }
