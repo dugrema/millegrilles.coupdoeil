@@ -49,6 +49,7 @@ class WebSocketApp {
     sessionManagement.addSocketConnection(socket)
     .then(()=>{
       this.saveAuthenticated(socket);
+      this.registerEvents(socket);
     }).catch(err=>{
       console.error("Erreur traitement socket " + socket.id + ", on le ferme.");
       socket.disconnect();
@@ -60,6 +61,44 @@ class WebSocketApp {
     this.authenticated_sockets[socket.id] = socket;
     delete this.new_sockets[socket.id];
     console.debug("Moved socket " + socket.id + " from new_sockets to authenticated_sockets");
+  }
+
+  registerEvents(socket) {
+    // Enregistre tous les evenements transmis par le front-end coupdoeil.
+    // registerDocument: Enregistrer nouvelle routingKey pour le socket
+    // unregisterDocument: Retirer routingKey pour socket
+    // requete: Executer une requete
+
+    socket.on('registerDocument', message => {
+      rabbitMQ.rabbitMQ_singleton.routingKeyManager
+        .addRoutingKeyForSocket(socket, message);
+    });
+
+    socket.on('unregisterDocument', message => {
+      rabbitMQ.rabbitMQ_singleton.routingKeyManager
+        .removeRoutingKeyForSocket(socket, message);
+    });
+
+    socket.on('requete', (enveloppe, cb) => {
+      console.log("Envelope de requete recue");
+      console.log(enveloppe);
+      let routingKey = enveloppe.routingKey;
+      let requete = enveloppe.requete;
+
+      rabbitMQ.singleton
+        .transmettreRequete(routingKey, requete)
+      .then( reponse => {
+        let messageContent = decodeURIComponent(escape(reponse.content));
+        let json_message = JSON.parse(messageContent);
+        cb(json_message.resultats); // On transmet juste les resultats
+      })
+      .catch( err => {
+        console.error("Erreur requete");
+        console.error(err);
+        cb(); // Callback sans valeurs
+      });
+    });
+
   }
 
 }

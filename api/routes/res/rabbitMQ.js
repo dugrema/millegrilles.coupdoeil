@@ -21,6 +21,8 @@ class RabbitMQWrapper {
 
     // this.nomMilleGrille = this._trouverNomMilleGrille()
     // this.setHostname();
+
+    this.routingKeyManager = new RoutingKeyManager(this);
   }
 
   connect(url) {
@@ -100,15 +102,17 @@ class RabbitMQWrapper {
           let correlationId = msg.properties.correlationId;
           let messageContent = decodeURIComponent(escape(msg.content));
           let routingKey = msg.fields.routingKey;
-          // console.log("Message: ");
-          // console.log(msg);
-          // console.log("Routing key: " + routingKey);
-          // console.log("Message: " + messageContent);
-          // console.log("CorrelationId: " + correlationId);
 
-          let callback = this.pendingResponses[correlationId];
-          if(callback) {
-            callback(msg);
+          if(correlationId) {
+            let callback = this.pendingResponses[correlationId];
+            if(callback) {
+              callback(msg);
+            }
+          } else if(routingKey) {
+            console.debug("Message avec routing key: " + routingKey);
+          } else {
+            console.debug("Recu message sans correlation Id ou routing key");
+            console.warn(msg);
           }
         },
         {noAck: true}
@@ -296,6 +300,45 @@ class RabbitMQWrapper {
     })
 
     return promise;
+  }
+
+}
+
+class RoutingKeyManager {
+
+  constructor(mq) {
+
+    // Lien vers RabbitMQ, donne acces au channel, Q et routing keys
+    this.mq = mq;
+
+    // Dictionnaire de routing keys
+    //   cle: string (routing key sur RabbitMQ)
+    //   valeur: dict de socket ids / socket
+    this.registeredRoutingKeysForSockets = {};
+  }
+
+  addRoutingKeyForSocket(socket, message) {
+    console.debug("Ajouter routingKey: " + message.routingKey + " au socket " + socket.id);
+
+    // Verifier si la routing key existe deja sur la Q
+
+    // Ajouter la routing key
+
+    //
+
+  }
+
+  removeRoutingKeyForSocket(routingKey, socket) {
+    console.debug("Enlever routingKey: " + routingKey + " du socket " + socket.id);
+
+  }
+
+  clean() {
+    // Verifier chaque routing key pour voir s'il reste au moins un
+    // socket actif.
+
+    // Enlever la routing key qui n'est plus utile.
+
   }
 
 }

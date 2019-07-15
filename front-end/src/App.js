@@ -4,9 +4,12 @@ import React from 'react';
 import Ecran from './Ecran';
 import { solveRegistrationChallenge, solveLoginChallenge } from '@webauthn/client';
 import openSocket from 'socket.io-client';
+import webSocketManager from './WebSocketManager';
 
 // const urlApi = 'https://dev2.maple.mdugre.info:3001';  // Autre site, dev.
 const urlApi = '';  // Meme serveur
+
+var api_wss_socket;
 
 const fakeAuth = {
   isAuthenticated: false,
@@ -84,9 +87,6 @@ class App extends React.Component {
     wss_socket: null
   }
 
-  // Web Socket pour communiquer avec le serveur
-  wss_socket;
-
   login = () => {
     if(!this.state.wss_socket) {
       // Ouvrir un nouveau socket vers le serveur
@@ -111,6 +111,7 @@ class App extends React.Component {
       socket.on('challenge', (challenge, cb) => {
 
         socket.on('login', confirmation=>{
+          webSocketManager.setWebSocket(socket);
           this.setState({loggedIn: confirmation, wss_socket: socket});
         });
 
@@ -149,7 +150,7 @@ class App extends React.Component {
   renderApplication() {
     return (
       <div className="App">
-        <Ecran />
+        <Ecran/>
       </div>
     );
   }

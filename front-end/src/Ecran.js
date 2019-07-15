@@ -5,6 +5,7 @@ import './Ecran.css';
 import './w3.css';
 import './w3-theme-blue-grey.css';
 import './font-awesome.min.css';
+import webSocketManager from './WebSocketManager';
 
 class NavBar extends React.Component {
 
@@ -43,6 +44,47 @@ class Contenu extends React.Component {
 }
 
 class ContenuDomaine extends React.Component {
+
+  // Configuration statique du composant:
+  //   subscriptions: Le nom des routing keys qui vont etre ecoutees
+  config = {
+    subscriptions: ['noeuds.source.millegrilles_domaines_SenseursPassifs.documents']
+  }
+
+  processDocument = (doc) => {
+
+  }
+
+  componentDidMount() {
+    console.log('Socket connecte: ' + webSocketManager.getWebSocket().id);
+
+    let requeteDocumentInitial =  {
+      'requetes': [{
+        'filtre': {'_mg-libelle': 'noeud.individuel'}
+      }]};
+
+    // Enregistrer les routingKeys, demander le document initial.
+    webSocketManager.transmettreRequete(
+      'requete.millegrilles.domaines.SenseursPassifs', requeteDocumentInitial)
+    .then( docInitial => {
+      console.log("Recu doc noeuds");
+
+      let resultatsNoeuds = docInitial[0];
+      console.log("Noeuds: ");
+      console.log(resultatsNoeuds);
+
+      this.setState({'listeNoeuds': resultatsNoeuds});
+    })
+    .catch( err=>{
+      console.error("Erreur chargement document initial");
+      console.error(err);
+    });
+  }
+
+  componentWillUmount() {
+
+  }
+
   render() {
     return (
       <div className="w3-col m9">
@@ -173,6 +215,14 @@ class MenuGaucheNavigation extends React.Component {
 }
 
 class EcranApp extends React.Component {
+
+  componentDidMount() {
+    console.debug("Mounted!");
+  }
+
+  componentWillUnmount() {
+    console.debug("Demonte!");
+  }
 
   render() {
     return (
