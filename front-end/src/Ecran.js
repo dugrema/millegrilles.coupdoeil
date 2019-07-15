@@ -117,12 +117,12 @@ class ContenuDomaine extends React.Component {
   }
 
   processMessage = (routingKey, doc) => {
-    console.log("Process message " + routingKey);
+    // console.log("Process message " + routingKey);
     if(routingKey === 'noeuds.source.millegrilles_domaines_SenseursPassifs.documents') {
       const mg_libelle = doc["_mg-libelle"];
       if(mg_libelle === 'noeud.individuel') {
         // MAJ d'un document de noeud.
-        console.log("Traitement d'un noeud!");
+        // console.log("Traitement d'un noeud!");
         var noeud_idx_trouve = null, listeNoeudsActuelle = this.state.listeNoeuds;
 
         for(var noeud_idx in this.state.listeNoeuds) {

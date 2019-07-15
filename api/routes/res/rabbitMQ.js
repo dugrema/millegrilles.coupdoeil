@@ -321,14 +321,14 @@ class RoutingKeyManager {
 
   setWebSocketsManager(manager) {
     this.websocketsManager = manager;
-    console.log("WebSocketsManager");
-    console.log(this.websocketsManager);
+    // console.log("WebSocketsManager");
+    // console.log(this.websocketsManager);
   }
 
   addRoutingKeysForSocket(socket, routingKeys) {
     const socketId = socket.id;
-    console.debug("Ajouter routingKeys au socket " + socketId);
-    console.debug(routingKeys);
+    // console.debug("Ajouter routingKeys au socket " + socketId);
+    // console.debug(routingKeys);
 
     for(var routingKey_idx in routingKeys) {
       let routingKeyName = routingKeys[routingKey_idx];
@@ -366,7 +366,7 @@ class RoutingKeyManager {
       for(var socketId in dictSockets) {
         let socket = this.websocketsManager.authenticated_sockets[socketId];
         if(socket) {
-          console.debug("Transmission message " + routingKey + " vers " + socket.id);
+          // console.debug("Transmission message " + routingKey + " vers " + socket.id);
           socket.emit('mq_message', {routingKey: routingKey, message: json_message});
         } else {
           console.warn("Message not sent to socket " + socketId + ", socket gone.");
@@ -375,7 +375,7 @@ class RoutingKeyManager {
       }
 
       for(var socketId in cleanupSockets) {
-        delete dictSockets[socketId];
+        delete dictSockets[cleanupSockets[socketId]];
       }
     }
   }

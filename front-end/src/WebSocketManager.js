@@ -10,8 +10,8 @@ class WebSocketManager {
 
     this.socket.on('mq_message', enveloppe=>{
       let {routingKey, message} = enveloppe;
-      console.log("MQ Message recu: " + routingKey);
-      console.log(message);
+      // console.log("MQ Message recu: " + routingKey);
+      // console.log(message);
       this.traiterMessageMq(routingKey, message);
     });
   }
