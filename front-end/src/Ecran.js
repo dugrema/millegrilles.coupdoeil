@@ -32,13 +32,64 @@ class Contenu extends React.Component {
 
   render() {
     return (
-      <div className="w3-container w3-content">
+      <div className="w3-container w3-content divtop">
         <div className="w3-row">
           <MenuGauche/>
-          Contenu
+          <ContenuDomaine/>
         </div>
       </div>
     );
+  }
+}
+
+class ContenuDomaine extends React.Component {
+  render() {
+    return (
+      <div className="w3-col m9">
+        <div className="w3-row-padding">
+          <div className="w3-col m12">
+            <h1>Domaine SenseursPassifs</h1>
+
+            <div className="w3-card w3-round w3-white">
+              <div className="w3-container w3-padding">
+                <h6 className="w3-opacity">
+                  Noeud 1
+                </h6>
+                <div>
+                  Dernière modification: 2019-01-01
+                </div>
+              </div>
+            </div>
+            <br/>
+
+            <div className="w3-card w3-round w3-white">
+              <div className="w3-container w3-padding">
+                <h6 className="w3-opacity">
+                  Noeud 2
+                </h6>
+                <div>
+                  Dernière modification: 2019-01-01
+                </div>
+              </div>
+            </div>
+            <br/>
+
+            <div className="w3-card w3-round w3-white">
+              <div className="w3-container w3-padding">
+                <h6 className="w3-opacity">
+                  Noeud 3
+                </h6>
+                <div>
+                  Dernière modification: 2019-01-01
+                </div>
+              </div>
+            </div>
+            <br/>
+
+          </div>
+        </div>
+      </div>
+    )
   }
 }
 

@@ -10,6 +10,11 @@ header {
   position: relative;
 }
 
+DIV.divtop {
+  max-width:1400px;
+  margin-top:80px;
+}
+
 li.senseurs {
   position: relative;
   list-style: none;
