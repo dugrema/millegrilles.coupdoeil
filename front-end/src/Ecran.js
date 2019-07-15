@@ -56,16 +56,16 @@ function AfficherNoeuds(props) {
       for(var noSenseur in noeud.dict_senseurs) {
         let senseur = noeud.dict_senseurs[noSenseur];
         let date_formattee = dateformatter.format_monthhour(senseur.temps_lecture);
-        
+
         senseurs.push(
-          <li class="senseur">
-            <div class="location">
+          <li key="{noSenseur}" className="senseur">
+            <div className="location">
               {senseur.location}
             </div>
-            <div class="numerique temperature">{senseur.temperature}&deg;C</div>
-            <div class="numerique humidite">{senseur.humidite}%</div>
-            <div class="numerique pression">{senseur.pression} kPa</div>
-            <div class="temps">{date_formattee}</div>
+            <div className="numerique temperature">{senseur.temperature}&deg;C</div>
+            <div className="numerique humidite">{senseur.humidite}%</div>
+            <div className="numerique pression">{senseur.pression} kPa</div>
+            <div className="temps">{date_formattee}</div>
           </li>
         );
       }
