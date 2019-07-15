@@ -7,7 +7,8 @@ class DateFormatter {
   datemonthhour_default  = 'MMM-DD HH:mm:ss';
 
   format_monthhour(date) {
-    return moment(date).format(this.datemonthhour_default);
+    // On assume que la date est en secondes (epoch).
+    return moment(date*1000).format(this.datemonthhour_default);
   }
 }
 

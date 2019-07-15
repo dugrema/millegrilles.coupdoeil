@@ -109,7 +109,7 @@ class App extends React.Component {
       socket.on('challenge', (challenge, cb) => {
 
         socket.on('login', confirmation=>{
-          webSocketManager.setWebSocket(socket);
+          webSocketManager.setupWebSocket(socket);
           this.setState({loggedIn: confirmation, wss_socket: socket});
         });
 

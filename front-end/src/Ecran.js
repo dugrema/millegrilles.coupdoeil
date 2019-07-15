@@ -70,7 +70,7 @@ function AfficherNoeuds(props) {
         );
       }
 
-      const date_derniere_modification = dateformatter.format_monthhour(noeud['_mg-derniere-modification']);
+      var date_derniere_modification = dateformatter.format_monthhour(noeud['_mg-derniere-modification']);
       liste.push(
         <div key={noeud.noeud} className="w3-card w3-round w3-white">
           <div className="w3-container w3-padding">
@@ -117,15 +117,18 @@ class ContenuDomaine extends React.Component {
   }
 
   processMessage = (routingKey, doc) => {
+    console.log("Process message " + routingKey);
     if(routingKey === 'noeuds.source.millegrilles_domaines_SenseursPassifs.documents') {
-      const mg_libelle = doc['_mg-libelle'];
+      const mg_libelle = doc["_mg-libelle"];
       if(mg_libelle === 'noeud.individuel') {
         // MAJ d'un document de noeud.
+        console.log("Traitement d'un noeud!");
         var noeud_idx_trouve = null, listeNoeudsActuelle = this.state.listeNoeuds;
 
         for(var noeud_idx in this.state.listeNoeuds) {
           let noeud = listeNoeudsActuelle[noeud_idx];
           if(noeud.noeud === doc.noeud) {
+            noeud_idx_trouve = noeud_idx;
             break;
           }
         }
@@ -139,14 +142,14 @@ class ContenuDomaine extends React.Component {
           copie_liste_noeuds.push(doc);
         }
 
-        this.setState('listeNoeuds', copie_liste_noeuds);
+        this.setState({'listeNoeuds': copie_liste_noeuds});
       }
     }
   }
 
   componentDidMount() {
     // Enregistrer les routingKeys de documents
-    webSocketManager.subscribe(this.config.subscriptions);
+    webSocketManager.subscribe(this.config.subscriptions, this.processMessage);
 
     let requeteDocumentInitial =  {
       'requetes': [{

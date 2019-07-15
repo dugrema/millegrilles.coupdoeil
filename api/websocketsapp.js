@@ -18,6 +18,8 @@ class WebSocketApp {
     setInterval(()=>{
       this.clean();
     }, 60000);
+
+    rabbitMQ.singleton.routingKeyManager.setWebSocketsManager(this); // Permet transmettre incoming msg
   }
 
   clean() {
