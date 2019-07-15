@@ -46,20 +46,34 @@ class Contenu extends React.Component {
 function AfficherNoeuds(props) {
   const noeuds = props.listeNoeuds;
 
-  let liste;
+  const liste = [];
   if(noeuds) {
-    liste = noeuds.map(noeud=>
-      <div key="{noeud.noeud}" className="w3-card w3-round w3-white">
-        <div className="w3-container w3-padding">
-          <h6 className="w3-opacity">
-            {noeud.noeud}
-          </h6>
-          <div>
-            Dernière modification: 2019-01-01
+    noeuds.map(noeud=>{
+
+      const senseurs = [];
+      for(var noSenseur in noeud.dict_senseurs) {
+        let senseur = noeud.dict_senseurs[noSenseur];
+        senseurs.push(
+          <li>Senseur {noSenseur}, location {senseur.location}, valeur {senseur.temperature}</li>
+        );
+      }
+
+      liste.push(
+        <div key="{noeud.noeud}" className="w3-card w3-round w3-white">
+          <div className="w3-container w3-padding">
+            <h6 className="w3-opacity">
+              Noeud {noeud.noeud}
+            </h6>
+            <div>
+              Dernière modification: 2019-01-01
+            </div>
+            <ul className="listeSenseurs">
+              {senseurs}
+            </ul>
           </div>
         </div>
-      </div>
-    );
+      );
+    });
 
   }
 
