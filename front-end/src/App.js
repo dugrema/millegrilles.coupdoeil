@@ -1,7 +1,7 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
-import Ecran, {EcranApp} from './Ecran';
+import Ecran from './Ecran';
 import { solveRegistrationChallenge, solveLoginChallenge } from '@webauthn/client';
 import openSocket from 'socket.io-client';
 
