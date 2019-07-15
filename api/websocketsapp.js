@@ -69,14 +69,14 @@ class WebSocketApp {
     // unregisterDocument: Retirer routingKey pour socket
     // requete: Executer une requete
 
-    socket.on('registerDocument', message => {
-      rabbitMQ.rabbitMQ_singleton.routingKeyManager
-        .addRoutingKeyForSocket(socket, message);
+    socket.on('subscribe', message => {
+      rabbitMQ.singleton.routingKeyManager
+        .addRoutingKeysForSocket(socket, message);
     });
 
-    socket.on('unregisterDocument', message => {
-      rabbitMQ.rabbitMQ_singleton.routingKeyManager
-        .removeRoutingKeyForSocket(socket, message);
+    socket.on('unsubscribe', message => {
+      rabbitMQ.singleton.routingKeyManager
+        .removeRoutingKeysForSocket(socket, message);
     });
 
     socket.on('requete', (enveloppe, cb) => {

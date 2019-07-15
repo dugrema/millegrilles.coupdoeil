@@ -94,7 +94,7 @@ class RabbitMQWrapper {
       console.log(q);
       this.reply_q = q;
 
-      this.channel.bindQueue(q.queue, 'millegrilles.noeuds', 'test.routing');
+      // this.channel.bindQueue(q.queue, 'millegrilles.noeuds', 'test.routing');
 
       this.channel.consume(
         q.queue,
@@ -317,20 +317,26 @@ class RoutingKeyManager {
     this.registeredRoutingKeysForSockets = {};
   }
 
-  addRoutingKeyForSocket(socket, message) {
-    console.debug("Ajouter routingKey: " + message.routingKey + " au socket " + socket.id);
+  addRoutingKeysForSocket(socket, routingKeys) {
+    console.debug("Ajouter routingKeys au socket " + socket.id);
+    console.debug(routingKeys);
 
-    // Verifier si la routing key existe deja sur la Q
-
-    // Ajouter la routing key
-
-    //
-
+    for(var routingKey_idx in routingKeys) {
+      let rougingKeyName = routingKeys[routingKey_idx];
+      // Ajouter la routing key
+      this.mq.channel.bindQueue(this.mq.reply_q.queue, 'millegrilles.noeuds', rougingKeyName);
+    }
   }
 
-  removeRoutingKeyForSocket(routingKey, socket) {
-    console.debug("Enlever routingKey: " + routingKey + " du socket " + socket.id);
+  removeRoutingKeysForSocket(socket, routingKeys) {
+    console.debug("Enlever routingKeys du socket " + socket.id);
+    console.debug(routingKeys);
 
+    for(var routingKey in routingKeys) {
+      let rougingKeyName = routingKeys[routingKey_idx];
+      // Retirer la routing key
+      this.mq.channel.bindQueue(this.mq.reply_q.queue, 'millegrilles.noeuds', rougingKeyName);
+    }
   }
 
   clean() {

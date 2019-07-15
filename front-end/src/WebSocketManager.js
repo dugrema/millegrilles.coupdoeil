@@ -12,6 +12,16 @@ class WebSocketManager {
     return this.socket;
   }
 
+  subscribe(routingKeys) {
+    // Transmet une liste de routingKeys a enregistrer sur notre Q.
+    this.socket.emit('subscribe', routingKeys);
+  }
+
+  unsubscribe(routingKeys) {
+    // Transmet une liste de routingKeys a retirer de la Q cote serveur.
+    this.socket.emit('unsubscribe', routingKeys);
+  }
+
   transmettreRequete(routingKey, requete) {
     // Transmet une requete. Retourne une Promise pour recuperer la reponse.
 

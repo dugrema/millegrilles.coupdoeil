@@ -58,7 +58,7 @@ function AfficherNoeuds(props) {
         let date_formattee = dateformatter.format_monthhour(senseur.temps_lecture);
 
         senseurs.push(
-          <li key="{noSenseur}" className="senseur">
+          <li key={noSenseur} className="senseur">
             <div className="location">
               {senseur.location}
             </div>
@@ -72,7 +72,7 @@ function AfficherNoeuds(props) {
 
       const date_derniere_modification = dateformatter.format_monthhour(noeud['_mg-derniere-modification']);
       liste.push(
-        <div key="{noeud.noeud}" className="w3-card w3-round w3-white">
+        <div key={noeud.noeud} className="w3-card w3-round w3-white">
           <div className="w3-container w3-padding">
             <h6 className="w3-opacity">
               Noeud {noeud.noeud}
@@ -116,12 +116,37 @@ class ContenuDomaine extends React.Component {
     subscriptions: ['noeuds.source.millegrilles_domaines_SenseursPassifs.documents']
   }
 
-  processDocument = (doc) => {
+  processMessage = (routingKey, doc) => {
+    if(routingKey === 'noeuds.source.millegrilles_domaines_SenseursPassifs.documents') {
+      const mg_libelle = doc['_mg-libelle'];
+      if(mg_libelle === 'noeud.individuel') {
+        // MAJ d'un document de noeud.
+        var noeud_idx_trouve = null, listeNoeudsActuelle = this.state.listeNoeuds;
 
+        for(var noeud_idx in this.state.listeNoeuds) {
+          let noeud = listeNoeudsActuelle[noeud_idx];
+          if(noeud.noeud === doc.noeud) {
+            break;
+          }
+        }
+
+        let copie_liste_noeuds = listeNoeudsActuelle.slice(); // Copie
+        if(noeud_idx_trouve) {
+          // MAJ du document de noeud dans la liste
+          copie_liste_noeuds[noeud_idx_trouve] = doc;
+        } else {
+          // Nouveau noeud
+          copie_liste_noeuds.push(doc);
+        }
+
+        this.setState('listeNoeuds', copie_liste_noeuds);
+      }
+    }
   }
 
   componentDidMount() {
-    // console.log('Socket connecte: ' + webSocketManager.getWebSocket().id);
+    // Enregistrer les routingKeys de documents
+    webSocketManager.subscribe(this.config.subscriptions);
 
     let requeteDocumentInitial =  {
       'requetes': [{
@@ -147,7 +172,8 @@ class ContenuDomaine extends React.Component {
   }
 
   componentWillUmount() {
-
+    // Enregistrer les routingKeys de documents
+    webSocketManager.unsubscribe(this.config.subscriptions);
   }
 
   render() {
@@ -161,18 +187,17 @@ class Footer extends React.Component {
 
   render() {
     return (
-
-      <footer className="w3-container w3-theme-d3 w3-padding-16">
-        <h5>Coup D'Oeil version abcd.1234</h5>
-        <p>
-          Coup D'Oeil fait partie du groupe de logiciels
-          <a href="https://www.millegrilles.com">MilleGrilles</a>.
-        </p>
-        <p className="w3-container w3-theme-d5">
+      <footer>
+        <div className="w3-container w3-theme-d3 w3-padding-16">
+          <h5>Coup D'Oeil version abcd.1234</h5>
+            Coup D'Oeil fait partie du groupe de logiciels
+            <a href="https://www.millegrilles.com">MilleGrilles</a>.
+        </div>
+        <div className="w3-container w3-theme-d5">
             Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank" rel="noopener noreferrer">w3.css</a>,
              Meteor, node.js, MongoDB, RabbitMQ, Python, nginx, docker, letsencrypt,
              d3, RaspberryPi, Intel Xeon, Debian, Font Awesome, git.
-        </p>
+        </div>
       </footer>
     );
   }
