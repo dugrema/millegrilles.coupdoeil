@@ -70,6 +70,7 @@ function AfficherNoeuds(props) {
         );
       }
 
+      const date_derniere_modification = dateformatter.format_monthhour(noeud['_mg-derniere-modification']);
       liste.push(
         <div key="{noeud.noeud}" className="w3-card w3-round w3-white">
           <div className="w3-container w3-padding">
@@ -77,7 +78,7 @@ function AfficherNoeuds(props) {
               Noeud {noeud.noeud}
             </h6>
             <div>
-              Dernière modification: 2019-01-01
+              Dernière modification: {date_derniere_modification}
             </div>
             <ul className="listeSenseurs">
               {senseurs}
@@ -85,6 +86,8 @@ function AfficherNoeuds(props) {
           </div>
         </div>
       );
+
+      return liste;
     });
 
   }
@@ -118,7 +121,7 @@ class ContenuDomaine extends React.Component {
   }
 
   componentDidMount() {
-    console.log('Socket connecte: ' + webSocketManager.getWebSocket().id);
+    // console.log('Socket connecte: ' + webSocketManager.getWebSocket().id);
 
     let requeteDocumentInitial =  {
       'requetes': [{
@@ -129,11 +132,11 @@ class ContenuDomaine extends React.Component {
     webSocketManager.transmettreRequete(
       'requete.millegrilles.domaines.SenseursPassifs', requeteDocumentInitial)
     .then( docInitial => {
-      console.log("Recu doc noeuds");
+      // console.log("Recu doc noeuds");
 
       let resultatsNoeuds = docInitial[0];
-      console.log("Noeuds: ");
-      console.log(resultatsNoeuds);
+      // console.log("Noeuds: ");
+      // console.log(resultatsNoeuds);
 
       this.setState({'listeNoeuds': resultatsNoeuds});
     })
@@ -236,11 +239,11 @@ class MenuGaucheNavigation extends React.Component {
 class EcranApp extends React.Component {
 
   componentDidMount() {
-    console.debug("Mounted!");
+    // console.debug("Mounted!");
   }
 
   componentWillUnmount() {
-    console.debug("Demonte!");
+    // console.debug("Demonte!");
   }
 
   render() {

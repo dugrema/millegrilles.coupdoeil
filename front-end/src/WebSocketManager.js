@@ -29,8 +29,8 @@ class WebSocketManager {
           reject();
           return;
         }
-        console.log("Reponse dans websocket pour requete");
-        console.log(reponse);
+        // console.log("Reponse dans websocket pour requete");
+        // console.log(reponse);
         resolve(reponse);
         return reponse;
       });

@@ -9,8 +9,6 @@ import webSocketManager from './WebSocketManager';
 // const urlApi = 'https://dev2.maple.mdugre.info:3001';  // Autre site, dev.
 const urlApi = '';  // Meme serveur
 
-var api_wss_socket;
-
 const fakeAuth = {
   isAuthenticated: false,
   challenge: null,
@@ -132,7 +130,7 @@ class App extends React.Component {
       });
 
     } else {
-      throw {erreur: "Login: WebSocket deja ouvert"};
+      throw new ReferenceError("Login: WebSocket deja ouvert");
     }
   };
 
