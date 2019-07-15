@@ -7,6 +7,8 @@ import './w3-theme-blue-grey.css';
 import './font-awesome.min.css';
 import webSocketManager from './WebSocketManager';
 
+import dateformatter from './formatters';
+
 class NavBar extends React.Component {
 
   render() {
@@ -53,8 +55,18 @@ function AfficherNoeuds(props) {
       const senseurs = [];
       for(var noSenseur in noeud.dict_senseurs) {
         let senseur = noeud.dict_senseurs[noSenseur];
+        let date_formattee = dateformatter.format_monthhour(senseur.temps_lecture);
+        
         senseurs.push(
-          <li>Senseur {noSenseur}, location {senseur.location}, valeur {senseur.temperature}</li>
+          <li class="senseur">
+            <div class="location">
+              {senseur.location}
+            </div>
+            <div class="numerique temperature">{senseur.temperature}&deg;C</div>
+            <div class="numerique humidite">{senseur.humidite}%</div>
+            <div class="numerique pression">{senseur.pression} kPa</div>
+            <div class="temps">{date_formattee}</div>
+          </li>
         );
       }
 
