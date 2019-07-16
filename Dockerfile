@@ -13,4 +13,4 @@ COPY front-end/build/ ./public/
 EXPOSE 3001
 VOLUME /home/mathieu/certificates
 
-CMD [ "node", "./bin/www" ]
+CMD [ "npm", "start" ]
