@@ -1,0 +1,8 @@
+node_modules
+.gitignore
+.git
+dev
+meteor
+react.old
+scripts
+test_security
