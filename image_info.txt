@@ -1,6 +1,6 @@
 REPO=registry.maple.mdugre.info:5000
-NAME=coupdoeil_meteor
+NAME=coupdoeil_react
 BRANCH=`git name-rev --name-only HEAD`
-BUILD=0
+BUILD=1
 
 VERSION=$BRANCH.$BUILD

@@ -7,10 +7,10 @@ COPY api/package*.json ./
 RUN npm install
 
 # Bundle app source
+# Api est l'application node back-end et front-end est l'application react
 COPY api/ ./
 COPY front-end/build/ ./public/
 
-EXPOSE 3001
-VOLUME /home/mathieu/certificates
+EXPOSE 443
 
 CMD [ "npm", "start" ]
