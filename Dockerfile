@@ -9,7 +9,7 @@ RUN npm install
 # Bundle app source
 # Api est l'application node back-end et front-end est l'application react
 COPY api/ ./
-COPY front-end/build/ ./public/
+COPY react_build/build/ ./public/
 
 EXPOSE 443
 
