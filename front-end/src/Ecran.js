@@ -61,6 +61,7 @@ function AfficherNoeuds(props) {
           <li key={noSenseur} className="senseur">
             <div className="location">
               {senseur.location}
+              <button onClick={() => props.versPageSenseur(noeud.noeud, noSenseur)}>GO</button>
             </div>
             <div className="numerique temperature">{senseur.temperature}&deg;C</div>
             <div className="numerique humidite">{senseur.humidite}%</div>
@@ -75,7 +76,7 @@ function AfficherNoeuds(props) {
         <div key={noeud.noeud} className="w3-card w3-round w3-white">
           <div className="w3-container w3-padding">
             <h6 className="w3-opacity">
-              Noeud {noeud.noeud}
+              <button onClick={()=>props.versPageNoeud(noeud.noeud)}>Noeud {noeud.noeud}</button>
             </h6>
             <div>
               Dernière modification: {date_derniere_modification}
@@ -107,14 +108,16 @@ function AfficherNoeuds(props) {
 class ContenuDomaine extends React.Component {
 
   state = {
-    listeNoeuds: null
-  }
+    listeNoeuds: null,
+    noeud_id: null,
+    senseur_id: null
+  };
 
   // Configuration statique du composant:
   //   subscriptions: Le nom des routing keys qui vont etre ecoutees
   config = {
     subscriptions: ['noeuds.source.millegrilles_domaines_SenseursPassifs.documents']
-  }
+  };
 
   processMessage = (routingKey, doc) => {
     // console.log("Process message " + routingKey);
@@ -145,7 +148,29 @@ class ContenuDomaine extends React.Component {
         this.setState({'listeNoeuds': copie_liste_noeuds});
       }
     }
+  };
+
+  versPageListeNoeuds = () => {
+    this.setState({
+      noeud_id: null,
+      senseur_id: null
+    });
   }
+
+  versPageNoeud = (noeud) => {
+    console.log(noeud);
+    this.setState({
+      noeud_id: noeud,
+      senseur_id: null
+    });
+  }
+
+  versPageSenseur = (noeud, senseur) => {
+    this.setState({
+      noeud_id: noeud,
+      senseur_id: senseur
+    });
+  };
 
   componentDidMount() {
     // Enregistrer les routingKeys de documents
@@ -180,9 +205,37 @@ class ContenuDomaine extends React.Component {
   }
 
   render() {
-    return (
-      <AfficherNoeuds listeNoeuds={this.state.listeNoeuds}/>
-    )
+    var contenu;
+    if(this.state.senseur_id) {
+      // Afficher la page du senseur
+      contenu = (
+        <div>
+          <p>Afficher senseur noeud={this.state.noeud_id}</p>
+          <p>senseur={this.state.senseur_id}</p>
+          <button onClick={() => this.versPageNoeud(this.state.noeud_id)}>Vers noeud</button>
+          <button onClick={this.versPageListeNoeuds}>Vers liste noeuds</button>
+        </div>
+      );
+    } else if(this.state.noeud_id) {
+      // Afficher la page du noeud
+      contenu = (
+        <div>
+          <p>Afficher noeud {this.state.noeud_id}</p>
+          <button onClick={this.versPageListeNoeuds}>Vers liste noeuds</button>
+        </div>
+      )
+    } else {
+      // Afficher la page par defaut, liste des noeuds
+      contenu = (
+        <AfficherNoeuds
+          listeNoeuds={this.state.listeNoeuds}
+          versPageNoeud={this.versPageNoeud}
+          versPageSenseur={this.versPageSenseur}
+          />
+      );
+    }
+
+    return contenu;
   }
 }
 
