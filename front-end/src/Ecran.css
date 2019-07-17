@@ -60,6 +60,10 @@ li.notification div.temps {
   text-align: right;
 }
 
+td.numerique {
+  text-align: right;
+}
+
 /* Domaines */
 .mg-bouton {
   margin-bottom: 3px;

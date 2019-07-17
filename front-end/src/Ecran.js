@@ -108,7 +108,8 @@ function AfficherNoeuds(props) {
 class SenseurPassifIndividuel extends React.Component {
 
   state = {
-
+    afficherTableauHoraire: false,
+    afficherTableQuotidien: false
   };
 
   componentDidMount() {
@@ -121,10 +122,111 @@ class SenseurPassifIndividuel extends React.Component {
           'senseur': Number(this.props.senseur_id)
         }
       }]};
-    console.debug("Requete senseur:");
-    console.debug(requeteDocumentInitial);
+    // console.debug("Requete senseur:");
+    // console.debug(requeteDocumentInitial);
 
     this.props.chargerDocument(requeteDocumentInitial, 'documentSenseur');
+  }
+
+  afficherTableauHoraire = () => {
+    // Toggle etat
+    const toggle = !this.state.afficherTableauHoraire;
+    this.setState({afficherTableauHoraire: toggle});
+  };
+
+  afficherTableauQuotidien = () => {
+    // Toggle etat
+    const toggle = !this.state.afficherTableauQuotidien;
+    this.setState({afficherTableauQuotidien: toggle});
+  };
+
+  renderTableauHoraire() {
+
+    var contenu;
+    if(this.state.afficherTableauHoraire) {
+      const listeSenseurs = this.props.documentSenseur;
+      const documentSenseur = listeSenseurs[0];
+      const moyennesDernierJour = documentSenseur.moyennes_dernier_jour;
+
+      const rows = [];
+
+      for(var idx in moyennesDernierJour) {
+        var moyenne = moyennesDernierJour[idx];
+        rows.push((
+          <tr key={moyenne.periode}>
+            <td>{dateformatter.format_monthhour(moyenne.periode)}</td>
+            <td className="numerique temperature">{dateformatter.format_numberdecimals(moyenne['temperature-moyenne'], 1)}&deg;C</td>
+            <td className="numerique humidite">{dateformatter.format_numberdecimals(moyenne['humidite-moyenne'], 1)}%</td>
+            <td className="numerique pression">{dateformatter.format_numberdecimals(moyenne['pression-moyenne'], 1)}kPa</td>
+          </tr>
+        ));
+      }
+
+      contenu = (
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th><th>Temperature</th><th>Humidite</th><th>Pression</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows}
+          </tbody>
+        </table>
+      )
+    }
+
+    return contenu;
+  }
+
+  renderTableauQuotidien() {
+
+    var contenu;
+    if(this.state.afficherTableauQuotidien) {
+      const listeSenseurs = this.props.documentSenseur;
+      const documentSenseur = listeSenseurs[0];
+      const extremesDernierMois = documentSenseur.extremes_dernier_mois;
+
+      const rows = [];
+
+      for(var idx in extremesDernierMois) {
+        var extremes = extremesDernierMois[idx];
+        rows.push((
+          <tr key={extremes.periode}>
+            <td>{dateformatter.format_monthhour(extremes.periode)}</td>
+            <td className="numerique temperature">{dateformatter.format_numberdecimals(extremes['temperature-maximum'], 1)}&deg;C</td>
+            <td className="numerique temperature">{dateformatter.format_numberdecimals(extremes['temperature-minimum'], 1)}&deg;C</td>
+            <td className="numerique humidite">{dateformatter.format_numberdecimals(extremes['humidite-maximum'], 1)}%</td>
+            <td className="numerique humidite">{dateformatter.format_numberdecimals(extremes['humidite-minimum'], 1)}%</td>
+            <td className="numerique pression">{dateformatter.format_numberdecimals(extremes['pression-maximum'], 1)}kPa</td>
+            <td className="numerique pression">{dateformatter.format_numberdecimals(extremes['pression-minimum'], 1)}kPa</td>
+          </tr>
+        ));
+      }
+
+      contenu = (
+        <table>
+          <thead>
+            <tr>
+              <th rowSpan="2">Date</th>
+              <th colSpan="2">Temperature</th>
+              <th colSpan="2">Humidite</th>
+              <th colSpan="2">Pression</th>
+            </tr>
+            <tr>
+              <th>Max</th><th>Min</th>
+              <th>Max</th><th>Min</th>
+              <th>Max</th><th>Min</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows}
+          </tbody>
+        </table>
+      )
+    }
+
+    return contenu;
   }
 
   render() {
@@ -158,13 +260,23 @@ class SenseurPassifIndividuel extends React.Component {
 
       historiqueHoraire = (
         <div className="w3-container w3-card w3-white w3-round w3-margin"><br/>
-          ** senseur_historique_horaire
+          <h5 className="w3-opacity">
+            Historique 24 heures {documentSenseur.location}
+          </h5>
+          {this.renderTableauHoraire()}
+          <button onClick={this.afficherTableauHoraire}>Toggle tableau</button>
+          <br/>
         </div>
       );
 
       historiqueQuotidien = (
         <div className="w3-container w3-card w3-white w3-round w3-margin"><br/>
-          ** senseur_historique_quotidien
+          <h5 className="w3-opacity">
+            Historique 31 jours {documentSenseur.location}
+          </h5>
+          {this.renderTableauQuotidien()}
+          <button onClick={this.afficherTableauQuotidien}>Toggle tableau</button>
+          <br/>
         </div>
       );
     }

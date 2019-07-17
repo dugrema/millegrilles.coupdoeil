@@ -10,6 +10,13 @@ class DateFormatter {
     // On assume que la date est en secondes (epoch).
     return moment(date*1000).format(this.datemonthhour_default);
   }
+
+  format_numberdecimals(number, decimals) {
+    if(number) {
+      return number.toFixed(decimals);
+    }
+    return;
+  }
 }
 
 const dateformatter = new DateFormatter();
