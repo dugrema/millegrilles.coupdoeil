@@ -344,9 +344,10 @@ class ContenuDomaine extends React.Component {
 
         this.setState({'listeNoeuds': copie_liste_noeuds});
       } else if(mg_libelle === 'senseur.individuel') {
-        if(this.state.senseur_id === doc.senseur) {
+        if(this.state.senseur_id && Number(this.state.senseur_id) === doc.senseur) {
           // Update du document presentement affiche
-          this.setState({documentSenseur: doc});
+          // On met dans un array pour matcher la reponse initiale (find)
+          this.setState({documentSenseur: [doc]});
         }
       }
 
