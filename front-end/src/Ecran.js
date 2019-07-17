@@ -118,9 +118,11 @@ class SenseurPassifIndividuel extends React.Component {
         'filtre': {
           '_mg-libelle': 'senseur.individuel',
           'noeud': this.props.noeud_id,
-          'senseur': this.props.senseur_id
+          'senseur': Number(this.props.senseur_id)
         }
       }]};
+    console.debug("Requete senseur:");
+    console.debug(requeteDocumentInitial);
 
     this.props.chargerDocument(requeteDocumentInitial, 'documentSenseur');
   }
@@ -303,6 +305,8 @@ class ContenuDomaine extends React.Component {
           nosenseur={this.state.senseur_id}
           chargerDocument={this.chargerDocument}
           documentSenseur={this.state.documentSenseur}
+          noeud_id={this.state.noeud_id}
+          senseur_id={this.state.senseur_id}
         />
       );
     } else if(this.state.noeud_id) {
