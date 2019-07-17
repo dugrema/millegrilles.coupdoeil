@@ -45,16 +45,8 @@ class Contenu extends React.Component {
   }
 }
 
-function BoutonNoeud(props) {
-  return (
-    <button onClick={props.action} value={props.noSenseur}>GO</button>
-  );
-}
-
 function AfficherNoeuds(props) {
   const noeuds = props.listeNoeuds;
-
-  var fonction
 
   const liste = [];
   if(noeuds) {
@@ -113,12 +105,83 @@ function AfficherNoeuds(props) {
   )
 }
 
+class SenseurPassifIndividuel extends React.Component {
+
+  state = {
+
+  };
+
+  componentDidMount() {
+    // Transmettre requete pour recevoir le document du senseur
+    let requeteDocumentInitial =  {
+      'requetes': [{
+        'filtre': {
+          '_mg-libelle': 'senseur.individuel',
+          'noeud': this.props.noeud_id,
+          'senseur': this.props.senseur_id
+        }
+      }]};
+
+    this.props.chargerDocument(requeteDocumentInitial, 'documentSenseur');
+  }
+
+  render() {
+
+    const documentSenseur = this.props.documentSenseur;
+
+    var detailSenseur = "Chargement en cours";
+    var historiqueHoraire, historiqueQuotidien;
+
+    if(documentSenseur) {
+      detailSenseur = (
+        <div className="w3-container w3-padding">
+          <h6 className="w3-opacity">
+            "Senseur " + documentSenseur.location { documentSenseur.location }
+          </h6>
+          { /* senseur_actuel */ }
+        </div>
+      );
+
+      historiqueHoraire = (
+        <div className="w3-container w3-card w3-white w3-round w3-margin"><br/>
+          ** senseur_historique_horaire
+        </div>
+      );
+
+      historiqueQuotidien = (
+        <div className="w3-container w3-card w3-white w3-round w3-margin"><br/>
+          ** senseur_historique_quotidien
+        </div>
+      );
+    }
+
+    return (
+      <div className="w3-col m9">
+        <div className="w3-row-padding">
+          <div className="w3-col m12">
+            <div className="w3-card w3-round w3-white">
+              { detailSenseur }
+            </div>
+          </div>
+        </div>
+
+        { historiqueHoraire }
+
+        { historiqueQuotidien }
+      </div>
+    );
+  }
+
+}
+
 class ContenuDomaine extends React.Component {
 
   state = {
     listeNoeuds: null,
     noeud_id: null,
-    senseur_id: null
+    senseur_id: null,
+    documentNoeud: null,
+    documentSenseur: null
   };
 
   // Configuration statique du composant:
@@ -154,9 +217,36 @@ class ContenuDomaine extends React.Component {
         }
 
         this.setState({'listeNoeuds': copie_liste_noeuds});
+      } else if(mg_libelle === 'senseur.individuel') {
+        if(this.state.senseur_id === doc.senseur) {
+          // Update du document presentement affiche
+          this.setState({documentSenseur: doc});
+        }
       }
+
     }
   };
+
+  chargerDocument = (requete, nomDocument) => {
+    // Enregistrer les routingKeys, demander le document initial.
+    webSocketManager.transmettreRequete(
+      'requete.millegrilles.domaines.SenseursPassifs', requete)
+    .then( docInitial => {
+      // console.log("Recu doc noeuds");
+
+      let resultats = docInitial[0];
+      console.log("Doc " + nomDocument + ": ");
+      console.log(resultats);
+
+      let parametres = {};
+      parametres[nomDocument] = resultats
+      this.setState(parametres);
+    })
+    .catch( err=>{
+      console.error("Erreur chargement document initial");
+      console.error(err);
+    });
+  }
 
   versPageListeNoeuds = () => {
     this.setState({
@@ -190,22 +280,7 @@ class ContenuDomaine extends React.Component {
         'filtre': {'_mg-libelle': 'noeud.individuel'}
       }]};
 
-    // Enregistrer les routingKeys, demander le document initial.
-    webSocketManager.transmettreRequete(
-      'requete.millegrilles.domaines.SenseursPassifs', requeteDocumentInitial)
-    .then( docInitial => {
-      // console.log("Recu doc noeuds");
-
-      let resultatsNoeuds = docInitial[0];
-      // console.log("Noeuds: ");
-      // console.log(resultatsNoeuds);
-
-      this.setState({'listeNoeuds': resultatsNoeuds});
-    })
-    .catch( err=>{
-      console.error("Erreur chargement document initial");
-      console.error(err);
-    });
+    this.chargerDocument(requeteDocumentInitial, 'listeNoeuds');
   }
 
   componentWillUmount() {
@@ -215,15 +290,20 @@ class ContenuDomaine extends React.Component {
 
   render() {
     var contenu;
+
+    // Routing entre composants utilise this.state:
+    //  - Si on a un senseur_id, on l'affiche.
+    //  - Sinon si on a un noeud, on l'affiche.
+    //  - Sinon on affiche la liste des noeuds.
     if(this.state.senseur_id) {
       // Afficher la page du senseur
       contenu = (
-        <div>
-          <p>Afficher senseur noeud={this.state.noeud_id}</p>
-          <p>senseur={this.state.senseur_id}</p>
-          <button data-noeud={this.state.noeud_id} onClick={this.versPageNoeud}>Vers noeud</button>
-          <button onClick={this.versPageListeNoeuds}>Vers liste noeuds</button>
-        </div>
+        <SenseurPassifIndividuel
+          noeud={this.state.noeud_id}
+          nosenseur={this.state.senseur_id}
+          chargerDocument={this.chargerDocument}
+          documentSenseur={this.state.documentSenseur}
+        />
       );
     } else if(this.state.noeud_id) {
       // Afficher la page du noeud
