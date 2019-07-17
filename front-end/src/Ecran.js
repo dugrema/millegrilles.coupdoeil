@@ -129,18 +129,30 @@ class SenseurPassifIndividuel extends React.Component {
 
   render() {
 
-    const documentSenseur = this.props.documentSenseur;
+    const listeSenseurs = this.props.documentSenseur;
 
     var detailSenseur = "Chargement en cours";
     var historiqueHoraire, historiqueQuotidien;
 
-    if(documentSenseur) {
+    if(listeSenseurs) {
+      const documentSenseur = listeSenseurs[0];
       detailSenseur = (
         <div className="w3-container w3-padding">
           <h6 className="w3-opacity">
-            "Senseur " + documentSenseur.location { documentSenseur.location }
+            Senseur { documentSenseur.location }
           </h6>
-          { /* senseur_actuel */ }
+
+          <div>
+            Noeud: {documentSenseur.noeud}
+            <button onClick={this.props.versPageListeNoeuds}>Vers liste noeuds</button>
+          </div>
+          <div>Numero senseur: {documentSenseur.senseur}</div>
+          <div className="temps">Derniere lecture: {dateformatter.format_monthhour(documentSenseur.temps_lecture)}</div>
+          <div>Batterie: {documentSenseur.millivolt} mV</div>
+          <div className="numerique temperature">Temperature: {documentSenseur.temperature}&deg;C</div>
+          <div className="numerique humidite">Humidite: {documentSenseur.humidite}%</div>
+          <div className="numerique pression">Pression atmospherique: {documentSenseur.pression} kPa</div>
+          <div className="tendance">Tendance pression atmospherique: {documentSenseur.tendance_formattee}</div>
         </div>
       );
 
@@ -237,9 +249,6 @@ class ContenuDomaine extends React.Component {
       // console.log("Recu doc noeuds");
 
       let resultats = docInitial[0];
-      console.log("Doc " + nomDocument + ": ");
-      console.log(resultats);
-
       let parametres = {};
       parametres[nomDocument] = resultats
       this.setState(parametres);
@@ -253,7 +262,9 @@ class ContenuDomaine extends React.Component {
   versPageListeNoeuds = () => {
     this.setState({
       noeud_id: null,
-      senseur_id: null
+      senseur_id: null,
+      documentNoeud: null,
+      documentSenseur: null
     });
   }
 
@@ -261,7 +272,8 @@ class ContenuDomaine extends React.Component {
     const dataset = event.currentTarget.dataset;
     this.setState({
       noeud_id: dataset.noeud,
-      senseur_id: null
+      senseur_id: null,
+      documentSenseur: null
     });
   }
 
@@ -307,6 +319,7 @@ class ContenuDomaine extends React.Component {
           documentSenseur={this.state.documentSenseur}
           noeud_id={this.state.noeud_id}
           senseur_id={this.state.senseur_id}
+          versPageListeNoeuds={this.versPageListeNoeuds}
         />
       );
     } else if(this.state.noeud_id) {
