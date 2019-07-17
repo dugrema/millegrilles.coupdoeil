@@ -45,8 +45,16 @@ class Contenu extends React.Component {
   }
 }
 
+function BoutonNoeud(props) {
+  return (
+    <button onClick={props.action} value={props.noSenseur}>GO</button>
+  );
+}
+
 function AfficherNoeuds(props) {
   const noeuds = props.listeNoeuds;
+
+  var fonction
 
   const liste = [];
   if(noeuds) {
@@ -61,7 +69,7 @@ function AfficherNoeuds(props) {
           <li key={noSenseur} className="senseur">
             <div className="location">
               {senseur.location}
-              <button onClick={() => props.versPageSenseur(noeud.noeud, noSenseur)}>GO</button>
+              <button data-noeud={noeud.noeud} data-nosenseur={noSenseur} onClick={props.versPageSenseur}>GO</button>
             </div>
             <div className="numerique temperature">{senseur.temperature}&deg;C</div>
             <div className="numerique humidite">{senseur.humidite}%</div>
@@ -76,7 +84,7 @@ function AfficherNoeuds(props) {
         <div key={noeud.noeud} className="w3-card w3-round w3-white">
           <div className="w3-container w3-padding">
             <h6 className="w3-opacity">
-              <button onClick={()=>props.versPageNoeud(noeud.noeud)}>Noeud {noeud.noeud}</button>
+              <button data-noeud={noeud.noeud} onClick={props.versPageNoeud}>Noeud {noeud.noeud}</button>
             </h6>
             <div>
               Dernière modification: {date_derniere_modification}
@@ -157,18 +165,19 @@ class ContenuDomaine extends React.Component {
     });
   }
 
-  versPageNoeud = (noeud) => {
-    console.log(noeud);
+  versPageNoeud = (event) => {
+    const dataset = event.currentTarget.dataset;
     this.setState({
-      noeud_id: noeud,
+      noeud_id: dataset.noeud,
       senseur_id: null
     });
   }
 
-  versPageSenseur = (noeud, senseur) => {
+  versPageSenseur = (event) => {
+    const dataset = event.currentTarget.dataset;
     this.setState({
-      noeud_id: noeud,
-      senseur_id: senseur
+      noeud_id: dataset.noeud,
+      senseur_id: dataset.nosenseur
     });
   };
 
@@ -212,7 +221,7 @@ class ContenuDomaine extends React.Component {
         <div>
           <p>Afficher senseur noeud={this.state.noeud_id}</p>
           <p>senseur={this.state.senseur_id}</p>
-          <button onClick={() => this.versPageNoeud(this.state.noeud_id)}>Vers noeud</button>
+          <button data-noeud={this.state.noeud_id} onClick={this.versPageNoeud}>Vers noeud</button>
           <button onClick={this.versPageListeNoeuds}>Vers liste noeuds</button>
         </div>
       );
