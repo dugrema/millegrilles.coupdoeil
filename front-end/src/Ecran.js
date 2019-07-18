@@ -8,8 +8,11 @@ import './w3.css';
 import './w3-theme-blue-grey.css';
 import './font-awesome.min.css';
 
-// Importer les Domaines
+// Importer les Domaines et creer la liste des domaines connus
 import {SenseursPassifs} from './domaines/SenseursPassifs';
+const domainesConnus = {
+  'SenseursPassifs': SenseursPassifs
+};
 
 class EcranApp extends React.Component {
   // Classe principale de l'ecran de l'application
@@ -18,7 +21,7 @@ class EcranApp extends React.Component {
 
   state = {
     configDocument: null,
-    domaineActif: null
+    domaineActif: 'SenseursPassifs'
   }
 
   componentDidMount() {
@@ -61,7 +64,7 @@ class EcranApp extends React.Component {
     return (
       <div>
         <NavBar configDocument={this.state.configDocument}/>
-        <Contenu
+        <SectionContenu
           configDocument={this.state.configDocument}
           domaineActif={this.state.domaineActif}
           changerDomaine={this.changerDomaine}/>
@@ -72,8 +75,34 @@ class EcranApp extends React.Component {
 
 }
 
+function SectionContenu(props) {
+  // Contenu de l'application: Menu de gauche et section domaine
+  // Section principale, au milieu de l'ecran
+
+  const domaine = props.domaineActif;
+  var SectionDomaine;
+  if(domaine && domainesConnus[domaine]) {
+    SectionDomaine = domainesConnus[domaine];
+  }
+
+  return (
+    <div className="w3-container w3-content divtop">
+      <div className="w3-row">
+        <MenuGauche configDocument={props.configDocument}/>
+        <SectionDomaine
+          changerDomaine={props.changerDomaine}
+        />
+      </div>
+    </div>
+  );
+
+}
+
 class NavBar extends React.Component {
   // Barre de navigation dans le haut de l'ecran
+
+  state = {
+  }
 
   render() {
     return (
@@ -95,119 +124,94 @@ class NavBar extends React.Component {
   }
 }
 
-class Contenu extends React.Component {
-
-  render() {
-    return (
-      <div className="w3-container w3-content divtop">
-        <div className="w3-row">
-          <MenuGauche configDocument={this.props.configDocument}/>
-          <SenseursPassifs />
-        </div>
+function Footer(props) {
+  // Section du bas de l'ecran d'application
+  return (
+    <footer>
+      <div className="w3-container w3-theme-d3 w3-padding-small">
+        <h5>Coup D'Oeil version <span title={manifest.date}>{manifest.version}</span></h5>
+          Coup D'Oeil fait partie du groupe de
+          logiciels <a href="https://www.millegrilles.com">MilleGrilles</a>.
       </div>
-    );
-  }
-}
-
-class Footer extends React.Component {
-
-  render() {
-    return (
-      <footer>
-        <div className="w3-container w3-theme-d3 w3-padding-small">
-          <h5>Coup D'Oeil version <span title={manifest.date}>{manifest.version}</span></h5>
-            Coup D'Oeil fait partie du groupe de
-            logiciels <a href="https://www.millegrilles.com">MilleGrilles</a>.
-        </div>
-        <div className="w3-container w3-theme-d5">
-            Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank" rel="noopener noreferrer">w3.css</a>,
-             Meteor, node.js, MongoDB, RabbitMQ, Python, nginx, docker, letsencrypt,
-             d3, RaspberryPi, Intel Xeon, Debian, Font Awesome, git.
-        </div>
-      </footer>
-    );
-  }
-
-}
-
-class MenuGauche extends React.Component {
-  render() {
-    return (
-      <div className="w3-col m3">
-        <MenuGaucheTop configDocument={this.props.configDocument}/>
-        <MenuGaucheListeDomaines configDocument={this.props.configDocument}/>
-        <MenuGaucheNavigation/>
+      <div className="w3-container w3-theme-d5">
+          Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank" rel="noopener noreferrer">w3.css</a>,
+           Meteor, node.js, MongoDB, RabbitMQ, Python, nginx, docker, letsencrypt,
+           d3, RaspberryPi, Intel Xeon, Debian, Font Awesome, git.
       </div>
-    );
-  }
+    </footer>
+  );
 }
 
-class MenuGaucheTop extends React.Component {
+function MenuGauche(props) {
+  return (
+    <div className="w3-col m3">
+      <MenuGaucheTop configDocument={props.configDocument}/>
+      <MenuGaucheListeDomaines configDocument={props.configDocument}/>
+      <MenuGaucheNavigation/>
+    </div>
+  );
+}
 
-  render() {
-    const configDocument=this.props.configDocument;
-    var nomMillegrille='N.D.', urlMilleGrille='N.D.';
-    if(this.props.configDocument) {
-      nomMillegrille = configDocument.nom_millegrille;
-      urlMilleGrille = configDocument.adresse_url_base;
+function MenuGaucheTop(props) {
+
+  const configDocument=props.configDocument;
+  var nomMillegrille='N.D.', urlMilleGrille='N.D.';
+  if(props.configDocument) {
+    nomMillegrille = configDocument.nom_millegrille;
+    urlMilleGrille = configDocument.adresse_url_base;
+  }
+
+  return (
+    <div className="w3-card w3-round w3-white w3-card_BR">
+      <div className="w3-container">
+        <h4 className="w3-center">{nomMillegrille}</h4>
+       <hr/>
+       <p>
+         <i className="fa fa-home fa-fw w3-margin-right w3-text-theme"></i>
+         {urlMilleGrille}
+       </p>
+      </div>
+    </div>
+  );
+}
+
+function MenuGaucheListeDomaines(props) {
+
+  const configDocument=props.configDocument;
+  const listeDomaines = [];
+
+  if(configDocument && configDocument.domaines) {
+    for(var idx in configDocument.domaines) {
+      const domaine = configDocument.domaines[idx];
+      let classe_rang = 'w3-tag w3-small w3-theme-d' + domaine.rang;
+      listeDomaines.push((
+        <span
+          key={domaine.description}
+          className={classe_rang}>{domaine.description}</span>
+      ));
     }
-
-    return (
-      <div className="w3-card w3-round w3-white w3-card_BR">
-        <div className="w3-container">
-          <h4 className="w3-center">{nomMillegrille}</h4>
-         <hr/>
-         <p>
-           <i className="fa fa-home fa-fw w3-margin-right w3-text-theme"></i>
-           {urlMilleGrille}
-         </p>
-        </div>
-      </div>
-    );
   }
+
+  return (
+    <div className="w3-card w3-round w3-white w3-hide-small w3-card_BR">
+      <div className="w3-container">
+        <p>Domaines</p>
+        <p>
+          {listeDomaines}
+        </p>
+      </div>
+    </div>
+  );
 }
 
-class MenuGaucheListeDomaines extends React.Component {
-
-  render() {
-    const configDocument=this.props.configDocument;
-    const listeDomaines = [];
-
-    if(configDocument && configDocument.domaines) {
-      for(var idx in configDocument.domaines) {
-        const domaine = configDocument.domaines[idx];
-        let classe_rang = 'w3-tag w3-small w3-theme-d' + domaine.rang;
-        listeDomaines.push((
-          <span
-            key={domaine.description}
-            className={classe_rang}>{domaine.description}</span>
-        ));
-      }
-    }
-
-    return (
-      <div className="w3-card w3-round w3-white w3-hide-small w3-card_BR">
-        <div className="w3-container">
-          <p>Domaines</p>
-          <p>
-            {listeDomaines}
-          </p>
-        </div>
+function MenuGaucheNavigation(props) {
+  return(
+    <div className="w3-card w3-round w3-card_BR">
+      <div className="w3-white menu-domaine-gauche">
+        Boutons!
       </div>
-    );
-  }
-}
-
-class MenuGaucheNavigation extends React.Component {
-  render() {
-    return(
-      <div className="w3-card w3-round w3-card_BR">
-        <div className="w3-white menu-domaine-gauche">
-          Boutons!
-        </div>
-      </div>
-    );
-  }
+    </div>
+  );
 }
 
 export default EcranApp;
