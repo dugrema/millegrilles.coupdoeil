@@ -56,8 +56,12 @@ class EcranApp extends React.Component {
     // console.debug("Demonte!");
   }
 
-  changerDomaine = (domaine) => {
-    this.setState({domaineActif: domaine});
+  changerDomaine = (event) => {
+    const domaine = event.currentTarget.dataset.domaine;
+    console.log('Domaine change vers: ' + domaine);
+    if(domaine) {
+      this.setState({domaineActif: domaine});
+    }
   }
 
   changerMenuGauche = (menu) => {
@@ -154,7 +158,10 @@ function MenuGauche(props) {
   return (
     <div className="w3-col m3">
       <MenuGaucheTop configDocument={props.configDocument}/>
-      <MenuGaucheListeDomaines configDocument={props.configDocument}/>
+      <MenuGaucheListeDomaines
+        configDocument={props.configDocument}
+        changerDomaine={props.changerDomaine}
+      />
       <MenuGaucheNavigation/>
     </div>
   );
@@ -186,7 +193,7 @@ function MenuGaucheTop(props) {
 function MenuGaucheListeDomaines(props) {
 
   const configDocument=props.configDocument;
-  const listeDomaines = [];
+  const listeDomaines = [], listeDomainesInconnus = [];
 
   if(configDocument && configDocument.domaines) {
     for(var idx in configDocument.domaines) {
@@ -198,7 +205,17 @@ function MenuGaucheListeDomaines(props) {
         listeDomaines.push((
           <span
             key={domaine.description}
-            className={classe_rang}>{domaine.description}</span>
+            className={classe_rang}
+            onClick={props.changerDomaine}
+            data-domaine={domaine.description}
+          >{domaine.description}</span>
+        ));
+      } else {
+        listeDomainesInconnus.push((
+          <span
+            key={domaine.description}
+            className={classe_rang}
+          >{domaine.description}</span>
         ));
       }
 
@@ -210,7 +227,10 @@ function MenuGaucheListeDomaines(props) {
       <div className="w3-container">
         <p>Domaines</p>
         <p>
-          {listeDomaines}
+        {listeDomaines}
+        </p>
+        <p>
+          Domaines non supportes<br/>{listeDomainesInconnus}
         </p>
       </div>
     </div>
