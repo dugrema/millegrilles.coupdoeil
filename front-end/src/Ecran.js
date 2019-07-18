@@ -37,7 +37,7 @@ class Contenu extends React.Component {
     return (
       <div className="w3-container w3-content divtop">
         <div className="w3-row">
-          <MenuGauche/>
+          <MenuGauche configDocument={this.props.configDocument}/>
           <ContenuDomaine/>
         </div>
       </div>
@@ -354,12 +354,17 @@ class ContenuDomaine extends React.Component {
     }
   };
 
-  chargerDocument = (requete, nomDocument) => {
+  chargerDocument = (requete, nomDocument, domaine) => {
+    if(!domaine) {
+      // Domaine par defaut est une requete vers SenseursPassifs
+      domaine = 'requete.millegrilles.domaines.SenseursPassifs';
+    }
     // Enregistrer les routingKeys, demander le document initial.
     webSocketManager.transmettreRequete(
       'requete.millegrilles.domaines.SenseursPassifs', requete)
     .then( docInitial => {
-      // console.log("Recu doc noeuds");
+      console.debug("Recu doc");
+      console.debug(docInitial);
 
       let resultats = docInitial[0];
       let parametres = {};
@@ -483,8 +488,8 @@ class MenuGauche extends React.Component {
   render() {
     return (
       <div className="w3-col m3">
-        <MenuGaucheTop/>
-        <MenuGaucheListeDomaines/>
+        <MenuGaucheTop configDocument={this.props.configDocument}/>
+        <MenuGaucheListeDomaines configDocument={this.props.configDocument}/>
         <MenuGaucheNavigation/>
       </div>
     );
@@ -492,15 +497,23 @@ class MenuGauche extends React.Component {
 }
 
 class MenuGaucheTop extends React.Component {
+
   render() {
+    const configDocument=this.props.configDocument;
+    var nomMillegrille='N.D.', urlMilleGrille='N.D.';
+    if(this.props.configDocument) {
+      nomMillegrille = configDocument.nom_millegrille;
+      urlMilleGrille = configDocument.adresse_url_base;
+    }
+
     return (
       <div className="w3-card w3-round w3-white">
         <div className="w3-container">
-          <h4 className="w3-center">DEV2</h4>
+          <h4 className="w3-center">{nomMillegrille}</h4>
          <hr/>
          <p>
            <i className="fa fa-home fa-fw w3-margin-right w3-text-theme"></i>
-           dev2.maple.mdugre.info
+           {urlMilleGrille}
          </p>
         </div>
       </div>
@@ -509,14 +522,29 @@ class MenuGaucheTop extends React.Component {
 }
 
 class MenuGaucheListeDomaines extends React.Component {
+
   render() {
+    const configDocument=this.props.configDocument;
+    const listeDomaines = [];
+
+    if(configDocument && configDocument.domaines) {
+      for(var idx in configDocument.domaines) {
+        const domaine = configDocument.domaines[idx];
+        let classe_rang = 'w3-tag w3-small w3-theme-d' + domaine.rang;
+        listeDomaines.push((
+          <span
+            key={domaine.description}
+            className={classe_rang}>{domaine.description}</span>
+        ));
+      }
+    }
+
     return (
       <div className="w3-card w3-round w3-white w3-hide-small">
         <div className="w3-container">
           <p>Domaines</p>
           <p>
-            <span className="w3-tag w3-small w3-theme-d5 SenseursPassifs">SenseursPassifs</span>
-            <span className="w3-tag w3-small w3-theme-d3 Notifications">Notifications</span>
+            {listeDomaines}
           </p>
         </div>
       </div>
@@ -538,8 +566,35 @@ class MenuGaucheNavigation extends React.Component {
 
 class EcranApp extends React.Component {
 
+  state = {
+    configDocument: null
+  }
+
   componentDidMount() {
     // console.debug("Mounted!");
+
+    // Transmettre requete pour recevoir le document du senseur
+    let requeteDocumentConfig =  {
+      'requetes': [{
+        'filtre': {
+          '_mg-libelle': 'configuration'
+        }
+      }]};
+
+    webSocketManager.transmettreRequete(
+      'requete.millegrilles.domaines.Principale', requeteDocumentConfig)
+    .then( docInitial => {
+      console.debug("Recu doc");
+
+      let resultats = docInitial[0][0];
+      console.debug(resultats);
+      this.setState({configDocument: resultats});
+    })
+    .catch( err=>{
+      console.error("Erreur chargement document initial");
+      console.error(err);
+    });
+
   }
 
   componentWillUnmount() {
@@ -549,9 +604,9 @@ class EcranApp extends React.Component {
   render() {
     return (
       <div>
-        <NavBar/>
-        <Contenu/>
-        <Footer/>
+        <NavBar configDocument={this.state.configDocument}/>
+        <Contenu configDocument={this.state.configDocument}/>
+        <Footer configDocument={this.state.configDocument}/>
       </div>
     );
   }
