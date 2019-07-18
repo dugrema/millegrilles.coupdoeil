@@ -406,7 +406,7 @@ class SenseurPassifIndividuel extends React.Component {
           <GraphiqueCharte2DReact
             name="graphique_horaire_pression"
             donnees={documentSenseur.moyennes_dernier_jour}
-            serie="pression-moyenne" min="96" max="104" tick="2"
+            serie="pression-moyenne" min="95" max="105" tick="2"
           />
 
           {this.renderTableauHoraire()}
@@ -420,6 +420,14 @@ class SenseurPassifIndividuel extends React.Component {
           <h5 className="w3-opacity">
             Historique 31 jours {documentSenseur.location}
           </h5>
+          <h6>Temperature</h6>
+          <GraphiqueCharte2DReact
+            name="graphique_quotidien_temperature"
+            donnees={documentSenseur.extremes_dernier_mois}
+            serie="temperature-maximum" serie2="temperature-minimum"
+            min="-10" max="20" tick="5"
+          />
+
           {this.renderTableauQuotidien()}
           <button onClick={this.afficherTableauQuotidien}>Toggle tableau</button>
           <br/>
@@ -457,6 +465,7 @@ class GraphiqueCharte2DReact extends React.Component {
 
     graphiqueHoraireObj.idDiv = "#" + this.props.name;
     graphiqueHoraireObj.nomVariableOrdonnee1 = this.props.serie;
+    graphiqueHoraireObj.nomVariableOrdonnee2 = this.props.serie2;
     graphiqueHoraireObj.ordonnee_base_max = this.props.max || 100;
     graphiqueHoraireObj.ordonnee_base_min = this.props.min || 0;
     graphiqueHoraireObj.ordonnee_tick = this.props.tick || 1;

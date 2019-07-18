@@ -8,11 +8,6 @@ export class GraphiqueCharte2D {
     this.donnees = null;
 
     // Defaults
-    // this.idDiv = '#graphique_horaire';
-    // this.nomVariableOrdonnee1 = 'temperature-maximum';
-    // this.nomVariableOrdonnee2 = 'temperature-minimum';
-
-    this.nombreSeriesDonnees = 1;
     this.ordonnee_base_max = 100;
     this.ordonnee_base_min = 0;
 
@@ -36,16 +31,13 @@ export class GraphiqueCharte2D {
 
     // Define the line
     graphique.valueline = d3.line()
-        .x(d => { return graphique.x_range(d["periode"]); })
+        .x(d => { return graphique.x_range(d["periode"]*1000); })
         .y(d => { return graphique.y_range(d[nomVariableOrdonnee1]); });
-
-    /*
-    if (this.nombreSeriesDonnees > 1) {
-      graphique.valueline2 = d3.svg.line()
-          .x(function(d) { return graphique.x_range(d["periode"]); })
-          .y(function(d) { return graphique.y_range(d[nomVariableOrdonnee2]); });
+    if(nomVariableOrdonnee2) {
+      graphique.valueline2 = d3.line()
+          .x(d => { return graphique.x_range(d["periode"]*1000); })
+          .y(d => { return graphique.y_range(d[nomVariableOrdonnee2]); });
     }
-    */
   }
 
   attacher_svg() {
@@ -122,7 +114,7 @@ export class GraphiqueCharte2D {
           .attr("cx", function(d) { return graphique.x_range(d["periode"]*1000); })
           .attr("cy", function(d) { return graphique.y_range(d[nomVariableOrdonnee1]); });
 
-      if (this.nombreSeriesDonnees > 1) {
+      if (nomVariableOrdonnee2) {
         graphique.svg.append("path")
             .attr("class", "line")
             .attr("d", graphique.valueline2(donnees));
