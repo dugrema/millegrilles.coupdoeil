@@ -60,6 +60,10 @@ class EcranApp extends React.Component {
     this.setState({domaineActif: domaine});
   }
 
+  changerMenuGauche = (menu) => {
+    this.setState({menuGauche: menu});
+  }
+
   render() {
     return (
       <div>
@@ -67,7 +71,8 @@ class EcranApp extends React.Component {
         <SectionContenu
           configDocument={this.state.configDocument}
           domaineActif={this.state.domaineActif}
-          changerDomaine={this.changerDomaine}/>
+          changerDomaine={this.changerDomaine}
+          changerMenuGauche={this.changerMenuGauche}/>
         <Footer/>
       </div>
     );
@@ -88,9 +93,12 @@ function SectionContenu(props) {
   return (
     <div className="w3-container w3-content divtop">
       <div className="w3-row">
-        <MenuGauche configDocument={props.configDocument}/>
-        <SectionDomaine
+        <MenuGauche
+          configDocument={props.configDocument}
           changerDomaine={props.changerDomaine}
+        />
+        <SectionDomaine
+          changerMenuGauche={props.changerMenuGauche}
         />
       </div>
     </div>
@@ -184,11 +192,16 @@ function MenuGaucheListeDomaines(props) {
     for(var idx in configDocument.domaines) {
       const domaine = configDocument.domaines[idx];
       let classe_rang = 'w3-tag w3-small w3-theme-d' + domaine.rang;
-      listeDomaines.push((
-        <span
-          key={domaine.description}
-          className={classe_rang}>{domaine.description}</span>
-      ));
+
+      // Verifier si le domaine est charge
+      if(domainesConnus[domaine.description]) {
+        listeDomaines.push((
+          <span
+            key={domaine.description}
+            className={classe_rang}>{domaine.description}</span>
+        ));
+      }
+
     }
   }
 
