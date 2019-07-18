@@ -60,8 +60,11 @@ function AfficherNoeuds(props) {
         senseurs.push(
           <li key={noSenseur} className="senseur">
             <div className="location">
-              {senseur.location}
-              <button data-noeud={noeud.noeud} data-nosenseur={noSenseur} onClick={props.versPageSenseur}>GO</button>
+              <button
+                className="aslink"
+                data-noeud={noeud.noeud}
+                data-nosenseur={noSenseur}
+                onClick={props.versPageSenseur}>{senseur.location}</button>
             </div>
             <div className="numerique temperature">{senseur.temperature}&deg;C</div>
             <div className="numerique humidite">{senseur.humidite}%</div>
@@ -73,10 +76,10 @@ function AfficherNoeuds(props) {
 
       var date_derniere_modification = dateformatter.format_monthhour(noeud['_mg-derniere-modification']);
       liste.push(
-        <div key={noeud.noeud} className="w3-card w3-round w3-white">
+        <div key={noeud.noeud} className="w3-card w3-round w3-white w3-card_BR">
           <div className="w3-container w3-padding">
             <h6 className="w3-opacity">
-              <button data-noeud={noeud.noeud} onClick={props.versPageNoeud}>Noeud {noeud.noeud}</button>
+              <button className="aslink" data-noeud={noeud.noeud} onClick={props.versPageNoeud}>Noeud {noeud.noeud}</button>
             </h6>
             <div>
               Dernière modification: {date_derniere_modification}
@@ -246,7 +249,7 @@ class SenseurPassifIndividuel extends React.Component {
 
           <div>
             Noeud: {documentSenseur.noeud}
-            <button onClick={this.props.versPageListeNoeuds}>Vers liste noeuds</button>
+            <button className="aslink" onClick={this.props.versPageListeNoeuds}>Vers liste noeuds</button>
           </div>
           <div>Numero senseur: {documentSenseur.senseur}</div>
           <div className="temps">Derniere lecture: {dateformatter.format_monthhour(documentSenseur.temps_lecture)}</div>
@@ -363,8 +366,8 @@ class ContenuDomaine extends React.Component {
     webSocketManager.transmettreRequete(
       'requete.millegrilles.domaines.SenseursPassifs', requete)
     .then( docInitial => {
-      console.debug("Recu doc");
-      console.debug(docInitial);
+      // console.debug("Recu doc");
+      // console.debug(docInitial);
 
       let resultats = docInitial[0];
       let parametres = {};
@@ -445,7 +448,7 @@ class ContenuDomaine extends React.Component {
       contenu = (
         <div>
           <p>Afficher noeud {this.state.noeud_id}</p>
-          <button onClick={this.versPageListeNoeuds}>Vers liste noeuds</button>
+          <button className="aslink" onClick={this.versPageListeNoeuds}>Vers liste noeuds</button>
         </div>
       )
     } else {
@@ -468,10 +471,10 @@ class Footer extends React.Component {
   render() {
     return (
       <footer>
-        <div className="w3-container w3-theme-d3 w3-padding-16">
+        <div className="w3-container w3-theme-d3 w3-padding-small">
           <h5>Coup D'Oeil version abcd.1234</h5>
-            Coup D'Oeil fait partie du groupe de logiciels
-            <a href="https://www.millegrilles.com">MilleGrilles</a>.
+            Coup D'Oeil fait partie du groupe de
+            logiciels <a href="https://www.millegrilles.com">MilleGrilles</a>.
         </div>
         <div className="w3-container w3-theme-d5">
             Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank" rel="noopener noreferrer">w3.css</a>,
@@ -507,7 +510,7 @@ class MenuGaucheTop extends React.Component {
     }
 
     return (
-      <div className="w3-card w3-round w3-white">
+      <div className="w3-card w3-round w3-white w3-card_BR">
         <div className="w3-container">
           <h4 className="w3-center">{nomMillegrille}</h4>
          <hr/>
@@ -540,7 +543,7 @@ class MenuGaucheListeDomaines extends React.Component {
     }
 
     return (
-      <div className="w3-card w3-round w3-white w3-hide-small">
+      <div className="w3-card w3-round w3-white w3-hide-small w3-card_BR">
         <div className="w3-container">
           <p>Domaines</p>
           <p>
@@ -555,7 +558,7 @@ class MenuGaucheListeDomaines extends React.Component {
 class MenuGaucheNavigation extends React.Component {
   render() {
     return(
-      <div className="w3-card w3-round">
+      <div className="w3-card w3-round w3-card_BR">
         <div className="w3-white menu-domaine-gauche">
           Boutons!
         </div>
@@ -584,10 +587,9 @@ class EcranApp extends React.Component {
     webSocketManager.transmettreRequete(
       'requete.millegrilles.domaines.Principale', requeteDocumentConfig)
     .then( docInitial => {
-      console.debug("Recu doc");
-
+      // console.debug("Recu doc");
       let resultats = docInitial[0][0];
-      console.debug(resultats);
+      // console.debug(resultats);
       this.setState({configDocument: resultats});
     })
     .catch( err=>{
@@ -606,7 +608,7 @@ class EcranApp extends React.Component {
       <div>
         <NavBar configDocument={this.state.configDocument}/>
         <Contenu configDocument={this.state.configDocument}/>
-        <Footer configDocument={this.state.configDocument}/>
+        <Footer/>
       </div>
     );
   }
