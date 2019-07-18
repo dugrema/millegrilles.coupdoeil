@@ -389,17 +389,25 @@ class SenseurPassifIndividuel extends React.Component {
             Historique 24 heures {documentSenseur.location}
           </h5>
           <h6>Temperature</h6>
-          <GraphiqueHoraire
+          <GraphiqueCharte2DReact
             name="graphique_horaire_temperature"
             donnees={documentSenseur.moyennes_dernier_jour}
             serie="temperature-moyenne" min="-10" max="20" tick="5"
           />
 
           <h6>Humidite</h6>
-          <div id="graphique_horaire_humidite"></div>
+          <GraphiqueCharte2DReact
+            name="graphique_horaire_humidite"
+            donnees={documentSenseur.moyennes_dernier_jour}
+            serie="humidite-moyenne" min="30" max="70" tick="5"
+          />
 
           <h6>Pression</h6>
-          <div id="graphique_horaire_pression"></div>
+          <GraphiqueCharte2DReact
+            name="graphique_horaire_pression"
+            donnees={documentSenseur.moyennes_dernier_jour}
+            serie="pression-moyenne" min="96" max="104" tick="2"
+          />
 
           {this.renderTableauHoraire()}
           <button onClick={this.afficherTableauHoraire}>Toggle tableau</button>
@@ -438,7 +446,7 @@ class SenseurPassifIndividuel extends React.Component {
 
 }
 
-class GraphiqueHoraire extends React.Component {
+class GraphiqueCharte2DReact extends React.Component {
 
   state = {
     graphique: null

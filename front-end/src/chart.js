@@ -34,10 +34,6 @@ export class GraphiqueCharte2D {
     graphique.x_range = d3.scaleTime().range([0, graphique.width]);
     graphique.y_range = d3.scaleLinear().range([graphique.height, 0]);
 
-    // Define the axes
-    // graphique.xAxis = d3.svg.axis().scale(graphique.x_range).orient("bottom").ticks(5);
-    // graphique.yAxis = d3.svg.axis().scale(graphique.y_range).orient("left").ticks(5);
-
     // Define the line
     graphique.valueline = d3.line()
         .x(d => { return graphique.x_range(d["periode"]); })
@@ -90,7 +86,7 @@ export class GraphiqueCharte2D {
 
       // Scale the range of the data
       graphique.x_range.domain(
-        d3.extent(donnees, function(d) { return d["periode"]; })
+        d3.extent(donnees, function(d) { return d["periode"]*1000; })
       );
 
       // Simuler des donnees pour introduire le range -20 a 10 celsius.
@@ -123,7 +119,7 @@ export class GraphiqueCharte2D {
           .append("circle")
           .attr("class", "maximum")
           .attr("r", 3.5)
-          .attr("cx", function(d) { return graphique.x_range(d["periode"]); })
+          .attr("cx", function(d) { return graphique.x_range(d["periode"]*1000); })
           .attr("cy", function(d) { return graphique.y_range(d[nomVariableOrdonnee1]); });
 
       if (this.nombreSeriesDonnees > 1) {
@@ -137,7 +133,7 @@ export class GraphiqueCharte2D {
             .append("circle")
             .attr("class", "minimum")
             .attr("r", 3.5)
-            .attr("cx", function(d) { return graphique.x_range(d["periode"]); })
+            .attr("cx", function(d) { return graphique.x_range(d["periode"]*1000); })
             .attr("cy", function(d) { return graphique.y_range(d[nomVariableOrdonnee2]); });
       }
 
