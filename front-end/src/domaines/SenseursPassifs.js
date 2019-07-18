@@ -288,7 +288,7 @@ class SenseurPassifIndividuel extends React.Component {
       }
 
       contenu = (
-        <table>
+        <table className="tableauDonnees tableauDonneesMoyennes">
           <thead>
             <tr>
               <th>Date</th><th>Temperature</th><th>Humidite</th><th>Pression</th>
@@ -319,18 +319,18 @@ class SenseurPassifIndividuel extends React.Component {
         rows.push((
           <tr key={extremes.periode}>
             <td>{dateformatter.format_monthhour(extremes.periode)}</td>
-            <td className="numerique temperature">{dateformatter.format_numberdecimals(extremes['temperature-maximum'], 1)}&deg;C</td>
-            <td className="numerique temperature">{dateformatter.format_numberdecimals(extremes['temperature-minimum'], 1)}&deg;C</td>
-            <td className="numerique humidite">{dateformatter.format_numberdecimals(extremes['humidite-maximum'], 1)}%</td>
-            <td className="numerique humidite">{dateformatter.format_numberdecimals(extremes['humidite-minimum'], 1)}%</td>
-            <td className="numerique pression">{dateformatter.format_numberdecimals(extremes['pression-maximum'], 1)}kPa</td>
-            <td className="numerique pression">{dateformatter.format_numberdecimals(extremes['pression-minimum'], 1)}kPa</td>
+            <td className="numerique temperature">{numberformatter.format_numberdecimals(extremes['temperature-maximum'], 1)}&deg;C</td>
+            <td className="numerique temperature">{numberformatter.format_numberdecimals(extremes['temperature-minimum'], 1)}&deg;C</td>
+            <td className="numerique humidite">{numberformatter.format_numberdecimals(extremes['humidite-maximum'], 1)}%</td>
+            <td className="numerique humidite">{numberformatter.format_numberdecimals(extremes['humidite-minimum'], 1)}%</td>
+            <td className="numerique pression">{numberformatter.format_numberdecimals(extremes['pression-maximum'], 1)}kPa</td>
+            <td className="numerique pression">{numberformatter.format_numberdecimals(extremes['pression-minimum'], 1)}kPa</td>
           </tr>
         ));
       }
 
       contenu = (
-        <table>
+        <table className="tableauDonnees tableauDonneesExtremes">
           <thead>
             <tr>
               <th rowSpan="2">Date</th>
@@ -428,6 +428,22 @@ class SenseurPassifIndividuel extends React.Component {
             min="-10" max="20" tick="5"
           />
 
+          <h6>Humidite</h6>
+          <GraphiqueCharte2DReact
+            name="graphique_quotidien_humidite"
+            donnees={documentSenseur.extremes_dernier_mois}
+            serie="humidite-maximum" serie2="humidite-minimum"
+            min="30" max="70" tick="5"
+          />
+
+          <h6>Pression</h6>
+          <GraphiqueCharte2DReact
+            name="graphique_quotidien_pression"
+            donnees={documentSenseur.extremes_dernier_mois}
+            serie="pression-maximum" serie2="pression-minimum"
+            min="95" max="105" tick="2"
+          />
+
           {this.renderTableauQuotidien()}
           <button onClick={this.afficherTableauQuotidien}>Toggle tableau</button>
           <br/>
@@ -490,6 +506,3 @@ class GraphiqueCharte2DReact extends React.Component {
   }
 
 }
-
-// Exports
-// module.exports = {SenseursPassifs}
