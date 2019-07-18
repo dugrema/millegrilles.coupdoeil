@@ -392,7 +392,7 @@ class SenseurPassifIndividuel extends React.Component {
           <GraphiqueHoraire
             name="graphique_horaire_temperature"
             donnees={documentSenseur.moyennes_dernier_jour}
-            serie="temperature-moyenne"
+            serie="temperature-moyenne" min="-10" max="20" tick="5"
           />
 
           <h6>Humidite</h6>
@@ -449,10 +449,9 @@ class GraphiqueHoraire extends React.Component {
 
     graphiqueHoraireObj.idDiv = "#" + this.props.name;
     graphiqueHoraireObj.nomVariableOrdonnee1 = this.props.serie;
-    graphiqueHoraireObj.ordonnee_base_max = 20;
-    graphiqueHoraireObj.ordonnee_base_min = -10;
-    console.log('Graphique:');
-    console.log(graphiqueHoraireObj);
+    graphiqueHoraireObj.ordonnee_base_max = this.props.max || 100;
+    graphiqueHoraireObj.ordonnee_base_min = this.props.min || 0;
+    graphiqueHoraireObj.ordonnee_tick = this.props.tick || 1;
     graphiqueHoraireObj.preparer_graphique();
 
     return graphiqueHoraireObj

@@ -8,11 +8,11 @@ export class GraphiqueCharte2D {
     this.donnees = null;
 
     // Defaults
-    this.idDiv = '#graphique_horaire';
-    this.nomVariableOrdonnee1 = 'temperature-maximum';
-    this.nomVariableOrdonnee2 = 'temperature-minimum';
-    this.nombreSeriesDonnees = 1;
+    // this.idDiv = '#graphique_horaire';
+    // this.nomVariableOrdonnee1 = 'temperature-maximum';
+    // this.nomVariableOrdonnee2 = 'temperature-minimum';
 
+    this.nombreSeriesDonnees = 1;
     this.ordonnee_base_max = 100;
     this.ordonnee_base_min = 0;
 
@@ -152,7 +152,7 @@ export class GraphiqueCharte2D {
           .attr("class", "y axis")
           .call(
             d3.axisLeft(graphique.y_range)
-              .ticks(5)
+              .ticks(this.ordonnee_tick)
         );
     }
   }
