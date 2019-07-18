@@ -10,7 +10,7 @@ export class GraphiqueCharte2D {
     // Defaults
     this.idDiv = '#graphique_horaire';
     this.nomVariableOrdonnee1 = 'temperature-maximum';
-    this.nomVariableOrdonnee1 = 'temperature-minimum';
+    this.nomVariableOrdonnee2 = 'temperature-minimum';
     this.nombreSeriesDonnees = 1;
 
     this.ordonnee_base_max = 100;
@@ -19,7 +19,7 @@ export class GraphiqueCharte2D {
   }
 
   preparer_graphique() {
-    const graphique = new Object();
+    const graphique = {};
     this.graphique = graphique;
 
     const nomVariableOrdonnee1 = this.nomVariableOrdonnee1,
@@ -31,23 +31,25 @@ export class GraphiqueCharte2D {
     graphique.height = 270 - graphique.margin.top - graphique.margin.bottom;
 
     // Set the ranges
-    graphique.x_range = d3.time.scale().range([0, graphique.width]);
-    graphique.y_range = d3.scale.linear().range([graphique.height, 0]);
+    graphique.x_range = d3.scaleTime().range([0, graphique.width]);
+    graphique.y_range = d3.scaleLinear().range([graphique.height, 0]);
 
     // Define the axes
-    graphique.xAxis = d3.svg.axis().scale(graphique.x_range).orient("bottom").ticks(5);
-    graphique.yAxis = d3.svg.axis().scale(graphique.y_range).orient("left").ticks(5);
+    // graphique.xAxis = d3.svg.axis().scale(graphique.x_range).orient("bottom").ticks(5);
+    // graphique.yAxis = d3.svg.axis().scale(graphique.y_range).orient("left").ticks(5);
 
     // Define the line
-    graphique.valueline = d3.svg.line()
-        .x(function(d) { return graphique.x_range(d["periode"]); })
-        .y(function(d) { return graphique.y_range(d[nomVariableOrdonnee1]); });
+    graphique.valueline = d3.line()
+        .x(d => { return graphique.x_range(d["periode"]); })
+        .y(d => { return graphique.y_range(d[nomVariableOrdonnee1]); });
 
+    /*
     if (this.nombreSeriesDonnees > 1) {
       graphique.valueline2 = d3.svg.line()
           .x(function(d) { return graphique.x_range(d["periode"]); })
           .y(function(d) { return graphique.y_range(d[nomVariableOrdonnee2]); });
     }
+    */
   }
 
   attacher_svg() {
@@ -143,12 +145,15 @@ export class GraphiqueCharte2D {
       graphique.svg.append("g")
           .attr("class", "x axis")
           .attr("transform", "translate(0," + graphique.height + ")")
-          .call(graphique.xAxis);
+          .call(d3.axisBottom(graphique.x_range));
 
       // Add the Y Axis
       graphique.svg.append("g")
           .attr("class", "y axis")
-          .call(graphique.yAxis);
+          .call(
+            d3.axisLeft(graphique.y_range)
+              .ticks(5)
+        );
     }
   }
 

@@ -2,7 +2,6 @@ import { Meteor } from 'meteor/meteor';
 import { ReactiveVar } from 'meteor/reactive-var'
 import { FlowRouter } from 'meteor/kadira:flow-router';
 import { Template } from 'meteor/templating';
-//import { d3 } from 'meteor/d3';
 
 import { SenseursPassifs } from '../../api/millegrilles_domaines_SenseursPassifs.js';
 

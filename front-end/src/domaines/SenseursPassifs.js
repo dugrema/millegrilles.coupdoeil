@@ -2,6 +2,7 @@ import React from 'react';
 import './SenseursPassifs.css';
 import webSocketManager from '../WebSocketManager';
 import {dateformatter, numberformatter} from '../formatters';
+import { GraphiqueCharte2D } from '../chart.js';
 
 export class SenseursPassifs extends React.Component {
 
@@ -387,6 +388,19 @@ class SenseurPassifIndividuel extends React.Component {
           <h5 className="w3-opacity">
             Historique 24 heures {documentSenseur.location}
           </h5>
+          <h6>Temperature</h6>
+          <GraphiqueHoraire
+            name="graphique_horaire_temperature"
+            donnees={documentSenseur.moyennes_dernier_jour}
+            serie="temperature-moyenne"
+          />
+
+          <h6>Humidite</h6>
+          <div id="graphique_horaire_humidite"></div>
+
+          <h6>Pression</h6>
+          <div id="graphique_horaire_pression"></div>
+
           {this.renderTableauHoraire()}
           <button onClick={this.afficherTableauHoraire}>Toggle tableau</button>
           <br/>
@@ -419,6 +433,43 @@ class SenseurPassifIndividuel extends React.Component {
 
         { historiqueQuotidien }
       </div>
+    );
+  }
+
+}
+
+class GraphiqueHoraire extends React.Component {
+
+  state = {
+    graphique: null
+  }
+
+  preparerGraphique() {
+    const graphiqueHoraireObj = new GraphiqueCharte2D();
+
+    graphiqueHoraireObj.idDiv = "#" + this.props.name;
+    graphiqueHoraireObj.nomVariableOrdonnee1 = this.props.serie;
+    graphiqueHoraireObj.ordonnee_base_max = 20;
+    graphiqueHoraireObj.ordonnee_base_min = -10;
+    console.log('Graphique:');
+    console.log(graphiqueHoraireObj);
+    graphiqueHoraireObj.preparer_graphique();
+
+    return graphiqueHoraireObj
+  }
+
+  componentDidMount() {
+    const graphique = this.preparerGraphique();
+    graphique.attacher_svg();
+    this.setState({'graphique': graphique});
+  }
+
+  render() {
+    if(this.state.graphique) {
+      this.state.graphique.appliquerDonnees(this.props.donnees);
+    }
+    return (
+      <div id={this.props.name}></div>
     );
   }
 
