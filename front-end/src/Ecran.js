@@ -1,6 +1,7 @@
 import React from 'react';
 
 // CSS pour l'application
+import manifest from './manifest.build.js';
 import './Ecran.css';
 import './w3.css';
 import './w3-theme-blue-grey.css';
@@ -8,6 +9,9 @@ import './font-awesome.min.css';
 import webSocketManager from './WebSocketManager';
 
 import dateformatter from './formatters';
+
+// Importer les Domaines
+import SenseursPassifs from './domaines/SenseursPassifs';
 
 class NavBar extends React.Component {
 
@@ -472,7 +476,7 @@ class Footer extends React.Component {
     return (
       <footer>
         <div className="w3-container w3-theme-d3 w3-padding-small">
-          <h5>Coup D'Oeil version abcd.1234</h5>
+          <h5>Coup D'Oeil version <span title={manifest.date}>{manifest.version}</span></h5>
             Coup D'Oeil fait partie du groupe de
             logiciels <a href="https://www.millegrilles.com">MilleGrilles</a>.
         </div>
@@ -570,7 +574,8 @@ class MenuGaucheNavigation extends React.Component {
 class EcranApp extends React.Component {
 
   state = {
-    configDocument: null
+    configDocument: null,
+    domaineActif: null
   }
 
   componentDidMount() {
@@ -603,11 +608,18 @@ class EcranApp extends React.Component {
     // console.debug("Demonte!");
   }
 
+  changerDomaine = (domaine) => {
+    this.setState({domaineActif: domaine});
+  }
+
   render() {
     return (
       <div>
         <NavBar configDocument={this.state.configDocument}/>
-        <Contenu configDocument={this.state.configDocument}/>
+        <Contenu
+          configDocument={this.state.configDocument}
+          domaineActif={this.state.domaineActif}
+          changerDomaine={this.changerDomaine}/>
         <Footer/>
       </div>
     );
