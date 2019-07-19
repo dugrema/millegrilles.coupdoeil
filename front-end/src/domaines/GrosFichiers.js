@@ -86,122 +86,36 @@ class FileUploadSection extends React.Component {
     // Traitement d'un fichier a uploader.
     console.log(acceptedFiles);
 
-    acceptedFiles.forEach(file => {
-      // Commencer l'upload
-
-      let data = new FormData();
-      data.append('multiInputFilename', file);
-
-      axios.post('/api/blobby', data)
-        .then(response => this.uploadSuccess(response))
-        .catch(error => this.uploadFail(error));
-
-      // let form = new FormData();
-      // form.append('')
-      //
-      // fetch('/api/blobby', {
-      //   method: 'POST',
-      //   body: file,
-      // }).then(response => {
-      //   console.debug(response);
-      // }).catch(err => {
-      //   console.error(err);
-      // })
-
-      // fs.createReadStream(file).pipe(request.put('/api/blobby'))
-      //   .catch(err=>{
-      //     console.error("Erreur dans stream");
-      //     console.error(err);
-      //   });
-
-      // var req = request.post('/api/blobby', function (err, resp, body) {
-      //   if (err) {
-      //     console.log('Error!');
-      //   } else {
-      //     console.log('URL: ' + body);
-      //   }
-      // });
-      // var form = req.form();
-      // form.append('multiInputFilename', file);
-      // req.send();
-
-      // const putRequest = new XMLHttpRequest();
-      // putRequest.open("POST", '/api/blobby', true);
-      // putRequest.setRequestHeader('Content-type', 'text/plain; charset=utf-8');
-      //
-      // var form = putRequest.form;
-      // form.append('multiInputFilename', file);
-
-      // let readCb = (arrayBuffer) => {this.readChunk(putRequest, arrayBuffer);}
-      // let errorCb = (event) => {this.errorChunk(putRequest, event}
-      // let successCb = (file) => {this.successChunk(putRequest, file);}
-      // let readyStateChange = (event) => {
-      //   tinyUploader.fileUploadBinary(file, readCb, errorCb, successCb);
-      // }
-
-      // putRequest.send();
-    });
-
-  }
-
-  readChunk = (putRequest, arrayBuffer) => {
-    console.log(putRequest);
-    console.log("Read chunk");
-    // console.log(arrayBuffer);
-  }
-
-  errorChunk = (putRequest, event) => {
-    console.log("Erreur");
-    putRequest.close();
-  }
-
-  successChunk = (event) => {
-    console.log("Success");
-  }
-
-  params = (files, xhr, chunk) => {
-    // Traitement d'un fichier a uploader.
-    console.log(files);
-    console.log(xhr);
-    console.log(chunk);
-  }
-
-  handleFileUpload = ({file}) => {
-    console.log("Handle file upload");
-    // console.log(e.currentTarget);
-    // const file = e.currentTarget.file;
-    console.log(file);
     let data = new FormData();
-    data.append('multiInputFilename', file);
-
+    acceptedFiles.forEach( file=> {
+      data.append('multiInputFilename', file);
+    })
     axios.post('/api/blobby', data)
       .then(response => this.uploadSuccess(response))
       .catch(error => this.uploadFail(error));
   }
 
-  uploadSuccess = (e) => {
-    console.log(e);
+  uploadSuccess(response) {
+    console.debug("Upload is successful");
   }
 
-  uploadFail = (e) => {
-    console.log(e);
+  uploadFail(error) {
+    console.error("Erreur dans l'upload");
+    console.error(error);
   }
 
   render() {
     return (
-      <form submit="/api/blobby">
-        <Dropzone onDrop={this.uploadFileProcessor}>
-          {({getRootProps, getInputProps}) => (
-            <section>
-              <div {...getRootProps()}>
-                <input {...getInputProps()} />
-                <p>Drag 'n' drop some files here, or click to select files</p>
-              </div>
-            </section>
-          )}
-        </Dropzone>
-        <input type="file" name="multiInputFilename" onChange={this.handleFileUpload}/>
-      </form>
+      <Dropzone onDrop={this.uploadFileProcessor}>
+        {({getRootProps, getInputProps}) => (
+          <section>
+            <div {...getRootProps()}>
+              <input {...getInputProps()} />
+              <p>Drag 'n' drop some files here, or click to select files</p>
+            </div>
+          </section>
+        )}
+      </Dropzone>
     );
   }
 }
