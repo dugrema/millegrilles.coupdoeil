@@ -241,6 +241,16 @@ router.post('/requete', function(req, res, next) {
 
 });
 
+router.post('/blobby', function(req, res, next) {
+  console.log("Blobby!!!");
+  for(var file_idx in req.files) {
+    let file = req.files[file_idx];
+    console.log(file);
+    file.
+  }
+  res.sendStatus(200);
+});
+
 // Initialisation, connexions
 // Creer les connexions
 let mqConnectionUrl = process.env.MG_MQ_URL || 'amqps://mq:5673/';

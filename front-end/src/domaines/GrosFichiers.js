@@ -1,5 +1,8 @@
 import React from 'react';
 import Dropzone from 'react-dropzone';
+import {tinyUploader} from '../utils/tiny_uploader';
+import request from 'request';
+import fs from 'fs';
 
 import './GrosFichiers.css';
 import webSocketManager from '../WebSocketManager';
@@ -76,6 +79,102 @@ export class GrosFichiers extends React.Component {
 
 }
 
+class FileUploadSection extends React.Component {
+
+  uploadFileProcessor = (acceptedFiles) => {
+    // Traitement d'un fichier a uploader.
+    console.log(acceptedFiles);
+
+    acceptedFiles.forEach(file => {
+      // Commencer l'upload
+
+      fetch('/api/blobby', {
+        method: 'POST',
+        body: file,
+      }).then(response => {
+        console.debug(response);
+      }).catch(err => {
+        console.error(err);
+      })
+
+      // fs.createReadStream(file).pipe(request.put('/api/blobby'))
+      //   .catch(err=>{
+      //     console.error("Erreur dans stream");
+      //     console.error(err);
+      //   });
+
+      // var req = request.post('/api/blobby', function (err, resp, body) {
+      //   if (err) {
+      //     console.log('Error!');
+      //   } else {
+      //     console.log('URL: ' + body);
+      //   }
+      // });
+      // var form = req.form();
+      // form.append('file', file);
+      // req.send();
+
+      // const putRequest = new XMLHttpRequest();
+      // putRequest.open("POST", '/api/blobby', true);
+      // putRequest.setRequestHeader('Content-type', 'text/plain; charset=utf-8');
+      //
+      // var form = putRequest.form;
+      //form.append('file', file);
+
+      // let readCb = (arrayBuffer) => {this.readChunk(putRequest, arrayBuffer);}
+      // let errorCb = (event) => {this.errorChunk(putRequest, event}
+      // let successCb = (file) => {this.successChunk(putRequest, file);}
+      // let readyStateChange = (event) => {
+      //   tinyUploader.fileUploadBinary(file, readCb, errorCb, successCb);
+      // }
+
+      // putRequest.send();
+    });
+
+  }
+
+  readChunk = (putRequest, arrayBuffer) => {
+    console.log(putRequest);
+    console.log("Read chunk");
+    // console.log(arrayBuffer);
+  }
+
+  errorChunk = (putRequest, event) => {
+    console.log("Erreur");
+    putRequest.close();
+  }
+
+  successChunk = (event) => {
+    console.log("Success");
+  }
+
+  params = (files, xhr, chunk) => {
+    // Traitement d'un fichier a uploader.
+    console.log(files);
+    console.log(xhr);
+    console.log(chunk);
+  }
+
+  render() {
+    return (
+      <form submit="/api/blobby">
+        <Dropzone onDrop={this.uploadFileProcessor}>
+          {({getRootProps, getInputProps}) => (
+            <section>
+              <div {...getRootProps()}>
+                <input {...getInputProps()} />
+                <p>Drag 'n' drop some files here, or click to select files</p>
+              </div>
+            </section>
+          )}
+        </Dropzone>
+        <input type="file" name="filyFileFile"/>
+        <input type="submit"/>
+      </form>
+    );
+  }
+}
+
 function Accueil() {
 
   let contenu;
@@ -83,17 +182,7 @@ function Accueil() {
   contenu = (
     <div>
       <p>Accueil</p>
-
-      <Dropzone onDrop={acceptedFiles => console.log(acceptedFiles)}>
-        {({getRootProps, getInputProps}) => (
-          <section>
-            <div {...getRootProps()}>
-              <input {...getInputProps()} />
-              <p>Drag 'n' drop some files here, or click to select files</p>
-            </div>
-          </section>
-        )}
-      </Dropzone>
+      <FileUploadSection />
     </div>
   );
 
