@@ -77,6 +77,8 @@ class WebSocketApp {
     });
 
     socket.on('unsubscribe', message => {
+      // console.debug("Message unsubscribe");
+      // console.debug(message);
       rabbitMQ.singleton.routingKeyManager
         .removeRoutingKeysForSocket(socket, message);
     });

@@ -38,23 +38,46 @@ export class GrosFichiers extends React.Component {
     // this.chargerDocument(requeteDocumentInitial, 'repertoireRacine');
   }
 
-  componentWillUmount() {
-    // Enregistrer les routingKeys de documents
+  componentWillUnmount() {
+    // console.debug("Unsubscribe GrosFichiers");
     webSocketManager.unsubscribe(this.config.subscriptions);
   }
 
   render() {
-    var contenu;
+    let contenu;
 
     // Routing entre composants utilise this.state:
     //  - Si on a un senseur_id, on l'affiche.
     //  - Sinon si on a un noeud, on l'affiche.
     //  - Sinon on affiche la liste des noeuds.
-    contenu = (
-      <p>Gros Fichiers</p>
-    );
+    if(this.state.preparerUpload) {
+
+    } else if (this.state.repertoireCourant) {
+
+    } else {
+      contenu = (
+        <Accueil />
+      );
+    }
 
     return contenu;
   }
 
+}
+
+function Accueil() {
+
+  let contenu;
+
+  contenu = (
+    <div className="w3-col m9">
+      <div className="w3-row-padding">
+        <div className="w3-col m12">
+          <h1>Domaine GrosFichiers</h1>
+        </div>
+      </div>
+    </div>
+  );
+
+  return contenu;
 }

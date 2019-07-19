@@ -345,13 +345,13 @@ class RoutingKeyManager {
   }
 
   removeRoutingKeysForSocket(socket, routingKeys) {
-    console.debug("Enlever routingKeys du socket " + socket.id);
-    console.debug(routingKeys);
+    // console.debug("Enlever routingKeys du socket " + socket.id);
+    // console.debug(routingKeys);
 
-    for(var routingKey in routingKeys) {
+    for(var routingKey_idx in routingKeys) {
       let routingKeyName = routingKeys[routingKey_idx];
       // Retirer la routing key
-      this.mq.channel.bindQueue(this.mq.reply_q.queue, 'millegrilles.noeuds', routingKeyName);
+      this.mq.channel.unbindQueue(this.mq.reply_q.queue, 'millegrilles.noeuds', routingKeyName);
     }
   }
 

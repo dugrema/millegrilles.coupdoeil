@@ -119,7 +119,7 @@ export class SenseursPassifs extends React.Component {
     this.chargerDocument(requeteDocumentInitial, 'listeNoeuds');
   }
 
-  componentWillUmount() {
+  componentWillUnmount() {
     // Enregistrer les routingKeys de documents
     webSocketManager.unsubscribe(this.config.subscriptions);
   }

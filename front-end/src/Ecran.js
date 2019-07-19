@@ -60,7 +60,7 @@ class EcranApp extends React.Component {
 
   changerDomaine = (event) => {
     const domaine = event.currentTarget.dataset.domaine;
-    console.log('Domaine change vers: ' + domaine);
+    // console.debug('Domaine change vers: ' + domaine);
     if(domaine) {
       this.setState({domaineActif: domaine});
     }
