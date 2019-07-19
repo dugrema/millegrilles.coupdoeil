@@ -1,4 +1,6 @@
 import React from 'react';
+import Dropzone from 'react-dropzone';
+
 import './GrosFichiers.css';
 import webSocketManager from '../WebSocketManager';
 import {dateformatter, numberformatter} from '../formatters';
@@ -60,7 +62,16 @@ export class GrosFichiers extends React.Component {
       );
     }
 
-    return contenu;
+    return (
+      <div className="w3-col m9">
+        <div className="w3-row-padding">
+          <div className="w3-col m12">
+            <h1>Domaine GrosFichiers</h1>
+            {contenu}
+          </div>
+        </div>
+      </div>
+    );
   }
 
 }
@@ -70,12 +81,19 @@ function Accueil() {
   let contenu;
 
   contenu = (
-    <div className="w3-col m9">
-      <div className="w3-row-padding">
-        <div className="w3-col m12">
-          <h1>Domaine GrosFichiers</h1>
-        </div>
-      </div>
+    <div>
+      <p>Accueil</p>
+
+      <Dropzone onDrop={acceptedFiles => console.log(acceptedFiles)}>
+        {({getRootProps, getInputProps}) => (
+          <section>
+            <div {...getRootProps()}>
+              <input {...getInputProps()} />
+              <p>Drag 'n' drop some files here, or click to select files</p>
+            </div>
+          </section>
+        )}
+      </Dropzone>
     </div>
   );
 
