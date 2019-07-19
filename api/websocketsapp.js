@@ -103,6 +103,11 @@ class WebSocketApp {
       });
     });
 
+    socket.on('creerTokenTransfert', (message, cb) => {
+      let token = sessionManagement.createTokenTransfert();
+      cb(token); // Renvoit le token pour amorcer le transfert via PUT
+    });
+
   }
 
 }

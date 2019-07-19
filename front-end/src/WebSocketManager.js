@@ -82,6 +82,17 @@ class WebSocketManager {
     }
   }
 
+  demanderTokenTransfert() {
+    let promise = new Promise((resolve, reject)=>{
+      this.socket.emit('creerTokenTransfert', {'token': true}, reponse=>{
+        console.debug("Transmission token " + reponse);
+        resolve(reponse);
+      });
+    });
+
+    return promise;
+  }
+
 }
 
 const manager = new WebSocketManager();

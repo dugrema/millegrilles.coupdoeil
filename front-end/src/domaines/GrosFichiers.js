@@ -1,13 +1,9 @@
 import React from 'react';
 import Dropzone from 'react-dropzone';
-import {tinyUploader} from '../utils/tiny_uploader';
-import request from 'request';
-import fs from 'fs';
 import axios from 'axios';
 
 import './GrosFichiers.css';
 import webSocketManager from '../WebSocketManager';
-import {dateformatter, numberformatter} from '../formatters';
 
 export class GrosFichiers extends React.Component {
 
@@ -36,10 +32,10 @@ export class GrosFichiers extends React.Component {
     // Enregistrer les routingKeys de documents
     webSocketManager.subscribe(this.config.subscriptions, this.processMessage);
 
-    let requeteDocumentInitial =  {
-      'requetes': [{
-        'filtre': {'_mg-libelle': 'repertoire.racine'}
-      }]};
+    // let requeteDocumentInitial =  {
+    //   'requetes': [{
+    //     'filtre': {'_mg-libelle': 'repertoire.racine'}
+    //   }]};
 
     // this.chargerDocument(requeteDocumentInitial, 'repertoireRacine');
   }
@@ -86,13 +82,28 @@ class FileUploadSection extends React.Component {
     // Traitement d'un fichier a uploader.
     console.log(acceptedFiles);
 
-    let data = new FormData();
-    acceptedFiles.forEach( file=> {
-      data.append('multiInputFilename', file);
+    webSocketManager.demanderTokenTransfert().
+    then(token=>{
+      console.debug("Utilisation token " + token);
+      let data = new FormData();
+      acceptedFiles.forEach( file=> {
+        data.append('multiInputFilename', file);
+      })
+      let config = {
+        headers: {
+          'authtoken': token
+        }
+      }
+
+      axios.put('/api/nouveauFichier', data, config)
+        .then(response => this.uploadSuccess(response))
+        .catch(error => this.uploadFail(error));
     })
-    axios.post('/api/blobby', data)
-      .then(response => this.uploadSuccess(response))
-      .catch(error => this.uploadFail(error));
+    .catch(err=>{
+      console.error("Erreur transfert fichiers");
+      console.error(err);
+    })
+
   }
 
   uploadSuccess(response) {
@@ -111,7 +122,7 @@ class FileUploadSection extends React.Component {
           <section>
             <div {...getRootProps()}>
               <input {...getInputProps()} />
-              <p>Drag 'n' drop some files here, or click to select files</p>
+              <p>Cliquer ou DnD fichiers ici.</p>
             </div>
           </section>
         )}

@@ -6,13 +6,15 @@ const {
     parseLoginRequest,
     verifyAuthenticatorAssertion,
 } = require('@webauthn/server');
+const crypto = require('crypto');
 
 class SessionManagement {
 
   constructor() {
     this.timer;
-    this.session_timeout = process.env.COUPDOEIL_SESSION_TIMEOUT || (600 * 1000);
+    this.session_timeout = process.env.COUPDOEIL_SESSION_TIMEOUT || (60 * 1000);
     this.session_timeout = Number(this.session_timeout);
+    this.transferTokens = {};
   }
 
   start() {
@@ -20,6 +22,37 @@ class SessionManagement {
   }
 
   clean() {
+    let expiredTokens = [];
+    let tempsCourant = (new Date()).getTime();
+    for(var tokenKey in this.transferTokens) {
+      let token = this.transferTokens[tokenKey];
+      if(token.expiration < tempsCourant) {
+        expiredTokens.push(tokenkey)
+      }
+    };
+
+    tempsCourant.forEach(tokenKey=>{
+      console.debug("Expiration token transfert " + tokenKey);
+      delete this.transferTokens[tokenKey];
+    });
+  }
+
+  createTokenTransfert() {
+    var token = crypto.randomBytes(20).toString('hex');
+    this.transferTokens[token] = {
+      expiration: (new Date()).getTime() + 60000
+    };
+    return token;
+  }
+
+  consommerToken(tokenKey) {
+    var token = this.transferTokens[tokenKey];
+    if(token && token.expiration>=(new Date()).getTime())  {
+      console.debug("Token consomme " + token);
+      delete this.transferTokens[token];
+      return true;
+    }
+    return false;
   }
 
   addSocketConnection(socket) {

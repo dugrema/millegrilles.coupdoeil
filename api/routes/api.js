@@ -241,14 +241,14 @@ router.post('/requete', function(req, res, next) {
 
 });
 
-router.post('/blobby', function(req, res, next) {
-  console.log("Blobby!!!");
-  for(var file_idx in req.files) {
-    let file = req.files[file_idx];
-    console.log(file);
-    file.
+router.put('/nouveauFichier', function(req, res, next) {
+  let authtoken = req.headers.authtoken;
+  console.debug("Recu token " + authtoken);
+  if(sessionManagement.consommerToken(authtoken)) {
+    res.sendStatus(200);
+  } else {
+    res.sendStatus(403);
   }
-  res.sendStatus(200);
 });
 
 // Initialisation, connexions
