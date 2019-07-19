@@ -3,6 +3,7 @@ import Dropzone from 'react-dropzone';
 import {tinyUploader} from '../utils/tiny_uploader';
 import request from 'request';
 import fs from 'fs';
+import axios from 'axios';
 
 import './GrosFichiers.css';
 import webSocketManager from '../WebSocketManager';
@@ -88,14 +89,24 @@ class FileUploadSection extends React.Component {
     acceptedFiles.forEach(file => {
       // Commencer l'upload
 
-      fetch('/api/blobby', {
-        method: 'POST',
-        body: file,
-      }).then(response => {
-        console.debug(response);
-      }).catch(err => {
-        console.error(err);
-      })
+      let data = new FormData();
+      data.append('multiInputFilename', file);
+
+      axios.post('/api/blobby', data)
+        .then(response => this.uploadSuccess(response))
+        .catch(error => this.uploadFail(error));
+
+      // let form = new FormData();
+      // form.append('')
+      //
+      // fetch('/api/blobby', {
+      //   method: 'POST',
+      //   body: file,
+      // }).then(response => {
+      //   console.debug(response);
+      // }).catch(err => {
+      //   console.error(err);
+      // })
 
       // fs.createReadStream(file).pipe(request.put('/api/blobby'))
       //   .catch(err=>{
@@ -111,7 +122,7 @@ class FileUploadSection extends React.Component {
       //   }
       // });
       // var form = req.form();
-      // form.append('file', file);
+      // form.append('multiInputFilename', file);
       // req.send();
 
       // const putRequest = new XMLHttpRequest();
@@ -119,7 +130,7 @@ class FileUploadSection extends React.Component {
       // putRequest.setRequestHeader('Content-type', 'text/plain; charset=utf-8');
       //
       // var form = putRequest.form;
-      //form.append('file', file);
+      // form.append('multiInputFilename', file);
 
       // let readCb = (arrayBuffer) => {this.readChunk(putRequest, arrayBuffer);}
       // let errorCb = (event) => {this.errorChunk(putRequest, event}
@@ -155,6 +166,27 @@ class FileUploadSection extends React.Component {
     console.log(chunk);
   }
 
+  handleFileUpload = ({file}) => {
+    console.log("Handle file upload");
+    // console.log(e.currentTarget);
+    // const file = e.currentTarget.file;
+    console.log(file);
+    let data = new FormData();
+    data.append('multiInputFilename', file);
+
+    axios.post('/api/blobby', data)
+      .then(response => this.uploadSuccess(response))
+      .catch(error => this.uploadFail(error));
+  }
+
+  uploadSuccess = (e) => {
+    console.log(e);
+  }
+
+  uploadFail = (e) => {
+    console.log(e);
+  }
+
   render() {
     return (
       <form submit="/api/blobby">
@@ -168,8 +200,7 @@ class FileUploadSection extends React.Component {
             </section>
           )}
         </Dropzone>
-        <input type="file" name="filyFileFile"/>
-        <input type="submit"/>
+        <input type="file" name="multiInputFilename" onChange={this.handleFileUpload}/>
       </form>
     );
   }
