@@ -76,6 +76,52 @@ export class GrosFichiers extends React.Component {
 
 }
 
+class Repertoire extends React.Component {
+
+  handleSubmit(event) {
+    let form = event.currentTarget;
+
+    // if(!form.tokenready) {
+      webSocketManager.demanderTokenTransfert()
+      .then(token=>{
+        let authtokenInput = form.authtoken;
+        form.action = "https://192.168.1.110:3001/sampleDownload.html.gz";
+        authtokenInput.value = token;
+        console.log("Submit preparation, recu token " + authtokenInput.value);
+        // form.tokenready = true;
+        form.submit(); // Resubmit, token pret.
+      })
+      .catch(err=>{
+        console.error("Erreur preparation download");
+        console.error(err);
+      })
+
+      console.log("Prevent download");
+      event.preventDefault();
+    // } else {
+    //   delete form.tokenready;
+    //   console.log("Download avec token " + form.authtoken.value);
+    // }
+  }
+
+  render() {
+    return (
+      <div>
+        Un telechargement, c'est l'heure:
+        <form
+          name="downloadFile"
+          action="me-salsa"
+          onSubmit={this.handleSubmit}
+          method="GET">
+            <input type="hidden" name="authtoken" value="Allo!"/>
+            <input type="submit" value="Download" />
+        </form>
+      </div>
+    );
+  }
+
+}
+
 class FileUploadSection extends React.Component {
 
   uploadFileProcessor = (acceptedFiles) => {
@@ -140,6 +186,7 @@ function Accueil() {
   contenu = (
     <div>
       <p>Accueil</p>
+      <Repertoire />
       <FileUploadSection />
     </div>
   );
