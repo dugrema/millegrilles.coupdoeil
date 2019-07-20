@@ -78,6 +78,12 @@ export class GrosFichiers extends React.Component {
 
 class Repertoire extends React.Component {
 
+  constructor(props) {
+    super(props);
+    this.refFormulaireDownload = React.createRef();
+    this.download = this.download.bind(this);
+  }
+
   handleSubmit(event) {
     let form = event.currentTarget;
 
@@ -89,7 +95,7 @@ class Repertoire extends React.Component {
         authtokenInput.value = token;
         console.log("Submit preparation, recu token " + authtokenInput.value);
         // form.tokenready = true;
-        form.submit(); // Resubmit, token pret.
+        form.submit(); // Token pret, submit.
       })
       .catch(err=>{
         console.error("Erreur preparation download");
@@ -104,18 +110,40 @@ class Repertoire extends React.Component {
     // }
   }
 
+  download(event) {
+    let bouton = event.currentTarget;
+    let nomFichier = bouton.value;
+    console.log("1. Bouton clique pour fichier " + nomFichier);
+    let form = this.refFormulaireDownload.current;
+    webSocketManager.demanderTokenTransfert()
+    .then(token=>{
+      form.action = "https://192.168.1.110:3001/sampleDownload.html.gz";
+      form.authtoken.value = token;
+      console.log("2. Submit preparation, recu token " + form.authtoken.value);
+      form.submit(); // Token pret, submit.
+    })
+    .catch(err=>{
+      console.error("Erreur preparation download");
+      console.error(err);
+    })
+
+  }
+
   render() {
     return (
       <div>
         Un telechargement, c'est l'heure:
         <form
-          name="downloadFile"
+          ref={this.refFormulaireDownload}
           action="me-salsa"
-          onSubmit={this.handleSubmit}
           method="GET">
             <input type="hidden" name="authtoken" value="Allo!"/>
             <input type="submit" value="Download" />
         </form>
+
+        <ul>
+          <li>Fichier 1: <button value="sampleDownload.html.gz" onClick={this.download}/></li>
+        </ul>
       </div>
     );
   }
