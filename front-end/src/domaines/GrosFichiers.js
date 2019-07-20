@@ -17,6 +17,7 @@ export class GrosFichiers extends React.Component {
     // Variables pour ecrans specifiques
     preparerUpload: null,
 
+    downloadUrl: 'https://192.168.1.110:3001',
   };
 
   // Configuration statique du composant:
@@ -58,7 +59,7 @@ export class GrosFichiers extends React.Component {
 
     } else {
       contenu = (
-        <Accueil />
+        <Accueil downloadUrl={this.state.downloadUrl}/>
       );
     }
 
@@ -84,42 +85,18 @@ class Repertoire extends React.Component {
     this.download = this.download.bind(this);
   }
 
-  handleSubmit(event) {
-    let form = event.currentTarget;
-
-    // if(!form.tokenready) {
-      webSocketManager.demanderTokenTransfert()
-      .then(token=>{
-        let authtokenInput = form.authtoken;
-        form.action = "https://192.168.1.110:3001/sampleDownload.html.gz";
-        authtokenInput.value = token;
-        console.log("Submit preparation, recu token " + authtokenInput.value);
-        // form.tokenready = true;
-        form.submit(); // Token pret, submit.
-      })
-      .catch(err=>{
-        console.error("Erreur preparation download");
-        console.error(err);
-      })
-
-      console.log("Prevent download");
-      event.preventDefault();
-    // } else {
-    //   delete form.tokenready;
-    //   console.log("Download avec token " + form.authtoken.value);
-    // }
-  }
-
   download(event) {
     let bouton = event.currentTarget;
     let nomFichier = bouton.value;
     console.log("1. Bouton clique pour fichier " + nomFichier);
     let form = this.refFormulaireDownload.current;
+    let downloadUrl = this.props.downloadUrl;
+
     webSocketManager.demanderTokenTransfert()
     .then(token=>{
-      form.action = "https://192.168.1.110:3001/sampleDownload.html.gz";
+      form.action = downloadUrl + "/sampleDownload.html.gz";
       form.authtoken.value = token;
-      console.log("2. Submit preparation, recu token " + form.authtoken.value);
+      console.log("2. Submit preparation, download " + form.action + ", recu token " + form.authtoken.value);
       form.submit(); // Token pret, submit.
     })
     .catch(err=>{
@@ -132,17 +109,22 @@ class Repertoire extends React.Component {
   render() {
     return (
       <div>
-        Un telechargement, c'est l'heure:
+        {/* Formulaire utilise pour POST la requete avec authtoken */}
         <form
           ref={this.refFormulaireDownload}
-          action="me-salsa"
+          action="dummyaction"
           method="GET">
-            <input type="hidden" name="authtoken" value="Allo!"/>
-            <input type="submit" value="Download" />
+            <input type="hidden" name="authtoken" value="dummytoken"/>
         </form>
 
+        <p>Liste de fichiers pour repertoire ...</p>
         <ul>
-          <li>Fichier 1: <button value="sampleDownload.html.gz" onClick={this.download}/></li>
+          <li>
+            <button
+              className="aslink"
+              value="sampleDownload.html.gz"
+              onClick={this.download}>sampleDownload.html.gz</button>
+          </li>
         </ul>
       </div>
     );
@@ -198,7 +180,7 @@ class FileUploadSection extends React.Component {
           <section>
             <div {...getRootProps()}>
               <input {...getInputProps()} />
-              <p>Cliquer ou DnD fichiers ici.</p>
+              <p>Cliquer ici pour upload ou DnD fichiers ici.</p>
             </div>
           </section>
         )}
@@ -207,14 +189,14 @@ class FileUploadSection extends React.Component {
   }
 }
 
-function Accueil() {
+function Accueil(props) {
 
   let contenu;
 
   contenu = (
     <div>
       <p>Accueil</p>
-      <Repertoire />
+      <Repertoire downloadUrl={props.downloadUrl} />
       <FileUploadSection />
     </div>
   );
