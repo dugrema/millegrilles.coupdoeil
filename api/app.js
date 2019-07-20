@@ -11,7 +11,10 @@ var grosFichiersRouter = require('./routes/grosFichiers');
 var sessionManagement = require('./routes/res/sessionManagement.js');
 
 var app = express();
-var multer_fn = multer({dest: "/tmp/uploadStaging"}).array('multiInputFilename');
+
+var stagingFolder = process.env.MG_STAGING_FOLDER || "/tmp/uploadStaging";
+
+var multer_fn = multer({dest: stagingFolder}).array('grosfichier');
 
 // view engine setup
 // app.set('views', path.join(__dirname, 'views'));
