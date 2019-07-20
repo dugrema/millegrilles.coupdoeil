@@ -241,16 +241,6 @@ router.post('/requete', function(req, res, next) {
 
 });
 
-router.put('/nouveauFichier', function(req, res, next) {
-  let authtoken = req.headers.authtoken;
-  console.debug("Recu token " + authtoken);
-  if(sessionManagement.consommerToken(authtoken)) {
-    res.sendStatus(200);
-  } else {
-    res.sendStatus(403);
-  }
-});
-
 // Initialisation, connexions
 // Creer les connexions
 let mqConnectionUrl = process.env.MG_MQ_URL || 'amqps://mq:5673/';

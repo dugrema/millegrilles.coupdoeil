@@ -90,12 +90,16 @@ class FileUploadSection extends React.Component {
         data.append('multiInputFilename', file);
       })
       let config = {
+        auth: {
+          username: 'janedoe',
+          password: 's00pers3cret'
+        },
         headers: {
           'authtoken': token
         }
       }
 
-      axios.put('/api/nouveauFichier', data, config)
+      axios.put('/grosFichiers/nouveauFichier', data, config)
         .then(response => this.uploadSuccess(response))
         .catch(error => this.uploadFail(error));
     })
