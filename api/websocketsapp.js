@@ -142,6 +142,42 @@ class WebSocketApp {
       cb(token); // Renvoit le token pour amorcer le transfert via PUT
     });
 
+    socket.on('enregistrerDevice', (message)=> {
+      // Declence l'ajout d'un nouveau device d'Authentification
+      // Envoyer le challenge et utiliser callback pour recevoir la confirmation
+      // Transmettre le challenge
+      const challengeResponse = generateRegistrationChallenge({
+          relyingParty: { name: 'coupdoeil' },
+          user: { 'usager', name: 'usager' }
+      });
+      challenge_conserve = challengeResponse.challenge;
+
+      socket.emit('challengeEnregistrerDevice', challengeResponse, (reponse)=>{
+        const { key, challenge } = parseRegisterRequest(reponse);
+
+        console.log("Parsed: key, challenge de nouveau device");
+        console.log(key);
+        console.log(challenge);
+
+        empreinte = {
+            'cle': key
+        }
+
+        // Noter que la transaction va echouer si l'empreinte a deja ete creee.
+        rabbitMQ.singleton.transmettreTransactionFormattee(
+            empreinte, 'millegrilles.domaines.Principale.enregistrerDevice')
+          .then( msg => {
+            console.log("Recu confirmation d'ajout de device'");
+            console.log(msg);
+          })
+          .catch( err => {
+            console.error("Erreur message");
+            console.error(err);
+          });
+      });
+
+    })
+
   }
 
 }
