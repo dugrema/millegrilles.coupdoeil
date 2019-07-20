@@ -148,7 +148,7 @@ class WebSocketApp {
       // Transmettre le challenge
       const challengeResponse = generateRegistrationChallenge({
           relyingParty: { name: 'coupdoeil' },
-          user: { 'usager', name: 'usager' }
+          user: { id: 'usager', name: 'usager' }
       });
       challenge_conserve = challengeResponse.challenge;
 
