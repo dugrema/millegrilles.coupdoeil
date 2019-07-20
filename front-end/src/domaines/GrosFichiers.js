@@ -82,18 +82,16 @@ class FileUploadSection extends React.Component {
     // Traitement d'un fichier a uploader.
     console.log(acceptedFiles);
 
+    // Demander un token (OTP) via websockets
+    // Permet de se connecter au serveur pour transmetter le fichier.
     webSocketManager.demanderTokenTransfert().
     then(token=>{
-      console.debug("Utilisation token " + token);
+      // console.debug("Utilisation token " + token);
       let data = new FormData();
       acceptedFiles.forEach( file=> {
         data.append('multiInputFilename', file);
       })
       let config = {
-        auth: {
-          username: 'janedoe',
-          password: 's00pers3cret'
-        },
         headers: {
           'authtoken': token
         }

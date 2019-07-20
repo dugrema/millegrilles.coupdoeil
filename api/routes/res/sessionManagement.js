@@ -46,11 +46,15 @@ class SessionManagement {
   }
 
   consommerToken(tokenKey) {
+    // Consomme un token de transfert de fichier
+    // Retourne true si le token est valide
     var token = this.transferTokens[tokenKey];
-    if(token && token.expiration>=(new Date()).getTime())  {
-      console.debug("Token consomme " + token);
-      delete this.transferTokens[token];
-      return true;
+    if(token) {
+      delete this.transferTokens[tokenKey]; // Delete si token utilise ou expire
+      if(token.expiration>=(new Date()).getTime())  {
+        // console.debug("Token consomme " + tokenKey);
+        return true;
+      }
     }
     return false;
   }
