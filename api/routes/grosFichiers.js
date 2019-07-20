@@ -3,9 +3,14 @@ var router = express.Router();
 var fs = require('fs');
 var sessionManagement = require('./res/sessionManagement');
 var multer = require('multer');
+var httpProxy = require('http-proxy');
 
 var stagingFolder = process.env.MG_STAGING_FOLDER || "/tmp/uploadStaging";
 var multer_fn = multer({dest: stagingFolder}).array('grosfichier');
+
+var proxy = httpProxy.createProxyServer({
+  secure: false
+});
 
 function authentication(req, res, next) {
   let url = req.url;
@@ -29,13 +34,29 @@ function authentication(req, res, next) {
   return;
 };
 
-router.use(authentication);  // Utilise pour transfert de fichiers
+// router.use(authentication);  // Utilise pour transfert de fichiers
 router.use(multer_fn);
 
-router.put('/nouveauFichier', function(req, res, next) {
+router.put('/nouveauFichier', function(req, res) {
   // console.log('Fichiers recus');
   // console.log(req.files);
   res.sendStatus(200);
+});
+
+router.get('/telecharger/*', function(req, res) {
+
+  let targetFile = req.url.replace('/telecharger', '');
+  let repertoire_fichiers = '/grosFichiers';
+  console.log(targetFile);
+
+  // L'autentification est OK (fait precedemment)
+  // Connexion au proxy
+  proxy.web(req, res, {
+    target: 'https://www.maple.millegrilles.mdugre.info' + repertoire_fichiers + targetFile,
+    ignorePath: true
+  });
+  // res.sendStatus(200);
+  return;
 });
 
 module.exports = router;
