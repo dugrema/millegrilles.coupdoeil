@@ -28,6 +28,8 @@ class WebSocketApp {
   }
 
   cleanNew() {
+    // Nettoyage des sockets nouveaux connectes qui ne sont pas authentifies
+    // Limite le temps permis pour authentifier
     let tempsCourant = (new Date()).getTime();
     for(var socket_id in this.new_sockets) {
       let socket_obj = this.new_sockets[socket_id];
@@ -46,6 +48,8 @@ class WebSocketApp {
   }
 
   cleanDisconnected() {
+    // Housekeeping, normalement l'evenement disconnect du socket va
+    // declencher la suppression du socket.
     for(var socket_id in this.authenticated_sockets) {
       let socket_obj = this.authenticated_sockets[socket_id];
       if(socket_obj.disconnected) {
@@ -55,23 +59,38 @@ class WebSocketApp {
     }
   }
 
+  disconnectedHandler(socket) {
+    console.debug("Socket deconnecte " + socket.id);
+    delete this.new_sockets[socket.id];
+    delete this.authenticated_sockets[socket.id];
+  }
+
   addSocket(socket) {
+
     // Ajoute un socket d'une nouvelle connexion
     // console.debug("Nouveau socket!");
-    this.new_sockets[socket.id] = {
-      socket: socket,
-      expiration: (new Date()).getTime()+10000
-    };
+    if(!socket.disconnected) {
+      // S'assure que le socket n'a pas ete deconnecte avant d'ajouter
+      // l'evenement de gestion du disconnect
+      socket.on('disconnect', ()=>{
+        this.disconnectedHandler(socket);
+      });
+      this.new_sockets[socket.id] = {
+        socket: socket,
+        expiration: (new Date()).getTime()+10000
+      };
 
-    sessionManagement.addSocketConnection(socket)
-    .then(()=>{
-      this.saveAuthenticated(socket);
-      this.registerEvents(socket);
-    }).catch(err=>{
-      console.error("Erreur traitement socket " + socket.id + ", on le ferme.");
-      socket.disconnect();
-      delete this.new_sockets[socket.id];
-    });  // Attache evements auth
+      sessionManagement.addSocketConnection(socket)
+      .then(()=>{
+        this.saveAuthenticated(socket);
+        this.registerEvents(socket);
+      }).catch(err=>{
+        console.error("Erreur traitement socket " + socket.id + ", on le ferme.");
+        socket.disconnect();
+        delete this.new_sockets[socket.id];
+      });  // Attache evements auth
+    }
+
   }
 
   saveAuthenticated(socket) {
