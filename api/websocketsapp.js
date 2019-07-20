@@ -15,25 +15,37 @@ class WebSocketApp {
   constructor() {
     this.new_sockets = {};
     this.authenticated_sockets = {};
+
     setInterval(()=>{
-      this.clean();
+      this.cleanNew();
+    }, 5000);
+
+    setInterval(()=>{
+      this.cleanDisconnected();
     }, 60000);
 
     rabbitMQ.singleton.routingKeyManager.setWebSocketsManager(this); // Permet transmettre incoming msg
   }
 
-  clean() {
+  cleanNew() {
+    let tempsCourant = (new Date()).getTime();
     for(var socket_id in this.new_sockets) {
       let socket_obj = this.new_sockets[socket_id];
-      if(!socket_obj.disconnected) {
-        console.debug("On deconnecte un socket expire: " + socket_obj.id);
-        socket_obj.disconnect();
-      } else {
-        console.debug("Nettoyage vieux socket deja deconnecte: " + socket_obj.id);
-      }
-      delete this.new_sockets[socket_id];
-    }
 
+      let socket = socket_obj.socket;
+      if(socket_obj.expiration < tempsCourant){
+        console.debug("On deconnecte un socket pas authentifie expire: " + socket_id);
+        socket.disconnect();
+      }
+
+      if(socket.disconnected) {
+        console.debug("Nettoyage socket pas authentifie: " + socket_id);
+        delete this.new_sockets[socket_id];
+      }
+    }
+  }
+
+  cleanDisconnected() {
     for(var socket_id in this.authenticated_sockets) {
       let socket_obj = this.authenticated_sockets[socket_id];
       if(socket_obj.disconnected) {
@@ -46,7 +58,10 @@ class WebSocketApp {
   addSocket(socket) {
     // Ajoute un socket d'une nouvelle connexion
     // console.debug("Nouveau socket!");
-    this.new_sockets[socket.id] = socket;
+    this.new_sockets[socket.id] = {
+      socket: socket,
+      expiration: (new Date()).getTime()+10000
+    };
 
     sessionManagement.addSocketConnection(socket)
     .then(()=>{
@@ -84,8 +99,8 @@ class WebSocketApp {
     });
 
     socket.on('requete', (enveloppe, cb) => {
-      console.log("Envelope de requete recue");
-      console.log(enveloppe);
+      // console.debug("Enveloppe de requete recue");
+      // console.debug(enveloppe);
       let routingKey = enveloppe.routingKey;
       let requete = enveloppe.requete;
 
