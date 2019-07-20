@@ -10,7 +10,7 @@ var stagingFolder = process.env.MG_STAGING_FOLDER || "/tmp/uploadStaging";
 var multer_fn = multer({dest: stagingFolder}).array('grosfichier');
 
 var proxy = httpProxy.createProxyServer({
-  secure: false
+  secure: process.env.MG_HTTPPROXY_SECURE !== 'false' && true
 });
 
 function authentication(req, res, next) {

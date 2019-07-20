@@ -11,4 +11,6 @@ export PRIVKEY=$CERT_FOLDER/dev2.maple.mdugre.info/privkey.pem
 export MG_MQ_URL=amqps://dev2:5673/dev2
 export PORT=3001
 
+export MG_HTTPPROXY_SECURE=false
+
 npm start

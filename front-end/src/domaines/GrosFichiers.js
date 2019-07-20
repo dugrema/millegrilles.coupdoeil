@@ -128,14 +128,28 @@ class Repertoire extends React.Component {
               className="aslink"
               value="Fichier1.txt"
               data-fuuide="000-111-222.mgs1"
-              onClick={this.download}>sampleDownload.html.gz</button>
+              onClick={this.download}>Fichier1.txt</button>
           </li>
           <li>
             <button
               className="aslink"
               value="Fichier2.txt"
               data-fuuide="000-111-223.dat"
-              onClick={this.download}>sampleDownload.html.gz</button>
+              onClick={this.download}>Fichier2.txt</button>
+          </li>
+          <li>
+            <button
+              className="aslink"
+              value="Huaweis CEO has a message for Canada_ Join us and prosper in the 5G future - Th.pdf"
+              data-fuuide="000-111-224.dat"
+              onClick={this.download}>Huaweis CEO has a message for Canada_ Join us and prosper in the 5G future - Th.pdf</button>
+          </li>
+          <li>
+            <button
+              className="aslink"
+              value="Les Italiens boudent le blé canadien au glyphosate ICI Radio-Canadaca.pdf"
+              data-fuuide="000-111-225.dat"
+              onClick={this.download}>Les Italiens boudent le blé canadien au glyphosate ICI Radio-Canadaca.pdf</button>
           </li>
         </ul>
       </div>
