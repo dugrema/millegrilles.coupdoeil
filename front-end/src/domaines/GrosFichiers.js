@@ -17,7 +17,7 @@ export class GrosFichiers extends React.Component {
     // Variables pour ecrans specifiques
     preparerUpload: null,
 
-    downloadUrl: 'https://192.168.1.110:3001',
+    downloadUrl: 'https://192.168.1.110:3001/grosFichiers/telecharger',
   };
 
   // Configuration statique du composant:
@@ -91,10 +91,13 @@ class Repertoire extends React.Component {
     console.log("1. Bouton clique pour fichier " + nomFichier);
     let form = this.refFormulaireDownload.current;
     let downloadUrl = this.props.downloadUrl;
+    let fuuide = bouton.dataset.fuuide;
+    console.log("2. fuuide: " + fuuide);
 
     webSocketManager.demanderTokenTransfert()
     .then(token=>{
-      form.action = downloadUrl + "/sampleDownload.html.gz";
+      form.action = downloadUrl + "/" + nomFichier;
+      form.fuuide.value = fuuide;
       form.authtoken.value = token;
       console.log("2. Submit preparation, download " + form.action + ", recu token " + form.authtoken.value);
       form.submit(); // Token pret, submit.
@@ -113,8 +116,9 @@ class Repertoire extends React.Component {
         <form
           ref={this.refFormulaireDownload}
           action="dummyaction"
-          method="GET">
+          method="POST">
             <input type="hidden" name="authtoken" value="dummytoken"/>
+            <input type="hidden" name="fuuide" value="dummyfuuide"/>
         </form>
 
         <p>Liste de fichiers pour repertoire ...</p>
@@ -122,7 +126,15 @@ class Repertoire extends React.Component {
           <li>
             <button
               className="aslink"
-              value="sampleDownload.html.gz"
+              value="Fichier1.txt"
+              data-fuuide="000-111-222.mgs1"
+              onClick={this.download}>sampleDownload.html.gz</button>
+          </li>
+          <li>
+            <button
+              className="aslink"
+              value="Fichier2.txt"
+              data-fuuide="000-111-223.dat"
               onClick={this.download}>sampleDownload.html.gz</button>
           </li>
         </ul>
