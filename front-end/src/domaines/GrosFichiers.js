@@ -127,7 +127,7 @@ class Repertoire extends React.Component {
             <button
               className="aslink"
               value="Fichier1.txt"
-              data-fuuide="000-111-222.mgs1"
+              data-fuuide="2019/07/20/17/02/000-111-222.mgs1"
               onClick={this.download}>Fichier1.txt</button>
           </li>
           <li>
