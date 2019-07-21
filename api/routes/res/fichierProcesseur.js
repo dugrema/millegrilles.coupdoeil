@@ -1,24 +1,30 @@
 const fs = require('fs');
+const path = require('path');
 const uuidv1 = require('uuid/v1');
+const request = require('request');
 // const {uuidToDate} = require('./UUIDUtils')
 
 class ProcesseurUpload {
 
-  ajouterFichier(fichier) {
+  ajouterFichier(fichier, serveurConsignation) {
     var promise = new Promise((resolve, reject)=>{
       console.debug('Traitement fichier');
       console.debug(fichier);
 
       // Creer le uuid de fichier, pour cette version.
       let fileUuid = uuidv1();
+      let pathServeur = serveurConsignation + '/' + path.join('grosfichiers', 'local', 'nouveauFichier', fileUuid);
       // let fuuide = this.formatterPath(fileUuid, 'dat');
 
-      let params = {
-        nomFichier: fichier.originalname,
-        mimetype: fichier.mimetype,
-        taille: fichier.size,
-        fileuuid: fileUuid,
-        encrypte: false,
+      let options = {
+        url: pathServeur,
+        headers: {
+          nomfichier: fichier.originalname,
+          mimetype: fichier.mimetype,
+          taille: fichier.size,
+          fileuuid: fileUuid,
+          encrypte: false,
+        }
       };
 
       try {
@@ -27,9 +33,14 @@ class ProcesseurUpload {
         // Transmettre information au serveur via MQ
 
         // Uploader fichier vers central via PUT
-        
+        console.debug("PUT file " + fichier.path);
+        fs.createReadStream(fichier.path).pipe(request.put(options, (err, httpResponse, body) => {
+          console.log("Put complete");
+          console.log(err);
+          console.log(body);
+        }));
 
-        resolve(params);
+        resolve(options);
 
       } catch (err) {
         console.error("Erreur preparation fichier " + fichier.originalname);

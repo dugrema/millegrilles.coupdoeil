@@ -11,6 +11,7 @@ const fichierProcesseur = require('./res/fichierProcesseur');
 
 var stagingFolder = process.env.MG_STAGING_FOLDER || "/tmp/uploadStaging";
 var multer_fn = multer({dest: stagingFolder}).array('grosfichier');
+const serveurConsignation = 'https://dev2.maple.mdugre.info:3003'; // process.env.MG_CONSIGNATION_HTTP ||
 
 var proxy = httpProxy.createProxyServer({
   secure: process.env.MG_HTTPPROXY_SECURE !== 'false' && true
@@ -40,7 +41,7 @@ router.put('/nouveauFichier', function(req, res) {
   console.log(req.files);
 
   req.files.forEach(fichier=>{
-    fichierProcesseur.ajouterFichier(fichier)
+    fichierProcesseur.ajouterFichier(fichier, serveurConsignation)
     .then(params => {
       console.debug("Traitement fichier termine: ");
       console.debug(params);
@@ -75,8 +76,7 @@ router.post('/local/*', function(req, res, next) {
   // delete req.body;
 
   let targetProxy =
-    'https://dev2.maple.mdugre.info:3003' +
-    path.join(repertoire_fichiers, fuuide);
+    serveurConsignation + path.join(repertoire_fichiers, fuuide);
   console.debug("Proxying vers: " + targetProxy);
 
   // Connecter au proxy,
