@@ -42,7 +42,8 @@ router.put('/nouveauFichier', function(req, res) {
   req.files.forEach(fichier=>{
     fichierProcesseur.ajouterFichier(fichier)
     .then(params => {
-      console.debug("Traitement fichier termine: " + fichier.originalname);
+      console.debug("Traitement fichier termine: ");
+      console.debug(params);
     })
     .catch(err => {
       console.error("Erreur traitement fichier: " + fichier.originalname);
