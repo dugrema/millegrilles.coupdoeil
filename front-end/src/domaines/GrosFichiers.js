@@ -1,13 +1,9 @@
 import React from 'react';
 import Dropzone from 'react-dropzone';
 import axios from 'axios';
-import Cookies from 'universal-cookie';
 
 import './GrosFichiers.css';
 import webSocketManager from '../WebSocketManager';
-
-const cookies = new Cookies();
-cookies.set('miamou', 'OK!', { path: '/' });
 
 export class GrosFichiers extends React.Component {
 
@@ -92,20 +88,25 @@ class Repertoire extends React.Component {
   download(event) {
     let bouton = event.currentTarget;
     let nomFichier = bouton.value;
-    console.log("1. Bouton clique pour fichier " + nomFichier);
+    let fuuide = bouton.dataset.fuuide;
+    let contentType = bouton.dataset.contenttype;
+
+    console.debug("1. Bouton clique pour fichier " + nomFichier);
     let form = this.refFormulaireDownload.current;
     let downloadUrl = this.props.downloadUrl;
-    let fuuide = bouton.dataset.fuuide;
-    console.log("2. fuuide: " + fuuide);
 
+    console.debug("2. fuuide: " + fuuide);
     webSocketManager.demanderTokenTransfert()
     .then(token=>{
-      cookies.set('authtoken', token, { path: '/' });
       form.action = downloadUrl + "/" + nomFichier;
       form.fuuide.value = fuuide;
+      form.nomfichier.value = nomFichier;
+      form.contenttype.value = contentType;
       form.authtoken.value = token;
-      console.log("2. Submit preparation, download " + form.action + ", recu token " + form.authtoken.value);
+
+      console.debug("2. Submit preparation, download " + form.action + ", recu token " + form.authtoken.value);
       form.submit(); // Token pret, submit.
+
     })
     .catch(err=>{
       console.error("Erreur preparation download");
@@ -124,6 +125,8 @@ class Repertoire extends React.Component {
           method="POST">
             <input type="hidden" name="authtoken" value="dummytoken"/>
             <input type="hidden" name="fuuide" value="dummyfuuide"/>
+            <input type="hidden" name="nomfichier" value="dummynomfichier"/>
+            <input type="hidden" name="contenttype" value="dummycontentype"/>
         </form>
 
         <p>Liste de fichiers pour repertoire ...</p>
@@ -131,9 +134,10 @@ class Repertoire extends React.Component {
           <li>
             <button
               className="aslink"
-              value="Fichier1.txt"
+              value="coupdeil.tar.gz"
               data-fuuide="/2019/07/20/17/20/000-112-001.dat"
-              onClick={this.download}>Fichier1.txt</button>
+              data-contenttype="application/gzip"
+              onClick={this.download}>coupdeil.tar.gz</button>
           </li>
           <li>
             <button

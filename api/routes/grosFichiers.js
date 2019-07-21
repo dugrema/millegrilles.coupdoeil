@@ -41,50 +41,44 @@ router.put('/nouveauFichier', function(req, res) {
 });
 
 router.post('/local/*', function(req, res, next) {
-  console.log("local get");
-  console.log(req.url);
-  console.log("Headers: ");
-  console.log(req.headers);
-  // console.log("Body: ");
-  // console.log(req.body);
+  console.debug("local POST " + req.url);
+  // console.debug("Headers: ");
+  // console.debug(req.headers);
+  // console.debug("Body: ");
+  // console.debug(req.body);
 
   let targetFile = req.url.replace('/local', '');
-  // let fuuide = req.body.fuuide || 'fichier_dummy';
-  let fuuide = 'nonon';
-  // req.method = 'GET'; // Changer methode a get
+  let fuuide = req.body.fuuide;
   let repertoire_fichiers = '/grosFichiers/local';
-  console.log("Fichier: " + targetFile + " fuuide: " + fuuide);
+  console.debug("local fichier: " + targetFile + " fuuide: " + fuuide);
+
+  let headers = {
+    fuuide: req.body.fuuide,
+    nomfichier: req.body.nomfichier,
+    contenttype: req.body.contenttype,
+  }
 
   // delete req.body;
 
-  let targetProxy = 'https://dev2.maple.mdugre.info:3003' +
-          path.join(repertoire_fichiers, fuuide);
+  let targetProxy =
+    'https://dev2.maple.mdugre.info:3003' +
+    path.join(repertoire_fichiers, fuuide);
+  console.debug("Proxying vers: " + targetProxy);
+
+  // Connecter au proxy,
   const options = {
     url: targetProxy,
-    headers: {
-      fuuide: req.body.fuuide
-    },
+    headers: headers,
     strictSSL: false,
   }
-  console.log("Proxying vers: " + targetProxy);
 
-  // L'autentification est OK (fait precedemment)
-  // Connexion au proxy
-  // res.sendStatus(200);
-  // proxy.web(req, res, {
-  //     target: targetProxy,
-  //     ignorePath: true,
-  //     proxyTimeout: 3000,
-  //   }, next);
-  request(options).pipe(res);
-  // req.pipe(request(options)).pipe(res);
-
-  /*request.get(targetProxy, (e,r,body) => {
-    console.log("Get 2");
-    console.log(r);
-  });*/
-
-  // req.pipe(request.get(targetProxy, req.body)).pipe(res);
+  try {
+    request(options).pipe(res);
+  } catch (ex) {
+    logger.error("local erreur");
+    logger.error(ex);
+    res.sendStatus(500);
+  }
 
   return;
 });
