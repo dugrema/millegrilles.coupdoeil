@@ -9,7 +9,7 @@ var path = require('path');
 var request = require('request');
 const fichierProcesseur = require('./res/fichierProcesseur');
 
-var stagingFolder = process.env.MG_STAGING_FOLDER || "/tmp/uploadStaging";
+var stagingFolder = process.env.MG_STAGING_FOLDER || "/tmp/coupdoeilStaging";
 var multer_fn = multer({dest: stagingFolder}).array('grosfichier');
 const serveurConsignation = 'https://dev2.maple.mdugre.info:3003'; // process.env.MG_CONSIGNATION_HTTP ||
 
@@ -37,14 +37,14 @@ router.use(authentication);  // Utilise pour transfert de fichiers
 router.use(multer_fn);
 
 router.put('/nouveauFichier', function(req, res) {
-  console.log('Fichiers recus');
-  console.log(req.files);
+  // console.log('Fichiers recus');
+  // console.log(req.files);
 
   req.files.forEach(fichier=>{
     fichierProcesseur.ajouterFichier(fichier, serveurConsignation)
     .then(params => {
-      console.debug("Traitement fichier termine: ");
-      console.debug(params);
+      console.debug("Traitement fichier termine: " + params.url);
+      // console.debug(params);
     })
     .catch(err => {
       console.error("Erreur traitement fichier: " + fichier.originalname);
@@ -62,21 +62,17 @@ router.post('/local/*', function(req, res, next) {
   // console.debug("Body: ");
   // console.debug(req.body);
 
-  let targetFile = req.url.replace('/local', '');
-  let fuuide = req.body.fuuide;
-  let repertoire_fichiers = '/grosFichiers/local';
-  console.debug("local fichier: " + targetFile + " fuuide: " + fuuide);
+  let fuuid = req.body.fuuid;
+  console.debug("local fichier: " + req.url + " fuuid: " + fuuid);
 
   let headers = {
-    fuuide: req.body.fuuide,
-    nomfichier: req.body.nomfichier,
+    fuuid: req.body.fuuid,
     contenttype: req.body.contenttype,
   }
 
   // delete req.body;
 
-  let targetProxy =
-    serveurConsignation + path.join(repertoire_fichiers, fuuide);
+  let targetProxy = serveurConsignation + '/grosFichiers/local/' + fuuid;
   console.debug("Proxying vers: " + targetProxy);
 
   // Connecter au proxy,

@@ -88,18 +88,18 @@ class Repertoire extends React.Component {
   download(event) {
     let bouton = event.currentTarget;
     let nomFichier = bouton.value;
-    let fuuide = bouton.dataset.fuuide;
+    let fuuid = bouton.dataset.fuuid;
     let contentType = bouton.dataset.contenttype;
 
     console.debug("1. Bouton clique pour fichier " + nomFichier);
     let form = this.refFormulaireDownload.current;
     let downloadUrl = this.props.downloadUrl;
 
-    console.debug("2. fuuide: " + fuuide);
+    console.debug("2. fuuide: " + fuuid);
     webSocketManager.demanderTokenTransfert()
     .then(token=>{
       form.action = downloadUrl + "/" + nomFichier;
-      form.fuuide.value = fuuide;
+      form.fuuid.value = fuuid;
       form.nomfichier.value = nomFichier;
       form.contenttype.value = contentType;
       form.authtoken.value = token;
@@ -120,11 +120,12 @@ class Repertoire extends React.Component {
       <div>
         {/* Formulaire utilise pour POST la requete avec authtoken */}
         <form
+          target="_blank" 
           ref={this.refFormulaireDownload}
           action="dummyaction"
           method="POST">
             <input type="hidden" name="authtoken" value="dummytoken"/>
-            <input type="hidden" name="fuuide" value="dummyfuuide"/>
+            <input type="hidden" name="fuuid" value="dummyfuuide"/>
             <input type="hidden" name="nomfichier" value="dummynomfichier"/>
             <input type="hidden" name="contenttype" value="dummycontentype"/>
         </form>
@@ -135,30 +136,17 @@ class Repertoire extends React.Component {
             <button
               className="aslink"
               value="coupdeil.tar.gz"
-              data-fuuide="/2019/07/20/17/20/000-112-001.dat"
+              data-fuuid="/2019/07/20/17/20/000-112-001.dat"
               data-contenttype="application/gzip"
               onClick={this.download}>coupdeil.tar.gz</button>
           </li>
           <li>
             <button
               className="aslink"
-              value="Fichier2.txt"
-              data-fuuide="000-111-223.dat"
-              onClick={this.download}>Fichier2.txt</button>
-          </li>
-          <li>
-            <button
-              className="aslink"
-              value="Huaweis CEO has a message for Canada_ Join us and prosper in the 5G future - Th.pdf"
-              data-fuuide="000-111-224.dat"
-              onClick={this.download}>Huaweis CEO has a message for Canada_ Join us and prosper in the 5G future - Th.pdf</button>
-          </li>
-          <li>
-            <button
-              className="aslink"
-              value="Les Italiens boudent le blé canadien au glyphosate ICI Radio-Canadaca.pdf"
-              data-fuuide="000-111-225.dat"
-              onClick={this.download}>Les Italiens boudent le blé canadien au glyphosate ICI Radio-Canadaca.pdf</button>
+              value="rabbit_config.json"
+              data-fuuid="c0cd3c40-abef-11e9-ad39-5d4b39c1eca8"
+              data-contenttype="text/plain"
+              onClick={this.download}>rabbit_config.json</button>
           </li>
         </ul>
       </div>
