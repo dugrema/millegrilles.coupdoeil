@@ -17,7 +17,7 @@ export class GrosFichiers extends React.Component {
     // Variables pour ecrans specifiques
     preparerUpload: null,
 
-    downloadUrl: 'https://192.168.1.110:3001/grosFichiers/telecharger',
+    downloadUrl: 'https://192.168.1.110:3001/grosFichiers/local',
   };
 
   // Configuration statique du composant:
@@ -127,7 +127,7 @@ class Repertoire extends React.Component {
             <button
               className="aslink"
               value="Fichier1.txt"
-              data-fuuide="2019/07/20/17/02/000-111-222.mgs1"
+              data-fuuide="/2019/07/20/17/20/000-112-001.dat"
               onClick={this.download}>Fichier1.txt</button>
           </li>
           <li>
