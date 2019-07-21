@@ -1,9 +1,13 @@
 import React from 'react';
 import Dropzone from 'react-dropzone';
 import axios from 'axios';
+import Cookies from 'universal-cookie';
 
 import './GrosFichiers.css';
 import webSocketManager from '../WebSocketManager';
+
+const cookies = new Cookies();
+cookies.set('miamou', 'OK!', { path: '/' });
 
 export class GrosFichiers extends React.Component {
 
@@ -96,6 +100,7 @@ class Repertoire extends React.Component {
 
     webSocketManager.demanderTokenTransfert()
     .then(token=>{
+      cookies.set('authtoken', token, { path: '/' });
       form.action = downloadUrl + "/" + nomFichier;
       form.fuuide.value = fuuide;
       form.authtoken.value = token;
