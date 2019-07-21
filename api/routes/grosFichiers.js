@@ -7,6 +7,7 @@ var httpProxy = require('http-proxy');
 var bodyParser = require('body-parser');
 var path = require('path');
 var request = require('request');
+const fichierProcesseur = require('./res/fichierProcesseur');
 
 var stagingFolder = process.env.MG_STAGING_FOLDER || "/tmp/uploadStaging";
 var multer_fn = multer({dest: stagingFolder}).array('grosfichier');
@@ -35,8 +36,20 @@ router.use(authentication);  // Utilise pour transfert de fichiers
 router.use(multer_fn);
 
 router.put('/nouveauFichier', function(req, res) {
-  // console.log('Fichiers recus');
-  // console.log(req.files);
+  console.log('Fichiers recus');
+  console.log(req.files);
+
+  req.files.forEach(fichier=>{
+    fichierProcesseur.ajouterFichier(fichier)
+    .then(params => {
+      console.debug("Traitement fichier termine: " + fichier.originalname);
+    })
+    .catch(err => {
+      console.error("Erreur traitement fichier: " + fichier.originalname);
+      console.error(err);
+    })
+  });
+
   res.sendStatus(200);
 });
 
