@@ -65,6 +65,18 @@ class ProcesseurUpload {
             console.debug("Transaction pour MQ");
             console.debug(transactionNouvelleVersion);
 
+            rabbitMQ.singleton.transmettreTransactionFormattee(
+              transactionNouvelleVersion,
+              'millegrilles.domaines.GrosFichiers.nouvelleVersion.metadata')
+            .then( msg => {
+              console.log("Recu confirmation de nouvelleVersion metadata");
+              console.log(msg);
+            })
+            .catch( err => {
+              console.error("Erreur message");
+              console.error(err);
+            });
+
             resolve({transaction: transactionNouvelleVersion});
           })
         )
