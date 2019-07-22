@@ -3,7 +3,6 @@ var router = express.Router();
 var fs = require('fs');
 var sessionManagement = require('./res/sessionManagement');
 var multer = require('multer');
-var httpProxy = require('http-proxy');
 var bodyParser = require('body-parser');
 var path = require('path');
 var request = require('request');
@@ -12,10 +11,6 @@ const fichierProcesseur = require('./res/fichierProcesseur');
 var stagingFolder = process.env.MG_STAGING_FOLDER || "/tmp/coupdoeilStaging";
 var multer_fn = multer({dest: stagingFolder}).array('grosfichier');
 const serveurConsignation = 'https://dev2.maple.mdugre.info:3003'; // process.env.MG_CONSIGNATION_HTTP ||
-
-var proxy = httpProxy.createProxyServer({
-  secure: process.env.MG_HTTPPROXY_SECURE !== 'false' && true
-});
 
 function authentication(req, res, next) {
   // Pour le transfert de fichiers, il faut fournir un token de connexion
@@ -72,14 +67,14 @@ router.post('/local/*', function(req, res, next) {
 
   // delete req.body;
 
-  let targetProxy = serveurConsignation + '/grosFichiers/local/' + fuuid;
-  console.debug("Proxying vers: " + targetProxy);
+  let targetConsignation = serveurConsignation + '/grosFichiers/local/' + fuuid;
+  console.debug("Transfert vers: " + targetConsignation);
 
-  // Connecter au proxy,
+  // Connecter au serveur consignation.
   const options = {
-    url: targetProxy,
+    url: targetConsignation,
     headers: headers,
-    strictSSL: false,
+    // strictSSL: false,
   }
 
   try {
