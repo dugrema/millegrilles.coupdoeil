@@ -10,7 +10,7 @@ const fichierProcesseur = require('./res/fichierProcesseur');
 
 var stagingFolder = process.env.MG_STAGING_FOLDER || "/tmp/coupdoeilStaging";
 var multer_fn = multer({dest: stagingFolder}).array('grosfichier');
-const serveurConsignation = process.env.MG_CONSIGNATION_HTTP || 'https://dev2.maple.mdugre.info:3003';
+const serveurConsignation = process.env.MG_CONSIGNATION_HTTP || 'https://consignationfichiers';
 
 function authentication(req, res, next) {
   // Pour le transfert de fichiers, il faut fournir un token de connexion
