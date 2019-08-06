@@ -120,7 +120,7 @@ class Repertoire extends React.Component {
       <div>
         {/* Formulaire utilise pour POST la requete avec authtoken */}
         <form
-          target="_blank" 
+          target="_blank"
           ref={this.refFormulaireDownload}
           action="dummyaction"
           method="POST">
@@ -167,6 +167,7 @@ class FileUploadSection extends React.Component {
     .then(token=>{
       // console.debug("Utilisation token " + token);
       let data = new FormData();
+      data.append('repertoire_uuid', 'd1497a4a-b7e6-11e9-b414-02420a000276');
       acceptedFiles.forEach( file=> {
         data.append('grosfichier', file);
       })

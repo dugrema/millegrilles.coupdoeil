@@ -35,8 +35,11 @@ router.put('/nouveauFichier', function(req, res) {
   // console.log('Fichiers recus');
   // console.log(req.files);
 
+  console.debug("*** BODY ***");
+  console.debug(req.body);
+  var repertoire_uuid = req.body.repertoire_uuid;
   req.files.forEach(fichier=>{
-    fichierProcesseur.ajouterFichier(fichier, serveurConsignation)
+    fichierProcesseur.ajouterFichier(fichier, repertoire_uuid, serveurConsignation)
     .then(params => {
       console.debug("Traitement fichier termine: " + params.url);
       // console.debug(params);

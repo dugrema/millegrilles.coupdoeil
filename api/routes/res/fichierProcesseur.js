@@ -7,7 +7,7 @@ const rabbitMQ = require('./rabbitMQ');
 
 class ProcesseurUpload {
 
-  ajouterFichier(fichier, serveurConsignation) {
+  ajouterFichier(fichier, repertoire_uuid, serveurConsignation) {
     var promise = new Promise((resolve, reject)=>{
       // console.debug('Traitement fichier');
       // console.debug(fichier);
@@ -33,8 +33,6 @@ class ProcesseurUpload {
         // Encrypter fichiers, calculer SHA256 avant et apres
         var sha256Clear = crypto.createHash('sha256');
 
-        // Transmettre information au serveur via MQ
-
         // Uploader fichier vers central via PUT
         console.debug("PUT file " + fichier.path);
         fs.createReadStream(fichier.path)
@@ -52,10 +50,11 @@ class ProcesseurUpload {
             console.log("Put complete, sending record to MQ");
             let transactionNouvelleVersion = {
               fuuid: fileUuid,
-              securite: 'prive',
-              repertoire: '/',
+              securite: '2.prive',
+              repertoire_uuid: repertoire_uuid,
               nom: fichier.originalname,
               taille: fichier.size,
+              mimetype: fichier.mimetype,
               sha256: sha256ClearHash,
               reception: {
                 methode: "coupdoeil",
@@ -65,12 +64,13 @@ class ProcesseurUpload {
             console.debug("Transaction pour MQ");
             console.debug(transactionNouvelleVersion);
 
+            // Transmettre information au serveur via MQ
             rabbitMQ.singleton.transmettreTransactionFormattee(
               transactionNouvelleVersion,
               'millegrilles.domaines.GrosFichiers.nouvelleVersion.metadata')
             .then( msg => {
-              console.log("Recu confirmation de nouvelleVersion metadata");
-              console.log(msg);
+              console.debug("Recu confirmation de nouvelleVersion metadata");
+              console.debug(msg);
             })
             .catch( err => {
               console.error("Erreur message");
@@ -87,7 +87,10 @@ class ProcesseurUpload {
         reject(err);
       } finally {
         // Supprimer fichier temporaire dans staging
-        fs.unlinkSync(fichier.path);
+        fs.unlink(fichier.path, msg => {
+          console.debug("Unlink fichier complete " + fichier.path);
+          if(msg) console.debug(msg);
+        });
       }
 
     });
