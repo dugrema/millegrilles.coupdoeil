@@ -29,6 +29,7 @@ export class GrosFichiers extends React.Component {
     subscriptions: [
       'noeuds.source.millegrilles_domaines_GrosFichiers.fichier',
       'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire',
+      'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire_racine',
     ]
   };
 
