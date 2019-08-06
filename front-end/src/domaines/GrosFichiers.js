@@ -268,8 +268,29 @@ class ContenuRepertoire extends React.Component {
 
   formatterAffichageFichiers() {
     let repertoireCourant = this.props.repertoireCourant;
-    console.debug("Repertoire courant");
-    console.debug(repertoireCourant);
+    console.debug("Fichiers repertoire courant");
+    console.debug(repertoireCourant.fichiers);
+
+    let listeFichiers = [];
+    for(var uuidFichier in repertoireCourant.fichiers) {
+      listeFichiers.push(repertoireCourant.fichiers[uuidFichier]);
+    }
+    let comparateur = (a,b) => {
+      let nomA = a.nom, nomB=b.nom;
+      return (''+nomA.attr).localeCompare(nomB.attr);
+    }
+    listeFichiers.sort(comparateur);
+
+    let resultatAffichage = [];
+    listeFichiers.forEach(fichier=>{
+      resultatAffichage.push(
+        <p key={fichier.uuid}>
+          {fichier.nom}
+        </p>
+      );
+    });
+
+    return resultatAffichage;
   }
 
   render() {
@@ -309,6 +330,7 @@ class ContenuRepertoire extends React.Component {
               onClick={this.download}>rabbit_config.json</button>
           </li>
         </ul>
+        {listeFichiers}
       </div>
     );
   }
