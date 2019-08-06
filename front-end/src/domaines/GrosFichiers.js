@@ -14,6 +14,9 @@ export class GrosFichiers extends React.Component {
     repertoireCourant: null,  // Repertoire a afficher (si pas null et fichier null)
     fichierCourant: null,     // Fichier a afficher (si pas null)
 
+    // Popups a afficher
+    popupRenommerValeursFichier: null,
+
     // Variables pour ecrans specifiques
     preparerUpload: null,
 
@@ -70,6 +73,35 @@ export class GrosFichiers extends React.Component {
     this.setState({'fichierCourant': null});
   }
 
+  creerRepertoire = (event) => {
+
+  }
+
+  deplacerRepertoire = (event) => {
+
+  }
+
+  renommerRepertoire = (event) => {
+
+  }
+
+  supprimerRepertoire = (event) => {
+
+  }
+
+  deplacerFichier = (event) => {
+
+  }
+
+  renommerFichier = (event) => {
+
+  }
+
+  supprimerFichier = (event) => {
+
+  }
+
+
   componentDidMount() {
     // Enregistrer les routingKeys de documents
     webSocketManager.subscribe(this.config.subscriptions, this.processMessage);
@@ -94,6 +126,50 @@ export class GrosFichiers extends React.Component {
     webSocketManager.unsubscribe(this.config.subscriptions);
   }
 
+  afficherPopup() {
+    if(this.state.popupRenommerValeursFichier) {
+      return (
+        <PopupChangerNom
+          valeur={this.state.popupRenommerValeursFichier}
+          soumettre={this.soumettreChangerNomFichier}
+          annuler={this.annulerChangerNomFichier}
+        />
+      );
+    }
+
+    return null;
+  }
+
+  afficherChangerNomFichier = (event) => {
+    let nomFichier = event.currentTarget.value;
+    let uuidFichier = event.currentTarget.dataset.uuidfichier;
+    console.debug("Renommer Fichier " + nomFichier + ", uuid " + uuidFichier);
+
+    this.setState({popupRenommerValeursFichier: {
+      nom: nomFichier,
+      uuidFichier: uuidFichier,
+    }});
+  }
+
+  soumettreChangerNomFichier = (event) => {
+    let formulaire = event.currentTarget.form;
+    let nouveauNom = formulaire.nouveauNom.value;
+    let ancienNom = this.state.popupRenommerValeursFichier.nom;
+    let uuidFichier = this.state.popupRenommerValeursFichier.uuidFichier;
+
+    console.debug("Renommer fichier " + ancienNom + " a " + nouveauNom + ", uuid=" + uuidFichier);
+
+    if(nouveauNom !== ancienNom) {
+      // Transmettre message a MQ pour renommer le fichier
+    }
+
+    this.setState({popupRenommerValeursFichier: null});
+  }
+
+  annulerChangerNomFichier = (event) => {
+    this.setState({popupRenommerValeursFichier: null});
+  }
+
   render() {
     let contenu;
 
@@ -107,6 +183,7 @@ export class GrosFichiers extends React.Component {
             fichierCourant={this.state.fichierCourant}
             downloadUrl={this.state.downloadUrl}
             retourRepertoireFichier={this.retourRepertoireFichier}
+            afficherChangerNomFichier={this.afficherChangerNomFichier}
             />
         </div>
       )
@@ -116,11 +193,15 @@ export class GrosFichiers extends React.Component {
           <NavigationRepertoire
             repertoireCourant={this.state.repertoireCourant}
             downloadUrl={this.state.downloadUrl}
+            creerRepertoire={this.creerRepertoire}
+            supprimerRepertoire={this.supprimerRepertoire}
+            afficherChangerNom={this.afficherChangerNom}
             />
           <ContenuRepertoire
             repertoireCourant={this.state.repertoireCourant}
             downloadUrl={this.state.downloadUrl}
             afficherProprietesFichier={this.afficherProprietesFichier}
+            afficherChangerNomFichier={this.afficherChangerNomFichier}
             />
         </div>
       )
@@ -130,15 +211,21 @@ export class GrosFichiers extends React.Component {
           <NavigationRepertoire
             repertoireCourant={this.state.repertoireRacine}
             downloadUrl={this.state.downloadUrl}
+            creerRepertoire={this.creerRepertoire}
+            supprimerRepertoire={this.supprimerRepertoire}
+            afficherChangerNom={this.afficherChangerNom}
             />
           <ContenuRepertoire
             repertoireCourant={this.state.repertoireRacine}
             downloadUrl={this.state.downloadUrl}
             afficherProprietesFichier={this.afficherProprietesFichier}
+            afficherChangerNomFichier={this.afficherChangerNomFichier}
             />
         </div>
       )
     }
+
+    let popup = this.afficherPopup();
 
     return (
       <div className="w3-col m9">
@@ -151,6 +238,7 @@ export class GrosFichiers extends React.Component {
             </div>
           </div>
         </div>
+        {popup}
       </div>
     );
   }
@@ -163,13 +251,15 @@ class FileUploadSection extends React.Component {
     // Traitement d'un fichier a uploader.
     console.debug(acceptedFiles);
 
+    let repertoire_uuid = this.props.repertoireCourant.repertoire_uuid;
+
     // Demander un token (OTP) via websockets
     // Permet de se connecter au serveur pour transmetter le fichier.
     webSocketManager.demanderTokenTransfert()
     .then(token=>{
       // console.debug("Utilisation token " + token);
       let data = new FormData();
-      data.append('repertoire_uuid', 'd1497a4a-b7e6-11e9-b414-02420a000276');
+      data.append('repertoire_uuid', repertoire_uuid);
       acceptedFiles.forEach( file=> {
         data.append('grosfichier', file);
       })
@@ -248,7 +338,7 @@ function NavigationRepertoire(props) {
       <p>Repertoire {repertoireCourant.nom}</p>
       <p>{repertoireCourant.chemin_repertoires}</p>
       {sousRepertoires}
-      <FileUploadSection />
+      <FileUploadSection repertoireCourant={repertoireCourant}/>
     </div>
   );
 }
@@ -318,10 +408,22 @@ class ContenuRepertoire extends React.Component {
             data-fuuid={fichier.fuuid_v_courante}
             data-contenttype={fichier.mimetype}
             onClick={this.download}>{fichier.nom}</button>
+          /
           <button
             className="aslink"
             value={fichier.uuid}
             onClick={this.props.afficherProprietesFichier}>Proprietes</button>
+          /
+          <button
+            className="aslink"
+            value={fichier.uuid}
+            onClick={this.props.supprimerFichier}>Supprimer</button>
+          /
+          <button
+            className="aslink"
+            value={fichier.nom}
+            data-uuidfichier={fichier.uuid}
+            onClick={this.props.afficherChangerNomFichier}>Renommer</button>
         </li>
       );
     });
@@ -404,4 +506,24 @@ function AffichageFichier(props) {
       <ul>{affichageVersions}</ul>
     </div>
   )
+}
+
+class PopupChangerNom extends React.Component {
+  render() {
+    return (
+      <div className='popup'>
+        <div className='popupinner'>
+          <h1>Changer le nom</h1>
+          <form onSubmit={e=>e.preventDefault()}>
+            <p>Nom courant: {this.props.valeur.nom}</p>
+            <p>Nouveau nom: <input type="text" name="nouveauNom" defaultValue={this.props.valeur.nom}/></p>
+            <div>
+              <button type="button" onClick={this.props.soumettre}>Soumettre</button>
+              <button type="button" onClick={this.props.annuler}>Annuler</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 }
