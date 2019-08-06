@@ -369,6 +369,7 @@ function NavigationRepertoire(props) {
     <div>
       <p>Repertoire {repertoireCourant.nom}</p>
       <p>{repertoireCourant.chemin_repertoires}</p>
+      <p>{repertoireCourant.commentaires}</p>
       {sousRepertoires}
       <FileUploadSection repertoireCourant={repertoireCourant}/>
     </div>
@@ -508,6 +509,7 @@ function AffichageFichier(props) {
       <p>Taille: {fichierCourant.taille} octets</p>
       <p>Date: {fichierCourant.date_v_courante}</p>
       <p>FUUID: {fichierCourant.fuuid_v_courante}</p>
+      <p>{fichierCourant.commentaires}</p>
       <button
         className="aslink"
         value={fichierCourant.nom}
