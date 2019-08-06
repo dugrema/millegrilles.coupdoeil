@@ -29,39 +29,64 @@ export class GrosFichiers extends React.Component {
     ]
   };
 
-  chargerDocument = (requete, nomDocument, domaine) => {
+  chargerDocument = (requete, domaine) => {
     if(!domaine) {
       // Domaine par defaut est une requete vers SenseursPassifs
       domaine = 'requete.millegrilles.domaines.GrosFichiers';
     }
 
-    webSocketManager.transmettreRequete(domaine, requete)
+    console.debug("Transmettre requete");
+    console.debug(requete);
+
+    // Retourne la promise pour chaining then/catch
+    return webSocketManager.transmettreRequete(domaine, requete)
     .then( docsRecu => {
       console.debug("Reponse requete, documents recu");
       console.debug(docsRecu);
-
-      let resultats = docsRecu[0];
-      let parametres = {};
-      parametres[nomDocument] = resultats
-      this.setState(parametres);
-    })
-    .catch( err=>{
-      console.error("Erreur chargement document initial");
-      console.error(err);
+      return docsRecu;  // Recuperer avec un then(resultats=>{})
     });
+  }
+
+  afficherProprietesFichier = (event) => {
+    let bouton = event.currentTarget;
+    let uuidFichier = bouton.value;
+
+    this.chargerDocument({
+      requetes: [{'filtre': {'uuid': uuidFichier}}]
+    })
+    .then(resultats=>{
+      console.debug("Resultats afficherProprietesFichier");
+      console.debug(resultats);
+      let fichier = resultats[0][0];
+      this.setState({fichierCourant: fichier});
+    })
+    .catch(err=>{
+      console.error("Erreur chargement fichier " + uuidFichier);
+      console.error(err);
+    })
+  }
+
+  retourRepertoireFichier = (event) => {
+    this.setState({'fichierCourant': null});
   }
 
   componentDidMount() {
     // Enregistrer les routingKeys de documents
     webSocketManager.subscribe(this.config.subscriptions, this.processMessage);
 
-    let requeteDocumentInitial =  {
-      'requetes': [
-        {'filtre': {'_mg-libelle': 'repertoire.racine'}}
-      ]
-    };
-
-    this.chargerDocument(requeteDocumentInitial, 'repertoireRacine');
+    // Charger le document repertoire.racine.
+    this.chargerDocument({
+      requetes: [{'filtre': {'_mg-libelle': 'repertoire.racine'}}]
+    })
+    .then(docs=>{
+      // On recoit une liste de resultats, avec une liste de documents.
+      // On veut juste conserver le 1er resultat de la 1ere (seule) requete.
+      this.setState({repertoireRacine: docs[0][0]})
+    })
+    .catch(err=>{
+      console.error("Erreur chargement document racine");
+      console.error(err);
+    });
   }
 
   componentWillUnmount() {
@@ -81,6 +106,7 @@ export class GrosFichiers extends React.Component {
           <AffichageFichier
             fichierCourant={this.state.fichierCourant}
             downloadUrl={this.state.downloadUrl}
+            retourRepertoireFichier={this.retourRepertoireFichier}
             />
         </div>
       )
@@ -88,12 +114,13 @@ export class GrosFichiers extends React.Component {
       affichagePrincipal = (
         <div>
           <NavigationRepertoire
-            repertoireCourant={this.state.repertoireCourant[0]}
+            repertoireCourant={this.state.repertoireCourant}
             downloadUrl={this.state.downloadUrl}
             />
           <ContenuRepertoire
-            repertoireCourant={this.state.repertoireCourant[0]}
+            repertoireCourant={this.state.repertoireCourant}
             downloadUrl={this.state.downloadUrl}
+            afficherProprietesFichier={this.afficherProprietesFichier}
             />
         </div>
       )
@@ -101,12 +128,13 @@ export class GrosFichiers extends React.Component {
       affichagePrincipal = (
         <div>
           <NavigationRepertoire
-            repertoireCourant={this.state.repertoireRacine[0]}
+            repertoireCourant={this.state.repertoireRacine}
             downloadUrl={this.state.downloadUrl}
             />
           <ContenuRepertoire
-            repertoireCourant={this.state.repertoireRacine[0]}
+            repertoireCourant={this.state.repertoireRacine}
             downloadUrl={this.state.downloadUrl}
+            afficherProprietesFichier={this.afficherProprietesFichier}
             />
         </div>
       )
@@ -133,7 +161,7 @@ class FileUploadSection extends React.Component {
 
   uploadFileProcessor = (acceptedFiles) => {
     // Traitement d'un fichier a uploader.
-    console.log(acceptedFiles);
+    console.debug(acceptedFiles);
 
     // Demander un token (OTP) via websockets
     // Permet de se connecter au serveur pour transmetter le fichier.
@@ -190,7 +218,6 @@ class FileUploadSection extends React.Component {
 function Accueil(props) {
 
   let affichageCourant;
-
 
   let contenu = (
     <div>
@@ -291,6 +318,10 @@ class ContenuRepertoire extends React.Component {
             data-fuuid={fichier.fuuid_v_courante}
             data-contenttype={fichier.mimetype}
             onClick={this.download}>{fichier.nom}</button>
+          <button
+            className="aslink"
+            value={fichier.uuid}
+            onClick={this.props.afficherProprietesFichier}>Proprietes</button>
         </li>
       );
     });
@@ -332,5 +363,45 @@ class ContenuRepertoire extends React.Component {
 
 function AffichageFichier(props) {
   // Affiche l'information d'un fichier et la liste des versions
+  let fichierCourant = props.fichierCourant;
 
+  let informationFichier = (
+    <div>
+      <h2>{fichierCourant.nom}</h2>
+      <button
+        className="aslink"
+        onClick={props.retourRepertoireFichier}>{fichierCourant.chemin_repertoires}</button>
+      <p>Taille: {fichierCourant.taille} octets</p>
+      <p>Date: {fichierCourant.date_v_courante}</p>
+      <p>FUUID: {fichierCourant.fuuid_v_courante}</p>
+    </div>
+  );
+
+  let versions = []
+  for(var fuuid in fichierCourant.versions) {
+    let version = fichierCourant.versions[fuuid];
+    versions.push(version);
+  }
+  versions.sort((a,b)=>{
+    let dateA = a.date_version, dateB = b.date_version;
+    return dateB - dateA;
+  })
+
+  let affichageVersions = [];
+  versions.forEach(version=>{
+    affichageVersions.push(
+      <li key={version.fuuid}>
+        {version.date_version} / {version.taille} octets / {version.nom}
+      </li>
+    );
+  })
+
+  return (
+    <div>
+      {informationFichier}
+
+      <h2>Versions</h2>
+      <ul>{affichageVersions}</ul>
+    </div>
+  )
 }
