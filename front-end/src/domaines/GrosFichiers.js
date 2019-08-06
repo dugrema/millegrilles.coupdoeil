@@ -142,8 +142,41 @@ export class GrosFichiers extends React.Component {
 
   }
 
-  renommerRepertoire = (event) => {
+  afficherPopupRenommerRepertoire = (event) => {
+    let nomRepertoire = event.currentTarget.value;
+    let uuidRepertoire = event.currentTarget.dataset.uuidrepertoire;
+    console.debug("Renommer repertoire " + nomRepertoire + ", uuid " + uuidRepertoire);
 
+    this.setState({popupRenommerRepertoireValeurs: {
+      nom: nomRepertoire,
+      uuidRepertoire: uuidRepertoire,
+    }});
+
+  }
+
+  soumettreChangerNomRepertoire = (event) => {
+    let formulaire = event.currentTarget.form;
+    let nouveauNom = formulaire.nouveauNom.value;
+    let ancienNom = this.state.popupRenommerRepertoireValeurs.nom;
+    let uuidRepertoire = this.state.popupRenommerRepertoireValeurs.uuidRepertoire;
+
+    console.debug("Renommer repertoire " + ancienNom + " a " + nouveauNom + ", uuid=" + uuidRepertoire);
+
+    if(nouveauNom !== ancienNom) {
+      // Transmettre message a MQ pour renommer le fichier
+      let transaction = {
+        "repertoire_uuid": uuidRepertoire,
+        "nom": nouveauNom,
+      }
+      webSocketManager.transmettreTransaction(
+        'millegrilles.domaines.GrosFichiers.renommerRepertoire', transaction);
+    }
+
+    this.setState({popupRenommerRepertoireValeurs: null})
+  }
+
+  annulerChangerNomRepertoire = (event) => {
+    this.setState({popupRenommerRepertoireValeurs: null})
   }
 
   supprimerRepertoire = (event) => {
@@ -159,7 +192,20 @@ export class GrosFichiers extends React.Component {
   }
 
   supprimerFichier = (event) => {
+    let uuidFichier = event.currentTarget.value;
 
+    let transaction = {
+      "uuid": uuidFichier,
+    }
+
+    webSocketManager.transmettreTransaction(
+      'millegrilles.domaines.GrosFichiers.supprimerFichier', transaction)
+    .then(msg=>{
+      console.debug("Fichier supprime: " + uuidFichier);
+    }).catch(err=>{
+      console.error("Erreur suppression fichier");
+      console.error(err);
+    });
   }
 
   processMessage = (routingKey, doc) => {
@@ -228,7 +274,16 @@ export class GrosFichiers extends React.Component {
           annuler={this.annulerCreerRepertoire}
           />
       );
+    } else if(this.state.popupRenommerRepertoireValeurs) {
+      return (
+        <PopupRenommerRepertoire
+          valeur={this.state.popupRenommerRepertoireValeurs}
+          soumettre={this.soumettreChangerNomRepertoire}
+          annuler={this.annulerChangerNomRepertoire}
+          />
+      );
     }
+
 
     return null;
   }
@@ -297,12 +352,14 @@ export class GrosFichiers extends React.Component {
             afficherChangerNom={this.afficherChangerNom}
             afficherPopupCreerRepertoire={this.afficherPopupCreerRepertoire}
             afficherRepertoire={this.afficherRepertoire}
+            afficherPopupRenommerRepertoire={this.afficherPopupRenommerRepertoire}
             />
           <ContenuRepertoire
             repertoireCourant={this.state.repertoireCourant}
             downloadUrl={this.state.downloadUrl}
             afficherProprietesFichier={this.afficherProprietesFichier}
             afficherChangerNomFichier={this.afficherChangerNomFichier}
+            supprimerFichier={this.supprimerFichier}
             />
         </div>
       )
@@ -317,12 +374,14 @@ export class GrosFichiers extends React.Component {
             afficherChangerNom={this.afficherChangerNom}
             afficherPopupCreerRepertoire={this.afficherPopupCreerRepertoire}
             afficherRepertoire={this.afficherRepertoire}
+            afficherPopupRenommerRepertoire={this.afficherPopupRenommerRepertoire}
             />
           <ContenuRepertoire
             repertoireCourant={this.state.repertoireRacine}
             downloadUrl={this.state.downloadUrl}
             afficherProprietesFichier={this.afficherProprietesFichier}
             afficherChangerNomFichier={this.afficherChangerNomFichier}
+            supprimerFichier={this.supprimerFichier}
             />
         </div>
       )
@@ -467,6 +526,10 @@ function NavigationRepertoire(props) {
         value={repertoireCourant.nom}
         data-uuidrepertoireparent={repertoireCourant.repertoire_uuid}
         onClick={props.afficherPopupCreerRepertoire}>Creer repertoire</button>
+      <button
+        value={repertoireCourant.nom}
+        data-uuidrepertoire={repertoireCourant.repertoire_uuid}
+        onClick={props.afficherPopupRenommerRepertoire}>Renommer</button>
 
       <FileUploadSection repertoireCourant={repertoireCourant}/>
     </div>
@@ -538,19 +601,13 @@ class ContenuRepertoire extends React.Component {
             data-fuuid={fichier.fuuid_v_courante}
             data-contenttype={fichier.mimetype}
             onClick={this.download}>{fichier.nom}</button>
-          /
           <button
-            className="aslink"
             value={fichier.uuid}
             onClick={this.props.afficherProprietesFichier}>Proprietes</button>
-          /
           <button
-            className="aslink"
             value={fichier.uuid}
             onClick={this.props.supprimerFichier}>Supprimer</button>
-          /
           <button
-            className="aslink"
             value={fichier.nom}
             data-uuidfichier={fichier.uuid}
             onClick={this.props.afficherChangerNomFichier}>Renommer</button>
@@ -612,6 +669,11 @@ function AffichageFichier(props) {
         value={fichierCourant.nom}
         data-uuidfichier={fichierCourant.uuid}
         onClick={props.afficherChangerNomFichier}>Renommer</button>
+      <button
+        className="aslink"
+        value={fichierCourant.nom}
+        data-uuidfichier={fichierCourant.uuid}
+        onClick={props.supprimerFichier}>Supprimer</button>
     </div>
   );
 
@@ -672,6 +734,26 @@ class PopupCreerRepertoire extends React.Component {
           <h1>Creer nouveau repertoire</h1>
           <form onSubmit={e=>e.preventDefault()}>
             <p>Nom repertoire: <input type="text" name="nomrepertoire"/></p>
+            <div>
+              <button type="button" onClick={this.props.soumettre}>Soumettre</button>
+              <button type="button" onClick={this.props.annuler}>Annuler</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+}
+
+class PopupRenommerRepertoire extends React.Component {
+  render() {
+    return (
+      <div className='popup'>
+        <div className='popupinner'>
+          <h1>Renommer repertoire</h1>
+          <form onSubmit={e=>e.preventDefault()}>
+            <p>Nom courant: {this.props.valeur.nom}</p>
+            <p>Nouveau nom: <input type="text" name="nouveauNom" defaultValue={this.props.valeur.nom}/></p>
             <div>
               <button type="button" onClick={this.props.soumettre}>Soumettre</button>
               <button type="button" onClick={this.props.annuler}>Annuler</button>
