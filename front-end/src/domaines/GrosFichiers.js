@@ -29,7 +29,7 @@ export class GrosFichiers extends React.Component {
     subscriptions: [
       'noeuds.source.millegrilles_domaines_GrosFichiers.fichier',
       'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire',
-      'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire_racine',
+      'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.racine',
     ]
   };
 
@@ -102,6 +102,31 @@ export class GrosFichiers extends React.Component {
 
   }
 
+  processMessage = (routingKey, doc) => {
+    console.debug("Message de MQ: " + routingKey);
+
+    if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.racine') {
+      console.debug("Update repertoire racine");
+      console.debug(doc);
+      this.setState({repertoireRacine: doc});
+    } else if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire') {
+      // Verifier si repertoire courant correspond
+      let repertoireCourant = this.state.repertoireCourant;
+      if(repertoireCourant && repertoireCourant.uuid_repertoire === doc.uuid_repertoire) {
+        console.debug("Update repertoire courant");
+        console.debug(doc);
+        this.setState({repertoireCourant: doc});
+      }
+    } else if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.fichier') {
+      // Verifier si repertoire courant correspond
+      let fichierCourant = this.state.fichierCourant;
+      if(fichierCourant && fichierCourant.uuid === doc.uuid) {
+        console.debug("Update fichier courant");
+        console.debug(doc);
+        this.setState({fichierCourant: doc});
+      }
+    }
+  }
 
   componentDidMount() {
     // Enregistrer les routingKeys de documents
@@ -483,6 +508,11 @@ function AffichageFichier(props) {
       <p>Taille: {fichierCourant.taille} octets</p>
       <p>Date: {fichierCourant.date_v_courante}</p>
       <p>FUUID: {fichierCourant.fuuid_v_courante}</p>
+      <button
+        className="aslink"
+        value={fichierCourant.nom}
+        data-uuidfichier={fichierCourant.uuid}
+        onClick={props.afficherChangerNomFichier}>Renommer</button>
     </div>
   );
 
