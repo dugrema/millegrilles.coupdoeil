@@ -271,22 +271,27 @@ class ContenuRepertoire extends React.Component {
     console.debug("Fichiers repertoire courant");
     console.debug(repertoireCourant.fichiers);
 
+    // Extraire et trier la liste des fichiers du repertoire
     let listeFichiers = [];
     for(var uuidFichier in repertoireCourant.fichiers) {
       listeFichiers.push(repertoireCourant.fichiers[uuidFichier]);
     }
-    let comparateur = (a,b) => {
-      let nomA = a.nom, nomB=b.nom;
-      return (''+nomA.attr).localeCompare(nomB.attr);
-    }
-    listeFichiers.sort(comparateur);
+    listeFichiers.sort((a,b) => {
+      let nomA = a.nom, nomB = b.nom;
+      return nomA.localeCompare(nomB);
+    });
 
     let resultatAffichage = [];
     listeFichiers.forEach(fichier=>{
       resultatAffichage.push(
-        <p key={fichier.uuid}>
-          {fichier.nom}
-        </p>
+        <li key={fichier.uuid}>
+          <button
+            className="aslink"
+            value={fichier.nom}
+            data-fuuid={fichier.fuuid_v_courante}
+            data-contenttype={fichier.mimetype}
+            onClick={this.download}>{fichier.nom}</button>
+        </li>
       );
     });
 
@@ -297,40 +302,28 @@ class ContenuRepertoire extends React.Component {
 
     let listeFichiers = this.formatterAffichageFichiers();
 
+    // Formulaire utilise pour POST la requete avec authtoken
+    let formDownload = (
+      <form
+        target="_blank"
+        ref={this.refFormulaireDownload}
+        action="dummyaction"
+        method="POST">
+          <input type="hidden" name="authtoken" value="dummytoken"/>
+          <input type="hidden" name="fuuid" value="dummyfuuide"/>
+          <input type="hidden" name="nomfichier" value="dummynomfichier"/>
+          <input type="hidden" name="contenttype" value="dummycontentype"/>
+      </form>
+    )
+
     return (
       <div>
-        {/* Formulaire utilise pour POST la requete avec authtoken */}
-        <form
-          target="_blank"
-          ref={this.refFormulaireDownload}
-          action="dummyaction"
-          method="POST">
-            <input type="hidden" name="authtoken" value="dummytoken"/>
-            <input type="hidden" name="fuuid" value="dummyfuuide"/>
-            <input type="hidden" name="nomfichier" value="dummynomfichier"/>
-            <input type="hidden" name="contenttype" value="dummycontentype"/>
-        </form>
+        {formDownload}
 
-        <p>Liste de fichiers pour repertoire ...</p>
+        <h2>Fichiers</h2>
         <ul>
-          <li>
-            <button
-              className="aslink"
-              value="coupdeil.tar.gz"
-              data-fuuid="/2019/07/20/17/20/000-112-001.dat"
-              data-contenttype="application/gzip"
-              onClick={this.download}>coupdeil.tar.gz</button>
-          </li>
-          <li>
-            <button
-              className="aslink"
-              value="rabbit_config.json"
-              data-fuuid="c0cd3c40-abef-11e9-ad39-5d4b39c1eca8"
-              data-contenttype="text/plain"
-              onClick={this.download}>rabbit_config.json</button>
-          </li>
+          {listeFichiers}
         </ul>
-        {listeFichiers}
       </div>
     );
   }
