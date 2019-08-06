@@ -75,6 +75,30 @@ export class GrosFichiers extends React.Component {
     })
   }
 
+  afficherRepertoire = event => {
+    let bouton = event.currentTarget;
+    let uuidRepertoire = bouton.value;
+
+    if(uuidRepertoire && uuidRepertoire !== this.state.repertoireRacine.repertoire_uuid) {
+      this.chargerDocument({
+        requetes: [{'filtre': {'repertoire_uuid': uuidRepertoire}}]
+      })
+      .then(resultats=>{
+        console.debug("Resultats afficherRepertoire");
+        console.debug(resultats);
+        let repertoire = resultats[0][0];
+        this.setState({repertoireCourant: repertoire});
+      })
+      .catch(err=>{
+        console.error("Erreur chargement repertoire " + uuidRepertoire);
+        console.error(err);
+      })
+    } else {
+      // Retour au repertoire racine
+      this.setState({repertoireCourant: null})
+    }
+  }
+
   retourRepertoireFichier = (event) => {
     this.setState({'fichierCourant': null});
   }
@@ -272,6 +296,7 @@ export class GrosFichiers extends React.Component {
             supprimerRepertoire={this.supprimerRepertoire}
             afficherChangerNom={this.afficherChangerNom}
             afficherPopupCreerRepertoire={this.afficherPopupCreerRepertoire}
+            afficherRepertoire={this.afficherRepertoire}
             />
           <ContenuRepertoire
             repertoireCourant={this.state.repertoireCourant}
@@ -291,6 +316,7 @@ export class GrosFichiers extends React.Component {
             supprimerRepertoire={this.supprimerRepertoire}
             afficherChangerNom={this.afficherChangerNom}
             afficherPopupCreerRepertoire={this.afficherPopupCreerRepertoire}
+            afficherRepertoire={this.afficherRepertoire}
             />
           <ContenuRepertoire
             repertoireCourant={this.state.repertoireRacine}
@@ -414,7 +440,12 @@ function NavigationRepertoire(props) {
 
     listeATrier.forEach(repertoire=>{
       sousRepertoires.push(
-        <li key={repertoire.repertoire_uuid}>{repertoire.nom}</li>
+        <li key={repertoire.repertoire_uuid}>
+          <button
+            className="aslink"
+            value={repertoire.repertoire_uuid}
+            onClick={props.afficherRepertoire}>{repertoire.nom}</button>
+        </li>
       );
     })
 
@@ -423,7 +454,10 @@ function NavigationRepertoire(props) {
   return (
     <div>
       <p>Repertoire {repertoireCourant.nom}</p>
-      <p>{repertoireCourant.chemin_repertoires}</p>
+      <button
+        className="aslink"
+        value={repertoireCourant.parent_id}
+        onClick={props.afficherRepertoire}>{repertoireCourant.chemin_repertoires}</button>
       <p>{repertoireCourant.commentaires}</p>
       <ul>
         {sousRepertoires}
