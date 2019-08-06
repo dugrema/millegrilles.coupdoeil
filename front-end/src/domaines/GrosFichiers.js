@@ -14,6 +14,8 @@ export class GrosFichiers extends React.Component {
     repertoireCourant: null,  // Repertoire a afficher (si pas null et fichier null)
     fichierCourant: null,     // Fichier a afficher (si pas null)
 
+    selection: {},          // Liste d'elements selectionnes pour operation
+
     // Popups a afficher
     popupRenommerFichierValeurs: null,
     popupDeplacerFichierValeurs: null,
@@ -54,6 +56,26 @@ export class GrosFichiers extends React.Component {
       console.debug(docsRecu);
       return docsRecu;  // Recuperer avec un then(resultats=>{})
     });
+  }
+
+  selectionnerFichier = (event) => {
+    let uuidFichier = event.currentTarget.value;
+    let dict = {}
+    dict[uuidFichier] = {'type': 'fichier'};
+
+    this.setState(
+      {'selection': Object.assign(this.state.selection, dict)},
+      ()=>{console.debug("Fichier selectionne: " + uuidFichier)}
+    );
+  }
+
+  selectionnerRepertoire = (event) => {
+    let uuidRepertoire = event.currentTarget.value;
+    this.setState({'selection': Object.assign(this.state.selection, {uuidRepertoire: {'type': 'repertoire'}})});
+  }
+
+  selectionClear = (event) => {
+    this.setState({'selection': {}}); // Effacer selection precedente
   }
 
   afficherProprietesFichier = (event) => {
@@ -183,12 +205,28 @@ export class GrosFichiers extends React.Component {
 
   }
 
-  deplacerFichier = (event) => {
+  deplacerSelection = (event) => {
+    let selection = this.state.selection;
+    let uuidRepertoireDestination = event.currentTarget.value;
+    console.debug("Deplacer selection vers " + uuidRepertoireDestination);
+    console.debug(selection);
 
-  }
+    for(var uuid in selection) {
+      let info = selection[uuid];
+      let type = info.type;
+      if(type == 'fichier') {
+        var transaction = {
+          "uuid": uuid,
+          "repertoire_uuid": uuidRepertoireDestination,
+        }
+        webSocketManager.transmettreTransaction(
+          'millegrilles.domaines.GrosFichiers.deplacerFichier', transaction);
+      } else if(type == 'repertoire') {
 
-  renommerFichier = (event) => {
+      }
+    }
 
+    this.setState({'selection': {}}); // Clear
   }
 
   supprimerFichier = (event) => {
@@ -341,11 +379,16 @@ export class GrosFichiers extends React.Component {
             />
         </div>
       )
-    } else if(this.state.repertoireCourant) {
+    } else if(this.state.repertoireCourant || this.state.repertoireRacine){
+      var repertoireCourant = this.state.repertoireCourant;
+      if(!repertoireCourant) {
+        repertoireCourant = this.state.repertoireRacine;
+      }
+
       affichagePrincipal = (
         <div>
           <NavigationRepertoire
-            repertoireCourant={this.state.repertoireCourant}
+            repertoireCourant={repertoireCourant}
             downloadUrl={this.state.downloadUrl}
             creerRepertoire={this.creerRepertoire}
             supprimerRepertoire={this.supprimerRepertoire}
@@ -353,35 +396,15 @@ export class GrosFichiers extends React.Component {
             afficherPopupCreerRepertoire={this.afficherPopupCreerRepertoire}
             afficherRepertoire={this.afficherRepertoire}
             afficherPopupRenommerRepertoire={this.afficherPopupRenommerRepertoire}
+            deplacerSelection={this.deplacerSelection}
             />
           <ContenuRepertoire
-            repertoireCourant={this.state.repertoireCourant}
+            repertoireCourant={repertoireCourant}
             downloadUrl={this.state.downloadUrl}
             afficherProprietesFichier={this.afficherProprietesFichier}
             afficherChangerNomFichier={this.afficherChangerNomFichier}
             supprimerFichier={this.supprimerFichier}
-            />
-        </div>
-      )
-    } else if(this.state.repertoireRacine) {
-      affichagePrincipal = (
-        <div>
-          <NavigationRepertoire
-            repertoireCourant={this.state.repertoireRacine}
-            downloadUrl={this.state.downloadUrl}
-            creerRepertoire={this.creerRepertoire}
-            supprimerRepertoire={this.supprimerRepertoire}
-            afficherChangerNom={this.afficherChangerNom}
-            afficherPopupCreerRepertoire={this.afficherPopupCreerRepertoire}
-            afficherRepertoire={this.afficherRepertoire}
-            afficherPopupRenommerRepertoire={this.afficherPopupRenommerRepertoire}
-            />
-          <ContenuRepertoire
-            repertoireCourant={this.state.repertoireRacine}
-            downloadUrl={this.state.downloadUrl}
-            afficherProprietesFichier={this.afficherProprietesFichier}
-            afficherChangerNomFichier={this.afficherChangerNomFichier}
-            supprimerFichier={this.supprimerFichier}
+            selectionnerFichier={this.selectionnerFichier}
             />
         </div>
       )
@@ -530,6 +553,9 @@ function NavigationRepertoire(props) {
         value={repertoireCourant.nom}
         data-uuidrepertoire={repertoireCourant.repertoire_uuid}
         onClick={props.afficherPopupRenommerRepertoire}>Renommer</button>
+      <button
+        value={repertoireCourant.repertoire_uuid}
+        onClick={props.deplacerSelection}>Coller (deplacer)</button>
 
       <FileUploadSection repertoireCourant={repertoireCourant}/>
     </div>
@@ -611,6 +637,9 @@ class ContenuRepertoire extends React.Component {
             value={fichier.nom}
             data-uuidfichier={fichier.uuid}
             onClick={this.props.afficherChangerNomFichier}>Renommer</button>
+          <button
+            value={fichier.uuid}
+            onClick={this.props.selectionnerFichier}>Selectionner</button>
         </li>
       );
     });
