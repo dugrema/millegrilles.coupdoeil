@@ -75,6 +75,31 @@ class WebSocketManager {
     return promise;
   }
 
+  transmettreTransaction(routingKey, transaction) {
+    let socket = this.socket;
+    let promise = new Promise((resolve, reject) => {
+      let enveloppe = {
+        'routingKey': routingKey,
+        'transaction': transaction
+      };
+
+      // Transmettre requete
+      socket.emit('transaction', enveloppe, reponse=>{
+        if(!reponse) {
+          console.error("Erreur survenue durant transaction vers " + routingKey);
+          reject();
+          return;
+        }
+        // console.log("Reponse dans websocket pour requete");
+        // console.log(reponse);
+        resolve(reponse);
+        return reponse;
+      });
+    });
+
+    return promise;
+  }
+
   traiterMessageMq(routingKey, message) {
     let callback = this.routingKeyCallbacks[routingKey];
     if(callback) {

@@ -176,7 +176,21 @@ class WebSocketApp {
           });
       });
 
-    })
+    });
+
+    // Expose l'appel aux transactions MQ.
+    socket.on('transaction', (message, cb) => {
+      let routingKey = message.routingKey;
+      let transaction = message.transaction;
+      rabbitMQ.singleton.transmettreTransactionFormattee(
+        transaction, routingKey
+      ).then(msg=>{
+        cb(msg);
+      }).catch(err =>{
+        console.error("Erreur transmission transaction");
+        console.error(err);
+      })
+    });
 
   }
 

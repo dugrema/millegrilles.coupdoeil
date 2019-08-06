@@ -161,6 +161,12 @@ export class GrosFichiers extends React.Component {
 
     if(nouveauNom !== ancienNom) {
       // Transmettre message a MQ pour renommer le fichier
+      let transaction = {
+        "uuid": uuidFichier,
+        "nom": nouveauNom,
+      }
+      webSocketManager.transmettreTransaction(
+        'millegrilles.domaines.GrosFichiers.renommerFichier', transaction);
     }
 
     this.setState({popupRenommerValeursFichier: null});
