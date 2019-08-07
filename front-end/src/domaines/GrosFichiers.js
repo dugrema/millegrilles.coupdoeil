@@ -71,7 +71,13 @@ export class GrosFichiers extends React.Component {
 
   selectionnerRepertoire = (event) => {
     let uuidRepertoire = event.currentTarget.value;
-    this.setState({'selection': Object.assign(this.state.selection, {uuidRepertoire: {'type': 'repertoire'}})});
+    let dict = {};
+    dict[uuidRepertoire] = {'type': 'repertoire'};
+
+    this.setState(
+      {'selection': Object.assign(this.state.selection, dict)},
+      ()=>{console.debug("Repertoire selectionne: " + uuidRepertoire)}
+    );
   }
 
   selectionClear = (event) => {
@@ -234,14 +240,14 @@ export class GrosFichiers extends React.Component {
     for(var uuid in selection) {
       let info = selection[uuid];
       let type = info.type;
-      if(type == 'fichier') {
+      if(type === 'fichier') {
         var transaction = {
           "uuid": uuid,
           "repertoire_uuid": uuidRepertoireDestination,
         }
         webSocketManager.transmettreTransaction(
           'millegrilles.domaines.GrosFichiers.deplacerFichier', transaction);
-      } else if(type == 'repertoire') {
+      } else if(type === 'repertoire') {
 
       }
     }
@@ -383,8 +389,6 @@ export class GrosFichiers extends React.Component {
   }
 
   render() {
-    let contenu;
-
     // Determiner le contenu de l'ecran en fonction de l'etat
     // Affichage: 1.fichier, ou 2.repertoire, ou 3.repertoire racine
     let affichagePrincipal;
@@ -417,7 +421,6 @@ export class GrosFichiers extends React.Component {
             afficherRepertoire={this.afficherRepertoire}
             afficherPopupRenommerRepertoire={this.afficherPopupRenommerRepertoire}
             deplacerSelection={this.deplacerSelection}
-            supprimerRepertoire={this.supprimerRepertoire}
             />
           <ContenuRepertoire
             repertoireCourant={repertoireCourant}
@@ -512,8 +515,6 @@ class FileUploadSection extends React.Component {
 }
 
 function Accueil(props) {
-
-  let affichageCourant;
 
   let contenu = (
     <div>
