@@ -103,7 +103,7 @@ export class GrosFichiers extends React.Component {
 
     if(uuidRepertoire && uuidRepertoire !== this.state.repertoireRacine.repertoire_uuid) {
       this.chargerDocument({
-        requetes: [{'filtre': {'repertoire_uuid': uuidRepertoire}}]
+        requetes: [{'filtre': {'repertoire_uuid': uuidRepertoire, '_mg-libelle': 'repertoire'}}]
       })
       .then(resultats=>{
         console.debug("Resultats afficherRepertoire");
@@ -506,13 +506,13 @@ function Accueil(props) {
 function NavigationRepertoire(props) {
   // Affiche la liste des sous-repertoires et une breadcrumb pour remonter
 
-  let repertoireCourant = props.repertoireCourant;
+  var repertoireCourant1 = props.repertoireCourant;
 
   let sousRepertoires = [];
-  if(repertoireCourant.repertoires) {
+  if(repertoireCourant1.repertoires) {
     let listeATrier = []
-    for(var uuidRep in repertoireCourant.repertoires) {
-      let sousRepertoire = repertoireCourant.repertoires[uuidRep];
+    for(var uuidRep in repertoireCourant1.repertoires) {
+      let sousRepertoire = repertoireCourant1.repertoires[uuidRep];
       listeATrier.push(sousRepertoire);
     }
     listeATrier.sort((a,b)=>{
@@ -535,29 +535,29 @@ function NavigationRepertoire(props) {
 
   return (
     <div>
-      <p>Repertoire {repertoireCourant.nom}</p>
+      <p>Repertoire {repertoireCourant1.nom}</p>
       <button
         className="aslink"
-        value={repertoireCourant.parent_id}
-        onClick={props.afficherRepertoire}>{repertoireCourant.chemin_repertoires}</button>
-      <p>{repertoireCourant.commentaires}</p>
+        value={repertoireCourant1.parent_id}
+        onClick={props.afficherRepertoire}>{repertoireCourant1.chemin_repertoires}</button>
+      <p>{repertoireCourant1.commentaires}</p>
       <ul>
         {sousRepertoires}
       </ul>
 
       <button
-        value={repertoireCourant.nom}
-        data-uuidrepertoireparent={repertoireCourant.repertoire_uuid}
+        value={repertoireCourant1.nom}
+        data-uuidrepertoireparent={repertoireCourant1.repertoire_uuid}
         onClick={props.afficherPopupCreerRepertoire}>Creer repertoire</button>
       <button
-        value={repertoireCourant.nom}
-        data-uuidrepertoire={repertoireCourant.repertoire_uuid}
+        value={repertoireCourant1.nom}
+        data-uuidrepertoire={repertoireCourant1.repertoire_uuid}
         onClick={props.afficherPopupRenommerRepertoire}>Renommer</button>
       <button
-        value={repertoireCourant.repertoire_uuid}
+        value={repertoireCourant1.repertoire_uuid}
         onClick={props.deplacerSelection}>Coller (deplacer)</button>
 
-      <FileUploadSection repertoireCourant={repertoireCourant}/>
+      <FileUploadSection repertoireCourant={repertoireCourant1}/>
     </div>
   );
 }
@@ -603,7 +603,7 @@ class ContenuRepertoire extends React.Component {
   }
 
   formatterAffichageFichiers() {
-    let repertoireCourant = this.props.repertoireCourant;
+    var repertoireCourant = this.props.repertoireCourant;
     console.debug("Fichiers repertoire courant");
     console.debug(repertoireCourant.fichiers);
 
