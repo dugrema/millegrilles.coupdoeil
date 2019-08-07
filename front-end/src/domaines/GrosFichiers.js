@@ -97,10 +97,7 @@ export class GrosFichiers extends React.Component {
     })
   }
 
-  afficherRepertoire = event => {
-    let bouton = event.currentTarget;
-    let uuidRepertoire = bouton.value;
-
+  changerRepertoire(uuidRepertoire) {
     if(uuidRepertoire && uuidRepertoire !== this.state.repertoireRacine.repertoire_uuid) {
       this.chargerDocument({
         requetes: [{'filtre': {'repertoire_uuid': uuidRepertoire, '_mg-libelle': 'repertoire'}}]
@@ -119,6 +116,12 @@ export class GrosFichiers extends React.Component {
       // Retour au repertoire racine
       this.setState({repertoireCourant: null})
     }
+  }
+
+  afficherRepertoire = event => {
+    let bouton = event.currentTarget;
+    let uuidRepertoire = bouton.value;
+    this.changerRepertoire(uuidRepertoire);
   }
 
   retourRepertoireFichier = (event) => {
@@ -202,7 +205,24 @@ export class GrosFichiers extends React.Component {
   }
 
   supprimerRepertoire = (event) => {
+    let uuidRepertoire = event.currentTarget.value;
 
+    let transaction = {
+      "repertoire_uuid": uuidRepertoire,
+    }
+    webSocketManager.transmettreTransaction(
+      'millegrilles.domaines.GrosFichiers.supprimerRepertoire', transaction)
+    .then(msg=>{
+      console.debug("Repertoire supprime " + uuidRepertoire);
+      let repertoireCourant = this.state.repertoireCourant;
+      if(repertoireCourant.repertoire_uuid === uuidRepertoire) {
+        // On va popper vers le repertoire parent
+        this.changerRepertoire(repertoireCourant.parent_id);
+      }
+    })
+    .catch(err=>{
+      console.error("Erreur suppression repertoire " + uuidRepertoire);
+    });
   }
 
   deplacerSelection = (event) => {
@@ -397,6 +417,7 @@ export class GrosFichiers extends React.Component {
             afficherRepertoire={this.afficherRepertoire}
             afficherPopupRenommerRepertoire={this.afficherPopupRenommerRepertoire}
             deplacerSelection={this.deplacerSelection}
+            supprimerRepertoire={this.supprimerRepertoire}
             />
           <ContenuRepertoire
             repertoireCourant={repertoireCourant}
@@ -556,6 +577,9 @@ function NavigationRepertoire(props) {
       <button
         value={repertoireCourant1.repertoire_uuid}
         onClick={props.deplacerSelection}>Coller (deplacer)</button>
+      <button
+        value={repertoireCourant1.repertoire_uuid}
+        onClick={props.supprimerRepertoire}>Supprimer</button>
 
       <FileUploadSection repertoireCourant={repertoireCourant1}/>
     </div>
