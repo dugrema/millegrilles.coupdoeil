@@ -256,7 +256,7 @@ export class GrosFichiers extends React.Component {
     } else if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire') {
       // Verifier si repertoire courant correspond
       let repertoireCourant = this.state.repertoireCourant;
-      if(repertoireCourant && repertoireCourant.uuid_repertoire === doc.uuid_repertoire) {
+      if(repertoireCourant && repertoireCourant.repertoire_uuid === doc.repertoire_uuid) {
         console.debug("Update repertoire courant");
         console.debug(doc);
         this.setState({repertoireCourant: doc});
