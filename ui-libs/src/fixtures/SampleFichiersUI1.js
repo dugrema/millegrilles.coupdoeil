@@ -1,22 +1,19 @@
 import React from 'react';
 import 'font-awesome/css/font-awesome.min.css';
 
-import {PanneauFichiersListe} from '../mgcomponents/FichiersUI.js';
+import {PanneauFichiersListe, PanneauFichiersIcones} from '../mgcomponents/FichiersUI.js';
 
 class EcranSample1 extends React.Component {
 
   render() {
     return (
       <div>
-        <h1>EcranSample1</h1>
+        <h1>Panneau exemples pour FichiersUI.js</h1>
 
-        <i className="fa fa-address-book"></i>
-        <br/>
-        <i className="fa fa-spinner fa-spin"></i>
-        <br/>
-        <i className="fa fa-simplybuilt fa-5x fa-spin text-danger" aria-hidden="true"></i>
-        <i className="fa fa-superpowers fa-3x fa-spin"></i>
+        <h2>Panneau Fichiers Icones</h2>
+        <PanneauFichiersIcones />
 
+        <h2>Panneau Fichiers Liste</h2>
         <PanneauFichiersListe />
 
       </div>

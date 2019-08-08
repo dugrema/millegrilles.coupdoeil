@@ -1,1 +1,33 @@
-.text-danger {color: red}
+.color-info     {color: blue}
+.color-warning  {color: yellow}
+.color-danger   {color: red}
+
+/* Panneau fichiers icones */
+div.PanneauFichiersIcones {
+  display: flex;
+  flex-wrap: wrap;
+
+  background-color: #dbebf5;
+
+  /* Debug */
+  border: 1pt black solid;
+}
+
+div.PanneauFichiersIcones > div {
+  /* background-color: #f1f1f1; */
+  margin: 2px;
+  padding: 10px;
+  width: 7em;
+  height: 8em;
+}
+
+div.PanneauFichiersIcones > div > i {
+}
+
+div.PanneauFichiersIcones > div > p {
+  font-size: 0.8em;
+  overflow: hidden;
+  width: 7em;
+  height: 4.0em;
+  margin: 0;
+}
