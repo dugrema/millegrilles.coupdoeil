@@ -14,6 +14,11 @@ var mapMimeType = {
 
 class PanneauFichiersIcones extends React.Component {
 
+  state = {
+    menuContextuel: null,
+    elementsSelectionnes: {},
+  }
+
   preparerRepertoires() {
     let repertoires = this.props.repertoires;
 
@@ -23,10 +28,16 @@ class PanneauFichiersIcones extends React.Component {
     // Faire le rendering
     let listeRendered = [];
     repertoiresTries.forEach(repertoire=>{
+      let classNameRepertoire = '';
+      if(this.state.elementsSelectionnes[repertoire.repertoire_uuid]) {
+        classNameRepertoire = classNameRepertoire + ' selectionne';
+      }
+
       listeRendered.push(
         <div
           key={repertoire.repertoire_uuid}
-          onClick={this.props.clickRepertoire}
+          className={classNameRepertoire}
+          onClick={this.clickSelection}
           data-repertoireuuid={repertoire.repertoire_uuid}
         >
           <span className="fa-stack fa-2x">
@@ -41,6 +52,69 @@ class PanneauFichiersIcones extends React.Component {
     return listeRendered;
   }
 
+  activerMenuContextuel = (event) => {
+    event.preventDefault(); // Empecher le menu contextuel du navigateur.
+
+    // Detecter le contexte
+    let dataset = event.currentTarget.dataset;
+    let positionX=event.clientX, positionY=event.clientY;
+    console.debug("Contextuel position X=" + positionX + ", Y=" + positionY);
+
+    if(dataset.fichieruuid) {
+      // C'est un fichier. On render le popup de fichier.
+
+    } else if(dataset.repertoireuuid) {
+      // C'est un repertoire. On render le popup du repertoire.
+
+    }
+
+  }
+
+  clickSelection = (event) => {
+    event.stopPropagation(); // Empeche cascade vers background.
+
+    // Selectionne l'element
+    let dataset = event.currentTarget.dataset;
+    if(dataset.fichieruuid) {
+      let fichierUuid = dataset.fichieruuid;
+
+      let infoFichier = {};
+      infoFichier[fichierUuid] = {type: 'fichier'};
+      if(event.ctrlKey) {
+        // Si CTRL est utilise, on ajoute la selection
+        infoFichier = Object.assign(
+          this.state.elementsSelectionnes, infoFichier);
+      }
+
+      this.setState({elementsSelectionnes: infoFichier},
+      ()=>{console.debug("Fichier ajoute a selection: " + fichierUuid)});
+
+    } else if(dataset.repertoireuuid) {
+      let repertoireUuid = dataset.repertoireuuid;
+
+      let infoRepertoire = {};
+      infoRepertoire[repertoireUuid] = {type: 'repertoire'};
+      if(event.ctrlKey) {
+        infoRepertoire = Object.assign(
+          this.state.elementsSelectionnes, infoRepertoire);
+      }
+
+      this.setState({elementsSelectionnes: infoRepertoire},
+      ()=>{console.debug("Repertoire ajoute a selection: " + repertoireUuid)});
+
+    }
+
+  }
+
+  clickBackground = (event) => {
+    console.debug("Click background, reset tout");
+    // Clear les selections et menu contextuel.
+    this.setState({
+      menuContextuel: null,
+      elementsSelectionnes: [],
+    });
+  }
+
   preparerFichiers() {
     let fichiers = this.props.fichiers;
 
@@ -50,11 +124,18 @@ class PanneauFichiersIcones extends React.Component {
     // Faire le rendering
     let listeRendered = [];
     fichiersTries.forEach(fichier=>{
+      let classNameFichier = '';
+      if(this.state.elementsSelectionnes[fichier.uuid]) {
+        classNameFichier = classNameFichier + ' selectionne';
+      }
       let icone = this.determinerIconeFichier(fichier);
       listeRendered.push(
         <div
+          className={classNameFichier}
           key={fichier.uuid}
-          onClick={this.props.clickFichier}
+          onClick={this.clickSelection}
+          onDoubleClick={this.props.doubleclickFichier}
+          onContextMenu={this.activerMenuContextuel}
           data-fichieruuid={fichier.uuid}
         >
           <i className={icone}></i>
@@ -94,7 +175,10 @@ class PanneauFichiersIcones extends React.Component {
     let fichiers = this.preparerFichiers();
 
     return (
-      <div className="PanneauFichiersIcones">
+      <div
+        className="PanneauFichiersIcones"
+        onClick={this.clickBackground}
+      >
         {repertoires}
         {fichiers}
       </div>

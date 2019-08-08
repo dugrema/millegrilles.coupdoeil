@@ -123,6 +123,16 @@ class EcranSample1 extends React.Component {
     console.debug("Click fichier " + uuidFichier);
   }
 
+  doubleclickRepertoire = (event) => {
+    let uuidRepertoire = event.currentTarget.dataset.repertoireuuid;
+    console.debug("Double click repertoire " + uuidRepertoire);
+  }
+
+  doubleclickFichier = (event) => {
+    let uuidFichier = event.currentTarget.dataset.fichieruuid;
+    console.debug("Double click fichier " + uuidFichier);
+  }
+
   render() {
     return (
       <div>
@@ -134,6 +144,8 @@ class EcranSample1 extends React.Component {
           fichiers={this.state.sampleData_fichiers_1}
           clickRepertoire={this.clickRepertoire}
           clickFichier={this.clickFichier}
+          doubleclickRepertoire={this.doubleclickRepertoire}
+          doubleclickFichier={this.doubleclickFichier}
           />
 
         <h2>Panneau Fichiers Liste</h2>

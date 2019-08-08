@@ -36,3 +36,7 @@ div.PanneauFichiersIcones > div > p {
   height: 4.0em;
   margin: 0;
 }
+
+.selectionne {
+  background-color: Gainsboro;
+}
