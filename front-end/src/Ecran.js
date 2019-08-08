@@ -11,9 +11,12 @@ import 'font-awesome/css/font-awesome.min.css';
 // Importer les Domaines et creer la liste des domaines connus
 import {SenseursPassifs} from './domaines/SenseursPassifs';
 import {GrosFichiers} from './domaines/GrosFichiers';
+import {InterfacePrincipale} from './domaines/Principale.js';
+
 const domainesConnus = {
   'SenseursPassifs': SenseursPassifs,
   'GrosFichiers': GrosFichiers,
+  'Principale': InterfacePrincipale,
 };
 
 class EcranApp extends React.Component {

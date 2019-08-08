@@ -86,8 +86,7 @@ class WebSocketManager {
       // Transmettre requete
       socket.emit('transaction', enveloppe, reponse=>{
         if(!reponse) {
-          console.error("Erreur survenue durant transaction vers " + routingKey);
-          reject();
+          reject(new Error("Erreur survenue durant transaction vers " + routingKey));
           return;
         }
         // console.log("Reponse dans websocket pour requete");
@@ -108,9 +107,31 @@ class WebSocketManager {
   }
 
   demanderTokenTransfert() {
+    return this.emit('creerTokenTransfert', {'token': true});
+    // let promise = new Promise((resolve, reject)=>{
+    //   this.socket.emit('creerTokenTransfert', {'token': true}, reponse=>{
+    //     // console.debug("Transmission token " + reponse);
+    //     resolve(reponse);
+    //   });
+    // });
+    //
+    // return promise;
+  }
+
+  emit(eventType, content) {
     let promise = new Promise((resolve, reject)=>{
-      this.socket.emit('creerTokenTransfert', {'token': true}, reponse=>{
-        // console.debug("Transmission token " + reponse);
+
+      var timeoutReponse = setTimeout(function () {
+        reject(new Error("Timeout " + eventType));
+      }, 10000);
+
+      this.socket.emit(eventType, content, reponse=>{
+        clearTimeout(timeoutReponse);  // Annuler timeout
+
+        if(!reponse) {
+          reject(new Error("Erreur survenue durant emit " + eventType));
+          return;
+        }
         resolve(reponse);
       });
     });
