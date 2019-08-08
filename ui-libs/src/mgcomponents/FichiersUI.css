@@ -40,3 +40,31 @@ div.PanneauFichiersIcones > div > p {
 .selectionne {
   background-color: Gainsboro;
 }
+
+/* Menu contextuel */
+nav.context-menu {
+  position: absolute;
+  z-index: 10;
+  background-color: Gainsboro;
+}
+nav.context-menu>ul {
+	position:absolute; left:10px; top:-10px; z-index:999;
+	width:100px;
+	margin:0; padding:2px; list-style:none;
+	background:Gainsboro; color:#333;
+	-moz-border-radius:5px; -webkit-border-radius:5px; border-radius:5px;
+	-moz-box-shadow:0 0 5px #999; -webkit-box-shadow:0 0 5px #999; box-shadow:0 0 5px #999
+}
+nav.context-menu>ul li {
+	/* padding:2px; */
+	/* border-bottom: solid 1px #ccc;*/
+}
+nav.context-menu>ul li button {
+  width: 100px;
+  text-align: left;
+}
+nav.context-menu>ul li:hover {
+	/* background:#EC6603; */
+  color:#fff;
+}
+nav.context-menu>ul li:last-child { border:none }

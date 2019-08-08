@@ -17,6 +17,9 @@ class PanneauFichiersIcones extends React.Component {
   state = {
     menuContextuel: null,
     elementsSelectionnes: {},
+
+    elementsACopier: null,  // Liste d'elements a copier (clipboard)
+    elementsADeplacer: null,  // Liste d'elements a deplacer (couper, clipboard)
   }
 
   preparerRepertoires() {
@@ -54,6 +57,7 @@ class PanneauFichiersIcones extends React.Component {
 
   activerMenuContextuel = (event) => {
     event.preventDefault(); // Empecher le menu contextuel du navigateur.
+    event.stopPropagation(); // Empeche cascade vers background.
 
     // Detecter le contexte
     let dataset = event.currentTarget.dataset;
@@ -62,16 +66,26 @@ class PanneauFichiersIcones extends React.Component {
 
     if(dataset.fichieruuid) {
       // C'est un fichier. On render le popup de fichier.
-
+      this.setState({menuContextuel: {
+        type: 'fichier',
+        x: positionX,
+        y: positionY,
+      }})
     } else if(dataset.repertoireuuid) {
       // C'est un repertoire. On render le popup du repertoire.
-
+      this.setState({menuContextuel: {
+        type: 'repertoire',
+        x: positionX,
+        y: positionY,
+      }})
     }
 
   }
 
   clickSelection = (event) => {
     event.stopPropagation(); // Empeche cascade vers background.
+
+    this.setState({menuContextuel: null});
 
     let dataset = event.currentTarget.dataset;
 
@@ -112,6 +126,16 @@ class PanneauFichiersIcones extends React.Component {
       menuContextuel: null,
       elementsSelectionnes: [],
     });
+  }
+
+  activerCopier = (event) => {
+    // Conserve la selection dans le buffer copier
+    this.setState({elementsACopier: this.state.elementsSelectionnes});
+  }
+
+  activerDeplacer = (event) => {
+    // Conserve la selection dans le buffer deplacer (couper)
+    this.setState({elementsADeplacer: this.state.elementsSelectionnes});
   }
 
   preparerFichiers() {
@@ -172,6 +196,14 @@ class PanneauFichiersIcones extends React.Component {
   render() {
     let repertoires = this.preparerRepertoires();
     let fichiers = this.preparerFichiers();
+    let menuContextuel = null;
+    if(this.state.menuContextuel) {
+      menuContextuel = (
+        <MenuContextuel
+          parametres={this.state.menuContextuel}
+          />
+      )
+    }
 
     return (
       <div
@@ -180,6 +212,7 @@ class PanneauFichiersIcones extends React.Component {
       >
         {repertoires}
         {fichiers}
+        {menuContextuel}
       </div>
     );
   }
@@ -192,6 +225,46 @@ class PanneauFichiersListeDetaillee extends React.Component {
       <p>Liste</p>
     );
   }
+}
+
+class MenuContextuel extends React.Component {
+
+  render() {
+    let parametres = this.props.parametres;
+
+    let styleMenu = {
+        left: parametres.x,
+        top: parametres.y,
+      }
+
+    return (
+      <nav className="context-menu" style={styleMenu}>
+        <ul>
+          <li>
+            <button>
+              <i className="fa fa-eye"></i> Copier
+            </button>
+          </li>
+          <li>
+            <button>
+              <i className="fa fa-edit"></i> Couper
+            </button>
+          </li>
+          <li>
+            <button>
+              <i className="fa fa-times"></i> Supprimer
+            </button>
+          </li>
+          <li>
+            <button>
+              <i className="fa fa-eye"></i> Proprietes
+            </button>
+          </li>
+        </ul>
+      </nav>
+    );
+  }
+
 }
 
 export {PanneauFichiersIcones, PanneauFichiersListeDetaillee};
