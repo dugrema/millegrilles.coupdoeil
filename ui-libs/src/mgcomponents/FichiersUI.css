@@ -21,7 +21,12 @@ div.PanneauFichiersIcones > div {
   height: 8em;
 }
 
-div.PanneauFichiersIcones > div > i {
+div.PanneauFichiersIcones > div > span {
+  height: 2.5em;
+}
+
+div.PanneauFichiersIcones > div i.fond {
+  color: yellow;
 }
 
 div.PanneauFichiersIcones > div > p {
