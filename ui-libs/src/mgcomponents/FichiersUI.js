@@ -22,39 +22,6 @@ class PanneauFichiersIcones extends React.Component {
     elementsADeplacer: null,  // Liste d'elements a deplacer (couper, clipboard)
   }
 
-  preparerRepertoires() {
-    let repertoires = this.props.repertoires;
-
-    // Extraire et trier les repertoires
-    let repertoiresTries = this.trierListe(repertoires);
-
-    // Faire le rendering
-    let listeRendered = [];
-    repertoiresTries.forEach(repertoire=>{
-      let classNameRepertoire = '';
-      if(this.state.elementsSelectionnes[repertoire.repertoire_uuid]) {
-        classNameRepertoire = classNameRepertoire + ' selectionne';
-      }
-
-      listeRendered.push(
-        <div
-          key={repertoire.repertoire_uuid}
-          className={classNameRepertoire}
-          onClick={this.clickSelection}
-          data-repertoireuuid={repertoire.repertoire_uuid}
-        >
-          <span className="fa-stack fa-2x">
-            <i className="fa fa-folder-open fa-stack-2x fond"></i>
-            <i className="fa fa-folder-open-o fa-stack-2x"></i>
-          </span>
-          <p>{repertoire.nom}</p>
-        </div>
-      );
-    });
-
-    return listeRendered;
-  }
-
   activerMenuContextuel = (event) => {
     event.preventDefault(); // Empecher le menu contextuel du navigateur.
     event.stopPropagation(); // Empeche cascade vers background.
@@ -62,7 +29,13 @@ class PanneauFichiersIcones extends React.Component {
     // Detecter le contexte
     let dataset = event.currentTarget.dataset;
     let positionX=event.clientX, positionY=event.clientY;
-    console.debug("Contextuel position X=" + positionX + ", Y=" + positionY);
+
+    let uuidItem = dataset.fichieruuid || dataset.repertoireuuid;
+    // Selectionner le fichier/repertoire s'il ne l'est pas deja
+    if(!this.state.elementsSelectionnes[uuidItem]) {
+      // Effacer selection courante et remplacer par le fichier courant
+      this.clickSelection(event);
+    }
 
     if(dataset.fichieruuid) {
       // C'est un fichier. On render le popup de fichier.
@@ -78,6 +51,12 @@ class PanneauFichiersIcones extends React.Component {
         x: positionX,
         y: positionY,
       }})
+    } else {
+      this.setState({menuContextuel: {
+        type: 'panneau',
+        x: positionX,
+        y: positionY,
+      }})
     }
 
   }
@@ -90,10 +69,11 @@ class PanneauFichiersIcones extends React.Component {
     let dataset = event.currentTarget.dataset;
 
     // Detecter si on a un fichier ou un repertoire (la logique est presque pareille)
-    let uuidItem = dataset.fichieruuid;
-    let infoDictValeur = {type: 'fichier'};
-    if(!uuidItem) {
-      uuidItem = dataset.repertoireuuid;
+    let uuidItem = dataset.fichieruuid || dataset.repertoireuuid;
+    let infoDictValeur;
+    if(dataset.fichieruuid) {
+      infoDictValeur = {type: 'fichier'};
+    } else if (dataset.repertoireuuid) {
       infoDictValeur = {type: 'repertoire'};
     }
 
@@ -114,13 +94,11 @@ class PanneauFichiersIcones extends React.Component {
       }
     }
 
-    this.setState({elementsSelectionnes: infoDict},
-    ()=>{console.debug(infoDictValeur['type'] + " ajoute a selection: " + uuidItem)});
+    this.setState({elementsSelectionnes: infoDict});
 
   }
 
   clickBackground = (event) => {
-    console.debug("Click background, reset tout");
     // Clear les selections et menu contextuel.
     this.setState({
       menuContextuel: null,
@@ -136,6 +114,40 @@ class PanneauFichiersIcones extends React.Component {
   activerDeplacer = (event) => {
     // Conserve la selection dans le buffer deplacer (couper)
     this.setState({elementsADeplacer: this.state.elementsSelectionnes});
+  }
+
+  preparerRepertoires() {
+    let repertoires = this.props.repertoires;
+
+    // Extraire et trier les repertoires
+    let repertoiresTries = this.trierListe(repertoires);
+
+    // Faire le rendering
+    let listeRendered = [];
+    repertoiresTries.forEach(repertoire=>{
+      let classNameRepertoire = '';
+      if(this.state.elementsSelectionnes[repertoire.repertoire_uuid]) {
+        classNameRepertoire = classNameRepertoire + ' selectionne';
+      }
+
+      listeRendered.push(
+        <div
+          key={repertoire.repertoire_uuid}
+          className={classNameRepertoire}
+          onClick={this.clickSelection}
+          data-repertoireuuid={repertoire.repertoire_uuid}
+          onContextMenu={this.activerMenuContextuel}
+        >
+          <span className="fa-stack fa-2x">
+            <i className="fa fa-folder-open fa-stack-2x fond"></i>
+            <i className="fa fa-folder-open-o fa-stack-2x"></i>
+          </span>
+          <p>{repertoire.nom}</p>
+        </div>
+      );
+    });
+
+    return listeRendered;
   }
 
   preparerFichiers() {
@@ -209,6 +221,7 @@ class PanneauFichiersIcones extends React.Component {
       <div
         className="PanneauFichiersIcones"
         onClick={this.clickBackground}
+        onContextMenu={this.activerMenuContextuel}
       >
         {repertoires}
         {fichiers}
@@ -242,22 +255,22 @@ class MenuContextuel extends React.Component {
         <ul>
           <li>
             <button>
-              <i className="fa fa-eye"></i> Copier
+              <i className="fa fa-copy"></i> Copier
             </button>
           </li>
           <li>
             <button>
-              <i className="fa fa-edit"></i> Couper
+              <i className="fa fa-cut"></i> Couper
             </button>
           </li>
           <li>
             <button>
-              <i className="fa fa-times"></i> Supprimer
+              <i className="fa fa-eraser"></i> Supprimer
             </button>
           </li>
           <li>
             <button>
-              <i className="fa fa-eye"></i> Proprietes
+              <i className="fa fa-edit"></i> Proprietes
             </button>
           </li>
         </ul>
