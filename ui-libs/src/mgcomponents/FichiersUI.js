@@ -248,6 +248,7 @@ class PanneauFichiersIcones extends React.Component {
           activerDeplacer={this.activerDeplacer}
           ouvrir={this.props.ouvrir}
           telecharger={this.props.telecharger}
+          upload={this.props.upload}
           copier={this.props.copier}
           deplacer={this.props.deplacer}
           supprimer={this.supprimer}
@@ -310,7 +311,13 @@ class MenuContextuel extends React.Component {
     }
   }
 
-
+  upload = (event) => {
+    let repertoireuuid = event.currentTarget.dataset.repertoireuuid;
+    if(!repertoireuuid) {
+      repertoireuuid = this.props.parametres.repertoireuuid;
+    }
+    this.props.upload(repertoireuuid);
+  }
 
   renderMenuPanneau() {
     let copierOuCouperExiste = this.props.operationCopierDeplacer;
@@ -326,9 +333,21 @@ class MenuContextuel extends React.Component {
       );
     }
 
+    let boutonUpload = null;
+    if(this.props.upload) {
+      boutonUpload = (
+        <li>
+          <button onClick={this.upload}>
+            <i className="fa fa-upload"></i> Uploader
+          </button>
+        </li>
+      );
+    }
+
     return (
       <ul>
         {boutonColler}
+        {boutonUpload}
         <li>
           <button>
             <i className="fa fa-edit"></i> Proprietes
@@ -385,8 +404,20 @@ class MenuContextuel extends React.Component {
       );
     }
 
+    let boutonUpload = null;
+    if(this.props.upload) {
+      boutonUpload = (
+        <li>
+          <button onClick={this.upload}>
+            <i className="fa fa-upload"></i> Uploader
+          </button>
+        </li>
+      );
+    }
+
     return (
       <ul>
+        {boutonUpload}
         <li>
           <button onClick={this.props.activerCopier}>
             <i className="fa fa-copy"></i> Copier

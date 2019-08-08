@@ -124,6 +124,10 @@ class EcranSample1 extends React.Component {
     });
   }
 
+  upload = repertoireDestination => {
+    console.debug("Upload vers " + repertoireDestination);
+  }
+
   render() {
     let repertoire = {
       repertoire_uuid: 'a06266fa-b8a2-11e9-9370-02420a000285',
@@ -149,6 +153,7 @@ class EcranSample1 extends React.Component {
           supprimer={this.supprimer}
           ouvrir={this.ouvrir}
           telecharger={this.telecharger}
+          upload={this.upload}
           />
 
         <h2>Panneau Fichiers Liste</h2>
