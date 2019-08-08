@@ -67,6 +67,7 @@ class PanneauFichiersIcones extends React.Component {
     } else {
       this.setState({menuContextuel: {
         type: 'panneau',
+        repertoireuuid: this.props.repertoire.repertoire_uuid,
         x: positionX,
         y: positionY,
       }})
