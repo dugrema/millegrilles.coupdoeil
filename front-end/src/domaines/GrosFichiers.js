@@ -109,32 +109,6 @@ export class GrosFichiers extends React.Component {
     console.debug("Upload vers " + repertoireDestination);
   }
 
-  // selectionnerFichier = (event) => {
-  //   let uuidFichier = event.currentTarget.value;
-  //   let dict = {}
-  //   dict[uuidFichier] = {'type': 'fichier'};
-  //
-  //   this.setState(
-  //     {'selection': Object.assign(this.state.selection, dict)},
-  //     ()=>{console.debug("Fichier selectionne: " + uuidFichier)}
-  //   );
-  // }
-
-  // selectionnerRepertoire = (event) => {
-  //   let uuidRepertoire = event.currentTarget.value;
-  //   let dict = {};
-  //   dict[uuidRepertoire] = {'type': 'repertoire'};
-  //
-  //   this.setState(
-  //     {'selection': Object.assign(this.state.selection, dict)},
-  //     ()=>{console.debug("Repertoire selectionne: " + uuidRepertoire)}
-  //   );
-  // }
-
-  // selectionClear = (event) => {
-  //   this.setState({'selection': {}}); // Effacer selection precedente
-  // }
-
   afficherProprietesFichier(uuidFichier) {
     this.chargerDocument({
       requetes: [{'filtre': {'uuid': uuidFichier}}]
@@ -488,17 +462,6 @@ export class GrosFichiers extends React.Component {
 
     return null;
   }
-
-  // afficherChangerNomFichier = (event) => {
-  //   let nomFichier = event.currentTarget.value;
-  //   let uuidFichier = event.currentTarget.dataset.uuidfichier;
-  //   console.debug("Renommer Fichier " + nomFichier + ", uuid " + uuidFichier);
-  //
-  //   this.setState({popupRenommerFichierValeurs: {
-  //     nom: nomFichier,
-  //     uuidFichier: uuidFichier,
-  //   }});
-  // }
 
   soumettreChangerNomFichier = (event) => {
     let formulaire = event.currentTarget.form;
