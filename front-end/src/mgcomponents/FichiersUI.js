@@ -247,11 +247,13 @@ class PanneauFichiersIcones extends React.Component {
           activerCopier={this.activerCopier}
           activerDeplacer={this.activerDeplacer}
           ouvrir={this.props.ouvrir}
+          renommer={this.props.renommer}
           telecharger={this.props.telecharger}
           upload={this.props.upload}
           copier={this.props.copier}
           deplacer={this.props.deplacer}
           supprimer={this.supprimer}
+          creerRepertoire={this.props.creerRepertoire}
           />
       )
     }
@@ -302,6 +304,15 @@ class MenuContextuel extends React.Component {
     }
   }
 
+  renommer = (event) => {
+    let parametres = this.props.parametres;
+    if(parametres.type === 'fichier') {
+      this.props.renommer(parametres.fichieruuid, parametres.type);
+    } else if(parametres.type === 'repertoire') {
+      this.props.renommer(parametres.repertoireuuid, parametres.type);
+    }
+  }
+
   telecharger = (event) => {
     let parametres = this.props.parametres;
     if(parametres.type === 'fichier') {
@@ -317,6 +328,11 @@ class MenuContextuel extends React.Component {
       repertoireuuid = this.props.parametres.repertoireuuid;
     }
     this.props.upload(repertoireuuid);
+  }
+
+  creerRepertoire = (event) => {
+    let repertoireuuid = this.props.parametres.repertoireuuid;
+    this.props.creerRepertoire(repertoireuuid);
   }
 
   renderMenuPanneau() {
@@ -346,11 +362,16 @@ class MenuContextuel extends React.Component {
 
     return (
       <ul>
+        <li>
+          <button onClick={this.creerRepertoire}>
+            <i className="fa fa-folder-o"></i> Creer repertoire
+          </button>
+        </li>
         {boutonColler}
         {boutonUpload}
         <li>
           <button>
-            <i className="fa fa-edit"></i> Proprietes
+            <i className="fa fa-info"></i> Proprietes
           </button>
         </li>
       </ul>
@@ -376,13 +397,18 @@ class MenuContextuel extends React.Component {
           </button>
         </li>
         <li>
+          <button onClick={this.renommer}>
+            <i className="fa fa-tag"></i> Renommer
+          </button>
+        </li>
+        <li>
           <button onClick={this.props.supprimer}>
-            <i className="fa fa-eraser"></i> Supprimer
+            <i className="fa fa-trash"></i> Supprimer
           </button>
         </li>
         <li>
           <button onClick={this.ouvrir}>
-            <i className="fa fa-edit"></i> Proprietes
+            <i className="fa fa-info"></i> Proprietes
           </button>
         </li>
       </ul>
@@ -430,13 +456,18 @@ class MenuContextuel extends React.Component {
         </li>
         {boutonColler}
         <li>
+          <button onClick={this.renommer}>
+            <i className="fa fa-tag"></i> Renommer
+          </button>
+        </li>
+        <li>
           <button onClick={this.props.supprimer}>
-            <i className="fa fa-eraser"></i> Supprimer
+            <i className="fa fa-trash"></i> Supprimer
           </button>
         </li>
         <li>
           <button onClick={this.ouvrir}>
-            <i className="fa fa-edit"></i> Proprietes
+            <i className="fa fa-info"></i> Proprietes
           </button>
         </li>
       </ul>

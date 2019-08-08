@@ -264,10 +264,9 @@ export class GrosFichiers extends React.Component {
     this.setState({'fichierCourant': null});
   }
 
-  afficherPopupCreerRepertoire = (event) => {
-    let uuidRepertoireParent = event.currentTarget.dataset.uuidrepertoireparent;
+  afficherPopupCreerRepertoire = repertoireDestination => {
     this.setState({popupCreerRepertoireValeurs: {
-      uuidRepertoireParent: uuidRepertoireParent
+      uuidRepertoireParent: repertoireDestination
     }});
   }
 
@@ -303,15 +302,23 @@ export class GrosFichiers extends React.Component {
 
   }
 
-  afficherPopupRenommerRepertoire = (event) => {
-    let nomRepertoire = event.currentTarget.value;
-    let uuidRepertoire = event.currentTarget.dataset.uuidrepertoire;
-    console.debug("Renommer repertoire " + nomRepertoire + ", uuid " + uuidRepertoire);
+  afficherPopupRenommer = (uuid, type) => {
+    console.debug("Renommer " + type + ", uuid " + uuid);
+    let repertoireCourant = this.state.repertoireCourant || this.state.repertoireRacine;
 
-    this.setState({popupRenommerRepertoireValeurs: {
-      nom: nomRepertoire,
-      uuidRepertoire: uuidRepertoire,
-    }});
+    if(type === 'fichier') {
+      let nomFichier = repertoireCourant.fichiers[uuid].nom;
+      this.setState({popupRenommerFichierValeurs: {
+        nom: nomFichier,
+        uuidFichier: uuid,
+      }});
+    } else if(type === 'repertoire') {
+      let nomRepertoire = repertoireCourant.repertoires[uuid].nom;
+      this.setState({popupRenommerRepertoireValeurs: {
+        nom: nomRepertoire,
+        uuidRepertoire: uuid,
+      }});
+    }
 
   }
 
@@ -482,16 +489,16 @@ export class GrosFichiers extends React.Component {
     return null;
   }
 
-  afficherChangerNomFichier = (event) => {
-    let nomFichier = event.currentTarget.value;
-    let uuidFichier = event.currentTarget.dataset.uuidfichier;
-    console.debug("Renommer Fichier " + nomFichier + ", uuid " + uuidFichier);
-
-    this.setState({popupRenommerFichierValeurs: {
-      nom: nomFichier,
-      uuidFichier: uuidFichier,
-    }});
-  }
+  // afficherChangerNomFichier = (event) => {
+  //   let nomFichier = event.currentTarget.value;
+  //   let uuidFichier = event.currentTarget.dataset.uuidfichier;
+  //   console.debug("Renommer Fichier " + nomFichier + ", uuid " + uuidFichier);
+  //
+  //   this.setState({popupRenommerFichierValeurs: {
+  //     nom: nomFichier,
+  //     uuidFichier: uuidFichier,
+  //   }});
+  // }
 
   soumettreChangerNomFichier = (event) => {
     let formulaire = event.currentTarget.form;
@@ -580,6 +587,8 @@ export class GrosFichiers extends React.Component {
             activerCopier={this.activerCopier}
             activerDeplacer={this.activerDeplacer}
             operationCopierDeplacer={this.state.operationCopierDeplacer}
+            creerRepertoire={this.afficherPopupCreerRepertoire}
+            renommer={this.afficherPopupRenommer}
             />
 
         </div>
@@ -689,15 +698,6 @@ function NavigationRepertoire(props) {
         value={repertoireCourant1.parent_id}
         onClick={props.afficherRepertoire}>{repertoireCourant1.chemin_repertoires}</button>
       <p>{repertoireCourant1.commentaires}</p>
-
-      <button
-        value={repertoireCourant1.nom}
-        data-uuidrepertoireparent={repertoireCourant1.repertoire_uuid}
-        onClick={props.afficherPopupCreerRepertoire}>Creer repertoire</button>
-      <button
-        value={repertoireCourant1.nom}
-        data-uuidrepertoire={repertoireCourant1.repertoire_uuid}
-        onClick={props.afficherPopupRenommerRepertoire}>Renommer</button>
 
       <FileUploadSection repertoireCourant={repertoireCourant1}/>
     </div>
