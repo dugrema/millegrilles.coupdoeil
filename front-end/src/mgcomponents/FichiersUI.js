@@ -16,20 +16,19 @@ const mapMimeTypeIcons = {
 class PanneauFichiersIcones extends React.Component {
   // Panneau qui affiche les repertoires et fichiers sous forme d'icone.
   // Props a fournir:
-  //   - fichiers: dict de fichiers (uuid: {nom:, uuid:, ...})
-  //   - repertoires: dict de repertoires (repertoire_uuid: {nom:, repertoire_uuid:, ...})
+  //   - repertoire: document de repertoire (avec nom, repertoire_uuid, sous-repertoires, fichiers)
+  //   - operationCopierDeplacer: type d'operation a faire
   //   + ouvrir: (uuid, type) ou type=repertoire/fichier
   //   + telecharger: (fichieruuid)
   //   + copier: (parametres selection, repertoireDestination)
   //   + deplacer: (parametres selection, repertoireDestination)
   //   + supprimer: (parametre selection)
+  //   + activerCopier: (parametres selection)
+  //   + activerDeplacer: (parametres selection)
 
   state = {
     menuContextuel: null,
     elementsSelectionnes: {},
-
-    elementsCopierDeplacer: null,   // Liste d'elements a copier ou deplacer
-    operationCopierDeplacer: null,  // Le type d'operation: copier ou deplacer
   }
 
   // Gestionnaire d'evenements
@@ -68,6 +67,7 @@ class PanneauFichiersIcones extends React.Component {
     } else {
       this.setState({menuContextuel: {
         type: 'panneau',
+        repertoireuuid: this.props.repertoire.repertoire_uuid,
         x: positionX,
         y: positionY,
       }})
@@ -122,30 +122,16 @@ class PanneauFichiersIcones extends React.Component {
 
   activerCopier = (event) => {
     // Conserve la selection dans le buffer copier
-    this.setState({
-      elementsCopierDeplacer: this.state.elementsSelectionnes,
-      operationCopierDeplacer: 'copier',
-    });
+    this.props.activerCopier(this.state.elementsSelectionnes, 'copier');
   }
 
   activerDeplacer = (event) => {
     // Conserve la selection dans le buffer deplacer (couper)
-    this.setState({
-      elementsCopierDeplacer: this.state.elementsSelectionnes,
-      operationCopierDeplacer: 'deplacer',
-    });
+    this.props.activerDeplacer(this.state.elementsSelectionnes, 'deplacer');
   }
 
-  copier = repertoireDestination => {
-    // Deleguer au handler du contenant parent
-    this.props.copier(this.state.elementsCopierDeplacer, repertoireDestination);
-  }
-
-  deplacer = repertoireDestination => {
-    // Deleguer au handler du contenant parent
-    this.props.deplacer(this.state.elementsCopierDeplacer, repertoireDestination);
-    // Les items sont deplaces, on ne peut pas repeter l'operation.
-    this.setState({elementsCopierDeplacer: null, operationCopierDeplacer: null});
+  coller = (event) => {
+    this.props.coller(); // Appelle methode coller du parent
   }
 
   supprimer = event => {
@@ -182,7 +168,7 @@ class PanneauFichiersIcones extends React.Component {
   // Methodes de rendering du panneau
 
   preparerRepertoires() {
-    let repertoires = this.props.repertoires;
+    let repertoires = this.props.repertoire.repertoires;
 
     // Extraire et trier les repertoires
     let repertoiresTries = this.trierListe(repertoires);
@@ -217,7 +203,7 @@ class PanneauFichiersIcones extends React.Component {
   }
 
   preparerFichiers() {
-    let fichiers = this.props.fichiers;
+    let fichiers = this.props.repertoire.fichiers;
 
     // Extraire et trier les repertoires
     let fichiersTries = this.trierListe(fichiers);
@@ -257,13 +243,14 @@ class PanneauFichiersIcones extends React.Component {
         <MenuContextuel
           parametres={this.state.menuContextuel}
           elementsSelectionnes={this.state.elementsSelectionnes}
-          operationCopierDeplacer={this.state.operationCopierDeplacer}
+          operationCopierDeplacer={this.props.operationCopierDeplacer}
           activerCopier={this.activerCopier}
           activerDeplacer={this.activerDeplacer}
           ouvrir={this.props.ouvrir}
           telecharger={this.props.telecharger}
-          copier={this.copier}
-          deplacer={this.deplacer}
+          upload={this.props.upload}
+          copier={this.props.copier}
+          deplacer={this.props.deplacer}
           supprimer={this.supprimer}
           />
       )
@@ -324,7 +311,13 @@ class MenuContextuel extends React.Component {
     }
   }
 
-
+  upload = (event) => {
+    let repertoireuuid = event.currentTarget.dataset.repertoireuuid;
+    if(!repertoireuuid) {
+      repertoireuuid = this.props.parametres.repertoireuuid;
+    }
+    this.props.upload(repertoireuuid);
+  }
 
   renderMenuPanneau() {
     let copierOuCouperExiste = this.props.operationCopierDeplacer;
@@ -340,9 +333,21 @@ class MenuContextuel extends React.Component {
       );
     }
 
+    let boutonUpload = null;
+    if(this.props.upload) {
+      boutonUpload = (
+        <li>
+          <button onClick={this.upload}>
+            <i className="fa fa-upload"></i> Uploader
+          </button>
+        </li>
+      );
+    }
+
     return (
       <ul>
         {boutonColler}
+        {boutonUpload}
         <li>
           <button>
             <i className="fa fa-edit"></i> Proprietes
@@ -399,8 +404,20 @@ class MenuContextuel extends React.Component {
       );
     }
 
+    let boutonUpload = null;
+    if(this.props.upload) {
+      boutonUpload = (
+        <li>
+          <button onClick={this.upload}>
+            <i className="fa fa-upload"></i> Uploader
+          </button>
+        </li>
+      );
+    }
+
     return (
       <ul>
+        {boutonUpload}
         <li>
           <button onClick={this.props.activerCopier}>
             <i className="fa fa-copy"></i> Copier

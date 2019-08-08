@@ -20,7 +20,9 @@ export class GrosFichiers extends React.Component {
       repertoireCourant: null,  // Repertoire a afficher (si pas null et fichier null)
       fichierCourant: null,     // Fichier a afficher (si pas null)
 
-      // selection: {},          // Liste d'elements selectionnes pour operation
+      // Liste d'elements selectionnes pour operation
+      elementsCopierDeplacer: null,
+      operationCopierDeplacer: null,
 
       // Popups a afficher
       popupRenommerFichierValeurs: null,
@@ -103,6 +105,10 @@ export class GrosFichiers extends React.Component {
 
   }
 
+  upload = repertoireDestination => {
+    console.debug("Upload vers " + repertoireDestination);
+  }
+
   // selectionnerFichier = (event) => {
   //   let uuidFichier = event.currentTarget.value;
   //   let dict = {}
@@ -166,6 +172,20 @@ export class GrosFichiers extends React.Component {
     }
   }
 
+  activerCopier = selection => {
+    this.setState({
+      elementsCopierDeplacer: selection,
+      operationCopierDeplacer: 'copier',
+    });
+  }
+
+  activerDeplacer = selection => {
+    this.setState({
+      elementsCopierDeplacer: selection,
+      operationCopierDeplacer: 'deplacer',
+    });
+  }
+
   doubleclickRepertoire = (event) => {
     let uuidRepertoire = event.currentTarget.dataset.repertoireuuid;
     console.debug("Double click repertoire " + uuidRepertoire);
@@ -178,8 +198,9 @@ export class GrosFichiers extends React.Component {
     this.afficherProprietesFichier(uuidFichier);
   }
 
-  copier = (selection, repertoireDestination) => {
+  copier = (repertoireDestination) => {
     console.debug("Copier vers " + repertoireDestination);
+    let selection = this.state.elementsCopierDeplacer;
     for(var uuid in selection) {
       let infoitem = selection[uuid];
       let typeitem = infoitem.type;
@@ -187,8 +208,9 @@ export class GrosFichiers extends React.Component {
     }
   }
 
-  deplacer = (selection, repertoireDestination) => {
+  deplacer = (repertoireDestination) => {
     console.debug("Deplacer vers " + repertoireDestination);
+    let selection = this.state.elementsCopierDeplacer;
     for(var uuid in selection) {
       let infoitem = selection[uuid];
       let typeitem = infoitem.type;
@@ -205,6 +227,12 @@ export class GrosFichiers extends React.Component {
       }
 
     }
+
+    // L'operation deplacement ne peut pas etre repetee.
+    this.setState({
+      elementsCopierDeplacer: null,
+      operationCopierDeplacer: null,
+    })
 
   }
 
@@ -540,8 +568,7 @@ export class GrosFichiers extends React.Component {
             deplacerSelection={this.deplacerSelection}
             />
           <PanneauFichiersIcones
-            repertoires={repertoireCourant.repertoires}
-            fichiers={repertoireCourant.fichiers}
+            repertoire={repertoireCourant}
             doubleclickRepertoire={this.doubleclickRepertoire}
             doubleclickFichier={this.doubleclickFichier}
             copier={this.copier}
@@ -549,6 +576,10 @@ export class GrosFichiers extends React.Component {
             supprimer={this.supprimer}
             ouvrir={this.ouvrir}
             telecharger={this.telecharger}
+            upload={this.upload}
+            activerCopier={this.activerCopier}
+            activerDeplacer={this.activerDeplacer}
+            operationCopierDeplacer={this.state.operationCopierDeplacer}
             />
 
         </div>

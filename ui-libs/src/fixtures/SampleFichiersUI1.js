@@ -6,6 +6,10 @@ import {PanneauFichiersListeDetaillee, PanneauFichiersIcones} from '../mgcompone
 class EcranSample1 extends React.Component {
 
   state = {
+
+    elementsCopierDeplacer: null,
+    operationCopierDeplacer: null,
+
     sampleData_repertoires_flat: {
       "3d6cbf1a-b88d-11e9-936c-02420a000283": {
         "repertoire_uuid": "3d6cbf1a-b88d-11e9-936c-02420a000283",
