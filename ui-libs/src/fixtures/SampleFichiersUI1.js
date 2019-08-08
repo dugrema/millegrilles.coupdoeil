@@ -1,7 +1,7 @@
 import React from 'react';
 import 'font-awesome/css/font-awesome.min.css';
 
-import {PanneauFichiersListe, PanneauFichiersIcones} from '../mgcomponents/FichiersUI.js';
+import {PanneauFichiersListeDetaillee, PanneauFichiersIcones} from '../mgcomponents/FichiersUI.js';
 
 var sampleData_repertoires_flat = {
   "3d6cbf1a-b88d-11e9-936c-02420a000283": {
@@ -113,6 +113,16 @@ class EcranSample1 extends React.Component {
     }
   }
 
+  clickRepertoire = (event) => {
+    let uuidRepertoire = event.currentTarget.dataset.repertoireuuid;
+    console.debug("Click repertoire " + uuidRepertoire);
+  }
+
+  clickFichier = (event) => {
+    let uuidFichier = event.currentTarget.dataset.fichieruuid;
+    console.debug("Click fichier " + uuidFichier);
+  }
+
   render() {
     return (
       <div>
@@ -122,10 +132,12 @@ class EcranSample1 extends React.Component {
         <PanneauFichiersIcones
           repertoires={this.state.sampleData_repertoires_flat}
           fichiers={this.state.sampleData_fichiers_1}
+          clickRepertoire={this.clickRepertoire}
+          clickFichier={this.clickFichier}
           />
 
         <h2>Panneau Fichiers Liste</h2>
-        <PanneauFichiersListe />
+        <PanneauFichiersListeDetaillee />
 
       </div>
     );

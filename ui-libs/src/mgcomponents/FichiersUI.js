@@ -24,7 +24,11 @@ class PanneauFichiersIcones extends React.Component {
     let listeRendered = [];
     repertoiresTries.forEach(repertoire=>{
       listeRendered.push(
-        <div key={repertoire.repertoire_uuid}>
+        <div
+          key={repertoire.repertoire_uuid}
+          onClick={this.props.clickRepertoire}
+          data-repertoireuuid={repertoire.repertoire_uuid}
+        >
           <span className="fa-stack fa-2x">
             <i className="fa fa-folder-open fa-stack-2x fond"></i>
             <i className="fa fa-folder-open-o fa-stack-2x"></i>
@@ -48,7 +52,11 @@ class PanneauFichiersIcones extends React.Component {
     fichiersTries.forEach(fichier=>{
       let icone = this.determinerIconeFichier(fichier);
       listeRendered.push(
-        <div key={fichier.uuid}>
+        <div
+          key={fichier.uuid}
+          onClick={this.props.clickFichier}
+          data-fichieruuid={fichier.uuid}
+        >
           <i className={icone}></i>
           <p>{fichier.nom}</p>
         </div>
@@ -94,7 +102,7 @@ class PanneauFichiersIcones extends React.Component {
   }
 }
 
-class PanneauFichiersListe extends React.Component {
+class PanneauFichiersListeDetaillee extends React.Component {
 
   render() {
     return (
@@ -103,4 +111,4 @@ class PanneauFichiersListe extends React.Component {
   }
 }
 
-export {PanneauFichiersIcones, PanneauFichiersListe};
+export {PanneauFichiersIcones, PanneauFichiersListeDetaillee};
