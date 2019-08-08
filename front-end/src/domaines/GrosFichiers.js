@@ -8,28 +8,35 @@ import {PanneauFichiersIcones} from '../mgcomponents/FichiersUI.js';
 
 export class GrosFichiers extends React.Component {
 
-  state = {
+  constructor(props) {
+    super(props);
+    this.refFormulaireDownload = React.createRef();
+    // this.download = this.download.bind(this);
 
-    // Variables pour navigation des repertoires/fichiers
-    repertoireRacine: null,   // Par defaut, on affiche la racine
-    repertoireCourant: null,  // Repertoire a afficher (si pas null et fichier null)
-    fichierCourant: null,     // Fichier a afficher (si pas null)
+    this.state = {
 
-    selection: {},          // Liste d'elements selectionnes pour operation
+      // Variables pour navigation des repertoires/fichiers
+      repertoireRacine: null,   // Par defaut, on affiche la racine
+      repertoireCourant: null,  // Repertoire a afficher (si pas null et fichier null)
+      fichierCourant: null,     // Fichier a afficher (si pas null)
 
-    // Popups a afficher
-    popupRenommerFichierValeurs: null,
-    popupDeplacerFichierValeurs: null,
+      // selection: {},          // Liste d'elements selectionnes pour operation
 
-    popupCreerRepertoireValeurs: null,
-    popupRenommerRepertoireValeurs: null,
-    popupDeplacerRepertoireValeurs: null,
+      // Popups a afficher
+      popupRenommerFichierValeurs: null,
+      popupDeplacerFichierValeurs: null,
 
-    // Variables pour ecrans specifiques
-    preparerUpload: null,
+      popupCreerRepertoireValeurs: null,
+      popupRenommerRepertoireValeurs: null,
+      popupDeplacerRepertoireValeurs: null,
 
-    downloadUrl: 'https://192.168.1.110:3001/grosFichiers/local',
-  };
+      // Variables pour ecrans specifiques
+      preparerUpload: null,
+
+      downloadUrl: 'https://192.168.1.110:3001/grosFichiers/local',
+    };
+
+  }
 
   // Configuration statique du composant:
   //   subscriptions: Le nom des routing keys qui vont etre ecoutees
@@ -59,31 +66,67 @@ export class GrosFichiers extends React.Component {
     });
   }
 
-  selectionnerFichier = (event) => {
-    let uuidFichier = event.currentTarget.value;
-    let dict = {}
-    dict[uuidFichier] = {'type': 'fichier'};
+  telecharger = fuuid => {
+    // Trouver fichier dans information repertoire
+    let infoRepertoire = this.state.repertoireCourant || this.state.repertoireRacine;
+    console.debug(infoRepertoire);
+    var fichier = infoRepertoire.fichiers[fuuid];
+    console.debug("Telecharger fichier uuid: " + fuuid + ": " + fichier);
+    if(!fichier) {
+      throw new Error("Erreur fichier inconnu: " + fuuid)
+    }
+    let nomFichier = fichier.nom;
+    let contentType = fichier.mimetype;
 
-    this.setState(
-      {'selection': Object.assign(this.state.selection, dict)},
-      ()=>{console.debug("Fichier selectionne: " + uuidFichier)}
-    );
+    console.debug("1. Bouton clique pour fichier " + nomFichier);
+    let form = this.refFormulaireDownload.current;
+    let downloadUrl = this.state.downloadUrl;
+
+    console.debug("2. fuuide: " + fuuid);
+    webSocketManager.demanderTokenTransfert()
+    .then(token=>{
+      form.action = downloadUrl + "/" + nomFichier;
+      form.fuuid.value = fuuid;
+      form.nomfichier.value = nomFichier;
+      form.contenttype.value = contentType;
+      form.authtoken.value = token;
+
+      console.debug("2. Submit preparation, download " + form.action + ", recu token " + form.authtoken.value);
+      form.submit(); // Token pret, submit.
+
+    })
+    .catch(err=>{
+      console.error("Erreur preparation download");
+      console.error(err);
+    })
+
   }
 
-  selectionnerRepertoire = (event) => {
-    let uuidRepertoire = event.currentTarget.value;
-    let dict = {};
-    dict[uuidRepertoire] = {'type': 'repertoire'};
+  // selectionnerFichier = (event) => {
+  //   let uuidFichier = event.currentTarget.value;
+  //   let dict = {}
+  //   dict[uuidFichier] = {'type': 'fichier'};
+  //
+  //   this.setState(
+  //     {'selection': Object.assign(this.state.selection, dict)},
+  //     ()=>{console.debug("Fichier selectionne: " + uuidFichier)}
+  //   );
+  // }
 
-    this.setState(
-      {'selection': Object.assign(this.state.selection, dict)},
-      ()=>{console.debug("Repertoire selectionne: " + uuidRepertoire)}
-    );
-  }
+  // selectionnerRepertoire = (event) => {
+  //   let uuidRepertoire = event.currentTarget.value;
+  //   let dict = {};
+  //   dict[uuidRepertoire] = {'type': 'repertoire'};
+  //
+  //   this.setState(
+  //     {'selection': Object.assign(this.state.selection, dict)},
+  //     ()=>{console.debug("Repertoire selectionne: " + uuidRepertoire)}
+  //   );
+  // }
 
-  selectionClear = (event) => {
-    this.setState({'selection': {}}); // Effacer selection precedente
-  }
+  // selectionClear = (event) => {
+  //   this.setState({'selection': {}}); // Effacer selection precedente
+  // }
 
   afficherProprietesFichier(uuidFichier) {
     this.chargerDocument({
@@ -168,10 +211,6 @@ export class GrosFichiers extends React.Component {
     } else if(type === 'fichier') {
       this.afficherProprietesFichier(uuid);
     }
-  }
-
-  telecharger = (uuid) => {
-    console.debug("Telecharger " + uuid);
   }
 
   afficherRepertoire = event => {
@@ -438,6 +477,23 @@ export class GrosFichiers extends React.Component {
     this.setState({popupRenommerFichierValeurs: null});
   }
 
+  // Download form
+  renderDownloadForm() {
+    // Formulaire utilise pour POST la requete avec authtoken
+    return (
+      <form
+        target="_blank"
+        ref={this.refFormulaireDownload}
+        action="dummyaction"
+        method="POST">
+          <input type="hidden" name="authtoken" value="dummytoken"/>
+          <input type="hidden" name="fuuid" value="dummyfuuide"/>
+          <input type="hidden" name="nomfichier" value="dummynomfichier"/>
+          <input type="hidden" name="contenttype" value="dummycontentype"/>
+      </form>
+    );
+  }
+
   render() {
     // Determiner le contenu de l'ecran en fonction de l'etat
     // Affichage: 1.fichier, ou 2.repertoire, ou 3.repertoire racine
@@ -486,8 +542,6 @@ export class GrosFichiers extends React.Component {
       )
     }
 
-    let popup = this.afficherPopup();
-
     return (
       <div className="w3-col m9">
         <div className="w3-row-padding">
@@ -499,7 +553,8 @@ export class GrosFichiers extends React.Component {
             </div>
           </div>
         </div>
-        {popup}
+        {this.afficherPopup()}
+        {this.renderDownloadForm()}
       </div>
     );
   }
@@ -645,57 +700,9 @@ class ContenuRepertoire extends React.Component {
 
   }
 
-  formatterAffichageFichiers() {
-    var repertoireCourant = this.props.repertoireCourant;
-    console.debug("Fichiers repertoire courant");
-    console.debug(repertoireCourant.fichiers);
-
-    // Extraire et trier la liste des fichiers du repertoire
-    let listeFichiers = [];
-    for(var uuidFichier in repertoireCourant.fichiers) {
-      listeFichiers.push(repertoireCourant.fichiers[uuidFichier]);
-    }
-    listeFichiers.sort((a,b) => {
-      let nomA = a.nom, nomB = b.nom;
-      return nomA.localeCompare(nomB);
-    });
-
-    let resultatAffichage = [];
-    listeFichiers.forEach(fichier=>{
-      resultatAffichage.push(
-        <li key={fichier.uuid}>
-          <button
-            className="aslink"
-            value={fichier.nom}
-            data-fuuid={fichier.fuuid_v_courante}
-            data-contenttype={fichier.mimetype}
-            onClick={this.download}>{fichier.nom}</button>
-          <button
-            value={fichier.uuid}
-            onClick={this.props.afficherProprietesFichier}>Proprietes</button>
-          <button
-            value={fichier.uuid}
-            onClick={this.props.supprimerFichier}>Supprimer</button>
-          <button
-            value={fichier.nom}
-            data-uuidfichier={fichier.uuid}
-            onClick={this.props.afficherChangerNomFichier}>Renommer</button>
-          <button
-            value={fichier.uuid}
-            onClick={this.props.selectionnerFichier}>Selectionner</button>
-        </li>
-      );
-    });
-
-    return resultatAffichage;
-  }
-
   render() {
-
-    let listeFichiers = this.formatterAffichageFichiers();
-
     // Formulaire utilise pour POST la requete avec authtoken
-    let formDownload = (
+    return (
       <form
         target="_blank"
         ref={this.refFormulaireDownload}
@@ -706,17 +713,6 @@ class ContenuRepertoire extends React.Component {
           <input type="hidden" name="nomfichier" value="dummynomfichier"/>
           <input type="hidden" name="contenttype" value="dummycontentype"/>
       </form>
-    )
-
-    return (
-      <div>
-        {formDownload}
-
-        <h2>Fichiers</h2>
-        <ul>
-          {listeFichiers}
-        </ul>
-      </div>
     );
   }
 
