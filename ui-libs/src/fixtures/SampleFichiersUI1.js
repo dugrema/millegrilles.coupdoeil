@@ -60,16 +60,6 @@ class EcranSample1 extends React.Component {
     }
   }
 
-  clickRepertoire = (event) => {
-    let uuidRepertoire = event.currentTarget.dataset.repertoireuuid;
-    console.debug("Click repertoire " + uuidRepertoire);
-  }
-
-  clickFichier = (event) => {
-    let uuidFichier = event.currentTarget.dataset.fichieruuid;
-    console.debug("Click fichier " + uuidFichier);
-  }
-
   doubleclickRepertoire = (event) => {
     let uuidRepertoire = event.currentTarget.dataset.repertoireuuid;
     console.debug("Double click repertoire " + uuidRepertoire);
@@ -80,26 +70,38 @@ class EcranSample1 extends React.Component {
     console.debug("Double click fichier " + uuidFichier);
   }
 
-  copier(selection, repertoireDestination) {
+  copier = (selection, repertoireDestination) => {
     console.debug("Copier vers " + repertoireDestination);
-    console.debug(selection);
+    for(var uuid in selection) {
+      let infoitem = selection[uuid];
+      let typeitem = infoitem.type;
+      console.debug(typeitem + " " + uuid);
+    }
   }
 
-  deplacer(selection, repertoireDestination) {
+  deplacer = (selection, repertoireDestination) => {
     console.debug("Deplacer vers " + repertoireDestination);
-    console.debug(selection);
+    for(var uuid in selection) {
+      let infoitem = selection[uuid];
+      let typeitem = infoitem.type;
+      console.debug(typeitem + " " + uuid);
+    }
   }
 
-  supprimer(selection) {
+  supprimer = (selection) => {
     console.debug("Supprimer");
-    console.debug(selection);
+    for(var uuid in selection) {
+      let infoitem = selection[uuid];
+      let typeitem = infoitem.type;
+      console.debug(typeitem + " " + uuid);
+    }
   }
 
-  ouvrir(uuid, type) {
+  ouvrir = (uuid, type) => {
     console.debug("Ouvrir " + type + " " + uuid);
   }
 
-  telecharger(uuid) {
+  telecharger = (uuid) => {
     console.debug("Telecharger " + uuid);
   }
 
@@ -112,8 +114,6 @@ class EcranSample1 extends React.Component {
         <PanneauFichiersIcones
           repertoires={this.state.sampleData_repertoires_flat}
           fichiers={this.state.sampleData_fichiers_1}
-          clickRepertoire={this.clickRepertoire}
-          clickFichier={this.clickFichier}
           doubleclickRepertoire={this.doubleclickRepertoire}
           doubleclickFichier={this.doubleclickFichier}
           copier={this.copier}
