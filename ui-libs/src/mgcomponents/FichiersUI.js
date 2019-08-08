@@ -73,36 +73,35 @@ class PanneauFichiersIcones extends React.Component {
   clickSelection = (event) => {
     event.stopPropagation(); // Empeche cascade vers background.
 
-    // Selectionne l'element
     let dataset = event.currentTarget.dataset;
-    if(dataset.fichieruuid) {
-      let fichierUuid = dataset.fichieruuid;
 
-      let infoFichier = {};
-      infoFichier[fichierUuid] = {type: 'fichier'};
-      if(event.ctrlKey) {
-        // Si CTRL est utilise, on ajoute la selection
-        infoFichier = Object.assign(
-          this.state.elementsSelectionnes, infoFichier);
-      }
-
-      this.setState({elementsSelectionnes: infoFichier},
-      ()=>{console.debug("Fichier ajoute a selection: " + fichierUuid)});
-
-    } else if(dataset.repertoireuuid) {
-      let repertoireUuid = dataset.repertoireuuid;
-
-      let infoRepertoire = {};
-      infoRepertoire[repertoireUuid] = {type: 'repertoire'};
-      if(event.ctrlKey) {
-        infoRepertoire = Object.assign(
-          this.state.elementsSelectionnes, infoRepertoire);
-      }
-
-      this.setState({elementsSelectionnes: infoRepertoire},
-      ()=>{console.debug("Repertoire ajoute a selection: " + repertoireUuid)});
-
+    // Detecter si on a un fichier ou un repertoire (la logique est presque pareille)
+    let uuidItem = dataset.fichieruuid;
+    let infoDictValeur = {type: 'fichier'};
+    if(!uuidItem) {
+      uuidItem = dataset.repertoireuuid;
+      infoDictValeur = {type: 'repertoire'};
     }
+
+    // Selectionne l'element
+    let dejaSelectionne = this.state.elementsSelectionnes[uuidItem];
+
+    let infoDict = {};
+    if(!dejaSelectionne || !event.ctrlKey) {
+      // Si le bouton controle est enfonce, permet de deselectionner l'item
+      infoDict[uuidItem] = infoDictValeur;
+    }
+    if(event.ctrlKey) {
+      // Le bouton CTRL est enfonce. On conserve la selection existante.
+      for(var uuid in this.state.elementsSelectionnes) {
+        if(uuid !== uuidItem) {
+          infoDict[uuid] = this.state.elementsSelectionnes[uuid];
+        }
+      }
+    }
+
+    this.setState({elementsSelectionnes: infoDict},
+    ()=>{console.debug(infoDictValeur['type'] + " ajoute a selection: " + uuidItem)});
 
   }
 
