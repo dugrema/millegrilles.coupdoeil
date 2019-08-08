@@ -35,7 +35,7 @@ export class GrosFichiers extends React.Component {
       // Variables pour ecrans specifiques
       preparerUpload: null,
 
-      downloadUrl: 'https://192.168.1.110:3001/grosFichiers/local',
+      downloadUrl: '/grosFichiers/local',
     };
 
   }
