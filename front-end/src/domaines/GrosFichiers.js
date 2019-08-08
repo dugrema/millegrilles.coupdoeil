@@ -4,6 +4,7 @@ import axios from 'axios';
 
 import './GrosFichiers.css';
 import webSocketManager from '../WebSocketManager';
+import {PanneauFichiersIcones} from '../mgcomponents/FichiersUI.js';
 
 export class GrosFichiers extends React.Component {
 
@@ -84,10 +85,7 @@ export class GrosFichiers extends React.Component {
     this.setState({'selection': {}}); // Effacer selection precedente
   }
 
-  afficherProprietesFichier = (event) => {
-    let bouton = event.currentTarget;
-    let uuidFichier = bouton.value;
-
+  afficherProprietesFichier(uuidFichier) {
     this.chargerDocument({
       requetes: [{'filtre': {'uuid': uuidFichier}}]
     })
@@ -122,6 +120,58 @@ export class GrosFichiers extends React.Component {
       // Retour au repertoire racine
       this.setState({repertoireCourant: null})
     }
+  }
+
+  doubleclickRepertoire = (event) => {
+    let uuidRepertoire = event.currentTarget.dataset.repertoireuuid;
+    console.debug("Double click repertoire " + uuidRepertoire);
+    this.changerRepertoire(uuidRepertoire);
+  }
+
+  doubleclickFichier = (event) => {
+    let uuidFichier = event.currentTarget.dataset.fichieruuid;
+    console.debug("Double click fichier " + uuidFichier);
+    this.afficherProprietesFichier(uuidFichier);
+  }
+
+  copier = (selection, repertoireDestination) => {
+    console.debug("Copier vers " + repertoireDestination);
+    for(var uuid in selection) {
+      let infoitem = selection[uuid];
+      let typeitem = infoitem.type;
+      console.debug(typeitem + " " + uuid);
+    }
+  }
+
+  deplacer = (selection, repertoireDestination) => {
+    console.debug("Deplacer vers " + repertoireDestination);
+    for(var uuid in selection) {
+      let infoitem = selection[uuid];
+      let typeitem = infoitem.type;
+      console.debug(typeitem + " " + uuid);
+    }
+  }
+
+  supprimer = (selection) => {
+    console.debug("Supprimer");
+    for(var uuid in selection) {
+      let infoitem = selection[uuid];
+      let typeitem = infoitem.type;
+      console.debug(typeitem + " " + uuid);
+    }
+  }
+
+  ouvrir = (uuid, type) => {
+    console.debug("Ouvrir " + type + " " + uuid);
+    if(type === 'repertoire') {
+      this.changerRepertoire(uuid);
+    } else if(type === 'fichier') {
+      this.afficherProprietesFichier(uuid);
+    }
+  }
+
+  telecharger = (uuid) => {
+    console.debug("Telecharger " + uuid);
   }
 
   afficherRepertoire = event => {
@@ -414,22 +464,24 @@ export class GrosFichiers extends React.Component {
           <NavigationRepertoire
             repertoireCourant={repertoireCourant}
             downloadUrl={this.state.downloadUrl}
-            creerRepertoire={this.creerRepertoire}
-            supprimerRepertoire={this.supprimerRepertoire}
             afficherChangerNom={this.afficherChangerNom}
             afficherPopupCreerRepertoire={this.afficherPopupCreerRepertoire}
             afficherRepertoire={this.afficherRepertoire}
             afficherPopupRenommerRepertoire={this.afficherPopupRenommerRepertoire}
             deplacerSelection={this.deplacerSelection}
             />
-          <ContenuRepertoire
-            repertoireCourant={repertoireCourant}
-            downloadUrl={this.state.downloadUrl}
-            afficherProprietesFichier={this.afficherProprietesFichier}
-            afficherChangerNomFichier={this.afficherChangerNomFichier}
-            supprimerFichier={this.supprimerFichier}
-            selectionnerFichier={this.selectionnerFichier}
+          <PanneauFichiersIcones
+            repertoires={repertoireCourant.repertoires}
+            fichiers={repertoireCourant.fichiers}
+            doubleclickRepertoire={this.doubleclickRepertoire}
+            doubleclickFichier={this.doubleclickFichier}
+            copier={this.copier}
+            deplacer={this.deplacer}
+            supprimer={this.supprimer}
+            ouvrir={this.ouvrir}
+            telecharger={this.telecharger}
             />
+
         </div>
       )
     }
@@ -530,31 +582,6 @@ function NavigationRepertoire(props) {
 
   var repertoireCourant1 = props.repertoireCourant;
 
-  let sousRepertoires = [];
-  if(repertoireCourant1.repertoires) {
-    let listeATrier = []
-    for(var uuidRep in repertoireCourant1.repertoires) {
-      let sousRepertoire = repertoireCourant1.repertoires[uuidRep];
-      listeATrier.push(sousRepertoire);
-    }
-    listeATrier.sort((a,b)=>{
-      let nomA=a.nom, nomB=b.nom;
-      return nomA.localeCompare(nomB);
-    })
-
-    listeATrier.forEach(repertoire=>{
-      sousRepertoires.push(
-        <li key={repertoire.repertoire_uuid}>
-          <button
-            className="aslink"
-            value={repertoire.repertoire_uuid}
-            onClick={props.afficherRepertoire}>{repertoire.nom}</button>
-        </li>
-      );
-    })
-
-  }
-
   return (
     <div>
       <p>Repertoire {repertoireCourant1.nom}</p>
@@ -563,9 +590,6 @@ function NavigationRepertoire(props) {
         value={repertoireCourant1.parent_id}
         onClick={props.afficherRepertoire}>{repertoireCourant1.chemin_repertoires}</button>
       <p>{repertoireCourant1.commentaires}</p>
-      <ul>
-        {sousRepertoires}
-      </ul>
 
       <button
         value={repertoireCourant1.nom}
@@ -575,12 +599,6 @@ function NavigationRepertoire(props) {
         value={repertoireCourant1.nom}
         data-uuidrepertoire={repertoireCourant1.repertoire_uuid}
         onClick={props.afficherPopupRenommerRepertoire}>Renommer</button>
-      <button
-        value={repertoireCourant1.repertoire_uuid}
-        onClick={props.deplacerSelection}>Coller (deplacer)</button>
-      <button
-        value={repertoireCourant1.repertoire_uuid}
-        onClick={props.supprimerRepertoire}>Supprimer</button>
 
       <FileUploadSection repertoireCourant={repertoireCourant1}/>
     </div>

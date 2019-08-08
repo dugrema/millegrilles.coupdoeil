@@ -6,7 +6,7 @@ import manifest from './manifest.build.js';  // App version, build date
 import './Ecran.css';
 import './w3.css';
 import './w3-theme-blue-grey.css';
-import './font-awesome.min.css';
+import 'font-awesome/css/font-awesome.min.css';
 
 // Importer les Domaines et creer la liste des domaines connus
 import {SenseursPassifs} from './domaines/SenseursPassifs';
