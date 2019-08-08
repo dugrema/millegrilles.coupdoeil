@@ -66,15 +66,16 @@ export class GrosFichiers extends React.Component {
     });
   }
 
-  telecharger = fuuid => {
+  telecharger = uuidfichier => {
     // Trouver fichier dans information repertoire
     let infoRepertoire = this.state.repertoireCourant || this.state.repertoireRacine;
     console.debug(infoRepertoire);
-    var fichier = infoRepertoire.fichiers[fuuid];
-    console.debug("Telecharger fichier uuid: " + fuuid + ": " + fichier);
+    var fichier = infoRepertoire.fichiers[uuidfichier];
+    console.debug("Telecharger fichier uuid: " + uuidfichier + ": " + fichier);
     if(!fichier) {
-      throw new Error("Erreur fichier inconnu: " + fuuid)
+      throw new Error("Erreur fichier inconnu: " + uuidfichier)
     }
+    let fuuid = fichier.fuuid_v_courante;
     let nomFichier = fichier.nom;
     let contentType = fichier.mimetype;
 
