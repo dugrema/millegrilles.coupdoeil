@@ -192,8 +192,20 @@ export class GrosFichiers extends React.Component {
     for(var uuid in selection) {
       let infoitem = selection[uuid];
       let typeitem = infoitem.type;
-      console.debug(typeitem + " " + uuid);
+
+      if(typeitem === 'fichier') {
+        var transaction = {
+          "uuid": uuid,
+          "repertoire_uuid": repertoireDestination,
+        }
+        webSocketManager.transmettreTransaction(
+          'millegrilles.domaines.GrosFichiers.deplacerFichier', transaction);
+      } else if(typeitem === 'repertoire') {
+
+      }
+
     }
+
   }
 
   supprimer = (selection) => {
@@ -659,64 +671,6 @@ function NavigationRepertoire(props) {
       <FileUploadSection repertoireCourant={repertoireCourant1}/>
     </div>
   );
-}
-
-class ContenuRepertoire extends React.Component {
-  // Affiche une liste formattee des fichiers du repertoire
-  // Permet de telecharger les fichiers, ouvrir le detail d'un fichier.
-
-  constructor(props) {
-    super(props);
-    this.refFormulaireDownload = React.createRef();
-    this.download = this.download.bind(this);
-  }
-
-  download(event) {
-    let bouton = event.currentTarget;
-    let nomFichier = bouton.value;
-    let fuuid = bouton.dataset.fuuid;
-    let contentType = bouton.dataset.contenttype;
-
-    console.debug("1. Bouton clique pour fichier " + nomFichier);
-    let form = this.refFormulaireDownload.current;
-    let downloadUrl = this.props.downloadUrl;
-
-    console.debug("2. fuuide: " + fuuid);
-    webSocketManager.demanderTokenTransfert()
-    .then(token=>{
-      form.action = downloadUrl + "/" + nomFichier;
-      form.fuuid.value = fuuid;
-      form.nomfichier.value = nomFichier;
-      form.contenttype.value = contentType;
-      form.authtoken.value = token;
-
-      console.debug("2. Submit preparation, download " + form.action + ", recu token " + form.authtoken.value);
-      form.submit(); // Token pret, submit.
-
-    })
-    .catch(err=>{
-      console.error("Erreur preparation download");
-      console.error(err);
-    })
-
-  }
-
-  render() {
-    // Formulaire utilise pour POST la requete avec authtoken
-    return (
-      <form
-        target="_blank"
-        ref={this.refFormulaireDownload}
-        action="dummyaction"
-        method="POST">
-          <input type="hidden" name="authtoken" value="dummytoken"/>
-          <input type="hidden" name="fuuid" value="dummyfuuide"/>
-          <input type="hidden" name="nomfichier" value="dummynomfichier"/>
-          <input type="hidden" name="contenttype" value="dummycontentype"/>
-      </form>
-    );
-  }
-
 }
 
 function AffichageFichier(props) {

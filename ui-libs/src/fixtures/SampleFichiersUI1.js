@@ -70,8 +70,9 @@ class EcranSample1 extends React.Component {
     console.debug("Double click fichier " + uuidFichier);
   }
 
-  copier = (selection, repertoireDestination) => {
+  copier = (repertoireDestination) => {
     console.debug("Copier vers " + repertoireDestination);
+    let selection = this.state.elementsCopierDeplacer;
     for(var uuid in selection) {
       let infoitem = selection[uuid];
       let typeitem = infoitem.type;
@@ -79,13 +80,17 @@ class EcranSample1 extends React.Component {
     }
   }
 
-  deplacer = (selection, repertoireDestination) => {
+  deplacer = (repertoireDestination) => {
     console.debug("Deplacer vers " + repertoireDestination);
+    let selection = this.state.elementsCopierDeplacer;
     for(var uuid in selection) {
       let infoitem = selection[uuid];
       let typeitem = infoitem.type;
       console.debug(typeitem + " " + uuid);
     }
+
+    // Les items ont ete deplaces, l'operation ne peut pas etre repetee.
+    this.setState({elementsCopierDeplacer: null});
   }
 
   supprimer = (selection) => {
@@ -105,6 +110,20 @@ class EcranSample1 extends React.Component {
     console.debug("Telecharger " + uuid);
   }
 
+  activerCopier = selection => {
+    this.setState({
+      elementsCopierDeplacer: selection,
+      operationCopierDeplacer: 'copier',
+    });
+  }
+
+  activerDeplacer = selection => {
+    this.setState({
+      elementsCopierDeplacer: selection,
+      operationCopierDeplacer: 'deplacer',
+    });
+  }
+
   render() {
     return (
       <div>
@@ -116,6 +135,9 @@ class EcranSample1 extends React.Component {
           fichiers={this.state.sampleData_fichiers_1}
           doubleclickRepertoire={this.doubleclickRepertoire}
           doubleclickFichier={this.doubleclickFichier}
+          activerCopier={this.activerCopier}
+          activerDeplacer={this.activerDeplacer}
+          operationCopierDeplacer={this.state.operationCopierDeplacer}
           copier={this.copier}
           deplacer={this.deplacer}
           supprimer={this.supprimer}

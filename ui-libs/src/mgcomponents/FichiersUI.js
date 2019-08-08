@@ -18,18 +18,18 @@ class PanneauFichiersIcones extends React.Component {
   // Props a fournir:
   //   - fichiers: dict de fichiers (uuid: {nom:, uuid:, ...})
   //   - repertoires: dict de repertoires (repertoire_uuid: {nom:, repertoire_uuid:, ...})
+  //   - operationCopierDeplacer: type d'operation a faire
   //   + ouvrir: (uuid, type) ou type=repertoire/fichier
   //   + telecharger: (fichieruuid)
   //   + copier: (parametres selection, repertoireDestination)
   //   + deplacer: (parametres selection, repertoireDestination)
   //   + supprimer: (parametre selection)
+  //   + activerCopier: (parametres selection)
+  //   + activerDeplacer: (parametres selection)
 
   state = {
     menuContextuel: null,
     elementsSelectionnes: {},
-
-    elementsCopierDeplacer: null,   // Liste d'elements a copier ou deplacer
-    operationCopierDeplacer: null,  // Le type d'operation: copier ou deplacer
   }
 
   // Gestionnaire d'evenements
@@ -122,30 +122,16 @@ class PanneauFichiersIcones extends React.Component {
 
   activerCopier = (event) => {
     // Conserve la selection dans le buffer copier
-    this.setState({
-      elementsCopierDeplacer: this.state.elementsSelectionnes,
-      operationCopierDeplacer: 'copier',
-    });
+    this.props.activerCopier(this.state.elementsSelectionnes, 'copier');
   }
 
   activerDeplacer = (event) => {
     // Conserve la selection dans le buffer deplacer (couper)
-    this.setState({
-      elementsCopierDeplacer: this.state.elementsSelectionnes,
-      operationCopierDeplacer: 'deplacer',
-    });
+    this.props.activerDeplacer(this.state.elementsSelectionnes, 'deplacer');
   }
 
-  copier = repertoireDestination => {
-    // Deleguer au handler du contenant parent
-    this.props.copier(this.state.elementsCopierDeplacer, repertoireDestination);
-  }
-
-  deplacer = repertoireDestination => {
-    // Deleguer au handler du contenant parent
-    this.props.deplacer(this.state.elementsCopierDeplacer, repertoireDestination);
-    // Les items sont deplaces, on ne peut pas repeter l'operation.
-    this.setState({elementsCopierDeplacer: null, operationCopierDeplacer: null});
+  coller = (event) => {
+    this.props.coller(); // Appelle methode coller du parent
   }
 
   supprimer = event => {
@@ -257,13 +243,13 @@ class PanneauFichiersIcones extends React.Component {
         <MenuContextuel
           parametres={this.state.menuContextuel}
           elementsSelectionnes={this.state.elementsSelectionnes}
-          operationCopierDeplacer={this.state.operationCopierDeplacer}
+          operationCopierDeplacer={this.props.operationCopierDeplacer}
           activerCopier={this.activerCopier}
           activerDeplacer={this.activerDeplacer}
           ouvrir={this.props.ouvrir}
           telecharger={this.props.telecharger}
-          copier={this.copier}
-          deplacer={this.deplacer}
+          copier={this.props.copier}
+          deplacer={this.props.deplacer}
           supprimer={this.supprimer}
           />
       )
