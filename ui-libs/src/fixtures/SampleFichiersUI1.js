@@ -133,6 +133,21 @@ class EcranSample1 extends React.Component {
     console.debug("Double click fichier " + uuidFichier);
   }
 
+  copier(selection, repertoireDestination) {
+    console.debug("Copier vers " + repertoireDestination);
+    console.debug(selection);
+  }
+
+  deplacer(selection, repertoireDestination) {
+    console.debug("Deplacer vers " + repertoireDestination);
+    console.debug(selection);
+  }
+
+  supprimer(selection) {
+    console.debug("Supprimer");
+    console.debug(selection);
+  }
+
   render() {
     return (
       <div>
@@ -146,6 +161,9 @@ class EcranSample1 extends React.Component {
           clickFichier={this.clickFichier}
           doubleclickRepertoire={this.doubleclickRepertoire}
           doubleclickFichier={this.doubleclickFichier}
+          copier={this.copier}
+          deplacer={this.deplacer}
+          supprimer={this.supprimer}
           />
 
         <h2>Panneau Fichiers Liste</h2>

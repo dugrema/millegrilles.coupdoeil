@@ -3,7 +3,8 @@ import 'font-awesome/css/font-awesome.min.css';
 
 import './FichiersUI.css';
 
-var mapMimeType = {
+// Mapping entre les mimetype et l'icone a afficher.
+const mapMimeTypeIcons = {
   'application/excel': 'fa-file-excel-o',
   'application/json': 'fa-file-code-o',
   'application/pdf': 'fa-file-pdf-o',
@@ -13,14 +14,23 @@ var mapMimeType = {
 }
 
 class PanneauFichiersIcones extends React.Component {
+  // Panneau qui affiche les repertoires et fichiers sous forme d'icone.
+  // Props a fournir:
+  //   - fichiers: dict de fichiers (uuid: {nom:, uuid:, ...})
+  //   - repertoires: dict de repertoires (repertoire_uuid: {nom:, repertoire_uuid:, ...})
+  //   + copier: (parametres selection, repertoireDestination)
+  //   + deplacer: (parametres selection, repertoireDestination)
+  //   + supprimer: (parametre selection)
 
   state = {
     menuContextuel: null,
     elementsSelectionnes: {},
 
-    elementsACopier: null,  // Liste d'elements a copier (clipboard)
-    elementsADeplacer: null,  // Liste d'elements a deplacer (couper, clipboard)
+    elementsCopierDeplacer: null,   // Liste d'elements a copier ou deplacer
+    operationCopierDeplacer: null,  // Le type d'operation: copier ou deplacer
   }
+
+  // Gestionnaire d'evenements
 
   activerMenuContextuel = (event) => {
     event.preventDefault(); // Empecher le menu contextuel du navigateur.
@@ -41,6 +51,7 @@ class PanneauFichiersIcones extends React.Component {
       // C'est un fichier. On render le popup de fichier.
       this.setState({menuContextuel: {
         type: 'fichier',
+        repertoireuuid: dataset.fichieruuid,
         x: positionX,
         y: positionY,
       }})
@@ -48,6 +59,7 @@ class PanneauFichiersIcones extends React.Component {
       // C'est un repertoire. On render le popup du repertoire.
       this.setState({menuContextuel: {
         type: 'repertoire',
+        repertoireuuid: dataset.repertoireuuid,
         x: positionX,
         y: positionY,
       }})
@@ -108,13 +120,64 @@ class PanneauFichiersIcones extends React.Component {
 
   activerCopier = (event) => {
     // Conserve la selection dans le buffer copier
-    this.setState({elementsACopier: this.state.elementsSelectionnes});
+    this.setState({
+      elementsCopierDeplacer: this.state.elementsSelectionnes,
+      operationCopierDeplacer: 'copier',
+    });
   }
 
   activerDeplacer = (event) => {
     // Conserve la selection dans le buffer deplacer (couper)
-    this.setState({elementsADeplacer: this.state.elementsSelectionnes});
+    this.setState({
+      elementsCopierDeplacer: this.state.elementsSelectionnes,
+      operationCopierDeplacer: 'deplacer',
+    });
   }
+
+  copier = repertoireDestination => {
+    // Deleguer au handler du contenant parent
+    this.props.copier(this.state.elementsCopierDeplacer, repertoireDestination);
+  }
+
+  deplacer = repertoireDestination => {
+    // Deleguer au handler du contenant parent
+    this.props.deplacer(this.state.elementsCopierDeplacer, repertoireDestination);
+    // Les items sont deplaces, on ne peut pas repeter l'operation.
+    this.setState({elementsCopierDeplacer: null, operationCopierDeplacer: null});
+  }
+
+  supprimer = event => {
+    // Deleguer au handler du contenant parent
+    this.props.supprimer(this.state.elementsSelectionnes);
+    this.setState({elementsSelectionnes: null});
+  }
+
+  // Methodes utilitaire
+
+  determinerIconeFichier(fichier) {
+    let mimetype = fichier.mimetype;
+    let icone = mapMimeTypeIcons[mimetype];
+    if(!icone) {
+      icone = 'fa-file-o'; // Par defaut un icone generique
+    }
+
+    return 'fa ' + icone + ' fa-5x';
+  }
+
+  trierListe(items) {
+    let listeTriee = [];
+    for(var item_uuid in items) {
+      let item = items[item_uuid];
+      listeTriee.push(item);
+    }
+    listeTriee.sort((a,b)=>{
+      let nomA=a.nom, nomB=b.nom;
+      return nomA.localeCompare(nomB);
+    })
+    return listeTriee;
+  }
+
+  // Methodes de rendering du panneau
 
   preparerRepertoires() {
     let repertoires = this.props.repertoires;
@@ -182,29 +245,6 @@ class PanneauFichiersIcones extends React.Component {
     return listeRendered;
   }
 
-  determinerIconeFichier(fichier) {
-    let mimetype = fichier.mimetype;
-    let icone = mapMimeType[mimetype];
-    if(!icone) {
-      icone = 'fa-file-o'; // Par defaut un icone generique
-    }
-
-    return 'fa ' + icone + ' fa-5x';
-  }
-
-  trierListe(items) {
-    let listeTriee = [];
-    for(var item_uuid in items) {
-      let item = items[item_uuid];
-      listeTriee.push(item);
-    }
-    listeTriee.sort((a,b)=>{
-      let nomA=a.nom, nomB=b.nom;
-      return nomA.localeCompare(nomB);
-    })
-    return listeTriee;
-  }
-
   render() {
     let repertoires = this.preparerRepertoires();
     let fichiers = this.preparerFichiers();
@@ -213,6 +253,13 @@ class PanneauFichiersIcones extends React.Component {
       menuContextuel = (
         <MenuContextuel
           parametres={this.state.menuContextuel}
+          elementsSelectionnes={this.state.elementsSelectionnes}
+          operationCopierDeplacer={this.state.operationCopierDeplacer}
+          activerCopier={this.activerCopier}
+          activerDeplacer={this.activerDeplacer}
+          copier={this.copier}
+          deplacer={this.deplacer}
+          supprimer={this.supprimer}
           />
       )
     }
@@ -242,38 +289,158 @@ class PanneauFichiersListeDetaillee extends React.Component {
 
 class MenuContextuel extends React.Component {
 
+  coller = event => {
+    // Copier ou deplacer les items dans le buffer.
+    let repertoireDestination = this.props.parametres.repertoireuuid;
+
+    let operation = this.props.operationCopierDeplacer;
+    if(operation === 'copier') {
+      this.props.copier(repertoireDestination);
+    } else if(operation === 'deplacer') {
+      this.props.deplacer(repertoireDestination);
+    }
+  }
+
+  renderMenuPanneau() {
+    let copierOuCouperExiste = this.props.operationCopierDeplacer;
+
+    let boutonColler = null;
+    if(copierOuCouperExiste) {
+      boutonColler = (
+        <li>
+          <button onClick={this.coller}>
+            <i className="fa fa-paste"></i> Coller
+          </button>
+        </li>
+      );
+    }
+
+    return (
+      <ul>
+        {boutonColler}
+        <li>
+          <button>
+            <i className="fa fa-edit"></i> Proprietes
+          </button>
+        </li>
+      </ul>
+    );
+  }
+
+  renderMenuFicher() {
+    return (
+      <ul>
+        <li>
+          <button onClick={this.props.activerCopier}>
+            <i className="fa fa-copy"></i> Copier
+          </button>
+        </li>
+        <li>
+          <button onClick={this.props.activerDeplacer}>
+            <i className="fa fa-cut"></i> Couper
+          </button>
+        </li>
+        <li>
+          <button onClick={this.props.supprimer}>
+            <i className="fa fa-eraser"></i> Supprimer
+          </button>
+        </li>
+        <li>
+          <button>
+            <i className="fa fa-edit"></i> Proprietes
+          </button>
+        </li>
+      </ul>
+    );
+  }
+
+  renderMenuRepertoire() {
+
+    let copierOuCouperExiste = this.props.operationCopierDeplacer;
+
+    let boutonColler = null;
+    if(copierOuCouperExiste) {
+      boutonColler = (
+        <li>
+          <button onClick={this.coller}>
+            <i className="fa fa-paste"></i> Coller
+          </button>
+        </li>
+      );
+    }
+
+    return (
+      <ul>
+        <li>
+          <button onClick={this.props.activerCopier}>
+            <i className="fa fa-copy"></i> Copier
+          </button>
+        </li>
+        <li>
+          <button onClick={this.props.activerDeplacer}>
+            <i className="fa fa-cut"></i> Couper
+          </button>
+        </li>
+        {boutonColler}
+        <li>
+          <button onClick={this.props.supprimer}>
+            <i className="fa fa-eraser"></i> Supprimer
+          </button>
+        </li>
+        <li>
+          <button>
+            <i className="fa fa-edit"></i> Proprietes
+          </button>
+        </li>
+      </ul>
+    );
+  }
+
+  renderMenuMultiSelection() {
+    return (
+      <ul>
+        <li>
+          <button onClick={this.props.activerCopier}>
+            <i className="fa fa-copy"></i> Copier
+          </button>
+        </li>
+        <li>
+          <button onClick={this.props.activerDeplacer}>
+            <i className="fa fa-cut"></i> Couper
+          </button>
+        </li>
+        <li>
+          <button onClick={this.props.supprimer}>
+            <i className="fa fa-eraser"></i> Supprimer
+          </button>
+        </li>
+      </ul>
+    );
+  }
+
   render() {
     let parametres = this.props.parametres;
 
     let styleMenu = {
         left: parametres.x,
         top: parametres.y,
-      }
+      };
+
+    // Determiner le type de menu a afficher
+    let renderedMenu;
+    if(Object.keys(this.props.elementsSelectionnes).length > 1) {
+      renderedMenu = this.renderMenuMultiSelection();
+    } else if(parametres['type'] === 'panneau') {
+      renderedMenu = this.renderMenuPanneau();
+    } else if(parametres['type'] === 'repertoire') {
+      renderedMenu = this.renderMenuRepertoire();
+    } else if(parametres['type'] === 'fichier') {
+      renderedMenu = this.renderMenuFicher();
+    }
 
     return (
       <nav className="context-menu" style={styleMenu}>
-        <ul>
-          <li>
-            <button>
-              <i className="fa fa-copy"></i> Copier
-            </button>
-          </li>
-          <li>
-            <button>
-              <i className="fa fa-cut"></i> Couper
-            </button>
-          </li>
-          <li>
-            <button>
-              <i className="fa fa-eraser"></i> Supprimer
-            </button>
-          </li>
-          <li>
-            <button>
-              <i className="fa fa-edit"></i> Proprietes
-            </button>
-          </li>
-        </ul>
+        {renderedMenu}
       </nav>
     );
   }
