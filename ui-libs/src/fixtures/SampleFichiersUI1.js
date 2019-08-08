@@ -114,6 +114,10 @@ class EcranSample1 extends React.Component {
     console.debug("Telecharger " + uuid);
   }
 
+  renommer = (uuid, type) => {
+    console.debug("Renommer " + type + " " + uuid);
+  }
+
   activerCopier = selection => {
     this.setState({
       elementsCopierDeplacer: selection,
@@ -130,6 +134,10 @@ class EcranSample1 extends React.Component {
 
   upload = repertoireDestination => {
     console.debug("Upload vers " + repertoireDestination);
+  }
+
+  creerRepertoire = repertoireDestination => {
+    console.debug("Creer nouveau repertoire dans " + repertoireDestination);
   }
 
   render() {
@@ -152,12 +160,14 @@ class EcranSample1 extends React.Component {
           activerCopier={this.activerCopier}
           activerDeplacer={this.activerDeplacer}
           operationCopierDeplacer={this.state.operationCopierDeplacer}
+          renommer={this.renommer}
           copier={this.copier}
           deplacer={this.deplacer}
           supprimer={this.supprimer}
           ouvrir={this.ouvrir}
           telecharger={this.telecharger}
           upload={this.upload}
+          creerRepertoire={this.creerRepertoire}
           />
 
         <h2>Panneau Fichiers Liste</h2>
