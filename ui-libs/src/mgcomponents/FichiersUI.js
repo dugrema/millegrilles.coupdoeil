@@ -18,6 +18,8 @@ class PanneauFichiersIcones extends React.Component {
   // Props a fournir:
   //   - fichiers: dict de fichiers (uuid: {nom:, uuid:, ...})
   //   - repertoires: dict de repertoires (repertoire_uuid: {nom:, repertoire_uuid:, ...})
+  //   + ouvrir: (uuid, type) ou type=repertoire/fichier
+  //   + telecharger: (fichieruuid)
   //   + copier: (parametres selection, repertoireDestination)
   //   + deplacer: (parametres selection, repertoireDestination)
   //   + supprimer: (parametre selection)
@@ -51,7 +53,7 @@ class PanneauFichiersIcones extends React.Component {
       // C'est un fichier. On render le popup de fichier.
       this.setState({menuContextuel: {
         type: 'fichier',
-        repertoireuuid: dataset.fichieruuid,
+        fichieruuid: dataset.fichieruuid,
         x: positionX,
         y: positionY,
       }})
@@ -198,6 +200,7 @@ class PanneauFichiersIcones extends React.Component {
           key={repertoire.repertoire_uuid}
           className={classNameRepertoire}
           onClick={this.clickSelection}
+          onDoubleClick={this.props.doubleclickRepertoire}
           data-repertoireuuid={repertoire.repertoire_uuid}
           onContextMenu={this.activerMenuContextuel}
         >
@@ -257,6 +260,8 @@ class PanneauFichiersIcones extends React.Component {
           operationCopierDeplacer={this.state.operationCopierDeplacer}
           activerCopier={this.activerCopier}
           activerDeplacer={this.activerDeplacer}
+          ouvrir={this.props.ouvrir}
+          telecharger={this.props.telecharger}
           copier={this.copier}
           deplacer={this.deplacer}
           supprimer={this.supprimer}
@@ -301,6 +306,26 @@ class MenuContextuel extends React.Component {
     }
   }
 
+  ouvrir = (event) => {
+    let parametres = this.props.parametres;
+    if(parametres.type === 'fichier') {
+      this.props.ouvrir(parametres.fichieruuid, parametres.type);
+    } else if(parametres.type === 'repertoire') {
+      this.props.ouvrir(parametres.repertoireuuid, parametres.type);
+    }
+  }
+
+  telecharger = (event) => {
+    let parametres = this.props.parametres;
+    if(parametres.type === 'fichier') {
+      this.props.telecharger(parametres.fichieruuid);
+    } else {
+      console.error("Tentative de telechargement de repertoire (non supporte)");
+    }
+  }
+
+
+
   renderMenuPanneau() {
     let copierOuCouperExiste = this.props.operationCopierDeplacer;
 
@@ -331,6 +356,11 @@ class MenuContextuel extends React.Component {
     return (
       <ul>
         <li>
+          <button onClick={this.telecharger}>
+            <i className="fa fa-edit"></i> Telecharger
+          </button>
+        </li>
+        <li>
           <button onClick={this.props.activerCopier}>
             <i className="fa fa-copy"></i> Copier
           </button>
@@ -346,7 +376,7 @@ class MenuContextuel extends React.Component {
           </button>
         </li>
         <li>
-          <button>
+          <button onClick={this.ouvrir}>
             <i className="fa fa-edit"></i> Proprietes
           </button>
         </li>
@@ -388,7 +418,7 @@ class MenuContextuel extends React.Component {
           </button>
         </li>
         <li>
-          <button>
+          <button onClick={this.ouvrir}>
             <i className="fa fa-edit"></i> Proprietes
           </button>
         </li>

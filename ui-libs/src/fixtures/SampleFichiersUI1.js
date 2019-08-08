@@ -95,6 +95,14 @@ class EcranSample1 extends React.Component {
     console.debug(selection);
   }
 
+  ouvrir(uuid, type) {
+    console.debug("Ouvrir " + type + " " + uuid);
+  }
+
+  telecharger(uuid) {
+    console.debug("Telecharger " + uuid);
+  }
+
   render() {
     return (
       <div>
@@ -111,6 +119,8 @@ class EcranSample1 extends React.Component {
           copier={this.copier}
           deplacer={this.deplacer}
           supprimer={this.supprimer}
+          ouvrir={this.ouvrir}
+          telecharger={this.telecharger}
           />
 
         <h2>Panneau Fichiers Liste</h2>
