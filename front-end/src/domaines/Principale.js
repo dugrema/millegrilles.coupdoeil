@@ -49,27 +49,26 @@ class GestionTokens extends React.Component {
 
   ajouterToken = () => {
 
-    webSocketManager.emit('ajouter-token-challenge', {})
-    .then(challenge=>{
+    // Le processus comporte plusieurs etapes. On commence par ajouter
+    // un handler pour repondre au challenge du serveur.
+    var callbackChallenge = null;
+    webSocketManager.emitWEventCallback(
+      'enregistrerDevice', {}, 'challengeEnregistrerDevice')
+    .then(event=>{
+      let challenge = event[0];
+      let cb = event[1];
       console.log("Challenge recu");
       console.log(challenge);
+      console.log(cb);
+      callbackChallenge = cb;
+
       return solveRegistrationChallenge(challenge);
-    }).then(credentials => {
+    }).then(credentials=>{
       console.log("Transmission de la reponse au challenge");
       console.log(credentials);
 
       // Transmettre reponse
-      return webSocketManager.emit('ajouter-token-reponse');
-
-    }).then(resultat => {
-      var loggedIn = resultat['loggedIn'];
-
-      if (loggedIn) {
-        console.log('registration successful');
-      } else {
-        console.error('registration failed');
-      }
-
+      callbackChallenge(credentials);
     }).catch(err=>{
       console.error("Erreur traitement ajouter token");
       console.error(err);

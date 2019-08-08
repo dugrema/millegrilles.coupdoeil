@@ -150,7 +150,7 @@ class WebSocketApp {
           relyingParty: { name: 'coupdoeil' },
           user: { id: 'usager', name: 'usager' }
       });
-      challenge_conserve = challengeResponse.challenge;
+      var challenge_conserve = challengeResponse.challenge;
 
       socket.emit('challengeEnregistrerDevice', challengeResponse, (reponse)=>{
         const { key, challenge } = parseRegisterRequest(reponse);
@@ -159,13 +159,13 @@ class WebSocketApp {
         console.log(key);
         console.log(challenge);
 
-        empreinte = {
+        var empreinte = {
             'cle': key
         }
 
         // Noter que la transaction va echouer si l'empreinte a deja ete creee.
         rabbitMQ.singleton.transmettreTransactionFormattee(
-            empreinte, 'millegrilles.domaines.Principale.enregistrerDevice')
+            empreinte, 'millegrilles.domaines.Principale.ajouterToken')
           .then( msg => {
             console.log("Recu confirmation d'ajout de device'");
             console.log(msg);

@@ -88,7 +88,7 @@ class App extends React.Component {
   login = () => {
     if(!this.state.wss_socket) {
       // Ouvrir un nouveau socket vers le serveur
-      let socket = openSocket('/');
+      let socket = openSocket('/', {reconnection: false});
 
       // Enregistrer evenements generiques
       socket.on('erreur', erreur=>{

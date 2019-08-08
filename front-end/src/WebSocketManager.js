@@ -139,6 +139,38 @@ class WebSocketManager {
     return promise;
   }
 
+  emitWEventCallback(eventType, content, eventTypeCallback) {
+    // Methode qui simule la reception d'un callback en emettant un
+    // evenement puis en ecoutant sur un nouveau type (socket.on(...))
+
+    let promise = new Promise((resolve, reject) => {
+      var socket = this.socket;
+
+      // Creation d'un timeout pour faire le clreanup.
+      var timeoutHandler = setTimeout(function () {
+        socket.removeListener(eventTypeCallback);
+        reject(new Error("Timeout " + eventType));
+      }, 15000);
+
+      // Activer le listener.
+      socket.on(eventTypeCallback, (event, cb)=>{
+        console.debug("Event recu " + eventTypeCallback);
+        console.debug(event);
+
+        // Cleanup
+        clearTimeout(timeoutHandler);
+        socket.removeListener(eventTypeCallback);
+
+        resolve([event, cb]);
+      });
+
+      // Emettre l'evenement declencheur.
+      socket.emit(eventType, content);
+    });
+
+    return promise;
+  }
+
 }
 
 const manager = new WebSocketManager();
