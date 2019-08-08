@@ -125,14 +125,20 @@ class EcranSample1 extends React.Component {
   }
 
   render() {
+    let repertoire = {
+      repertoire_uuid: 'a06266fa-b8a2-11e9-9370-02420a000285',
+      nom: "Le Panneau",
+      fichiers: this.state.sampleData_fichiers_1,
+      repertoires: this.state.sampleData_repertoires_flat
+    }
+
     return (
       <div>
         <h1>Panneau exemples pour FichiersUI.js</h1>
 
         <h2>Panneau Fichiers Icones</h2>
         <PanneauFichiersIcones
-          repertoires={this.state.sampleData_repertoires_flat}
-          fichiers={this.state.sampleData_fichiers_1}
+          repertoire={repertoire}
           doubleclickRepertoire={this.doubleclickRepertoire}
           doubleclickFichier={this.doubleclickFichier}
           activerCopier={this.activerCopier}

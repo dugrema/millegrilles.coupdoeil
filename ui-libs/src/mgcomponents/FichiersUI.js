@@ -16,8 +16,7 @@ const mapMimeTypeIcons = {
 class PanneauFichiersIcones extends React.Component {
   // Panneau qui affiche les repertoires et fichiers sous forme d'icone.
   // Props a fournir:
-  //   - fichiers: dict de fichiers (uuid: {nom:, uuid:, ...})
-  //   - repertoires: dict de repertoires (repertoire_uuid: {nom:, repertoire_uuid:, ...})
+  //   - repertoire: document de repertoire (avec nom, repertoire_uuid, sous-repertoires, fichiers)
   //   - operationCopierDeplacer: type d'operation a faire
   //   + ouvrir: (uuid, type) ou type=repertoire/fichier
   //   + telecharger: (fichieruuid)
@@ -168,7 +167,7 @@ class PanneauFichiersIcones extends React.Component {
   // Methodes de rendering du panneau
 
   preparerRepertoires() {
-    let repertoires = this.props.repertoires;
+    let repertoires = this.props.repertoire.repertoires;
 
     // Extraire et trier les repertoires
     let repertoiresTries = this.trierListe(repertoires);
@@ -203,7 +202,7 @@ class PanneauFichiersIcones extends React.Component {
   }
 
   preparerFichiers() {
-    let fichiers = this.props.fichiers;
+    let fichiers = this.props.repertoire.fichiers;
 
     // Extraire et trier les repertoires
     let fichiersTries = this.trierListe(fichiers);
