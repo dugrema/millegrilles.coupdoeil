@@ -12,6 +12,7 @@ const FS = require("fs");
 const Path = require('path');
 const Spdy = require('spdy');
 const io = require('socket.io');
+const rabbitMQ = require('../routes/res/rabbitMQ')
 
 /**
  * Get port from environment and store in Express.
@@ -21,6 +22,7 @@ var port = normalizePort(process.env.PORT || '443');
 const hostIp = process.env.HOST || 'dev2.maple.mdugre.info';
 const key_path = process.env.PRIVKEY;
 const cert_path = process.env.CERT;
+const nomMilleGrille = process.env.MG_NOM_MILLEGRILLE;
 
 /**
  * Create SPDY/http2 server.
@@ -42,6 +44,12 @@ const server = Spdy.createServer(config, app).listen(port, () => {
 
   console.log('Server is listening at https://localhost:' + port + '. Ctrl^C to stop it.');
 });
+
+
+// Connexion a RabbitMQ
+let mqConnectionUrl = process.env.MG_MQ_URL || 'amqps://mq:5673/' + nomMilleGrille;
+rabbitMQ.singleton.connect(mqConnectionUrl);
+
 
 /**
  * Normalize a port into a number, string, or false.

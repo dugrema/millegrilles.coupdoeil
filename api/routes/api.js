@@ -93,9 +93,4 @@ router.post('/effectuer-empreinte', (req, res) => {
     return res.send({ loggedIn: true });
 });
 
-// Initialisation, connexions
-// Creer les connexions
-let mqConnectionUrl = process.env.MG_MQ_URL || 'amqps://mq:5673/';
-rabbitMQ.singleton.connect(mqConnectionUrl);
-
 module.exports = router;
