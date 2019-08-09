@@ -7,6 +7,7 @@ var bodyParser = require('body-parser');
 var path = require('path');
 var request = require('request');
 const fichierProcesseur = require('./res/fichierProcesseur');
+const pki = require('./res/pki')
 
 var stagingFolder = process.env.MG_STAGING_FOLDER || "/tmp/coupdoeilStaging";
 var multer_fn = multer({dest: stagingFolder}).array('grosfichier');
@@ -72,12 +73,13 @@ router.post('/local/*', function(req, res, next) {
 
   let targetConsignation = serveurConsignation + '/grosFichiers/local/' + fuuid;
   console.debug("Transfert vers: " + targetConsignation);
+  console.debug(pki.ca);
 
   // Connecter au serveur consignation.
   const options = {
     url: targetConsignation,
     headers: headers,
-    // strictSSL: false,
+    agentOptions: {ca: pki.ca},  // Utilisation certificats SSL internes
   }
 
   try {

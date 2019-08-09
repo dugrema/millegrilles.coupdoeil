@@ -16,6 +16,7 @@ class PKIUtils {
 
     this.cle = null;
     this.cert = null;
+    this.ca = null;
 
     this.chargerPEMs();
     this._verifierCertificat();
@@ -25,6 +26,7 @@ class PKIUtils {
     const fs = require('fs');
     console.log("PKI: Chargement cle " + this.keyFile + " et cert " + this.certFile);
     this.cle = fs.readFileSync(this.keyFile);
+    this.ca = fs.readFileSync(this.cacertFile);
 
     // Charger le certificat pour conserver commonName, fingerprint
     this.chargerCertificat();
