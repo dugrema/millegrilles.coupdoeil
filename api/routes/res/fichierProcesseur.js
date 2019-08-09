@@ -4,6 +4,7 @@ const uuidv1 = require('uuid/v1');
 const request = require('request');
 const crypto = require('crypto');
 const rabbitMQ = require('./rabbitMQ');
+const pki = require('./pki')
 
 class ProcesseurUpload {
 
@@ -25,7 +26,8 @@ class ProcesseurUpload {
           taille: fichier.size,
           fileuuid: fileUuid,
           encrypte: false,
-        }
+        },
+        agentOptions: {ca: pki.ca},  // Utilisation certificats SSL internes
       };
 
       try {
