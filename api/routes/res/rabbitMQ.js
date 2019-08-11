@@ -94,7 +94,7 @@ class RabbitMQWrapper {
 
   scheduleReconnect() {
     // Met un timer pour se reconnecter
-    const dureeAttente = 5;
+    const dureeAttente = 30;
 
     if(!this.reconnectTimeout) {
       var mq = this;
