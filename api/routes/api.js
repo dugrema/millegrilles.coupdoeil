@@ -4,6 +4,7 @@ var router = express.Router();
 var amqp = require('amqplib');
 var fs = require('fs');
 var sessionManagement = require('./res/sessionManagement');
+var bodyParser = require('body-parser');
 
 const {
     generateRegistrationChallenge,
@@ -12,6 +13,8 @@ const {
     parseLoginRequest,
     verifyAuthenticatorAssertion,
 } = require('@webauthn/server');
+
+router.use(bodyParser.json());
 
 /* Sample. */
 router.get('/', function(req, res, next) {
@@ -28,6 +31,7 @@ class SocketSession {
 /* Authentification */
 router.post('/initialiser-empreinte', (req, res) => {
     const { id, email } = req.body;
+    console.debug("initialiser-empreinte: Id " + id + ", email " + email);
 
     // Verifier que la MilleGrille n'a pas deja d'empreinte usager
     let filtre = {"_mg-libelle": "profil.usager"};

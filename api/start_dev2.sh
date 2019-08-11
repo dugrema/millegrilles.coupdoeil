@@ -14,7 +14,7 @@ export MG_MQ_KEYFILE=$CERT_FOLDER/millegrilles/privkeys/dev2.maple.mdugre.info.p
 
 export CERT=$CERT_FOLDER/dev2.maple.mdugre.info/fullchain.pem
 export PRIVKEY=$CERT_FOLDER/dev2.maple.mdugre.info/privkey.pem
-export MG_MQ_URL=amqps://dev2:5673/$MG_NOM_MILLEGRILLE
+export MG_MQ_URL=amqps://dev2.local:5673/$MG_NOM_MILLEGRILLE
 export PORT=3001
 
 export MG_HTTPPROXY_SECURE=false
