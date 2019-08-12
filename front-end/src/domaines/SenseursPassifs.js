@@ -17,45 +17,46 @@ export class SenseursPassifs extends React.Component {
   // Configuration statique du composant:
   //   subscriptions: Le nom des routing keys qui vont etre ecoutees
   config = {
-    subscriptions: ['noeuds.source.millegrilles_domaines_SenseursPassifs.documents']
+    subscriptions: [
+      'noeuds.source.millegrilles_domaines_SenseursPassifs.documents.senseur.individuel',
+      'noeuds.source.millegrilles_domaines_SenseursPassifs.documents.noeud.individuel',
+    ]
   };
 
   processMessage = (routingKey, doc) => {
     // console.log("Process message " + routingKey);
-    if(routingKey === 'noeuds.source.millegrilles_domaines_SenseursPassifs.documents') {
-      const mg_libelle = doc["_mg-libelle"];
-      if(mg_libelle === 'noeud.individuel') {
-        // MAJ d'un document de noeud.
-        // console.log("Traitement d'un noeud!");
-        var noeud_idx_trouve = null, listeNoeudsActuelle = this.state.listeNoeuds;
+    const mg_libelle = doc["_mg-libelle"];
+    if(routingKey === 'noeuds.source.millegrilles_domaines_SenseursPassifs.documents.noeud.individuel') {
+      // MAJ d'un document de noeud.
+      // console.log("Traitement d'un noeud!");
+      var noeud_idx_trouve = null, listeNoeudsActuelle = this.state.listeNoeuds;
 
-        for(var noeud_idx in this.state.listeNoeuds) {
-          let noeud = listeNoeudsActuelle[noeud_idx];
-          if(noeud.noeud === doc.noeud) {
-            noeud_idx_trouve = noeud_idx;
-            break;
-          }
-        }
-
-        let copie_liste_noeuds = listeNoeudsActuelle.slice(); // Copie
-        if(noeud_idx_trouve) {
-          // MAJ du document de noeud dans la liste
-          copie_liste_noeuds[noeud_idx_trouve] = doc;
-        } else {
-          // Nouveau noeud
-          copie_liste_noeuds.push(doc);
-        }
-
-        this.setState({'listeNoeuds': copie_liste_noeuds});
-      } else if(mg_libelle === 'senseur.individuel') {
-        if(this.state.senseur_id && Number(this.state.senseur_id) === doc.senseur) {
-          // Update du document presentement affiche
-          // On met dans un array pour matcher la reponse initiale (find)
-          this.setState({documentSenseur: [doc]});
+      for(var noeud_idx in this.state.listeNoeuds) {
+        let noeud = listeNoeudsActuelle[noeud_idx];
+        if(noeud.noeud === doc.noeud) {
+          noeud_idx_trouve = noeud_idx;
+          break;
         }
       }
 
+      let copie_liste_noeuds = listeNoeudsActuelle.slice(); // Copie
+      if(noeud_idx_trouve) {
+        // MAJ du document de noeud dans la liste
+        copie_liste_noeuds[noeud_idx_trouve] = doc;
+      } else {
+        // Nouveau noeud
+        copie_liste_noeuds.push(doc);
+      }
+
+      this.setState({'listeNoeuds': copie_liste_noeuds});
+    } else if(routingKey === 'noeuds.source.millegrilles_domaines_SenseursPassifs.documents.senseur.individuel') {
+      if(this.state.senseur_id && Number(this.state.senseur_id) === doc.senseur) {
+        // Update du document presentement affiche
+        // On met dans un array pour matcher la reponse initiale (find)
+        this.setState({documentSenseur: [doc]});
+      }
     }
+
   };
 
   chargerDocument = (requete, nomDocument, domaine) => {
