@@ -118,6 +118,11 @@ export class SenseursPassifs extends React.Component {
       senseurs: [noSenseur],
     }
     webSocketManager.transmettreTransaction('millegrilles.domaines.SenseursPassifs.suppressionSenseur', transaction);
+
+    this.setState({
+      documentSenseur: null,
+      senseur_id: null,
+    })
   }
 
   componentDidMount() {
