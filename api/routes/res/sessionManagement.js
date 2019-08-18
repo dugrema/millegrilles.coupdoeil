@@ -15,6 +15,7 @@ class SessionManagement {
     this.session_timeout = process.env.COUPDOEIL_SESSION_TIMEOUT || (60 * 1000);
     this.session_timeout = Number(this.session_timeout);
     this.transferTokens = {};
+    this.pinTemporaireDevice = null;  // PIN utilise pour ajouter un device
   }
 
   start() {
@@ -55,6 +56,25 @@ class SessionManagement {
         // console.debug("Token consomme " + tokenKey);
         return true;
       }
+    }
+    return false;
+  }
+
+  createPinTemporaireDevice() {
+    var pin = crypto.randomBytes(6).toString('dec');
+    this.pinTemporaireDevice = {
+      'pin': pin,
+      'expiration': (new Date()).getTime() + 120000
+    };
+    return pin;
+  }
+
+  consommerPinTemporaireDevice(pin) {
+    var infoPin = this.pinTemporaireDevice;
+    this.pinTemporaireDevice = null; // On enleve le PIN a la premiere tentative
+    if(infoPin && pin === infoPin.pin && infoPin.expiration>=(new Date()).getTime())  {
+      console.info("PIN Temporaire Device correct");
+      return true;
     }
     return false;
   }

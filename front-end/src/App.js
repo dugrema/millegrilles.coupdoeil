@@ -65,15 +65,78 @@ class Login extends React.Component {
     });
   };
 
+  registerPin = event => {
+    const form = event.currentTarget.form;
+    var pin = form.pin.value;
+
+    fetch(urlApi + '/api/initialiser-ajout-token', {
+        method: 'POST',
+        headers: {
+            'content-type': 'Application/Json'
+        },
+        body: JSON.stringify({ id: 'uuid', email: 'test@test', pin: pin })
+    }).then(response => {
+      if(response.status === 200) {
+        response.json().then(challenge => {
+          console.debug("Challenge recu");
+          console.debug(challenge);
+          solveRegistrationChallenge(challenge).then(credentials => {
+            console.debug("Transmission de la reponse au challenge");
+            console.debug(credentials);
+            fetch(
+                urlApi + '/api/effectuer-ajout-token',
+                {
+                    method: 'POST',
+                    headers: {
+                        'content-type': 'Application/Json'
+                    },
+                    body: JSON.stringify(credentials)
+                }
+            ).then(response => {
+              response.json().then(({ loggedIn }) => {
+                if (loggedIn) {
+                    console.log('registration successful');
+                    this.isAuthenticated = true;
+                } else {
+                  console.error('registration failed');
+                }
+              });
+            });
+          });
+        });
+      } else {
+        console.error("initialiser-ajout-token() Response code: " + response.status)
+      }
+    });
+  }
+
   render() {
     // if (redirectToReferrer) return <Redirect to={from} />;
 
     return (
       <div>
-        <p>You must log in to view the page</p>
-        <button onClick={this.props.login_method}>Log in</button>
-        <p>Register now!</p>
-        <button onClick={this.register}>Register</button>
+        <h1>Bienvenue a Coup D'Oeil</h1>
+
+        <p>Veuillez selectionner une action.</p>
+
+        <form onSubmit={event => event.preventDefault()}>
+          <p>
+            <button onClick={this.props.login_method}>Authentifier</button> avec
+            un token USB deja associe a votre MilleGrille.
+          </p>
+
+          <p>
+            Engistrer un nouveau token avec un pin:
+            <input type="text" name="pin" />
+            <button onClick={this.registerPin}>Cliquer pour enregistrer</button>
+          </p>
+
+          <p>
+            Effectuer une empreinte sur votre nouvelle MilleGrille:
+            <button onClick={this.register}>Empreinte</button>
+          </p>
+
+        </form>
       </div>
     );
   }

@@ -142,8 +142,16 @@ class WebSocketApp {
       cb(token); // Renvoit le token pour amorcer le transfert via PUT
     });
 
+    socket.on('creerPINTemporaireDevice', (message, cb) => {
+      let pin = sessionManagement.createPinTemporaireDevice();
+      cb(pin);
+    })
+
     socket.on('enregistrerDevice', (message)=> {
-      // Declence l'ajout d'un nouveau device d'Authentification
+      // Declenche l'ajout d'un nouveau device d'Authentification
+
+      // La requete est faite par websocket, l'usager est deja authentifie alors
+      // aucune verification supplementaire n'est faite (note: on pourrait re-demander l'authentification)
       // Envoyer le challenge et utiliser callback pour recevoir la confirmation
       // Transmettre le challenge
       const challengeResponse = generateRegistrationChallenge({
@@ -156,19 +164,17 @@ class WebSocketApp {
         const { key, challenge } = parseRegisterRequest(reponse);
 
         console.log("Parsed: key, challenge de nouveau device");
-        console.log(key);
-        console.log(challenge);
 
-        var empreinte = {
+        var infoToken = {
             'cle': key
         }
 
-        // Noter que la transaction va echouer si l'empreinte a deja ete creee.
+        // Tout est correct, on transmet le nouveau token en transaction
         rabbitMQ.singleton.transmettreTransactionFormattee(
-            empreinte, 'millegrilles.domaines.Principale.ajouterToken')
+            infoToken, 'millegrilles.domaines.Principale.ajouterToken')
           .then( msg => {
-            console.log("Recu confirmation d'ajout de device'");
-            console.log(msg);
+            console.debug("Recu confirmation d'ajout de device'");
+            console.debug(msg);
           })
           .catch( err => {
             console.error("Erreur message");
