@@ -63,6 +63,7 @@ router.post('/initialiser-empreinte', (req, res) => {
 
 router.post('/effectuer-empreinte', (req, res) => {
 
+  if(challenge_conserve) {
     console.log("Effectuer empreinte");
 
     const { key, challenge } = parseRegisterRequest(req.body);
@@ -94,7 +95,13 @@ router.post('/effectuer-empreinte', (req, res) => {
         return res.sendStatus(500);
       });
 
+    challenge_conserve = null;
     return res.send({ loggedIn: true });
+  } else {
+    // On n'est pas en processus d'ajout de token
+    return res.sendStatus(403);
+  }
+
 });
 
 /* Authentification */
@@ -121,38 +128,45 @@ router.post('/initialiser-ajout-token', (req, res) => {
 
 router.post('/effectuer-ajout-token', (req, res) => {
 
-    console.log("Effectuer ajout token");
+    if(challenge_conserve) {
 
-    const { key, challenge } = parseRegisterRequest(req.body);
+      console.log("Effectuer ajout token");
 
-    console.log("Parsed: key, challenge");
-    console.log(key);
-    console.log(challenge);
+      const { key, challenge } = parseRegisterRequest(req.body);
 
-    // Note: MilleGrilles fonctionne avec un seul usager. Pas besoin
-    // de matcher l'usager autrement que par le challenge.
-    if (challenge_conserve !== challenge) {
-      return res.sendStatus(400); // Erreur dans le matching du challenge
+      console.log("Parsed: key, challenge");
+      console.log(key);
+      console.log(challenge);
+
+      // Note: MilleGrilles fonctionne avec un seul usager. Pas besoin
+      // de matcher l'usager autrement que par le challenge.
+      if (challenge_conserve !== challenge) {
+        return res.sendStatus(400); // Erreur dans le matching du challenge
+      }
+
+      infoToken = {
+          'cle': key
+      }
+
+      // Noter que la transaction va echouer si l'empreinte a deja ete creee.
+      rabbitMQ.singleton.transmettreTransactionFormattee(
+          infoToken, 'millegrilles.domaines.Principale.ajouterToken')
+        .then( msg => {
+          console.log("Recu confirmation d'ajout de nouveau token");
+          console.log(msg);
+        })
+        .catch( err => {
+          console.error("Erreur message");
+          console.error(err);
+          return res.sendStatus(500);
+        });
+
+      challenge_conserve = null;
+      return res.send({ loggedIn: true });
+    } else {
+      // On n'est pas en processus d'ajout de token
+      return res.sendStatus(403);
     }
-
-    infoToken = {
-        'cle': key
-    }
-
-    // Noter que la transaction va echouer si l'empreinte a deja ete creee.
-    rabbitMQ.singleton.transmettreTransactionFormattee(
-        infoToken, 'millegrilles.domaines.Principale.ajouterToken')
-      .then( msg => {
-        console.log("Recu confirmation d'ajout de nouveau token");
-        console.log(msg);
-      })
-      .catch( err => {
-        console.error("Erreur message");
-        console.error(err);
-        return res.sendStatus(500);
-      });
-
-    return res.send({ loggedIn: true });
 });
 
 module.exports = router;
