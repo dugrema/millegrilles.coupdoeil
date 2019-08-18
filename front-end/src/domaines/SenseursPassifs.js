@@ -125,6 +125,20 @@ export class SenseursPassifs extends React.Component {
     })
   }
 
+  renommerSenseur = event => {
+    var form = event.currentTarget.form;
+    var nouveauNom = event.currentTarget.value;
+    var noSenseur = form.nosenseur.value;
+    var nomNoeud = form.noeud.value;
+
+    var transaction = {
+      noeud: nomNoeud,
+      senseur: parseInt(noSenseur, 10),
+      location: nouveauNom,
+    }
+    webSocketManager.transmettreTransaction('millegrilles.domaines.SenseursPassifs.changementAttributSenseur', transaction);
+  }
+
   componentDidMount() {
     // Enregistrer les routingKeys de documents
     webSocketManager.subscribe(this.config.subscriptions, this.processMessage);
@@ -161,6 +175,7 @@ export class SenseursPassifs extends React.Component {
           senseur_id={this.state.senseur_id}
           versPageListeNoeuds={this.versPageListeNoeuds}
           supprimerSenseur={this.supprimerSenseur}
+          renommerSenseur={this.renommerSenseur}
         />
       );
     } else if(this.state.noeud_id) {
@@ -393,11 +408,10 @@ class SenseurPassifIndividuel extends React.Component {
             Senseur { documentSenseur.location }
           </h6>
 
+          <div>Numero senseur: {documentSenseur.senseur}</div>
           <div>
             Noeud: {documentSenseur.noeud}
-            <button className="aslink" onClick={this.props.versPageListeNoeuds}>Vers liste noeuds</button>
           </div>
-          <div>Numero senseur: {documentSenseur.senseur}</div>
           <div className="temps">Derniere lecture: {dateformatter.format_monthhour(documentSenseur.temps_lecture)}</div>
           <div>Batterie: {documentSenseur.millivolt} mV</div>
           <div className="numerique temperature">Temperature: {documentSenseur.temperature}&deg;C</div>
@@ -405,12 +419,23 @@ class SenseurPassifIndividuel extends React.Component {
           <div className="numerique pression">Pression atmospherique: {documentSenseur.pression} kPa</div>
           <div className="tendance">Tendance pression atmospherique: {documentSenseur.tendance_formattee}</div>
           <div>
-            Actions:
-            <button
-              onClick={this.props.supprimerSenseur}
-              data-nosenseur={documentSenseur.senseur}
-              data-noeud={documentSenseur.noeud}
-              >Supprimer</button>
+            Liens:
+            <button className="aslink" onClick={this.props.versPageListeNoeuds}>Vers liste noeuds</button>
+          </div>
+          <div>
+            <p>Actions:</p>
+            <form onSubmit={event => event.preventDefault()}>
+              <input type="hidden" name="nosenseur" value={documentSenseur.senseur} />
+              <input type="hidden" name="noeud" value={documentSenseur.noeud} />
+              <button
+                onClick={this.props.supprimerSenseur}
+                data-nosenseur={documentSenseur.senseur}
+                data-noeud={documentSenseur.noeud}>Supprimer</button>
+              <label>
+                Renommer:
+                <input type="text" defaultValue={documentSenseur.location} onBlur={this.props.renommerSenseur}/>
+              </label>
+            </form>
           </div>
         </div>
       );
