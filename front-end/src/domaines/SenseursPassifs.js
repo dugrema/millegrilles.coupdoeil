@@ -108,6 +108,18 @@ export class SenseursPassifs extends React.Component {
     });
   };
 
+  supprimerSenseur = (event) => {
+    const dataset = event.currentTarget.dataset;
+    var noSenseur = dataset.nosenseur;
+    var nomNoeud = dataset.noeud;
+
+    var transaction = {
+      noeud: nomNoeud,
+      senseurs: [noSenseur],
+    }
+    webSocketManager.transmettreTransaction('millegrilles.domaines.SenseursPassifs.suppressionSenseur', transaction);
+  }
+
   componentDidMount() {
     // Enregistrer les routingKeys de documents
     webSocketManager.subscribe(this.config.subscriptions, this.processMessage);
@@ -143,6 +155,7 @@ export class SenseursPassifs extends React.Component {
           noeud_id={this.state.noeud_id}
           senseur_id={this.state.senseur_id}
           versPageListeNoeuds={this.versPageListeNoeuds}
+          supprimerSenseur={this.supprimerSenseur}
         />
       );
     } else if(this.state.noeud_id) {
@@ -180,6 +193,11 @@ function AfficherNoeuds(props) {
         let senseur = noeud.dict_senseurs[noSenseur];
         let date_formattee = dateformatter.format_monthhour(senseur.temps_lecture);
 
+        var nomSenseur = senseur.location;
+        if(!nomSenseur || nomSenseur === '') {
+          nomSenseur = noSenseur;
+        }
+
         senseurs.push(
           <li key={noSenseur} className="senseur">
             <div className="location">
@@ -187,7 +205,7 @@ function AfficherNoeuds(props) {
                 className="aslink"
                 data-noeud={noeud.noeud}
                 data-nosenseur={noSenseur}
-                onClick={props.versPageSenseur}>{senseur.location}</button>
+                onClick={props.versPageSenseur}>{nomSenseur}</button>
             </div>
             <div className="numerique temperature">{senseur.temperature}&deg;C</div>
             <div className="numerique humidite">{senseur.humidite}%</div>
@@ -308,7 +326,7 @@ class SenseurPassifIndividuel extends React.Component {
   renderTableauQuotidien() {
 
     var contenu;
-    if(this.state.afficherTableauQuotidien) {
+    if(this.state.afficherTableauQuotidien && this.props.donnees) {
       const listeSenseurs = this.props.documentSenseur;
       const documentSenseur = listeSenseurs[0];
       const extremesDernierMois = documentSenseur.extremes_dernier_mois;
@@ -381,6 +399,14 @@ class SenseurPassifIndividuel extends React.Component {
           <div className="numerique humidite">Humidite: {documentSenseur.humidite}%</div>
           <div className="numerique pression">Pression atmospherique: {documentSenseur.pression} kPa</div>
           <div className="tendance">Tendance pression atmospherique: {documentSenseur.tendance_formattee}</div>
+          <div>
+            Actions:
+            <button
+              onClick={this.props.supprimerSenseur}
+              data-nosenseur={documentSenseur.senseur}
+              data-noeud={documentSenseur.noeud}
+              >Supprimer</button>
+          </div>
         </div>
       );
 
@@ -498,7 +524,7 @@ class GraphiqueCharte2DReact extends React.Component {
   }
 
   render() {
-    if(this.state.graphique) {
+    if(this.state.graphique && this.props.donnees) {
       this.state.graphique.appliquerDonnees(this.props.donnees);
     }
     return (
