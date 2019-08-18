@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 
-if [ -z $VERSION ]; then
-  echo "Parametre globaux manquants. Il faut fournir: VERSION"
-  exit 2
-fi
+set -e  # Abandonner immediatement pour toute erreur d'execution
+
+source image_info.txt
 
 BUILD_FILE=coupdoeil_react.$VERSION.tar.gz
 BUILD_PATH=/home/mathieu/git/MilleGrilles.coupdoeil
 URL_SERVEUR=mathieu@dev2.local
 
-set -e  # Abandonner immediatement pour toute erreur d'execution
 
 traiter_fichier_react() {
   ARCH=`uname -m`
+  rm -f coupdoeil_react.*.tar.gz
+
   if [ $ARCH == 'x86_64' ]; then
     echo "Architecture $ARCH, on fait un nouveau build React"
     package_build
@@ -23,7 +23,6 @@ traiter_fichier_react() {
 }
 
 package_build() {
-  rm -f coupdoeil_react.*.tar.gz
   echo "Building new Coup D'Oeil React app"
   cd $BUILD_PATH/front-end
   # Sauvegarder information de version
@@ -33,7 +32,7 @@ package_build() {
 }
 
 telecharger_package() {
-  sftp ${URL_SERVEUR}${BUILD_PATH}/$BUILD_FILE
+  sftp ${URL_SERVEUR}:${BUILD_PATH}/$BUILD_FILE
   if [ $? -ne 0 ]; then
     echo "Erreur download fichier react"
     exit 1
@@ -42,6 +41,7 @@ telecharger_package() {
 }
 
 installer() {
+  echo "Installation de l'application coupdoeil React dans $BUILD_PATH"
   cd $BUILD_PATH
   rm -rf react_build
   mkdir react_build && \
