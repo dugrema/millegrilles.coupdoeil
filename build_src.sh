@@ -23,7 +23,7 @@ traiter_fichier_react() {
 }
 
 package_build() {
-  rm -f $BUILD_FILE
+  rm -f coupdoeil_react.*.tar.gz
   echo "Building new Coup D'Oeil React app"
   cd $BUILD_PATH/front-end
   # Sauvegarder information de version
