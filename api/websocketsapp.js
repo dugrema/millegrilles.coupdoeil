@@ -144,7 +144,7 @@ class WebSocketApp {
 
     socket.on('creerPINTemporaireDevice', (message, cb) => {
       let pin = sessionManagement.createPinTemporaireDevice();
-      cb(pin);
+      cb({pin: pin});
     })
 
     socket.on('enregistrerDevice', (message)=> {

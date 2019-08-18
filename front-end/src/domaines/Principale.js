@@ -28,7 +28,7 @@ export class InterfacePrincipale extends React.Component {
           <ul>
             <li>
               <button className="aslink" onClick={this.gestionTokens}>
-                Ajouter un token de securite
+                Gerer les tokens de securite
               </button>
             </li>
           </ul>
@@ -46,6 +46,10 @@ export class InterfacePrincipale extends React.Component {
 }
 
 class GestionTokens extends React.Component {
+
+  state = {
+    pin: null,
+  }
 
   ajouterToken = () => {
 
@@ -76,13 +80,32 @@ class GestionTokens extends React.Component {
 
   }
 
+  genererPinTemporaireAjoutDevice = () => {
+    let self = this;
+    webSocketManager.emit('creerPINTemporaireDevice', {})
+    .then(reponse => {
+      let pin = reponse.pin;
+      self.setState({pin: pin});
+    })
+  }
+
   render() {
     return(
       <div>
         <h1>Gestions tokens</h1>
-        <button onClick={this.ajouterToken}>
-          Ajouter token
-        </button>
+        <ul>
+          <li>
+            <button onClick={this.ajouterToken}>
+              Ajouter token
+            </button>
+          </li>
+          <li>
+            <button onClick={this.genererPinTemporaireAjoutDevice}>
+              Generer un PIN
+            </button> temporaire pour connecter un nouveau token.
+            PIN actuel: {this.state.pin}
+          </li>
+        </ul>
       </div>
     );
   }

@@ -103,7 +103,7 @@ router.post('/initialiser-ajout-token', (req, res) => {
     console.debug("initialiser-ajout-token: Id " + id + ", email " + email);
 
     // Verifier que le pin est correct
-    let pinCorrect = true; //sessionManagement.consommerPinTemporaireDevice(pin);
+    let pinCorrect = sessionManagement.consommerPinTemporaireDevice(pin);
     if(pinCorrect) {
       // Transmettre le challenge
       const challengeResponse = generateRegistrationChallenge({

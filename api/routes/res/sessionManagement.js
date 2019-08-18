@@ -61,7 +61,8 @@ class SessionManagement {
   }
 
   createPinTemporaireDevice() {
-    var pin = crypto.randomBytes(6).toString('dec');
+    var pin = ''+crypto.randomBytes(4).readUInt32BE();
+    pin = pin.substring(0, 6);
     this.pinTemporaireDevice = {
       'pin': pin,
       'expiration': (new Date()).getTime() + 120000
