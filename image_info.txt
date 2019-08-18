@@ -1,4 +1,5 @@
 REPO=registry.maple.mdugre.info:5000
+URL_SERVEUR_DEV=mathieu@dev2.local
 NAME=coupdoeil_react
 ARCH_SUPPORTEES=( x86_64 armv7l aarch64 )
 BRANCH=`git name-rev --name-only HEAD`

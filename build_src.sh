@@ -4,20 +4,27 @@ set -e  # Abandonner immediatement pour toute erreur d'execution
 
 source image_info.txt
 
+if [ -z $VERSION ]; then
+  echo "Erreur, la version n'est pas inclue dans image_info.txt"
+  exit 3
+fi
+
 BUILD_FILE=coupdoeil_react.$VERSION.tar.gz
 BUILD_PATH=/home/mathieu/git/MilleGrilles.coupdoeil
-URL_SERVEUR=mathieu@dev2.local
-
 
 traiter_fichier_react() {
+  # Decide si on bati ou telecharge un package pour le build react.
+  # Les RPi sont tres lents pour batir le build, c'est mieux de juste recuperer
+  # celui qui est genere sur une workstation de developpement.
+
   ARCH=`uname -m`
   rm -f coupdoeil_react.*.tar.gz
 
-  if [ $ARCH == 'x86_64' ]; then
-    echo "Architecture $ARCH, on fait un nouveau build React"
+  if [ $ARCH == 'x86_64' ] || [ -z $URL_SERVEUR_DEV ]; then
+    echo "Architecture $ARCH (ou URL serveur DEV non inclus), on fait un nouveau build React"
     package_build
   else
-    echo "Architecture $ARCH, on va chercher le fichier avec le build coupdoeil pour React"
+    echo "Architecture $ARCH, on va chercher le fichier avec le build coupdoeil pour React sur $URL_SERVEUR_DEV"
     telecharger_package
   fi
 }
@@ -32,7 +39,7 @@ package_build() {
 }
 
 telecharger_package() {
-  sftp ${URL_SERVEUR}:${BUILD_PATH}/$BUILD_FILE
+  sftp ${URL_SERVEUR_DEV}:${BUILD_PATH}/$BUILD_FILE
   if [ $? -ne 0 ]; then
     echo "Erreur download fichier react"
     exit 1
