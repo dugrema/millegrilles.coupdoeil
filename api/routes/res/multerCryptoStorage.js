@@ -21,7 +21,7 @@ class HashPipe extends PassThrough {
 
     this.on('end', ()=>{
       this.hashResult = this.hashcalc.digest('hex');
-      console.debug("HASH (" + this.hashAlgo + "): " + this.hashResult)
+      // console.debug("HASH (" + this.hashAlgo + "): " + this.hashResult)
     });
   }
 
@@ -56,8 +56,8 @@ class CryptoEncryptPipe {
             // Encoder la cle secrete
             var encryptedSecretKey = crypto.publicEncrypt(publicKey, key);
             encryptedSecretKey = encryptedSecretKey.toString('base64');
-            console.log("Cle secrete cryptee, len:" + encryptedSecretKey.length);
-            console.log(encryptedSecretKey);
+            // console.log("Cle secrete cryptee, len:" + encryptedSecretKey.length);
+            // console.log(encryptedSecretKey);
 
             resolve({
               cipher: cipher,
