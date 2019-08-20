@@ -35,20 +35,19 @@ class CryptoEncryptPipe {
 
   constructor(opts) {
     // super();
-  }
-
-  getCle() {
-    return null;
+    this.algorithm = opts.algorithm || 'aes256';
   }
 
   createStream() {
 
     const promise = new Promise((resolve, reject) => {
       try {
-        var keyIv = this._getKeyAndIV((err, {key, iv})=>{
+        var keyIv = this._genererKeyAndIV((err, {key, iv})=>{
           if(err) reject(err);
-          var cipher = crypto.createCipheriv(algorithm, key, iv);
-          resolve(cipher);
+          // console.debug("IV");
+          // console.debug(iv);
+          var cipher = crypto.createCipheriv(this.algorithm, key, iv);
+          resolve({cipher: cipher, key: key, iv: iv});
         });
       } catch (e) {
         reject(e);
@@ -68,7 +67,7 @@ class CryptoEncryptPipe {
     // Use `crypto.randomBytes()` to generate a random iv instead of the static iv
     // shown here.
     var lenBuffer = 16 + 32;
-    crypto.pseudoRandomBytes(40, (err, pseudoRandomBytes) => {
+    crypto.pseudoRandomBytes(lenBuffer, (err, pseudoRandomBytes) => {
       // Creer deux buffers, iv (16 bytes) et password (24 bytes)
       var iv = pseudoRandomBytes.slice(0, 16);
       var key = pseudoRandomBytes.slice(16, pseudoRandomBytes.length);
@@ -118,10 +117,14 @@ class MulterCryptoStorage {
       var pipes = file.stream;
 
       // Verifier si on doit crypter le fichier, ajouter pipe au besoin.
-      const cryptoPipe = new CryptoEncryptPipe();
-      cryptoPipe.createStream().then(cryptoStream=>{
+      const cryptoPipe = new CryptoEncryptPipe({});
+      cryptoPipe.createStream().then(({cipher, key, iv})=>{
 
-        pipes = pipes.pipe(cryptoStream);
+        console.log("Stream key, iv:");
+        console.debug(key);
+        console.debug(iv);
+
+        pipes = pipes.pipe(cipher);
 
         // Pipe caclul du hash (on hash le contenu crypte quand c'est applicable)
         const hashPipe = new HashPipe({});
