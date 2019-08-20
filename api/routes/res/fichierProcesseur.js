@@ -75,7 +75,7 @@ class ProcesseurUpload {
                   cle: fichier.encryptedSecretKey,
                   iv: fichier.iv,
                 };
-                console.debug("Document crypte, on transmettre info au MaitreDesCles");
+                console.debug("Document crypte, on transmet l'info au MaitreDesCles");
                 console.debug(transactionInformationCryptee);
 
                 // Transmettre information au serveur via MQ
