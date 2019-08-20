@@ -17,12 +17,13 @@ class ProcesseurUpload {
       let fileUuid = fichier.fileuuid;
       let pathServeur = serveurConsignation + '/' + path.join('grosfichiers', 'local', 'nouveauFichier', fileUuid);
       // let fuuide = this.formatterPath(fileUuid, 'dat');
+      let crypte = (fichier.encryptedSecretKey)?true:false;
 
       let options = {
         url: pathServeur,
         headers: {
           fileuuid: fileUuid,
-          encrypte: false,
+          encrypte: crypte,
         },
         agentOptions: {ca: pki.ca},  // Utilisation certificats SSL internes
       };
@@ -39,8 +40,6 @@ class ProcesseurUpload {
           request.put(options, (err, httpResponse, body) => {
             if(err) throw err; // Attrapper erreur dans le catch plus bas
 
-            let sha256ClearHash = fichier.hash;
-
             // console.debug("Put complete, sending record to MQ");
             let transactionNouvelleVersion = {
               fuuid: fileUuid,
@@ -55,6 +54,7 @@ class ProcesseurUpload {
                 "noeud": "public1.maple.mdugre.info"
               }
             }
+
             // console.debug("Transaction pour MQ");
             // console.debug(transactionNouvelleVersion);
 
@@ -63,15 +63,42 @@ class ProcesseurUpload {
               transactionNouvelleVersion,
               'millegrilles.domaines.GrosFichiers.nouvelleVersion.metadata')
             .then( msg => {
-              //console.debug("Recu confirmation de nouvelleVersion metadata");
-              // console.debug(msg);
+              console.debug("Recu confirmation de nouvelleVersion metadata");
+              console.debug(msg);
+            })
+            .then(()=>{
+              if(crypte) {
+                let transactionInformationCryptee = {
+                  domaine: 'millegrilles.domaines.GrosFichiers',
+                  fuuid: fileUuid,
+                  fingerprint: 'abcd',
+                  cle: fichier.encryptedSecretKey,
+                  iv: fichier.iv,
+                };
+                console.debug("Document crypte, on transmettre info au MaitreDesCles");
+                console.debug(transactionInformationCryptee);
+
+                // Transmettre information au serveur via MQ
+                rabbitMQ.singleton.transmettreTransactionFormattee(
+                  transactionInformationCryptee,
+                  'millegrilles.domaines.MaitreDesCles.nouvelleCle')
+                .then( msg => {
+                  console.debug("Recu confirmation de nouvelleCle");
+                  console.debug(msg);
+                })
+                .catch( err => {
+                  console.error("Erreur message");
+                  console.error(err);
+                });
+              } else {
+                resolve();
+              }
             })
             .catch( err => {
               console.error("Erreur message");
               console.error(err);
             });
 
-            resolve({transaction: transactionNouvelleVersion});
           })
         )
 

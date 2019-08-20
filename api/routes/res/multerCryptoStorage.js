@@ -62,7 +62,7 @@ class CryptoEncryptPipe {
             resolve({
               cipher: cipher,
               encryptedSecretKey: encryptedSecretKey,
-              iv: iv
+              iv: iv.toString('base64'),
             });
 
           });
@@ -161,6 +161,7 @@ class MulterCryptoStorage {
             fileuuid: fileUuid,
             hash: hashResult,
             encryptedSecretKey: encryptedSecretKey,
+            iv: iv,
           });
         });
       })
