@@ -14,7 +14,7 @@ class ProcesseurUpload {
       // console.debug(fichier);
 
       // Creer le uuid de fichier, pour cette version.
-      let fileUuid = uuidv1();
+      let fileUuid = fichier.fileuuid;
       let pathServeur = serveurConsignation + '/' + path.join('grosfichiers', 'local', 'nouveauFichier', fileUuid);
       // let fuuide = this.formatterPath(fileUuid, 'dat');
 

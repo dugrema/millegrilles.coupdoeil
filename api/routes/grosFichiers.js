@@ -59,6 +59,8 @@ router.put(
   console.debug("*** BODY ***");
   console.debug(req.body);
   var repertoire_uuid = req.body.repertoire_uuid;
+  // console.debug('*****FICHIERS******');
+  // console.debug(req.files);
   req.files['grosfichier'].forEach(fichier=>{
     fichierProcesseur.ajouterFichier(fichier, repertoire_uuid, serveurConsignation)
     .then(params => {
