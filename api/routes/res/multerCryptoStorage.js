@@ -1,6 +1,6 @@
 // Source de depart:
 // https://github.com/expressjs/multer/blob/master/StorageEngine.md
-var fs = require('fs')
+const fs = require('fs')
 const { PassThrough } = require('stream')
 const pathModule = require('path');
 const uuidv1 = require('uuid/v1');
@@ -31,7 +31,65 @@ class HashPipe extends PassThrough {
 
 }
 
-class CryptoPipe {
+class CryptoEncryptPipe {
+
+  constructor(opts) {
+    // super();
+  }
+
+  getCle() {
+    return null;
+  }
+
+  createStream() {
+
+    const promise = new Promise((resolve, reject) => {
+      try {
+        var keyIv = this._getKeyAndIV((err, {key, iv})=>{
+          if(err) reject(err);
+          var cipher = crypto.createCipheriv(algorithm, key, iv);
+          resolve(cipher);
+        });
+      } catch (e) {
+        reject(e);
+      }
+    });
+
+    return promise;
+  }
+
+  _genererKeyAndIV(cb) {
+
+    // const password = 'Password used to generate key';
+    // Key length is dependent on the algorithm. In this case for aes192, it is
+    // 24 bytes (192 bits).
+    // Use async `crypto.scrypt()` instead.
+    // const key = crypto.scryptSync(password, 'salt', 24);
+    // Use `crypto.randomBytes()` to generate a random iv instead of the static iv
+    // shown here.
+    var lenBuffer = 16 + 32;
+    crypto.pseudoRandomBytes(40, (err, pseudoRandomBytes) => {
+      // Creer deux buffers, iv (16 bytes) et password (24 bytes)
+      var iv = pseudoRandomBytes.slice(0, 16);
+      var key = pseudoRandomBytes.slice(16, pseudoRandomBytes.length);
+      cb(err, {key: key, iv: iv});
+    });
+
+    // crypto.pseudoRandomBytes(16, (err, ivBuffer) => {
+    //     var keyBuffer = (key instanceof Buffer) ? key : new Buffer(key) ;
+    //     callback({
+    //         iv: ivBuffer,
+    //         key: keyBuffer
+    //     });
+    // });
+
+    // CIPHERS: {
+    //   "AES_128": "aes128",          //requires 16 byte key
+    //   "AES_128_CBC": "aes-128-cbc", //requires 16 byte key
+    //   "AES_192": "aes192",          //requires 24 byte key
+    //   "AES_256": "aes256"           //requires 32 byte key
+    // },
+  }
 
 }
 
@@ -60,31 +118,43 @@ class MulterCryptoStorage {
       var pipes = file.stream;
 
       // Verifier si on doit crypter le fichier, ajouter pipe au besoin.
+      const cryptoPipe = new CryptoEncryptPipe();
+      cryptoPipe.createStream().then(cryptoStream=>{
 
-      // Pipe caclul du hash (on hash le contenu crypte quand c'est applicable)
-      var hashPipe = new HashPipe({});
-      pipes = pipes.pipe(hashPipe);
+        pipes = pipes.pipe(cryptoStream);
 
-      // Finaliser avec l'outputstream
-      const outStream = fs.createWriteStream(path);
-      pipes = pipes.pipe(outStream);
+        // Pipe caclul du hash (on hash le contenu crypte quand c'est applicable)
+        const hashPipe = new HashPipe({});
+        pipes = pipes.pipe(hashPipe);
 
-      outStream.on('error', cb);
-      outStream.on('finish', function () {
+        // Finaliser avec l'outputstream
+        const outStream = fs.createWriteStream(path);
+        pipes = pipes.pipe(outStream);
 
-        var hashResult = hashPipe.getHash();
-        // console.debug("Hash calcule: " + hashResult);
+        outStream.on('error', cb);
+        outStream.on('finish', function () {
 
-        cb(null, {
-          path: path,
-          size: outStream.bytesWritten,
-          nomfichier: file.originalname,
-          mimetype: file.mimetype,
-          fileuuid: fileUuid,
-          hash: hashResult,
-          decryptPublicKey: null,
+          var hashResult = hashPipe.getHash();
+          // console.debug("Hash calcule: " + hashResult);
+
+          cb(null, {
+            path: path,
+            size: outStream.bytesWritten,
+            nomfichier: file.originalname,
+            mimetype: file.mimetype,
+            fileuuid: fileUuid,
+            hash: hashResult,
+            decryptPublicKey: null,
+          });
         });
-      });
+      })
+      .catch(err=>{
+        var message = "Erreur traitement fichier " + file.originalname;
+        console.error();
+        console.error(err);
+        cb(message);
+      })
+
     });
   }
 
@@ -93,44 +163,6 @@ class MulterCryptoStorage {
   }
 
 }
-
-
-
-// MulterCryptoStorage.prototype._hashpipe = function _hashpipe () {
-//   // Encrypter fichiers, calculer SHA256 avant et apres
-//   var sha256Clear = crypto.createHash('sha256');
-//
-//   // Uploader fichier vers central via PUT
-//   console.debug("PUT file " + fichier.path);
-//   fs.createReadStream(fichier.path)
-//   .on('data', chunk=>{
-//     // Mettre le sha256 directement dans le pipe donne le mauvais
-//     // resultat. L'update (avec digest plus bas) fonctionne correctement.
-//     sha256Clear.update(chunk);
-//   })
-//   .pipe(
-//     request.put(options, (err, httpResponse, body) => {
-//       if(err) throw err; // Attrapper erreur dans le catch plus bas
-//
-//       let sha256ClearHash = sha256Clear.digest('hex');
-//
-//       console.log("Put complete, sending record to MQ");
-//       let transactionNouvelleVersion = {
-//         fuuid: fileUuid,
-//         securite: '2.prive',
-//         repertoire_uuid: repertoire_uuid,
-//         nom: fichier.originalname,
-//         taille: fichier.size,
-//         mimetype: fichier.mimetype,
-//         sha256: sha256ClearHash,
-//         reception: {
-//           methode: "coupdoeil",
-//           "noeud": "public1.maple.mdugre.info"
-//         }
-//       }
-//     })
-//   )
-// }
 
 module.exports = function (opts) {
   return new MulterCryptoStorage(opts)
