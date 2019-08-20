@@ -137,6 +137,15 @@ class MulterCryptoStorage {
         outStream.on('error', cb);
         outStream.on('finish', function () {
 
+          // Tentative de decryter fichier:
+          // var decipher = crypto.createDecipheriv('aes256', key, iv);
+          // var readStream = fs.createReadStream(path);
+          // var writeStream = fs.createWriteStream(path + ".clear");
+          // writeStream.on('finish', function() {
+          //   console.log("Decryptage termine pour " + path + '.clear');
+          // });
+          // readStream.pipe(decipher).pipe(writeStream);
+
           var hashResult = hashPipe.getHash();
           // console.debug("Hash calcule: " + hashResult);
 
