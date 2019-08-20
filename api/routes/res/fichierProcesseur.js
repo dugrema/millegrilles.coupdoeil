@@ -10,8 +10,8 @@ class ProcesseurUpload {
 
   ajouterFichier(fichier, repertoire_uuid, serveurConsignation) {
     var promise = new Promise((resolve, reject)=>{
-      // console.debug('Traitement fichier');
-      // console.debug(fichier);
+      console.debug('Traitement fichier');
+      console.debug(fichier);
 
       // Creer le uuid de fichier, pour cette version.
       let fileUuid = fichier.fileuuid;
@@ -30,23 +30,18 @@ class ProcesseurUpload {
       try {
 
         // Encrypter fichiers, calculer SHA256 avant et apres
-        var sha256Clear = crypto.createHash('sha256');
+        // var sha256Clear = crypto.createHash('sha256');
 
         // Uploader fichier vers central via PUT
         console.debug("PUT file " + fichier.path);
         fs.createReadStream(fichier.path)
-        .on('data', chunk=>{
-          // Mettre le sha256 directement dans le pipe donne le mauvais
-          // resultat. L'update (avec digest plus bas) fonctionne correctement.
-          sha256Clear.update(chunk);
-        })
         .pipe(
           request.put(options, (err, httpResponse, body) => {
             if(err) throw err; // Attrapper erreur dans le catch plus bas
 
-            let sha256ClearHash = sha256Clear.digest('hex');
+            let sha256ClearHash = fichier.hash;
 
-            console.log("Put complete, sending record to MQ");
+            // console.debug("Put complete, sending record to MQ");
             let transactionNouvelleVersion = {
               fuuid: fileUuid,
               securite: '2.prive',
@@ -54,22 +49,22 @@ class ProcesseurUpload {
               nom: fichier.originalname,
               taille: fichier.size,
               mimetype: fichier.mimetype,
-              sha256: sha256ClearHash,
+              sha256: fichier.hash,
               reception: {
                 methode: "coupdoeil",
                 "noeud": "public1.maple.mdugre.info"
               }
             }
-            console.debug("Transaction pour MQ");
-            console.debug(transactionNouvelleVersion);
+            // console.debug("Transaction pour MQ");
+            // console.debug(transactionNouvelleVersion);
 
             // Transmettre information au serveur via MQ
             rabbitMQ.singleton.transmettreTransactionFormattee(
               transactionNouvelleVersion,
               'millegrilles.domaines.GrosFichiers.nouvelleVersion.metadata')
             .then( msg => {
-              console.debug("Recu confirmation de nouvelleVersion metadata");
-              console.debug(msg);
+              //console.debug("Recu confirmation de nouvelleVersion metadata");
+              // console.debug(msg);
             })
             .catch( err => {
               console.error("Erreur message");
@@ -88,7 +83,7 @@ class ProcesseurUpload {
         // Supprimer fichier temporaire dans staging
         fs.unlink(fichier.path, msg => {
           console.debug("Unlink fichier complete " + fichier.path);
-          if(msg) console.debug(msg);
+          // if(msg) console.debug(msg);
         });
       }
 

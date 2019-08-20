@@ -12,27 +12,27 @@ class HashPipe extends PassThrough {
   constructor(opts) {
     super(opts);
     this.hashAlgo = opts.hashAlgo || 'sha256';
-    this.sha256calc = crypto.createHash(this.hashAlgo);
-    this.sha256HashResult = null;
+    this.hashcalc = crypto.createHash(this.hashAlgo);
+    this.hashResult = null;
 
     this.on('data', chunk=>{
-      this.sha256calc.update(chunk);
+      this.hashcalc.update(chunk);
     });
 
     this.on('end', ()=>{
-      this.sha256HashResult = this.sha256calc.digest('hex');
-      console.debug("SHA256: " + this.sha256HashResult)
+      this.hashResult = this.hashcalc.digest('hex');
+      console.debug("HASH (" + this.hashAlgo + "): " + this.hashResult)
     });
   }
 
   getHash() {
-    return this.sha256HashResult;
+    return this.hashResult;
   }
 
 }
 
 class CryptoPipe {
-  
+
 }
 
 class MulterCryptoStorage {
@@ -55,28 +55,25 @@ class MulterCryptoStorage {
       if (err) return cb(err);
 
       // let pathServeur = serveurConsignation + '/' + path.join('grosfichiers', 'local', 'nouveauFichier', fileUuid);
-      console.log("File object: ");
-      console.log(file);
+      // console.log("File object: ");
+      // console.log(file);
       var pipes = file.stream;
-      // Pipe caclul du hash
+
+      // Verifier si on doit crypter le fichier, ajouter pipe au besoin.
+
+      // Pipe caclul du hash (on hash le contenu crypte quand c'est applicable)
       var hashPipe = new HashPipe({});
       pipes = pipes.pipe(hashPipe);
 
-      // // Verifier si on doit crypter le fichier, ajouter pipe au besoin
-      // var crypte = req.security === 'secure' || req.securite === 'protege';
-      // if(crypte) {
-      //   const cryptopipe = this._cryptopipe();
-      //   pipes = pipes.pipe(cryptopipe.getPipe());
-      // }
-
+      // Finaliser avec l'outputstream
       const outStream = fs.createWriteStream(path);
       pipes = pipes.pipe(outStream);
 
       outStream.on('error', cb);
       outStream.on('finish', function () {
 
-        var sha256 = hashPipe.getHash();
-        console.debug("Hash SHA256 calcule: " + sha256);
+        var hashResult = hashPipe.getHash();
+        // console.debug("Hash calcule: " + hashResult);
 
         cb(null, {
           path: path,
@@ -84,7 +81,7 @@ class MulterCryptoStorage {
           nomfichier: file.originalname,
           mimetype: file.mimetype,
           fileuuid: fileUuid,
-          sha256: sha256,
+          hash: hashResult,
           decryptPublicKey: null,
         });
       });

@@ -56,8 +56,8 @@ router.put(
   // console.log('Fichiers recus');
   // console.log(req.files);
 
-  console.debug("*** BODY ***");
-  console.debug(req.body);
+  // console.debug("*** BODY ***");
+  // console.debug(req.body);
   var repertoire_uuid = req.body.repertoire_uuid;
   // console.debug('*****FICHIERS******');
   // console.debug(req.files);
