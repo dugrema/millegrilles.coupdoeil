@@ -36,18 +36,36 @@ class CryptoEncryptPipe {
   constructor(opts) {
     // super();
     this.algorithm = opts.algorithm || 'aes256';
+    this.publicKey = null;
   }
 
   createStream() {
 
     const promise = new Promise((resolve, reject) => {
       try {
-        var keyIv = this._genererKeyAndIV((err, {key, iv})=>{
-          if(err) reject(err);
-          // console.debug("IV");
-          // console.debug(iv);
-          var cipher = crypto.createCipheriv(this.algorithm, key, iv);
-          resolve({cipher: cipher, key: key, iv: iv});
+        this._charger_certificat(publicKey=>{
+          // console.log("Public key chargee: ");
+          // console.log(publicKey);
+
+          var keyIv = this._genererKeyAndIV((err, {key, iv})=>{
+            if(err) reject(err);
+            // console.debug("IV");
+            // console.debug(iv);
+            var cipher = crypto.createCipheriv(this.algorithm, key, iv);
+
+            // Encoder la cle secrete
+            var encryptedSecretKey = crypto.publicEncrypt(publicKey, key);
+            encryptedSecretKey = encryptedSecretKey.toString('base64');
+            console.log("Cle secrete cryptee, len:" + encryptedSecretKey.length);
+            console.log(encryptedSecretKey);
+
+            resolve({
+              cipher: cipher,
+              encryptedSecretKey: encryptedSecretKey,
+              iv: iv
+            });
+
+          });
         });
       } catch (e) {
         reject(e);
@@ -57,15 +75,16 @@ class CryptoEncryptPipe {
     return promise;
   }
 
-  _genererKeyAndIV(cb) {
+  _charger_certificat(cb) {
+    var mq_cert = process.env.MG_MQ_CERTFILE;
+    if(mq_cert !== undefined) {
+      fs.readFile(mq_cert, (err, data)=>{
+        cb(data);
+      });
+    }
+  }
 
-    // const password = 'Password used to generate key';
-    // Key length is dependent on the algorithm. In this case for aes192, it is
-    // 24 bytes (192 bits).
-    // Use async `crypto.scrypt()` instead.
-    // const key = crypto.scryptSync(password, 'salt', 24);
-    // Use `crypto.randomBytes()` to generate a random iv instead of the static iv
-    // shown here.
+  _genererKeyAndIV(cb) {
     var lenBuffer = 16 + 32;
     crypto.pseudoRandomBytes(lenBuffer, (err, pseudoRandomBytes) => {
       // Creer deux buffers, iv (16 bytes) et password (24 bytes)
@@ -73,21 +92,6 @@ class CryptoEncryptPipe {
       var key = pseudoRandomBytes.slice(16, pseudoRandomBytes.length);
       cb(err, {key: key, iv: iv});
     });
-
-    // crypto.pseudoRandomBytes(16, (err, ivBuffer) => {
-    //     var keyBuffer = (key instanceof Buffer) ? key : new Buffer(key) ;
-    //     callback({
-    //         iv: ivBuffer,
-    //         key: keyBuffer
-    //     });
-    // });
-
-    // CIPHERS: {
-    //   "AES_128": "aes128",          //requires 16 byte key
-    //   "AES_128_CBC": "aes-128-cbc", //requires 16 byte key
-    //   "AES_192": "aes192",          //requires 24 byte key
-    //   "AES_256": "aes256"           //requires 32 byte key
-    // },
   }
 
 }
@@ -118,7 +122,7 @@ class MulterCryptoStorage {
 
       // Verifier si on doit crypter le fichier, ajouter pipe au besoin.
       const cryptoPipe = new CryptoEncryptPipe({});
-      cryptoPipe.createStream().then(({cipher, key, iv})=>{
+      cryptoPipe.createStream().then(({cipher, encryptedSecretKey, iv})=>{
 
         console.log("Stream key, iv:");
         // console.debug(key);
@@ -156,7 +160,7 @@ class MulterCryptoStorage {
             mimetype: file.mimetype,
             fileuuid: fileUuid,
             hash: hashResult,
-            decryptPublicKey: null,
+            encryptedSecretKey: encryptedSecretKey,
           });
         });
       })
