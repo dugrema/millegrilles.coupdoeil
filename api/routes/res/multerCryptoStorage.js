@@ -121,7 +121,7 @@ class MulterCryptoStorage {
       cryptoPipe.createStream().then(({cipher, key, iv})=>{
 
         console.log("Stream key, iv:");
-        console.debug(key);
+        // console.debug(key);
         console.debug(iv);
 
         pipes = pipes.pipe(cipher);
