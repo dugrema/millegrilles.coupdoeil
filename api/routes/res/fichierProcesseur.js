@@ -21,9 +21,6 @@ class ProcesseurUpload {
       let options = {
         url: pathServeur,
         headers: {
-          nomfichier: fichier.originalname,
-          mimetype: fichier.mimetype,
-          taille: fichier.size,
           fileuuid: fileUuid,
           encrypte: false,
         },

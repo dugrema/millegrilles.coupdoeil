@@ -1,17 +1,18 @@
 // Source de depart:
 // https://github.com/expressjs/multer/blob/master/StorageEngine.md
 var fs = require('fs')
+const pathModule = require('path');
 const uuidv1 = require('uuid/v1');
 
-function getDestination (req, file, cb) {
-  // Creer le uuid de fichier, pour cette version.
-  let fileUuid = uuidv1();
-  var path = '/tmp/coupdoeilStaging/' + fileUuid;
-  cb(null, path, fileUuid);
+function MulterCryptoStorage (opts) {
+  this.stagingFolder = opts.stagingFolder || "/tmp/coupdoeilStaging";
 }
 
-function MulterCryptoStorage (opts) {
-  this.getDestination = (opts.destination || getDestination);
+MulterCryptoStorage.prototype.getDestination = function getDestination (req, file, cb) {
+  // Creer le uuid de fichier, pour cette version.
+  let fileUuid = uuidv1();
+  var filePath = pathModule.join(this.stagingFolder, fileUuid)
+  cb(null, filePath, fileUuid);
 }
 
 MulterCryptoStorage.prototype._handleFile = function _handleFile (req, file, cb) {
