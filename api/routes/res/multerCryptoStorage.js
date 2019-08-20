@@ -7,6 +7,7 @@ const uuidv1 = require('uuid/v1');
 const crypto = require('crypto');
 
 class HashPipe extends PassThrough {
+  // Classe utilisee pour calculer le hash du fichier durant la sauvegarde.
 
   constructor(opts) {
     super(opts);
@@ -15,31 +16,13 @@ class HashPipe extends PassThrough {
     this.sha256HashResult = null;
 
     this.on('data', chunk=>{
-      // Mettre le sha256 directement dans le pipe donne le mauvais
-      // resultat. L'update (avec digest plus bas) fonctionne correctement.
-      // console.debug('Chunk sha256:');
-      // console.debug(chunk);
       this.sha256calc.update(chunk);
     });
 
-    // this.on('finish', function () {
-    //    console.debug("Finish appele sur hashpipe");
-    //   // console.debug(this.sha256calc);
-    //   // this.sha256HashResult = this.sha256calc.digest('hex');
-    // });
-    //
     this.on('end', ()=>{
       this.sha256HashResult = this.sha256calc.digest('hex');
       console.debug("SHA256: " + this.sha256HashResult)
     });
-    // this.on('close', ()=>{console.log('close')});
-    // this.on('error', ()=>{console.log('error')});
-    // this.on('pause', ()=>{console.log('pause')});
-    // this.on('readable', ()=>{console.log('readable')});
-    // this.on('resume', ()=>{console.log('resume')});
-    // this.on('drain', ()=>{console.log('drain')});
-    // this.on('pipe', ()=>{console.log('pipe')});
-    // this.on('unpipe', ()=>{console.log('unpipe')});
   }
 
   getHash() {
@@ -48,58 +31,73 @@ class HashPipe extends PassThrough {
 
 }
 
-function MulterCryptoStorage (opts) {
-  this.stagingFolder = opts.stagingFolder || "/tmp/coupdoeilStaging";
-  this.hashOpts = opts.hashOpts || {};
-  this.cryptoOpts = opts.cryptoOpts || {};
+class CryptoPipe {
+  
 }
 
-MulterCryptoStorage.prototype.getDestination = function getDestination (req, file, cb) {
-  // Creer le uuid de fichier, pour cette version.
-  let fileUuid = uuidv1();
-  var filePath = pathModule.join(this.stagingFolder, fileUuid)
-  cb(null, filePath, fileUuid);
-}
+class MulterCryptoStorage {
 
-MulterCryptoStorage.prototype._handleFile = function _handleFile (req, file, cb) {
-  this.getDestination(req, file, function (err, path, fileUuid) {
-    if (err) return cb(err);
+  constructor (opts) {
+    this.stagingFolder = opts.stagingFolder || "/tmp/coupdoeilStaging";
+    this.hashOpts = opts.hashOpts || {};
+    this.cryptoOpts = opts.cryptoOpts || {};
+  }
 
-    // let pathServeur = serveurConsignation + '/' + path.join('grosfichiers', 'local', 'nouveauFichier', fileUuid);
-    console.log("File object: ");
-    console.log(file);
-    var pipes = file.stream;
-    // Pipe caclul du hash
-    var hashPipe = new HashPipe({});
-    pipes = pipes.pipe(hashPipe);
+  getDestination (req, file, cb) {
+    // Creer le uuid de fichier, pour cette version.
+    let fileUuid = uuidv1();
+    var filePath = pathModule.join(this.stagingFolder, fileUuid)
+    cb(null, filePath, fileUuid);
+  }
 
-    // // Verifier si on doit crypter le fichier, ajouter pipe au besoin
-    // var crypte = req.security === 'secure' || req.securite === 'protege';
-    // if(crypte) {
-    //   const cryptopipe = this._cryptopipe();
-    //   pipes = pipes.pipe(cryptopipe.getPipe());
-    // }
+  _handleFile (req, file, cb) {
+    this.getDestination(req, file, function (err, path, fileUuid) {
+      if (err) return cb(err);
 
-    const outStream = fs.createWriteStream(path);
-    pipes = pipes.pipe(outStream);
+      // let pathServeur = serveurConsignation + '/' + path.join('grosfichiers', 'local', 'nouveauFichier', fileUuid);
+      console.log("File object: ");
+      console.log(file);
+      var pipes = file.stream;
+      // Pipe caclul du hash
+      var hashPipe = new HashPipe({});
+      pipes = pipes.pipe(hashPipe);
 
-    outStream.on('error', cb);
-    outStream.on('finish', function () {
+      // // Verifier si on doit crypter le fichier, ajouter pipe au besoin
+      // var crypte = req.security === 'secure' || req.securite === 'protege';
+      // if(crypte) {
+      //   const cryptopipe = this._cryptopipe();
+      //   pipes = pipes.pipe(cryptopipe.getPipe());
+      // }
 
-      var sha256 = hashPipe.getHash();
+      const outStream = fs.createWriteStream(path);
+      pipes = pipes.pipe(outStream);
 
-      cb(null, {
-        path: path,
-        size: outStream.bytesWritten,
-        nomfichier: file.originalname,
-        mimetype: file.mimetype,
-        fileuuid: fileUuid,
-        sha256: sha256,
-        decryptPublicKey: null,
+      outStream.on('error', cb);
+      outStream.on('finish', function () {
+
+        var sha256 = hashPipe.getHash();
+        console.debug("Hash SHA256 calcule: " + sha256);
+
+        cb(null, {
+          path: path,
+          size: outStream.bytesWritten,
+          nomfichier: file.originalname,
+          mimetype: file.mimetype,
+          fileuuid: fileUuid,
+          sha256: sha256,
+          decryptPublicKey: null,
+        });
       });
     });
-  });
+  }
+
+  _removeFile (req, file, cb) {
+    fs.unlink(file.path, cb)
+  }
+
 }
+
+
 
 // MulterCryptoStorage.prototype._hashpipe = function _hashpipe () {
 //   // Encrypter fichiers, calculer SHA256 avant et apres
@@ -136,10 +134,6 @@ MulterCryptoStorage.prototype._handleFile = function _handleFile (req, file, cb)
 //     })
 //   )
 // }
-
-MulterCryptoStorage.prototype._removeFile = function _removeFile (req, file, cb) {
-  fs.unlink(file.path, cb)
-}
 
 module.exports = function (opts) {
   return new MulterCryptoStorage(opts)
