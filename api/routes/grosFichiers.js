@@ -5,13 +5,27 @@ var sessionManagement = require('./res/sessionManagement');
 var multer = require('multer');
 var bodyParser = require('body-parser');
 var path = require('path');
-var request = require('request');
+const request = require('request');
 const fichierProcesseur = require('./res/fichierProcesseur');
 const pki = require('./res/pki')
+const multerCryptoStorage = require('./res/multerCryptoStorage');
 
 var stagingFolder = process.env.MG_STAGING_FOLDER || "/tmp/coupdoeilStaging";
-var multer_fn = multer({dest: stagingFolder}).array('grosfichier');
 const serveurConsignation = process.env.MG_CONSIGNATION_HTTP || 'https://consignationfichiers';
+
+// Configuration du stockage de fichier securise
+// Va faire deux operations dans le stream (on the fly):
+//   - digest
+//   - cryptage (pour fichier proteges ou secure)
+const multerCryptoStorageHandler = multerCryptoStorage({});
+var multerHandler = multer({
+  storage: multerCryptoStorageHandler,
+  limits: {
+    fileSize: 100 * 1024 * 1024,
+  }
+});
+
+const bodyParserHandler = bodyParser.urlencoded({ extended: false });
 
 function authentication(req, res, next) {
   // Pour le transfert de fichiers, il faut fournir un token de connexion
@@ -28,18 +42,24 @@ function authentication(req, res, next) {
   return;
 };
 
-router.use(bodyParser.urlencoded({ extended: false }));
-router.use(authentication);  // Utilise pour transfert de fichiers
-router.use(multer_fn);
+const uploadNouveauFichier = multerHandler.fields([{name: 'grosfichier', maxCount: 10}]);
 
-router.put('/nouveauFichier', function(req, res) {
+// Configuration router
+
+router.use(bodyParserHandler);
+router.use(authentication);
+
+router.put(
+  '/nouveauFichier',
+  uploadNouveauFichier,
+  function(req, res, next) {
   // console.log('Fichiers recus');
   // console.log(req.files);
 
   console.debug("*** BODY ***");
   console.debug(req.body);
   var repertoire_uuid = req.body.repertoire_uuid;
-  req.files.forEach(fichier=>{
+  req.files['grosfichier'].forEach(fichier=>{
     fichierProcesseur.ajouterFichier(fichier, repertoire_uuid, serveurConsignation)
     .then(params => {
       console.debug("Traitement fichier termine: " + params.url);

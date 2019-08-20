@@ -18,6 +18,6 @@ export MG_MQ_URL=amqps://dev2.local:5673/$MG_NOM_MILLEGRILLE
 export PORT=3001
 
 export MG_HTTPPROXY_SECURE=false
-export MG_CONSIGNATION_HTTP=https://dev2.maple.mdugre.info:3003
+export MG_CONSIGNATION_HTTP=https://dev2.local:3003
 
 npm start
