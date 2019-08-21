@@ -194,7 +194,7 @@ class RabbitMQWrapper {
         socketResources.reply_q = q;
 
         // Activer la lecture de message et callback pour notre websocket
-        this.channel.consume(
+        socketResources.mqChannel.consume(
           q.queue,
           (msg) => {
             let messageContent = decodeURIComponent(escape(msg.content));

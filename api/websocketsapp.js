@@ -19,6 +19,21 @@ class WebSocketResources {
     this.expiration = (new Date()).getTime()+10000;
   }
 
+  close() {
+    if(this.mqChannel) {
+      try {
+        if(this.reply_q) {
+          console.debug("Delete reply Q pour socket " + this.socket.id);
+          this.mqChannel.deleteQueue(this.reply_q.queue).catch(err=>{});
+        }
+      } finally {
+        console.debug("Fermeture channel MQ pour socket " + this.socket.id);
+        this.mqChannel.close().catch(err=>{});
+      }
+
+    }
+  }
+
 }
 
 class WebSocketApp {
@@ -43,16 +58,17 @@ class WebSocketApp {
     // Limite le temps permis pour authentifier
     let tempsCourant = (new Date()).getTime();
     for(var socket_id in this.new_sockets) {
-      let socket_obj = this.new_sockets[socket_id];
+      let socketResources = this.new_sockets[socket_id];
 
-      let socket = socket_obj.socket;
-      if(socket_obj.expiration < tempsCourant){
+      let socket = socketResources.socket;
+      if(socketResources.expiration < tempsCourant){
         console.debug("On deconnecte un socket pas authentifie expire: " + socket_id);
         socket.disconnect();
       }
 
       if(socket.disconnected) {
         console.debug("Nettoyage socket pas authentifie: " + socket_id);
+        socketResources.close();
         delete this.new_sockets[socket_id];
       }
     }
@@ -62,9 +78,9 @@ class WebSocketApp {
     // Housekeeping, normalement l'evenement disconnect du socket va
     // declencher la suppression du socket.
     for(var socket_id in this.authenticated_sockets) {
-      let socket_obj = this.authenticated_sockets[socket_id];
-      if(socket_obj.disconnected) {
-        console.debug("Nettoyage vieux socket authentifie deja deconnecte: " + socket_obj.id);
+      let socketResources = this.authenticated_sockets[socket_id];
+      if(socketResources.socket.disconnected) {
+        socketResources.close();
         delete this.authenticated_sockets[socket_id];
       }
     }
@@ -72,6 +88,13 @@ class WebSocketApp {
 
   disconnectedHandler(socket) {
     console.debug("Socket deconnecte " + socket.id);
+
+    let socketResources = this.new_sockets[socket.id] || this.authenticated_sockets[socket.id];
+    if(socketResources) {
+      console.log(socketResources);
+      socketResources.close();
+    }
+
     delete this.new_sockets[socket.id];
     delete this.authenticated_sockets[socket.id];
   }
@@ -101,6 +124,7 @@ class WebSocketApp {
       }).catch(err=>{
         console.error("Erreur traitement socket " + socket.id + ", on le ferme.");
         console.error(err);
+        socketResources.close();
         socket.disconnect();
         delete this.new_sockets[socket.id];
       });  // Attache evements auth
@@ -110,7 +134,7 @@ class WebSocketApp {
 
   saveAuthenticated(socketResources) {
     let socket = socketResources.socket;
-    this.authenticated_sockets[socket.id] = socket;
+    this.authenticated_sockets[socket.id] = socketResources;
     delete this.new_sockets[socket.id];
     console.debug("Moved socket " + socket.id + " from new_sockets to authenticated_sockets");
   }
