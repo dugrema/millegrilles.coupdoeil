@@ -16,7 +16,7 @@ class WebSocketResources {
     this.socket = socket;
     this.mqChannel = null;
     this.reply_q = null;
-    this.expiration = (new Date()).getTime()+10000;
+    this.expiration = (new Date()).getTime()+120000; // 2 minutes pour socket connect
   }
 
   close() {
