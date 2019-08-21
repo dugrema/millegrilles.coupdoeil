@@ -91,7 +91,6 @@ class WebSocketApp {
 
     let socketResources = this.new_sockets[socket.id] || this.authenticated_sockets[socket.id];
     if(socketResources) {
-      console.log(socketResources);
       socketResources.close();
     }
 
