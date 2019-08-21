@@ -10,6 +10,17 @@ const {
     verifyAuthenticatorAssertion,
 } = require('@webauthn/server');
 
+class WebSocketResources {
+
+  constructor(socket) {
+    this.socket = socket;
+    this.mqChannel = null;
+    this.reply_q = null;
+    this.expiration = (new Date()).getTime()+10000;
+  }
+
+}
+
 class WebSocketApp {
 
   constructor() {
@@ -70,22 +81,26 @@ class WebSocketApp {
     // Ajoute un socket d'une nouvelle connexion
     // console.debug("Nouveau socket!");
     if(!socket.disconnected) {
+      let socketResources = new WebSocketResources(socket);
+
       // S'assure que le socket n'a pas ete deconnecte avant d'ajouter
       // l'evenement de gestion du disconnect
       socket.on('disconnect', ()=>{
         this.disconnectedHandler(socket);
       });
-      this.new_sockets[socket.id] = {
-        socket: socket,
-        expiration: (new Date()).getTime()+10000
-      };
+      this.new_sockets[socket.id] = socketResources;
 
-      sessionManagement.addSocketConnection(socket)
+      // Ouvrir Channel MQ
+      rabbitMQ.singleton.createChannel(socketResources)
       .then(()=>{
-        this.saveAuthenticated(socket);
-        this.registerEvents(socket);
+        sessionManagement.addSocketConnection(socket)
+      })
+      .then(()=>{
+        this.saveAuthenticated(socketResources);
+        this.registerEvents(socketResources);
       }).catch(err=>{
         console.error("Erreur traitement socket " + socket.id + ", on le ferme.");
+        console.error(err);
         socket.disconnect();
         delete this.new_sockets[socket.id];
       });  // Attache evements auth
@@ -93,28 +108,32 @@ class WebSocketApp {
 
   }
 
-  saveAuthenticated(socket) {
+  saveAuthenticated(socketResources) {
+    let socket = socketResources.socket;
     this.authenticated_sockets[socket.id] = socket;
     delete this.new_sockets[socket.id];
     console.debug("Moved socket " + socket.id + " from new_sockets to authenticated_sockets");
   }
 
-  registerEvents(socket) {
+  registerEvents(socketResources) {
     // Enregistre tous les evenements transmis par le front-end coupdoeil.
     // registerDocument: Enregistrer nouvelle routingKey pour le socket
     // unregisterDocument: Retirer routingKey pour socket
     // requete: Executer une requete
+    let socket = socketResources.socket;
+    let channel = socketResources.mqChannel;
+    let reply_q = socketResources.reply_q;
 
     socket.on('subscribe', message => {
       rabbitMQ.singleton.routingKeyManager
-        .addRoutingKeysForSocket(socket, message);
+        .addRoutingKeysForSocket(socket, message, channel, reply_q);
     });
 
     socket.on('unsubscribe', message => {
       // console.debug("Message unsubscribe");
       // console.debug(message);
       rabbitMQ.singleton.routingKeyManager
-        .removeRoutingKeysForSocket(socket, message);
+        .removeRoutingKeysForSocket(socket, message, channel, reply_q);
     });
 
     socket.on('requete', (enveloppe, cb) => {
