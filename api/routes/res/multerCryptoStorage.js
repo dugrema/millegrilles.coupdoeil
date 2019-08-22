@@ -56,10 +56,9 @@ class CryptoEncryptPipe {
 
             // Encoder la cle secrete
             var cert = forge.pki.certificateFromPem(publicKey);
-            console.log("Key type: " + key.constructor.name);
-            console.log(key);
-            var bufferKey = forge.util.ByteStringBuffer(key);
-            var encryptedSecretKey = cert.publicKey.encrypt(bufferKey, 'RSA-OAEP', {
+            // Convertir buffer en bytes string pour node-forge
+            var keyByteString = forge.util.bytesToHex(key);
+            var encryptedSecretKey = cert.publicKey.encrypt(keyByteString, 'RSA-OAEP', {
               md: forge.md.sha256.create(),
               mgf1: {
                 md: forge.md.sha256.create()

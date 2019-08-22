@@ -36,12 +36,12 @@ router.get('/asymetricEncrypt', function(req, res, next) {
         // encryptedSecretKey = encryptedSecretKey.toString('base64');
         console.log("Bytes cle secrete: ");
         console.log(key);
-        var keyBuffer = forge.util.bytesToHex(key);
+        var keyByteString = forge.util.bytesToHex(key); // Convertir buffer en bytes string pour node-forge
 
         // Node Forge
         var rsa = forge.pki.rsa;
         var cert = forge.pki.certificateFromPem(publicKey);
-        var encryptedSecretKey2 = cert.publicKey.encrypt(keyBuffer, 'RSA-OAEP', {
+        var encryptedSecretKey2 = cert.publicKey.encrypt(keyByteString, 'RSA-OAEP', {
           md: forge.md.sha256.create(),
           mgf1: {
             md: forge.md.sha256.create()
@@ -55,7 +55,7 @@ router.get('/asymetricEncrypt', function(req, res, next) {
 
         var affichage =
         '<html><body>' +
-        '<p>Secret: '+messageSecret+'</p>'+
+        // '<p>Secret: '+messageSecret+'</p>'+
         // '<p>Secret crypte: '+encryptedSecretKey+'</p>'+
         '<p>Secret2 crypte: '+encryptedSecretKey2+'</p>'+
         '<br/>' +
