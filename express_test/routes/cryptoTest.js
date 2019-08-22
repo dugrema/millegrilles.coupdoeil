@@ -57,4 +57,44 @@ router.get('/asymetricEncrypt', function(req, res, next) {
 
 });
 
+router.get('/asymetricDecrypt', function(req, res, next) {
+
+  var mq_key = '/opt/millegrilles/dev2/pki/keys/dev2_middleware.key.pem';
+  if(mq_key !== undefined) {
+    fs.readFile(mq_key, (err, privateKey) =>{
+      if(err) {
+        console.error("Erreur");
+        console.error(err);
+        res.sendStatus(500);
+      }
+
+      console.log(privateKey);
+
+      const encryptedSecretKey = Buffer.from('v2oS1YZsX7+aCWfzf0DQtsmlSDrR/YuuFIUxiuwJIz6kXGHI8S9OBs0w1dw/oJvcHDWlcNcNDIENs9mtaSRnNgQQgD+x12dFHxsGL8kWiW0QNGugFVMf9J/8fcfkVXUibbsKK/QwkEfdiBO+rN4yX1aXWqm35V0hL9FEDVUlb/JDJ+2l9sNvutw+1D5paFWOI+fYEzKae/29gW2O4QILw0wvF7deZc6LjU4LoG4kXkNlDGL+RwPK17OuXU6zrRf5ZBKE+CiUFvpRUqttCv7kC3shvQ6JSVI8c4J5hgSNWL6fpx9WJFaPEu+ItK5TF6GIZ/x4Tjxbwf1lP1Wah/bFRg==', 'base64');
+      // encryptedSecretKey = forge.util.decode64(encryptedSecretKey);
+
+      // Node Forge
+      var rsa = forge.pki.rsa;
+      var privateKey = forge.pki.privateKeyFromPem(privateKey);
+      var decryptedSecretKey = privateKey.decrypt(encryptedSecretKey, 'RSA-OAEP', {
+        md: forge.md.sha256.create(),
+        mgf1: {
+          md: forge.md.sha256.create()
+        }
+      });
+      console.log(decryptedSecretKey);
+
+      var affichage =
+      '<html><body>' +
+      '<p>Secret: '+decryptedSecretKey+'</p>'+
+      '<br/>' +
+      '</body></html>';
+
+      res.send(affichage);
+    });
+
+  }
+
+});
+
 module.exports = router;
