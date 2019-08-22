@@ -5,6 +5,7 @@ const request = require('request');
 const crypto = require('crypto');
 const rabbitMQ = require('./rabbitMQ');
 const pki = require('./pki')
+const forge = require('node-forge');
 
 class ProcesseurUpload {
 
@@ -118,5 +119,62 @@ class ProcesseurUpload {
 
 }
 
-const processeur = new ProcesseurUpload();
-module.exports = processeur;
+class ProcesseurDownloadCrypte {
+
+  constructor(props) {
+    this.key = null;
+
+    this._charger_key(key=>{
+      this.key = key;
+    })
+  }
+
+  getDecipherPipe4fuuid(fuuid) {
+    // On doit commencer par demander une cle pour decrypte le fichier
+    // Ensuite on prepare un decipher pipe pour decrypter le contenu.
+
+    let routing = 'requete.millegrilles.domaines.MaitreDesCles.decryptageGrosFichier';
+    let requete = {
+      fuuid: fuuid
+    }
+
+    return rabbitMQ.singleton.transmettreRequete(routing, requete)
+    .then(reponse=>{
+      console.debug("Recu message pour decrypter fuuid: " + fuuid);
+      let messageContent = decodeURIComponent(escape(reponse.content));
+      let json_message = JSON.parse(messageContent);
+      let cleSecrete = Buffer.from(json_message.cle);
+      let iv = json_message.iv;
+
+      // Decrypter la cle secrete avec notre cle privee
+      var decryptedSecretKey = privateKey.decrypt(cleSecrete, 'RSA-OAEP', {
+        md: forge.md.sha256.create(),
+        mgf1: {
+          md: forge.md.sha256.create()
+        }
+      });
+
+      // Creer un decipher stream
+      var decipher = crypto.createDecipheriv('aes256', decryptedSecretKey, iv);
+      return decipher;
+    })
+  }
+
+  _charger_key(cb) {
+    console.debug("Chargement cle privee pour traitement fichiers encryptes")
+    var mq_key = process.env.PRIVKEY;
+    if(mq_key !== undefined) {
+      fs.readFile(mq_key, (err, data)=>{
+        var key = forge.pki.privateKeyFromPem(data);
+        console.debug("Cle privee chargee")
+        cb(key);
+      });
+    }
+  }
+
+}
+
+module.exports = {
+  ProcesseurUpload: ProcesseurUpload,
+  ProcesseurDownloadCrypte: ProcesseurDownloadCrypte,
+}

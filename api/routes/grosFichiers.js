@@ -6,7 +6,7 @@ var multer = require('multer');
 var bodyParser = require('body-parser');
 var path = require('path');
 const request = require('request');
-const fichierProcesseur = require('./res/fichierProcesseur');
+const {ProcesseurUpload, ProcesseurDownloadCrypte} = require('./res/fichierProcesseur');
 const pki = require('./res/pki')
 const multerCryptoStorage = require('./res/multerCryptoStorage');
 
@@ -24,6 +24,9 @@ var multerHandler = multer({
     fileSize: 100 * 1024 * 1024,
   }
 });
+
+const fichierProcesseurUpload = new ProcesseurUpload();
+const fichierProcesseurDownloadCrypte = new ProcesseurDownloadCrypte();
 
 function _charger_certificat(cb) {
   var mq_cert = process.env.MG_MQ_CERTFILE;
@@ -75,7 +78,7 @@ router.put(
   // console.debug('*****FICHIERS******');
   // console.debug(req.files);
   req.files['grosfichier'].forEach(fichier=>{
-    fichierProcesseur.ajouterFichier(fichier, repertoire_uuid, serveurConsignation)
+    fichierProcesseurUpload.ajouterFichier(fichier, repertoire_uuid, serveurConsignation)
     .then(params => {
       // console.debug("Traitement fichier termine: " + params);
       // console.debug(params);
@@ -99,33 +102,57 @@ router.post('/local/*', function(req, res, next) {
   let fuuid = req.body.fuuid;
   console.debug("local fichier: " + req.url + " fuuid: " + fuuid);
 
-  let headers = {
-    fuuid: req.body.fuuid,
-    contenttype: req.body.contenttype,
-  }
-
   // delete req.body;
 
   let targetConsignation = serveurConsignation + '/grosFichiers/local/' + fuuid;
   console.debug("Transfert vers: " + targetConsignation);
   console.debug(pki.ca);
 
+  let securite = req.body.securite;
+  let promiseStream = null;
+  if(securite === '3.protege' || securite === '4.secure') {
+    console.debug("Le fichier est crypte. On doit demander un pipe de decryptage");
+    promiseStream = fichierProcesseurDownloadCrypte.getDecipherPipe4fuuid()
+    .then(pipeDecipher=>{
+      return pipeDecipher.pipe(res); // Pipe au travers du decipher
+    })
+  } else {
+    promiseStream = new Promise((resolve, reject)=>{
+      resolve(res);  // Pipe directement aux resultats
+    })
+  }
+
+  promiseStream.then(pipe=>{
+    _pipeFileToResult(pipe, securite, res);
+  })
+  .catch(err=>{
+    console.error("Erreur download fichier");
+    console.error(err);
+    res.sendStatus(503);
+  })
+
+});
+
+function _pipeFileToResult(pipes, securite, res) {
   // Connecter au serveur consignation.
+  let headers = {
+    fuuid: req.body.fuuid,
+    contenttype: req.body.contenttype,
+    securite: securite,
+  }
+
   const options = {
     url: targetConsignation,
     headers: headers,
     agentOptions: {ca: pki.ca},  // Utilisation certificats SSL internes
   }
-
   try {
-    request(options).pipe(res);
+    request(options).pipe(pipes);
   } catch (ex) {
     logger.error("local erreur");
     logger.error(ex);
     res.sendStatus(500);
   }
-
-  return;
-});
+}
 
 module.exports = router;
