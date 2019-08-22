@@ -1,10 +1,13 @@
 import React from 'react';
-import Dropzone from 'react-dropzone';
-import axios from 'axios';
 
 import './GrosFichiers.css';
 import webSocketManager from '../WebSocketManager';
+
+// Composants React GrosFichiers
 import {PanneauFichiersIcones} from '../mgcomponents/FichiersUI.js';
+import {GrosFichierAfficherPopup} from './GrosFichiersPopups';
+import {Accueil, NavigationRepertoire, AffichageFichier,
+  GrosFichiersRenderDownloadForm} from './GrosFichiersNavigation.js'
 
 export class GrosFichiers extends React.Component {
 
@@ -409,60 +412,6 @@ export class GrosFichiers extends React.Component {
     }
   }
 
-  componentDidMount() {
-    // Enregistrer les routingKeys de documents
-    webSocketManager.subscribe(this.config.subscriptions, this.processMessage);
-
-    // Charger le document repertoire.racine.
-    this.chargerDocument({
-      requetes: [{'filtre': {'_mg-libelle': 'repertoire.racine'}}]
-    })
-    .then(docs=>{
-      // On recoit une liste de resultats, avec une liste de documents.
-      // On veut juste conserver le 1er resultat de la 1ere (seule) requete.
-      this.setState({repertoireRacine: docs[0][0]})
-    })
-    .catch(err=>{
-      console.error("Erreur chargement document racine");
-      console.error(err);
-    });
-  }
-
-  componentWillUnmount() {
-    // console.debug("Unsubscribe GrosFichiers");
-    webSocketManager.unsubscribe(this.config.subscriptions);
-  }
-
-  afficherPopup() {
-    if(this.state.popupRenommerFichierValeurs) {
-      return (
-        <PopupChangerNom
-          valeur={this.state.popupRenommerFichierValeurs}
-          soumettre={this.soumettreChangerNomFichier}
-          annuler={this.annulerChangerNomFichier}
-          />
-      );
-    } else if(this.state.popupCreerRepertoireValeurs) {
-      return (
-        <PopupCreerRepertoire
-          soumettre={this.soumettreCreerRepertoire}
-          annuler={this.annulerCreerRepertoire}
-          />
-      );
-    } else if(this.state.popupRenommerRepertoireValeurs) {
-      return (
-        <PopupRenommerRepertoire
-          valeur={this.state.popupRenommerRepertoireValeurs}
-          soumettre={this.soumettreChangerNomRepertoire}
-          annuler={this.annulerChangerNomRepertoire}
-          />
-      );
-    }
-
-
-    return null;
-  }
-
   soumettreChangerNomFichier = (event) => {
     let formulaire = event.currentTarget.form;
     let nouveauNom = formulaire.nouveauNom.value;
@@ -488,21 +437,28 @@ export class GrosFichiers extends React.Component {
     this.setState({popupRenommerFichierValeurs: null});
   }
 
-  // Download form
-  renderDownloadForm() {
-    // Formulaire utilise pour POST la requete avec authtoken
-    return (
-      <form
-        target="_blank"
-        ref={this.refFormulaireDownload}
-        action="dummyaction"
-        method="POST">
-          <input type="hidden" name="authtoken" value="dummytoken"/>
-          <input type="hidden" name="fuuid" value="dummyfuuide"/>
-          <input type="hidden" name="nomfichier" value="dummynomfichier"/>
-          <input type="hidden" name="contenttype" value="dummycontentype"/>
-      </form>
-    );
+  componentDidMount() {
+    // Enregistrer les routingKeys de documents
+    webSocketManager.subscribe(this.config.subscriptions, this.processMessage);
+
+    // Charger le document repertoire.racine.
+    this.chargerDocument({
+      requetes: [{'filtre': {'_mg-libelle': 'repertoire.racine'}}]
+    })
+    .then(docs=>{
+      // On recoit une liste de resultats, avec une liste de documents.
+      // On veut juste conserver le 1er resultat de la 1ere (seule) requete.
+      this.setState({repertoireRacine: docs[0][0]})
+    })
+    .catch(err=>{
+      console.error("Erreur chargement document racine");
+      console.error(err);
+    });
+  }
+
+  componentWillUnmount() {
+    // console.debug("Unsubscribe GrosFichiers");
+    webSocketManager.unsubscribe(this.config.subscriptions);
   }
 
   render() {
@@ -569,215 +525,10 @@ export class GrosFichiers extends React.Component {
             </div>
           </div>
         </div>
-        {this.afficherPopup()}
-        {this.renderDownloadForm()}
+        <GrosFichierAfficherPopup />
+        <GrosFichiersRenderDownloadForm />
       </div>
     );
   }
 
-}
-
-class FileUploadSection extends React.Component {
-
-  uploadFileProcessor = (acceptedFiles) => {
-    // Traitement d'un fichier a uploader.
-    console.debug(acceptedFiles);
-
-    let repertoire_uuid = this.props.repertoireCourant.repertoire_uuid;
-
-    // Demander un token (OTP) via websockets
-    // Permet de se connecter au serveur pour transmetter le fichier.
-    webSocketManager.demanderTokenTransfert()
-    .then(token=>{
-      // console.debug("Utilisation token " + token);
-      let data = new FormData();
-      data.append('repertoire_uuid', repertoire_uuid);
-      acceptedFiles.forEach( file=> {
-        data.append('grosfichier', file);
-      })
-      let config = {
-        headers: {
-          'authtoken': token
-        }
-      }
-
-      axios.put('/grosFichiers/nouveauFichier', data, config)
-        .then(response => this.uploadSuccess(response))
-        .catch(error => this.uploadFail(error));
-    })
-    .catch(err=>{
-      console.error("Erreur transfert fichiers");
-      console.error(err);
-    })
-
-  }
-
-  uploadSuccess(response) {
-    console.debug("Upload is successful");
-  }
-
-  uploadFail(error) {
-    console.error("Erreur dans l'upload");
-    console.error(error);
-  }
-
-  render() {
-    return (
-      <Dropzone onDrop={this.uploadFileProcessor}>
-        {({getRootProps, getInputProps}) => (
-          <section>
-            <div {...getRootProps()}>
-              <input {...getInputProps()} />
-              <p>Cliquer ici pour upload ou DnD fichiers ici.</p>
-            </div>
-          </section>
-        )}
-      </Dropzone>
-    );
-  }
-}
-
-function Accueil(props) {
-
-  let contenu = (
-    <div>
-      <p>Accueil</p>
-    </div>
-  );
-
-  return contenu;
-}
-
-function NavigationRepertoire(props) {
-  // Affiche la liste des sous-repertoires et une breadcrumb pour remonter
-
-  var repertoireCourant1 = props.repertoireCourant;
-
-  return (
-    <div>
-      <p>Repertoire {repertoireCourant1.nom}</p>
-      <button
-        className="aslink"
-        value={repertoireCourant1.parent_id}
-        onClick={props.afficherRepertoire}>{repertoireCourant1.chemin_repertoires}</button>
-      <p>{repertoireCourant1.commentaires}</p>
-
-      <FileUploadSection repertoireCourant={repertoireCourant1}/>
-    </div>
-  );
-}
-
-function AffichageFichier(props) {
-  // Affiche l'information d'un fichier et la liste des versions
-  let fichierCourant = props.fichierCourant;
-
-  let informationFichier = (
-    <div>
-      <h2>{fichierCourant.nom}</h2>
-      <button
-        className="aslink"
-        onClick={props.retourRepertoireFichier}>{fichierCourant.chemin_repertoires}</button>
-      <p>Taille: {fichierCourant.taille} octets</p>
-      <p>Date: {fichierCourant.date_v_courante}</p>
-      <p>FUUID: {fichierCourant.fuuid_v_courante}</p>
-      <p>{fichierCourant.commentaires}</p>
-      <button
-        className="aslink"
-        value={fichierCourant.nom}
-        data-uuidfichier={fichierCourant.uuid}
-        onClick={props.afficherChangerNomFichier}>Renommer</button>
-      <button
-        className="aslink"
-        value={fichierCourant.nom}
-        data-uuidfichier={fichierCourant.uuid}
-        onClick={props.supprimerFichier}>Supprimer</button>
-    </div>
-  );
-
-  let versions = []
-  for(var fuuid in fichierCourant.versions) {
-    let version = fichierCourant.versions[fuuid];
-    versions.push(version);
-  }
-  versions.sort((a,b)=>{
-    let dateA = a.date_version, dateB = b.date_version;
-    return dateB - dateA;
-  })
-
-  let affichageVersions = [];
-  versions.forEach(version=>{
-    affichageVersions.push(
-      <li key={version.fuuid}>
-        {version.date_version} / {version.taille} octets / {version.nom}
-      </li>
-    );
-  })
-
-  return (
-    <div>
-      {informationFichier}
-
-      <h2>Versions</h2>
-      <ul>{affichageVersions}</ul>
-    </div>
-  )
-}
-
-class PopupChangerNom extends React.Component {
-  render() {
-    return (
-      <div className='popup'>
-        <div className='popupinner'>
-          <h1>Changer le nom</h1>
-          <form onSubmit={e=>e.preventDefault()}>
-            <p>Nom courant: {this.props.valeur.nom}</p>
-            <p>Nouveau nom: <input type="text" name="nouveauNom" defaultValue={this.props.valeur.nom}/></p>
-            <div>
-              <button type="button" onClick={this.props.soumettre}>Soumettre</button>
-              <button type="button" onClick={this.props.annuler}>Annuler</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    );
-  }
-}
-
-class PopupCreerRepertoire extends React.Component {
-  render() {
-    return (
-      <div className='popup'>
-        <div className='popupinner'>
-          <h1>Creer nouveau repertoire</h1>
-          <form onSubmit={e=>e.preventDefault()}>
-            <p>Nom repertoire: <input type="text" name="nomrepertoire"/></p>
-            <div>
-              <button type="button" onClick={this.props.soumettre}>Soumettre</button>
-              <button type="button" onClick={this.props.annuler}>Annuler</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    );
-  }
-}
-
-class PopupRenommerRepertoire extends React.Component {
-  render() {
-    return (
-      <div className='popup'>
-        <div className='popupinner'>
-          <h1>Renommer repertoire</h1>
-          <form onSubmit={e=>e.preventDefault()}>
-            <p>Nom courant: {this.props.valeur.nom}</p>
-            <p>Nouveau nom: <input type="text" name="nouveauNom" defaultValue={this.props.valeur.nom}/></p>
-            <div>
-              <button type="button" onClick={this.props.soumettre}>Soumettre</button>
-              <button type="button" onClick={this.props.annuler}>Annuler</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    );
-  }
 }
