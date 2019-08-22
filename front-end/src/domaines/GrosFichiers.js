@@ -152,6 +152,7 @@ export class GrosFichiers extends React.Component {
       form.nomfichier.value = nomFichier;
       form.contenttype.value = contentType;
       form.authtoken.value = token;
+      form.securite.value = fichier.securite;
 
       console.debug("2. Submit preparation, download " + form.action + ", recu token " + form.authtoken.value);
       form.submit(); // Token pret, submit.
