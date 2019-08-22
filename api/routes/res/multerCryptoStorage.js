@@ -20,9 +20,11 @@ class HashPipe extends PassThrough {
     this.hashAlgo = opts.hashAlgo || 'sha256';
     this.hashcalc = crypto.createHash(this.hashAlgo);
     this.hashResult = null;
+    this.fileSize = 0;
 
     this.on('data', chunk=>{
       this.hashcalc.update(chunk);
+      this.fileSize += chunk.length;
     });
 
     this.on('end', ()=>{
@@ -67,8 +69,8 @@ class CryptoEncryptPipe {
             }
           });
           encryptedSecretKey = forge.util.encode64(encryptedSecretKey);
-          console.log("Cle secrete cryptee, len:" + encryptedSecretKey.length);
-          console.log(encryptedSecretKey);
+          // console.debug("Cle secrete cryptee, len:" + encryptedSecretKey.length);
+          // console.debug(encryptedSecretKey);
 
           resolve({
             cipher: cipher,
@@ -142,15 +144,18 @@ class MulterCryptoStorage {
         .then(certificatMaitreDesCles=>{
           params.certificatMaitreDesCles = certificatMaitreDesCles
           let cryptoPipe = new CryptoEncryptPipe(certificatMaitreDesCles, {});
+          // console.debug("Creation crypto stream");
           return cryptoPipe.createStream();
         })
         .then(paramsCrypto=>{
+          // console.debug("Ouverture CryptoPipe");
           let newPipe = pipes.pipe(paramsCrypto.cipher);
           params.iv = paramsCrypto.iv;
           params.encryptedSecretKey = paramsCrypto.encryptedSecretKey;
           resolve({pipes: newPipe, params: params});
         })
         .catch(err=>{
+          console.error("Erreur traitement crypto");
           reject(err);
         })
       });
@@ -177,6 +182,7 @@ class MulterCryptoStorage {
 
   _traiterFichier(pipes, params, cb) {
     params.fileUuid = uuidv1();
+    // console.debug("_Traiter fichier " + params.fileUuid);
 
     // Pipe caclul du hash (on hash le contenu crypte quand c'est applicable)
     const hashPipe = new HashPipe({});
@@ -196,13 +202,7 @@ class MulterCryptoStorage {
       agentOptions: {ca: pki.ca},  // Utilisation certificats SSL internes
     };
     const outStream = request.put(options, (err, httpResponse, body) =>{
-
-    });
-    pipes = pipes.pipe(outStream);
-
-    outStream.on('error', cb);
-    outStream.on('finish', function () {
-
+      console.debug("Upload PUT complete pour " + params.fileUuid);
       // Tentative de decryter fichier:
       // var decipher = crypto.createDecipheriv('aes256', key, iv);
       // var readStream = fs.createReadStream(path);
@@ -217,16 +217,21 @@ class MulterCryptoStorage {
 
       var file = params.file;
       cb(null, {
-        path: path,
-        size: outStream.bytesWritten,
+        size: hashPipe.fileSize,
         nomfichier: file.originalname,
         mimetype: file.mimetype,
-        fileuuid: fileUuid,
+        fileuuid: params.fileUuid,
         hash: hashResult,
         encryptedSecretKey: params.encryptedSecretKey,
         iv: params.iv,
       });
+
     });
+    outStream.on('error', cb);
+
+    // Connecter output.
+    pipes = pipes.pipe(outStream);
+
   }
 
   demanderCertificatMaitreDesCles() {
@@ -245,8 +250,8 @@ class MulterCryptoStorage {
       .then(reponse=>{
         let messageContent = decodeURIComponent(escape(reponse.content));
         let json_message = JSON.parse(messageContent);
-        console.debug("Reponse cert maitre des cles");
-        console.debug(messageContent);
+        // console.debug("Reponse cert maitre des cles");
+        // console.debug(messageContent);
         objet_crypto.certificatMaitreDesCles = forge.pki.certificateFromPem(json_message.certificat);
         return objet_crypto.certificatMaitreDesCles;
       })

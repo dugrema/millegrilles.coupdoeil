@@ -10,8 +10,8 @@ class ProcesseurUpload {
 
   ajouterFichier(fichier, repertoire_uuid, serveurConsignation) {
     var promise = new Promise((resolve, reject)=>{
-      console.debug('Traitement fichier');
-      console.debug(fichier);
+      // console.debug('Traitement fichier');
+      // console.debug(fichier);
 
       // Creer le uuid de fichier, pour cette version.
       let fileUuid = fichier.fileuuid;
@@ -58,16 +58,16 @@ class ProcesseurUpload {
             cle: fichier.encryptedSecretKey,
             iv: fichier.iv,
           };
-          console.debug("Document crypte, on transmet l'info au MaitreDesCles");
-          console.debug(transactionInformationCryptee);
+          // console.debug("Document crypte, on transmet l'info au MaitreDesCles");
+          // console.debug(transactionInformationCryptee);
 
           // Transmettre information au serveur via MQ
           rabbitMQ.singleton.transmettreTransactionFormattee(
               transactionInformationCryptee,
               'millegrilles.domaines.MaitreDesCles.nouvelleCle.grosFichier')
           .then(msg=>{
-            console.debug("Recu confirmation cle");
-            console.debug(msg);
+            // console.debug("Recu confirmation cle");
+            // console.debug(msg);
             this._transmettreMetadata(resolve, reject, transactionNouvelleVersion);
           })
           .catch(err=>{
@@ -87,10 +87,11 @@ class ProcesseurUpload {
         reject(err);
       } finally {
         // Supprimer fichier temporaire dans staging
-        fs.unlink(fichier.path, msg => {
-          console.debug("Unlink fichier complete " + fichier.path);
+        // Note: Le fichier n'est plus cree, on stream via PUT directement.
+        // fs.unlink(fichier.path, msg => {
+          // console.debug("Unlink fichier complete " + fichier.path);
           // if(msg) console.debug(msg);
-        });
+        // });
       }
 
     });
@@ -103,8 +104,8 @@ class ProcesseurUpload {
       transactionNouvelleVersion,
       'millegrilles.domaines.GrosFichiers.nouvelleVersion.metadata')
     .then( msg => {
-      console.debug("Recu confirmation de nouvelleVersion metadata");
-      console.debug(msg);
+      /// console.debug("Recu confirmation de nouvelleVersion metadata");
+      // console.debug(msg);
       resolve();
     })
     .catch( err => {

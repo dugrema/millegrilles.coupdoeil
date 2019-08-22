@@ -77,7 +77,7 @@ router.put(
   req.files['grosfichier'].forEach(fichier=>{
     fichierProcesseur.ajouterFichier(fichier, repertoire_uuid, serveurConsignation)
     .then(params => {
-      console.debug("Traitement fichier termine: " + params.url);
+      // console.debug("Traitement fichier termine: " + params);
       // console.debug(params);
     })
     .catch(err => {
