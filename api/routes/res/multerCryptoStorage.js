@@ -152,8 +152,6 @@ class MulterCryptoStorage {
         pipes = pipes.pipe(hashPipe);
 
         // Finaliser avec l'outputstream
-        // const outStream = fs.createWriteStream(path);
-
         // Transmettre directement au serveur grosfichier pour consignation.
         let pathServeur = serveurConsignation + '/' +
           pathModule.join('grosfichiers', 'local', 'nouveauFichier', fileUuid);
@@ -209,6 +207,7 @@ class MulterCryptoStorage {
   }
 
   _removeFile (req, file, cb) {
+    // Note: Le fichier ne devrait meme pas etre cree, PUT au serveur directement.
     fs.unlink(file.path, cb)
   }
 
