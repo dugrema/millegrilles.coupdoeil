@@ -43,7 +43,7 @@ class ProcesseurUpload {
             // console.debug("Put complete, sending record to MQ");
             let transactionNouvelleVersion = {
               fuuid: fileUuid,
-              securite: '2.prive',
+              securite: '3.protege',
               repertoire_uuid: repertoire_uuid,
               nom: fichier.originalname,
               taille: fichier.size,
@@ -59,46 +59,38 @@ class ProcesseurUpload {
             // console.debug(transactionNouvelleVersion);
 
             // Transmettre information au serveur via MQ
-            rabbitMQ.singleton.transmettreTransactionFormattee(
-              transactionNouvelleVersion,
-              'millegrilles.domaines.GrosFichiers.nouvelleVersion.metadata')
-            .then( msg => {
-              console.debug("Recu confirmation de nouvelleVersion metadata");
-              console.debug(msg);
-            })
-            .then(()=>{
-              if(crypte) {
-                let transactionInformationCryptee = {
-                  domaine: 'millegrilles.domaines.GrosFichiers',
-                  fuuid: fileUuid,
-                  fingerprint: 'abcd',
-                  cle: fichier.encryptedSecretKey,
-                  iv: fichier.iv,
-                };
-                console.debug("Document crypte, on transmet l'info au MaitreDesCles");
-                console.debug(transactionInformationCryptee);
+            if(crypte) {
+              // Le ficheir est crypte, on transmet la cle en premier
+              // (condition blocking pour le processus de traitement du fichier)
+              let transactionInformationCryptee = {
+                domaine: 'millegrilles.domaines.GrosFichiers',
+                fuuid: fileUuid,
+                fingerprint: 'abcd',
+                cle: fichier.encryptedSecretKey,
+                iv: fichier.iv,
+              };
+              console.debug("Document crypte, on transmet l'info au MaitreDesCles");
+              console.debug(transactionInformationCryptee);
 
-                // Transmettre information au serveur via MQ
-                rabbitMQ.singleton.transmettreTransactionFormattee(
+              // Transmettre information au serveur via MQ
+              rabbitMQ.singleton.transmettreTransactionFormattee(
                   transactionInformationCryptee,
-                  'millegrilles.domaines.MaitreDesCles.nouvelleCle')
-                .then( msg => {
-                  console.debug("Recu confirmation de nouvelleCle");
-                  console.debug(msg);
-                })
-                .catch( err => {
-                  console.error("Erreur message");
-                  console.error(err);
-                });
-              } else {
-                resolve();
-              }
-            })
-            .catch( err => {
-              console.error("Erreur message");
-              console.error(err);
-            });
-
+                  'millegrilles.domaines.MaitreDesCles.nouvelleCle.grosFichier')
+              .then(msg=>{
+                console.debug("Recu confirmation cle");
+                console.debug(msg);
+                this.transmettreMetadata(resolve, reject);
+              })
+              .catch(err=>{
+                console.error("Erreur message");
+                console.error(err);
+                reject(err);
+              });
+            } else {
+              // Le fichier n'est pas crypte - on transmet juste le message
+              // de metadata.
+              this.transmettreMetadata(resolve, reject);
+            }
           })
         )
 
@@ -118,6 +110,23 @@ class ProcesseurUpload {
 
     return promise;
   } // ajouterFichier
+
+  transmettreMetadata(resolve, reject) {
+    return rabbitMQ.singleton.transmettreTransactionFormattee(
+      transactionNouvelleVersion,
+      'millegrilles.domaines.GrosFichiers.nouvelleVersion.metadata')
+    .then( msg => {
+      console.debug("Recu confirmation de nouvelleVersion metadata");
+      console.debug(msg);
+      resolve();
+    })
+    .catch( err => {
+      console.error("Erreur message");
+      console.error(err);
+      reject(err);
+    });
+
+  }
 
 }
 

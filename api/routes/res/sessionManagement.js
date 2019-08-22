@@ -16,6 +16,10 @@ class SessionManagement {
     this.session_timeout = Number(this.session_timeout);
     this.transferTokens = {};
     this.pinTemporaireDevice = null;  // PIN utilise pour ajouter un device
+
+    // Certificat du maitre des cles. Permet de transmettre des fichiers
+    // de maniere securisee.
+    this.certMaitreDesCles = null;
   }
 
   start() {

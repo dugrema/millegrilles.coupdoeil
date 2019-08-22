@@ -102,6 +102,11 @@ class MulterCryptoStorage {
     this.stagingFolder = opts.stagingFolder || "/tmp/coupdoeilStaging";
     this.hashOpts = opts.hashOpts || {};
     this.cryptoOpts = opts.cryptoOpts || {};
+    this.certMaitreDesCles = null;
+  }
+
+  setCertificatMaitreDesCles(cert) {
+    this.certMaitreDesCles = cert;
   }
 
   getDestination (req, file, cb) {
