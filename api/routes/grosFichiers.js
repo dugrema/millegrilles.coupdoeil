@@ -34,10 +34,9 @@ function _charger_certificat(cb) {
   }
 }
 
-_charger_certificat((cert)=>{
-  multerCryptoStorageHandler.setCertificatMaitreDesCles(cert);
-})
-
+// _charger_certificat((cert)=>{
+//   multerCryptoStorageHandler.setCertificatMaitreDesCles(cert);
+// })
 
 const bodyParserHandler = bodyParser.urlencoded({ extended: false });
 

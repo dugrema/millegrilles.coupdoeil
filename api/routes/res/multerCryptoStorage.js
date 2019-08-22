@@ -8,6 +8,7 @@ const crypto = require('crypto');
 const forge = require('node-forge');
 const request = require('request');
 const pki = require('./pki')
+const rabbitMQ = require('./rabbitMQ');
 
 const serveurConsignation = process.env.MG_CONSIGNATION_HTTP || 'https://consignationfichiers';
 
@@ -104,10 +105,6 @@ class MulterCryptoStorage {
     this.certMaitreDesCles = null;
   }
 
-  setCertificatMaitreDesCles(cert) {
-    this.certMaitreDesCles = forge.pki.certificateFromPem(cert);
-  }
-
   getDestination (req, file, cb) {
     // Creer le uuid de fichier, pour cette version.
     let fileUuid = uuidv1();
@@ -126,89 +123,134 @@ class MulterCryptoStorage {
   // }
 
   _handleFile (req, file, cb) {
-    const certMaitreDesCles = this.certMaitreDesCles;
-    this.getDestination(req, file, function (err, path, fileUuid) {
-      if (err) return cb(err);
 
-      // let pathServeur = serveurConsignation + '/' + path.join('grosfichiers', 'local', 'nouveauFichier', fileUuid);
-      // console.log("File object: ");
-      // console.log(file);
-      var pipes = file.stream;
+    var pipes = file.stream;
+    var crypte = true;
 
-      // Verifier si on doit crypter le fichier, ajouter pipe au besoin.
-      const cryptoPipe = new CryptoEncryptPipe(certMaitreDesCles, {});
-      cryptoPipe.createStream()
-      .then(({cipher, encryptedSecretKey, iv})=>{
+    var params = {
+      req: req,
+      crypte: crypte,
+      file: file,
+    };
 
-        console.debug("PUT file " + fileUuid);
-        console.log("Stream key, iv:");
-        // console.debug(key);
-        console.debug(iv);
-
-        pipes = pipes.pipe(cipher);
-
-        // Pipe caclul du hash (on hash le contenu crypte quand c'est applicable)
-        const hashPipe = new HashPipe({});
-        pipes = pipes.pipe(hashPipe);
-
-        // Finaliser avec l'outputstream
-        // Transmettre directement au serveur grosfichier pour consignation.
-        let pathServeur = serveurConsignation + '/' +
-          pathModule.join('grosfichiers', 'local', 'nouveauFichier', fileUuid);
-        let crypte = (encryptedSecretKey)?true:false;
-        let options = {
-          url: pathServeur,
-          headers: {
-            fileuuid: fileUuid,
-            encrypte: crypte,
-          },
-          agentOptions: {ca: pki.ca},  // Utilisation certificats SSL internes
-        };
-        const outStream = request.put(options, (err, httpResponse, body) =>{
-
-        });
-        pipes = pipes.pipe(outStream);
-
-        outStream.on('error', cb);
-        outStream.on('finish', function () {
-
-          // Tentative de decryter fichier:
-          // var decipher = crypto.createDecipheriv('aes256', key, iv);
-          // var readStream = fs.createReadStream(path);
-          // var writeStream = fs.createWriteStream(path + ".clear");
-          // writeStream.on('finish', function() {
-          //   console.log("Decryptage termine pour " + path + '.clear');
-          // });
-          // readStream.pipe(decipher).pipe(writeStream);
-
-          var hashResult = hashPipe.getHash();
-          // console.debug("Hash calcule: " + hashResult);
-
-          cb(null, {
-            path: path,
-            size: outStream.bytesWritten,
-            nomfichier: file.originalname,
-            mimetype: file.mimetype,
-            fileuuid: fileUuid,
-            hash: hashResult,
-            encryptedSecretKey: encryptedSecretKey,
-            iv: iv,
-          });
-        });
+    let promiseStream = null;
+    if(crypte) {
+      // Si les fichiers doivent etre cryptes, on doit obtenir le certificat du
+      // MaitreDesCles et ouvrir un pipe crypte.
+      promiseStream = new Promise((resolve, reject) => {
+        this.demanderCertificatMaitreDesCles()
+        .then(certificatMaitreDesCles=>{
+          params.certificatMaitreDesCles = certificatMaitreDesCles
+          let cryptoPipe = new CryptoEncryptPipe(certificatMaitreDesCles, {});
+          return cryptoPipe.createStream();
+        })
+        .then(paramsCrypto=>{
+          let newPipe = pipes.pipe(paramsCrypto.cipher);
+          params.iv = paramsCrypto.iv;
+          params.encryptedSecretKey = paramsCrypto.encryptedSecretKey;
+          resolve({pipes: newPipe, params: params});
+        })
+        .catch(err=>{
+          reject(err);
+        })
+      });
+    } else {
+      // Pas de cryptage requis, on passe tout de suite a l'upload.
+      promiseStream = new Promise((resolve, reject) => {
+        resolve({pipes: pipes, params: params});
       })
-      .catch(err=>{
-        var message = "Erreur traitement fichier " + file.originalname;
-        console.error();
-        console.error(err);
-        cb(message);
-      })
+    }
 
-    });
+    promiseStream.then(({pipes, params}) => {
+      this._traiterFichier(pipes, params, cb);
+    })
+    .catch(err=>{
+      console.error("Erreur traitement fichier / obtention cert MaitreDesCles");
+      console.error(err);
+    })
   }
 
   _removeFile (req, file, cb) {
     // Note: Le fichier ne devrait meme pas etre cree, PUT au serveur directement.
     fs.unlink(file.path, cb)
+  }
+
+  _traiterFichier(pipes, params, cb) {
+    params.fileUuid = uuidv1();
+
+    // Pipe caclul du hash (on hash le contenu crypte quand c'est applicable)
+    const hashPipe = new HashPipe({});
+    pipes = pipes.pipe(hashPipe);
+
+    // Finaliser avec l'outputstream
+    // Transmettre directement au serveur grosfichier pour consignation.
+    let pathServeur = serveurConsignation + '/' +
+      pathModule.join('grosfichiers', 'local', 'nouveauFichier', params.fileUuid);
+    let crypte = (params.encryptedSecretKey)?true:false;
+    let options = {
+      url: pathServeur,
+      headers: {
+        fileuuid: params.fileUuid,
+        encrypte: params.crypte,
+      },
+      agentOptions: {ca: pki.ca},  // Utilisation certificats SSL internes
+    };
+    const outStream = request.put(options, (err, httpResponse, body) =>{
+
+    });
+    pipes = pipes.pipe(outStream);
+
+    outStream.on('error', cb);
+    outStream.on('finish', function () {
+
+      // Tentative de decryter fichier:
+      // var decipher = crypto.createDecipheriv('aes256', key, iv);
+      // var readStream = fs.createReadStream(path);
+      // var writeStream = fs.createWriteStream(path + ".clear");
+      // writeStream.on('finish', function() {
+      //   console.log("Decryptage termine pour " + path + '.clear');
+      // });
+      // readStream.pipe(decipher).pipe(writeStream);
+
+      var hashResult = hashPipe.getHash();
+      // console.debug("Hash calcule: " + hashResult);
+
+      var file = params.file;
+      cb(null, {
+        path: path,
+        size: outStream.bytesWritten,
+        nomfichier: file.originalname,
+        mimetype: file.mimetype,
+        fileuuid: fileUuid,
+        hash: hashResult,
+        encryptedSecretKey: params.encryptedSecretKey,
+        iv: params.iv,
+      });
+    });
+  }
+
+  demanderCertificatMaitreDesCles() {
+    if(this.certificatMaitreDesCles) {
+      return new Promise((resolve, reject) => {
+        resolve(this.certificatMaitreDesCles);
+      });
+    } else {
+      let objet_crypto = this;
+      console.debug("Demander certificat MaitreDesCles");
+      var requete = {
+        '_evenements': 'certMaitreDesCles'
+      }
+      var routingKey = 'requete.millegrilles.domaines.MaitreDesCles.certMaitreDesCles';
+      return rabbitMQ.singleton.transmettreRequete(routingKey, requete)
+      .then(reponse=>{
+        let messageContent = decodeURIComponent(escape(reponse.content));
+        let json_message = JSON.parse(messageContent);
+        console.debug("Reponse cert maitre des cles");
+        console.debug(messageContent);
+        objet_crypto.certificatMaitreDesCles = forge.pki.certificateFromPem(json_message.certificat);
+        return objet_crypto.certificatMaitreDesCles;
+      })
+    }
   }
 
 }
