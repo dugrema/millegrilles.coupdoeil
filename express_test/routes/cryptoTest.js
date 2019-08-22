@@ -3,6 +3,7 @@ const router = express.Router();
 const fs = require('fs');
 const crypto = require('crypto');
 var forge = require('node-forge');
+const { PassThrough } = require('stream')
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -96,5 +97,89 @@ router.get('/asymetricDecrypt', function(req, res, next) {
   }
 
 });
+
+router.get('/symetricEncrypt', function(req, res, next) {
+
+  var mq_cert = '/opt/millegrilles/dev2/pki/certs/dev2_middleware.cert.pem';
+  if(mq_cert !== undefined) {
+    fs.readFile(mq_cert, (err, publicKey) =>{
+      if(err) {
+        console.error("Erreur");
+        console.error(err);
+        res.sendStatus(500);
+      }
+
+      console.log(publicKey);
+
+      _genererKeyAndIV((err, {key, iv})=>{
+        if(err) reject(err);
+        // console.debug("IV");
+        // console.debug(iv);
+        var cipher = crypto.createCipheriv('aes256', key, iv);
+
+        // Encoder la cle secrete
+        // var encryptedSecretKey = crypto.publicEncrypt(publicKey, key);
+        // encryptedSecretKey = encryptedSecretKey.toString('base64');
+        // console.log("Cle secrete cryptee, len:" + encryptedSecretKey.length);
+        // console.log(encryptedSecretKey);
+
+        // resolve({
+        //   cipher: cipher,
+        //   encryptedSecretKey: encryptedSecretKey,
+        //   iv: iv.toString('base64'),
+        // });
+
+        // Lire un fichier texte
+        var buf = Buffer.alloc(0);
+        // var readStream = fs.createReadStream('/opt/millegrilles/etc/dev2.conf');
+        var readStream = fs.createReadStream('/home/mathieu/dev2.tar.gz');
+        var pipe = readStream.pipe(cipher);
+        var longueur = 0;
+        readStream.on('data', chunk=>{
+          longueur += chunk.length;
+        });
+
+        var passThrough = new PassThrough();
+        pipe = pipe.pipe(passThrough);
+
+        passThrough.on('data', chunk=>{
+          buf = Buffer.concat([buf, chunk]);
+        });
+        passThrough.on('end', ()=>{
+
+          console.log("Input size: " + longueur);
+          console.log("Encrypted buf size: " + buf.length);
+          var encryptedMessage = buf.toString('base64');
+
+          var affichage =
+          '<html><body>' +
+          '<p>Key: ' + key.toString('base64') + '</p>'+
+          '<p>IV: ' + iv.toString('base64') + '</p>'+
+          '<p>Message crypte: ' + encryptedMessage + '</p>'+
+          '<br/>' +
+          '</body></html>';
+
+          res.send(affichage);
+
+        })
+
+      });
+
+
+    });
+
+  }
+
+});
+
+function _genererKeyAndIV(cb) {
+  var lenBuffer = 16 + 32;
+  crypto.pseudoRandomBytes(lenBuffer, (err, pseudoRandomBytes) => {
+    // Creer deux buffers, iv (16 bytes) et password (24 bytes)
+    var iv = pseudoRandomBytes.slice(0, 16);
+    var key = pseudoRandomBytes.slice(16, pseudoRandomBytes.length);
+    cb(err, {key: key, iv: iv});
+  });
+}
 
 module.exports = router;
