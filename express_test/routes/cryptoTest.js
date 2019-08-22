@@ -70,7 +70,7 @@ router.get('/asymetricDecrypt', function(req, res, next) {
 
       console.log(privateKey);
 
-      const encryptedSecretKey = Buffer.from('v2oS1YZsX7+aCWfzf0DQtsmlSDrR/YuuFIUxiuwJIz6kXGHI8S9OBs0w1dw/oJvcHDWlcNcNDIENs9mtaSRnNgQQgD+x12dFHxsGL8kWiW0QNGugFVMf9J/8fcfkVXUibbsKK/QwkEfdiBO+rN4yX1aXWqm35V0hL9FEDVUlb/JDJ+2l9sNvutw+1D5paFWOI+fYEzKae/29gW2O4QILw0wvF7deZc6LjU4LoG4kXkNlDGL+RwPK17OuXU6zrRf5ZBKE+CiUFvpRUqttCv7kC3shvQ6JSVI8c4J5hgSNWL6fpx9WJFaPEu+ItK5TF6GIZ/x4Tjxbwf1lP1Wah/bFRg==', 'base64');
+      const encryptedSecretKey = Buffer.from('YmAzq6pG/vtd6sJkyNi69H9sYJte71lBR3asubu7MjiFT8N8zJQfNpoMgVUBZ3C9C5MIrLhyzl4hQV9yvSdnM7nT67ZxCRfz9XKYtz5eIsYeqwDbqWHD3GTc5mrkdwn4ZtgMu0glOxL1zgjGn+MMYlG9h6WicUviT7KpZPRi8ywN1ZgWnZvO844SOHExtOxUdmF/homCMUDx8lPdhx3Ykqv+vAHmPcwcEC9nT6vdtZQXsz7hrckPI5UjMXv5ZNiHh7LwupFrOBAaBkU14RQkhSHaDo+EDD1nX2WCcEVv2KFdpCXi6JzQaGP+i5wwwDOiw1auglO0HNinCimtFggMIA==', 'base64');
       // encryptedSecretKey = forge.util.decode64(encryptedSecretKey);
 
       // Node Forge
