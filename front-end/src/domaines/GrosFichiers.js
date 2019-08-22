@@ -28,18 +28,74 @@ export class GrosFichiers extends React.Component {
       operationCopierDeplacer: null,
 
       // Popups a afficher
-      popupRenommerFichierValeurs: null,
-      popupDeplacerFichierValeurs: null,
+      popupProps: {
+        popupRenommerFichierValeurs: null,
+        popupDeplacerFichierValeurs: null,
 
-      popupCreerRepertoireValeurs: null,
-      popupRenommerRepertoireValeurs: null,
-      popupDeplacerRepertoireValeurs: null,
+        popupCreerRepertoireValeurs: null,
+        popupRenommerRepertoireValeurs: null,
+        popupDeplacerRepertoireValeurs: null,
+      },
 
       // Variables pour ecrans specifiques
       preparerUpload: null,
 
       downloadUrl: '/grosFichiers/local',
     };
+
+  }
+
+  popupActions = {
+
+    soumettreCreerRepertoire: (event) => {
+      let uuidRepertoireParent = this.state.popupProps.popupCreerRepertoireValeurs.uuidRepertoireParent;
+      let formulaire = event.currentTarget.form;
+      let nomRepertoire = formulaire.nomrepertoire.value;
+
+      console.debug("Creer repertoire " + nomRepertoire + " sous " + uuidRepertoireParent);
+      // Transmettre message a MQ pour renommer le fichier
+      let transaction = {
+        "parent_id": uuidRepertoireParent,
+        "nom": nomRepertoire,
+      }
+      webSocketManager.transmettreTransaction(
+        'millegrilles.domaines.GrosFichiers.creerRepertoire', transaction)
+      .then(msg=>{
+        // Mettre en evidence le nouveau repertoire lorsqu'il arrivera a l'ecran.
+        console.debug("Nouveau repertoire cree: " + nomRepertoire);
+      }).catch(err=>{
+        console.error("Erreur creation repertoire");
+        console.error(err);
+      });
+
+      this.setState({popupProps: {popupCreerRepertoireValeurs: null}});
+    },
+    annulerCreerRepertoire: (event) => {
+      this.setState({popupProps: {popupCreerRepertoireValeurs: null}});
+    },
+    soumettreChangerNomRepertoire: (event) => {
+      let formulaire = event.currentTarget.form;
+      let nouveauNom = formulaire.nouveauNom.value;
+      let ancienNom = this.state.popupProps.popupRenommerRepertoireValeurs.nom;
+      let uuidRepertoire = this.state.popupProps.popupRenommerRepertoireValeurs.uuidRepertoire;
+
+      console.debug("Renommer repertoire " + ancienNom + " a " + nouveauNom + ", uuid=" + uuidRepertoire);
+
+      if(nouveauNom !== ancienNom) {
+        // Transmettre message a MQ pour renommer le fichier
+        let transaction = {
+          "repertoire_uuid": uuidRepertoire,
+          "nom": nouveauNom,
+        }
+        webSocketManager.transmettreTransaction(
+          'millegrilles.domaines.GrosFichiers.renommerRepertoire', transaction);
+      }
+
+      this.setState({popupRenommerRepertoireValeurs: null})
+    },
+    annulerChangerNomRepertoire: (event) => {
+      this.setState({popupRenommerRepertoireValeurs: null})
+    }
 
   }
 
@@ -242,37 +298,9 @@ export class GrosFichiers extends React.Component {
   }
 
   afficherPopupCreerRepertoire = repertoireDestination => {
-    this.setState({popupCreerRepertoireValeurs: {
+    this.setState({popupProps: {popupCreerRepertoireValeurs: {
       uuidRepertoireParent: repertoireDestination
-    }});
-  }
-
-  soumettreCreerRepertoire = (event) => {
-    let uuidRepertoireParent = this.state.popupCreerRepertoireValeurs.uuidRepertoireParent;
-    let formulaire = event.currentTarget.form;
-    let nomRepertoire = formulaire.nomrepertoire.value;
-
-    console.debug("Creer repertoire " + nomRepertoire + " sous " + uuidRepertoireParent);
-    // Transmettre message a MQ pour renommer le fichier
-    let transaction = {
-      "parent_id": uuidRepertoireParent,
-      "nom": nomRepertoire,
-    }
-    webSocketManager.transmettreTransaction(
-      'millegrilles.domaines.GrosFichiers.creerRepertoire', transaction)
-    .then(msg=>{
-      // Mettre en evidence le nouveau repertoire lorsqu'il arrivera a l'ecran.
-      console.debug("Nouveau repertoire cree: " + nomRepertoire);
-    }).catch(err=>{
-      console.error("Erreur creation repertoire");
-      console.error(err);
-    });
-
-    this.setState({popupCreerRepertoireValeurs: null});
-  }
-
-  annulerCreerRepertoire = (event) => {
-    this.setState({popupCreerRepertoireValeurs: null});
+    }}});
   }
 
   deplacerRepertoire = (event) => {
@@ -285,10 +313,10 @@ export class GrosFichiers extends React.Component {
 
     if(type === 'fichier') {
       let nomFichier = repertoireCourant.fichiers[uuid].nom;
-      this.setState({popupRenommerFichierValeurs: {
+      this.setState({popupProps: {popupRenommerFichierValeurs: {
         nom: nomFichier,
         uuidFichier: uuid,
-      }});
+      }}});
     } else if(type === 'repertoire') {
       let nomRepertoire = repertoireCourant.repertoires[uuid].nom;
       this.setState({popupRenommerRepertoireValeurs: {
@@ -297,31 +325,6 @@ export class GrosFichiers extends React.Component {
       }});
     }
 
-  }
-
-  soumettreChangerNomRepertoire = (event) => {
-    let formulaire = event.currentTarget.form;
-    let nouveauNom = formulaire.nouveauNom.value;
-    let ancienNom = this.state.popupRenommerRepertoireValeurs.nom;
-    let uuidRepertoire = this.state.popupRenommerRepertoireValeurs.uuidRepertoire;
-
-    console.debug("Renommer repertoire " + ancienNom + " a " + nouveauNom + ", uuid=" + uuidRepertoire);
-
-    if(nouveauNom !== ancienNom) {
-      // Transmettre message a MQ pour renommer le fichier
-      let transaction = {
-        "repertoire_uuid": uuidRepertoire,
-        "nom": nouveauNom,
-      }
-      webSocketManager.transmettreTransaction(
-        'millegrilles.domaines.GrosFichiers.renommerRepertoire', transaction);
-    }
-
-    this.setState({popupRenommerRepertoireValeurs: null})
-  }
-
-  annulerChangerNomRepertoire = (event) => {
-    this.setState({popupRenommerRepertoireValeurs: null})
   }
 
   supprimerRepertoire = (event) => {
@@ -415,8 +418,8 @@ export class GrosFichiers extends React.Component {
   soumettreChangerNomFichier = (event) => {
     let formulaire = event.currentTarget.form;
     let nouveauNom = formulaire.nouveauNom.value;
-    let ancienNom = this.state.popupRenommerFichierValeurs.nom;
-    let uuidFichier = this.state.popupRenommerFichierValeurs.uuidFichier;
+    let ancienNom = this.state.popupProps.popupRenommerFichierValeurs.nom;
+    let uuidFichier = this.state.popupProps.popupRenommerFichierValeurs.uuidFichier;
 
     console.debug("Renommer fichier " + ancienNom + " a " + nouveauNom + ", uuid=" + uuidFichier);
 
@@ -525,8 +528,12 @@ export class GrosFichiers extends React.Component {
             </div>
           </div>
         </div>
-        <GrosFichierAfficherPopup />
-        <GrosFichiersRenderDownloadForm />
+        <GrosFichierAfficherPopup
+          {...this.state.popupProps}
+          {...this.popupActions}
+          />
+        <GrosFichiersRenderDownloadForm
+          refFormulaireDownload={this.refFormulaireDownload}/>
       </div>
     );
   }
