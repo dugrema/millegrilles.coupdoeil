@@ -79,7 +79,7 @@ class ProcesseurUpload {
               .then(msg=>{
                 console.debug("Recu confirmation cle");
                 console.debug(msg);
-                this.transmettreMetadata(resolve, reject);
+                this.transmettreMetadata(resolve, reject, transactionNouvelleVersion);
               })
               .catch(err=>{
                 console.error("Erreur message");
@@ -89,7 +89,7 @@ class ProcesseurUpload {
             } else {
               // Le fichier n'est pas crypte - on transmet juste le message
               // de metadata.
-              this.transmettreMetadata(resolve, reject);
+              this.transmettreMetadata(resolve, reject, transactionNouvelleVersion);
             }
           })
         )
@@ -111,7 +111,7 @@ class ProcesseurUpload {
     return promise;
   } // ajouterFichier
 
-  transmettreMetadata(resolve, reject) {
+  transmettreMetadata(resolve, reject, transactionNouvelleVersion) {
     return rabbitMQ.singleton.transmettreTransactionFormattee(
       transactionNouvelleVersion,
       'millegrilles.domaines.GrosFichiers.nouvelleVersion.metadata')
