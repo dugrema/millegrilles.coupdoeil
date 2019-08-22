@@ -6,6 +6,10 @@ const pathModule = require('path');
 const uuidv1 = require('uuid/v1');
 const crypto = require('crypto');
 const forge = require('node-forge');
+const request = require('request');
+const pki = require('./pki')
+
+const serveurConsignation = process.env.MG_CONSIGNATION_HTTP || 'https://consignationfichiers';
 
 class HashPipe extends PassThrough {
   // Classe utilisee pour calculer le hash du fichier durant la sauvegarde.
@@ -33,47 +37,42 @@ class HashPipe extends PassThrough {
 }
 
 class CryptoEncryptPipe {
+  // Node-forge est utilise pour crypte la cle publique. Permet de matcher
+  // l'algorithme avec Python.
+  // Pour cryptage symmetrique, on utilise la librairie crypto (native a node.JS)
 
-  constructor(opts) {
+  constructor(certificat, opts) {
     // super();
+    this.certificat = certificat;
     this.algorithm = opts.algorithm || 'aes256';
-    this.publicKey = null;
+    this.rsaAlgorithm = opts.rsaAlgorithm || 'RSA-OAEP';
   }
 
   createStream() {
-
     const promise = new Promise((resolve, reject) => {
       try {
-        this._charger_certificat(publicKey=>{
-          // console.log("Public key chargee: ");
-          // console.log(publicKey);
+        var keyIv = this._genererKeyAndIV((err, {key, iv})=>{
+          if(err) reject(err);
 
-          var keyIv = this._genererKeyAndIV((err, {key, iv})=>{
-            if(err) reject(err);
-            // console.debug("IV");
-            // console.debug(iv);
-            var cipher = crypto.createCipheriv(this.algorithm, key, iv);
+          var cipher = crypto.createCipheriv(this.algorithm, key, iv);
 
-            // Encoder la cle secrete
-            var cert = forge.pki.certificateFromPem(publicKey);
-            // Convertir buffer en bytes string pour node-forge
-            var keyByteString = forge.util.bytesToHex(key);
-            var encryptedSecretKey = cert.publicKey.encrypt(keyByteString, 'RSA-OAEP', {
-              md: forge.md.sha256.create(),
-              mgf1: {
-                md: forge.md.sha256.create()
-              }
-            });
-            encryptedSecretKey = forge.util.encode64(encryptedSecretKey);
-            console.log("Cle secrete cryptee, len:" + encryptedSecretKey.length);
-            console.log(encryptedSecretKey);
+          // Encoder la cle secrete
+          // Convertir buffer en bytes string pour node-forge
+          var keyByteString = forge.util.bytesToHex(key);
+          var encryptedSecretKey = this.certificat.publicKey.encrypt(keyByteString, this.rsaAlgorithm, {
+            md: forge.md.sha256.create(),
+            mgf1: {
+              md: forge.md.sha256.create()
+            }
+          });
+          encryptedSecretKey = forge.util.encode64(encryptedSecretKey);
+          console.log("Cle secrete cryptee, len:" + encryptedSecretKey.length);
+          console.log(encryptedSecretKey);
 
-            resolve({
-              cipher: cipher,
-              encryptedSecretKey: encryptedSecretKey,
-              iv: iv.toString('base64'),
-            });
-
+          resolve({
+            cipher: cipher,
+            encryptedSecretKey: encryptedSecretKey,
+            iv: iv.toString('base64'),
           });
         });
       } catch (e) {
@@ -82,15 +81,6 @@ class CryptoEncryptPipe {
     });
 
     return promise;
-  }
-
-  _charger_certificat(cb) {
-    var mq_cert = process.env.MG_MQ_CERTFILE;
-    if(mq_cert !== undefined) {
-      fs.readFile(mq_cert, (err, data)=>{
-        cb(data);
-      });
-    }
   }
 
   _genererKeyAndIV(cb) {
@@ -115,7 +105,7 @@ class MulterCryptoStorage {
   }
 
   setCertificatMaitreDesCles(cert) {
-    this.certMaitreDesCles = cert;
+    this.certMaitreDesCles = forge.pki.certificateFromPem(cert);
   }
 
   getDestination (req, file, cb) {
@@ -125,7 +115,18 @@ class MulterCryptoStorage {
     cb(null, filePath, fileUuid);
   }
 
+  // _charger_certificat(cb) {
+  //   var mq_cert = process.env.MG_MQ_CERTFILE;
+  //   if(mq_cert !== undefined) {
+  //     fs.readFile(mq_cert, (err, data)=>{
+  //       var cert = forge.pki.certificateFromPem(publicKey);
+  //       cb(cert);
+  //     });
+  //   }
+  // }
+
   _handleFile (req, file, cb) {
+    const certMaitreDesCles = this.certMaitreDesCles;
     this.getDestination(req, file, function (err, path, fileUuid) {
       if (err) return cb(err);
 
@@ -135,9 +136,11 @@ class MulterCryptoStorage {
       var pipes = file.stream;
 
       // Verifier si on doit crypter le fichier, ajouter pipe au besoin.
-      const cryptoPipe = new CryptoEncryptPipe({});
-      cryptoPipe.createStream().then(({cipher, encryptedSecretKey, iv})=>{
+      const cryptoPipe = new CryptoEncryptPipe(certMaitreDesCles, {});
+      cryptoPipe.createStream()
+      .then(({cipher, encryptedSecretKey, iv})=>{
 
+        console.debug("PUT file " + fileUuid);
         console.log("Stream key, iv:");
         // console.debug(key);
         console.debug(iv);
@@ -149,7 +152,23 @@ class MulterCryptoStorage {
         pipes = pipes.pipe(hashPipe);
 
         // Finaliser avec l'outputstream
-        const outStream = fs.createWriteStream(path);
+        // const outStream = fs.createWriteStream(path);
+
+        // Transmettre directement au serveur grosfichier pour consignation.
+        let pathServeur = serveurConsignation + '/' +
+          pathModule.join('grosfichiers', 'local', 'nouveauFichier', fileUuid);
+        let crypte = (encryptedSecretKey)?true:false;
+        let options = {
+          url: pathServeur,
+          headers: {
+            fileuuid: fileUuid,
+            encrypte: crypte,
+          },
+          agentOptions: {ca: pki.ca},  // Utilisation certificats SSL internes
+        };
+        const outStream = request.put(options, (err, httpResponse, body) =>{
+
+        });
         pipes = pipes.pipe(outStream);
 
         outStream.on('error', cb);

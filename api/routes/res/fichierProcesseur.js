@@ -29,70 +29,57 @@ class ProcesseurUpload {
       };
 
       try {
+        // console.debug("Put complete, sending record to MQ");
+        let transactionNouvelleVersion = {
+          fuuid: fileUuid,
+          securite: '3.protege',
+          repertoire_uuid: repertoire_uuid,
+          nom: fichier.originalname,
+          taille: fichier.size,
+          mimetype: fichier.mimetype,
+          sha256: fichier.hash,
+          reception: {
+            methode: "coupdoeil",
+            "noeud": "public1.maple.mdugre.info"
+          }
+        }
 
-        // Encrypter fichiers, calculer SHA256 avant et apres
-        // var sha256Clear = crypto.createHash('sha256');
+        // console.debug("Transaction pour MQ");
+        // console.debug(transactionNouvelleVersion);
 
-        // Uploader fichier vers central via PUT
-        console.debug("PUT file " + fichier.path);
-        fs.createReadStream(fichier.path)
-        .pipe(
-          request.put(options, (err, httpResponse, body) => {
-            if(err) throw err; // Attrapper erreur dans le catch plus bas
+        // Transmettre information au serveur via MQ
+        if(crypte) {
+          // Le ficheir est crypte, on transmet la cle en premier
+          // (condition blocking pour le processus de traitement du fichier)
+          let transactionInformationCryptee = {
+            domaine: 'millegrilles.domaines.GrosFichiers',
+            fuuid: fileUuid,
+            fingerprint: 'abcd',
+            cle: fichier.encryptedSecretKey,
+            iv: fichier.iv,
+          };
+          console.debug("Document crypte, on transmet l'info au MaitreDesCles");
+          console.debug(transactionInformationCryptee);
 
-            // console.debug("Put complete, sending record to MQ");
-            let transactionNouvelleVersion = {
-              fuuid: fileUuid,
-              securite: '3.protege',
-              repertoire_uuid: repertoire_uuid,
-              nom: fichier.originalname,
-              taille: fichier.size,
-              mimetype: fichier.mimetype,
-              sha256: fichier.hash,
-              reception: {
-                methode: "coupdoeil",
-                "noeud": "public1.maple.mdugre.info"
-              }
-            }
-
-            // console.debug("Transaction pour MQ");
-            // console.debug(transactionNouvelleVersion);
-
-            // Transmettre information au serveur via MQ
-            if(crypte) {
-              // Le ficheir est crypte, on transmet la cle en premier
-              // (condition blocking pour le processus de traitement du fichier)
-              let transactionInformationCryptee = {
-                domaine: 'millegrilles.domaines.GrosFichiers',
-                fuuid: fileUuid,
-                fingerprint: 'abcd',
-                cle: fichier.encryptedSecretKey,
-                iv: fichier.iv,
-              };
-              console.debug("Document crypte, on transmet l'info au MaitreDesCles");
-              console.debug(transactionInformationCryptee);
-
-              // Transmettre information au serveur via MQ
-              rabbitMQ.singleton.transmettreTransactionFormattee(
-                  transactionInformationCryptee,
-                  'millegrilles.domaines.MaitreDesCles.nouvelleCle.grosFichier')
-              .then(msg=>{
-                console.debug("Recu confirmation cle");
-                console.debug(msg);
-                this.transmettreMetadata(resolve, reject, transactionNouvelleVersion);
-              })
-              .catch(err=>{
-                console.error("Erreur message");
-                console.error(err);
-                reject(err);
-              });
-            } else {
-              // Le fichier n'est pas crypte - on transmet juste le message
-              // de metadata.
-              this.transmettreMetadata(resolve, reject, transactionNouvelleVersion);
-            }
+          // Transmettre information au serveur via MQ
+          rabbitMQ.singleton.transmettreTransactionFormattee(
+              transactionInformationCryptee,
+              'millegrilles.domaines.MaitreDesCles.nouvelleCle.grosFichier')
+          .then(msg=>{
+            console.debug("Recu confirmation cle");
+            console.debug(msg);
+            this._transmettreMetadata(resolve, reject, transactionNouvelleVersion);
           })
-        )
+          .catch(err=>{
+            console.error("Erreur message");
+            console.error(err);
+            reject(err);
+          });
+        } else {
+          // Le fichier n'est pas crypte - on transmet juste le message
+          // de metadata.
+          this._transmettreMetadata(resolve, reject, transactionNouvelleVersion);
+        }
 
       } catch (err) {
         console.error("Erreur preparation fichier " + fichier.originalname);
@@ -111,7 +98,7 @@ class ProcesseurUpload {
     return promise;
   } // ajouterFichier
 
-  transmettreMetadata(resolve, reject, transactionNouvelleVersion) {
+  _transmettreMetadata(resolve, reject, transactionNouvelleVersion) {
     return rabbitMQ.singleton.transmettreTransactionFormattee(
       transactionNouvelleVersion,
       'millegrilles.domaines.GrosFichiers.nouvelleVersion.metadata')

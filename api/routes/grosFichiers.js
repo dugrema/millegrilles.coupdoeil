@@ -25,6 +25,20 @@ var multerHandler = multer({
   }
 });
 
+function _charger_certificat(cb) {
+  var mq_cert = process.env.MG_MQ_CERTFILE;
+  if(mq_cert !== undefined) {
+    fs.readFile(mq_cert, (err, data)=>{
+      cb(data);
+    });
+  }
+}
+
+_charger_certificat((cert)=>{
+  multerCryptoStorageHandler.setCertificatMaitreDesCles(cert);
+})
+
+
 const bodyParserHandler = bodyParser.urlencoded({ extended: false });
 
 function authentication(req, res, next) {
