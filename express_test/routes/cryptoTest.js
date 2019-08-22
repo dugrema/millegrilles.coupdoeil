@@ -24,34 +24,45 @@ router.get('/asymetricEncrypt', function(req, res, next) {
       console.log(publicKey);
 
       const messageSecret = new Buffer('Mon mot de passe, cest un monde de crypto', 'utf8');
-      var encryptedSecretKey = crypto.publicEncrypt(publicKey, messageSecret);
-      console.log("Type objet crypto: " + encryptedSecretKey.constructor.name);
-      encryptedSecretKey = encryptedSecretKey.toString('base64');
 
-      // Node Forge
-      var rsa = forge.pki.rsa;
-      var cert = forge.pki.certificateFromPem(publicKey);
-      var encryptedSecretKey2 = cert.publicKey.encrypt(messageSecret, 'RSA-OAEP', {
-        md: forge.md.sha256.create(),
-        mgf1: {
-          md: forge.md.sha256.create()
+      _genererKeyAndIV((err, {key, iv})=>{
+        if(err) {
+          console.error(err);
+          res.sensStatus(500);
         }
+        // var encryptedSecretKey = crypto.publicEncrypt(publicKey, messageSecret);
+        // var encryptedSecretKey = crypto.publicEncrypt(key, messageSecret);
+        // console.log("Type objet crypto: " + encryptedSecretKey.constructor.name);
+        // encryptedSecretKey = encryptedSecretKey.toString('base64');
+        console.log("Bytes cle secrete: ");
+        console.log(key);
+        var keyBuffer = forge.util.bytesToHex(key);
+
+        // Node Forge
+        var rsa = forge.pki.rsa;
+        var cert = forge.pki.certificateFromPem(publicKey);
+        var encryptedSecretKey2 = cert.publicKey.encrypt(keyBuffer, 'RSA-OAEP', {
+          md: forge.md.sha256.create(),
+          mgf1: {
+            md: forge.md.sha256.create()
+          }
+        });
+        console.log("Bytes cle node-forge: " + encryptedSecretKey2.length);
+        console.log("Type objet node-forge: " + encryptedSecretKey2.constructor.name);
+        encryptedSecretKey2 = forge.util.encode64(encryptedSecretKey2);
+        console.log("Cle secret node-forge (" + encryptedSecretKey2.length + ")");
+        console.log(encryptedSecretKey2);
+
+        var affichage =
+        '<html><body>' +
+        '<p>Secret: '+messageSecret+'</p>'+
+        // '<p>Secret crypte: '+encryptedSecretKey+'</p>'+
+        '<p>Secret2 crypte: '+encryptedSecretKey2+'</p>'+
+        '<br/>' +
+        '</body></html>';
+
+        res.send(affichage);
       });
-      console.log("Bytes cle node-forge: " + encryptedSecretKey2.length);
-      console.log("Type objet node-forge: " + encryptedSecretKey2.constructor.name);
-      encryptedSecretKey2 = forge.util.encode64(encryptedSecretKey2);
-      console.log("Cle secret node-forge (" + encryptedSecretKey2.length + ")");
-      console.log(encryptedSecretKey2);
-
-      var affichage =
-      '<html><body>' +
-      '<p>Secret: '+messageSecret+'</p>'+
-      '<p>Secret crypte: '+encryptedSecretKey+'</p>'+
-      '<p>Secret2 crypte: '+encryptedSecretKey2+'</p>'+
-      '<br/>' +
-      '</body></html>';
-
-      res.send(affichage);
     });
 
   }

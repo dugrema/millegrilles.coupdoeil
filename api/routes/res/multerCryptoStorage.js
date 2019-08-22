@@ -5,6 +5,7 @@ const { PassThrough } = require('stream')
 const pathModule = require('path');
 const uuidv1 = require('uuid/v1');
 const crypto = require('crypto');
+const forge = require('node-forge');
 
 class HashPipe extends PassThrough {
   // Classe utilisee pour calculer le hash du fichier durant la sauvegarde.
@@ -54,10 +55,19 @@ class CryptoEncryptPipe {
             var cipher = crypto.createCipheriv(this.algorithm, key, iv);
 
             // Encoder la cle secrete
-            var encryptedSecretKey = crypto.publicEncrypt(publicKey, key);
-            encryptedSecretKey = encryptedSecretKey.toString('base64');
-            // console.log("Cle secrete cryptee, len:" + encryptedSecretKey.length);
-            // console.log(encryptedSecretKey);
+            var cert = forge.pki.certificateFromPem(publicKey);
+            console.log("Key type: " + key.constructor.name);
+            console.log(key);
+            var bufferKey = forge.util.ByteStringBuffer(key);
+            var encryptedSecretKey = cert.publicKey.encrypt(bufferKey, 'RSA-OAEP', {
+              md: forge.md.sha256.create(),
+              mgf1: {
+                md: forge.md.sha256.create()
+              }
+            });
+            encryptedSecretKey = forge.util.encode64(encryptedSecretKey);
+            console.log("Cle secrete cryptee, len:" + encryptedSecretKey.length);
+            console.log(encryptedSecretKey);
 
             resolve({
               cipher: cipher,
