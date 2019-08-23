@@ -25,7 +25,7 @@ export class SenseursPassifs extends React.Component {
 
   processMessage = (routingKey, doc) => {
     // console.log("Process message " + routingKey);
-    const mg_libelle = doc["_mg-libelle"];
+    // const mg_libelle = doc["_mg-libelle"];
     if(routingKey === 'noeuds.source.millegrilles_domaines_SenseursPassifs.documents.noeud.individuel') {
       // MAJ d'un document de noeud.
       // console.log("Traitement d'un noeud!");

@@ -6,7 +6,7 @@ import webSocketManager from '../WebSocketManager';
 // Composants React GrosFichiers
 import {PanneauFichiersIcones} from '../mgcomponents/FichiersUI.js';
 import {GrosFichierAfficherPopup} from './GrosFichiersPopups';
-import {Accueil, NavigationRepertoire, AffichageFichier,
+import {NavigationRepertoire, AffichageFichier,
   GrosFichiersRenderDownloadForm} from './GrosFichiersNavigation.js'
 
 export class GrosFichiers extends React.Component {

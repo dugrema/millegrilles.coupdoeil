@@ -1,6 +1,6 @@
 import React from 'react';
 import webSocketManager from './WebSocketManager';
-import manifest from './manifest.build.js';  // App version, build date
+// import manifest from './manifest.build.js';  // App version, build date
 
 // CSS pour l'application
 import './Ecran.css';
@@ -141,23 +141,23 @@ class NavBar extends React.Component {
   }
 }
 
-function Footer(props) {
-  // Section du bas de l'ecran d'application
-  return (
-    <footer>
-      <div className="w3-container w3-theme-d3 w3-padding-small">
-        <h5>Coup D'Oeil version <span title={manifest.date}>{manifest.version}</span></h5>
-          Coup D'Oeil fait partie du groupe de
-          logiciels <a href="https://www.millegrilles.com">MilleGrilles</a>.
-      </div>
-      <div className="w3-container w3-theme-d5">
-          Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank" rel="noopener noreferrer">w3.css</a>,
-           Meteor, node.js, MongoDB, RabbitMQ, Python, nginx, docker, letsencrypt,
-           d3, RaspberryPi, Intel Xeon, Debian, Font Awesome, git.
-      </div>
-    </footer>
-  );
-}
+// function Footer(props) {
+//   // Section du bas de l'ecran d'application
+//   return (
+//     <footer>
+//       <div className="w3-container w3-theme-d3 w3-padding-small">
+//         <h5>Coup D'Oeil version <span title={manifest.date}>{manifest.version}</span></h5>
+//           Coup D'Oeil fait partie du groupe de
+//           logiciels <a href="https://www.millegrilles.com">MilleGrilles</a>.
+//       </div>
+//       <div className="w3-container w3-theme-d5">
+//           Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank" rel="noopener noreferrer">w3.css</a>,
+//            Meteor, node.js, MongoDB, RabbitMQ, Python, nginx, docker, letsencrypt,
+//            d3, RaspberryPi, Intel Xeon, Debian, Font Awesome, git.
+//       </div>
+//     </footer>
+//   );
+// }
 
 function MenuGauche(props) {
   return (
@@ -188,12 +188,12 @@ function MenuGaucheTop(props) {
 
 function MenuGaucheNavigation(props) {
 
-  const listeDomaines = [], listeDomainesInconnus = [];
+  const listeDomaines = []; //, listeDomainesInconnus = [];
 
   if(props.domaines) {
     for(var idx in props.domaines) {
       const domaine = props.domaines[idx];
-      let classe_rang = 'w3-tag w3-small w3-theme-d' + domaine.rang;
+      // let classe_rang = 'w3-tag w3-small w3-theme-d' + domaine.rang;
 
       // '<button class="w3-button w3-block w3-theme-l%NIVEAU% w3-left-align bouton-menu-gauche">'
       // + '<!-- route="%ROUTE%" -->'
