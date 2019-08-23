@@ -195,39 +195,72 @@ function MenuGaucheNavigation(props) {
       const domaine = props.domaines[idx];
       let classe_rang = 'w3-tag w3-small w3-theme-d' + domaine.rang;
 
+      // '<button class="w3-button w3-block w3-theme-l%NIVEAU% w3-left-align bouton-menu-gauche">'
+      // + '<!-- route="%ROUTE%" -->'
+      // + '<i class="fa %ICON% fa-fw w3-margin-right"></i>'
+      // + '%LIBELLE%'
+      // + '</button>';
+      // let item = this.menuItems[item_idx];
+      // let menu_item_html = this.menu_item_template
+      //   .replace(/%ROUTE%/, item['route'])
+      //   .replace(/%ICON%/, item['icon'])
+      //   .replace(/%LIBELLE%/, item['libelle'])
+      //   .replace(/%NIVEAU%/, item['niveau']+1);
+      // MenuPrincipale.ajouterMenuItem('Principale.show', 'fa-globe', 'Sommaire');
+      // MenuPrincipale.ajouterMenuItem('Principale.parametres.show', 'fa-sliders', 'Paramètres');
+      // MenuPrincipale.setInitialise();
+      // MenuSenseursPassifs.ajouterMenuItem('SenseursPassifs.show', 'fa-globe', 'Liste noeuds');
+      // MenuSenseursPassifs.ajouterMenuItem('SenseursPassifs.Configuration.show', 'fa-sliders', 'Configuration');
+
       // Verifier si le domaine est charge
-      if(domainesConnus[props.description]) {
+      if(domainesConnus[domaine.description]) {
+        // <span
+        //   key={domaine.description}
+        //   className={classe_rang}
+        //   onClick={props.changerDomaine}
+        //   data-domaine={domaine.description}
+        // >{domaine.description}</span>
+
+        var className = 'w3-button w3-block w3-theme-l3 w3-left-align bouton-menu-gauche';
         listeDomaines.push((
-          <span
+          <button
             key={domaine.description}
-            className={classe_rang}
+            className={className}
             onClick={props.changerDomaine}
             data-domaine={domaine.description}
-          >{domaine.description}</span>
+          >
+            <i className="fa fa-sliders fa-fw w3-margin-right"></i>
+            {domaine.description}
+          </button>
+
         ));
-      } else {
-        listeDomainesInconnus.push((
-          <span
-            key={domaine.description}
-            className={classe_rang}
-          >{domaine.description}</span>
-        ));
+      }
+      else {
+        console.debug("Domaine inconnu: " + domaine.description);
+      //   listeDomainesInconnus.push((
+      //     <span
+      //       key={domaine.description}
+      //       className={classe_rang}
+      //     >{domaine.description}</span>
+      //   ));
       }
 
     }
   }
 
+  const menu = (
+    <div className="w3-white menu-domaine-gauche">
+      <button key='Domaines' className='w3-button w3-block w3-theme-l1 w3-left-align bouton-menu-gauche'>
+        <i className="fa fa-sliders fa-fw w3-margin-right"></i>
+        Domaines
+      </button>
+      {listeDomaines}
+    </div>
+  );
+
   return (
-    <div className="w3-card w3-round w3-white w3-hide-small w3-card_BR">
-      <div className="w3-container">
-        <p>Domaines</p>
-        <p>
-        {listeDomaines}
-        </p>
-        <p>
-          Domaines non supportes<br/>{listeDomainesInconnus}
-        </p>
-      </div>
+    <div className="w3-card w3-round">
+        {menu}
     </div>
   );
 }

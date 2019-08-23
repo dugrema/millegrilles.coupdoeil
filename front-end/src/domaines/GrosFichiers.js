@@ -432,7 +432,15 @@ export class GrosFichiers extends React.Component {
     if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.racine') {
       console.debug("Update repertoire racine");
       console.debug(doc);
-      this.setState({repertoireRacine: doc});
+      var newState = {
+        repertoireRacine: doc
+      }
+      // if(!this.state.repertoireCourant) {
+      //   // Initialiser le repertoire courant avec la racine
+      //   newState.repertoireCourant = doc;
+      // }
+
+      this.setState(newState);
     } else if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire') {
       // Verifier si repertoire courant correspond
       let repertoireCourant = this.state.repertoireCourant;
@@ -463,7 +471,12 @@ export class GrosFichiers extends React.Component {
     .then(docs=>{
       // On recoit une liste de resultats, avec une liste de documents.
       // On veut juste conserver le 1er resultat de la 1ere (seule) requete.
-      this.setState({repertoireRacine: docs[0][0]})
+      // Mettre le repertoire racine comme repertoire courant.
+      var repertoireRacine = docs[0][0];
+      this.setState({
+        repertoireRacine: repertoireRacine,
+        repertoireCourant: repertoireRacine
+      })
     })
     .catch(err=>{
       console.error("Erreur chargement document racine");
