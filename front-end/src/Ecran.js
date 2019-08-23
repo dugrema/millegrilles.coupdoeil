@@ -19,6 +19,26 @@ class EcranApp extends React.Component {
     domaineActif: null,
   }
 
+  fonctionsNavigation = {
+    afficherAccueil: () => {
+      this.setState({
+        domaineActif: null
+      });
+    },
+
+    changerDomaine: (event) => {
+      const domaine = event.currentTarget.dataset.domaine;
+      // console.debug('Domaine change vers: ' + domaine);
+      if(domaine) {
+        this.setState({domaineActif: domaine});
+      }
+    },
+
+    changerMenuGauche: (menu) => {
+      this.setState({menuGauche: menu});
+    }
+  }
+
   componentDidMount() {
     // Charger le document de configuration de la MilleGrille
     this.chargerDocumentPrincipale();
@@ -51,18 +71,6 @@ class EcranApp extends React.Component {
     // console.debug("Demonte!");
   }
 
-  changerDomaine = (event) => {
-    const domaine = event.currentTarget.dataset.domaine;
-    // console.debug('Domaine change vers: ' + domaine);
-    if(domaine) {
-      this.setState({domaineActif: domaine});
-    }
-  }
-
-  changerMenuGauche = (menu) => {
-    this.setState({menuGauche: menu});
-  }
-
   render() {
     return (
       <div>
@@ -71,7 +79,8 @@ class EcranApp extends React.Component {
           configDocument={this.state.configDocument}
           domaineActif={this.state.domaineActif}
           changerDomaine={this.changerDomaine}
-          changerMenuGauche={this.changerMenuGauche}/>
+          changerMenuGauche={this.changerMenuGauche}
+          fonctionsNavigation={this.fonctionsNavigation} />
       </div>
     );
   }

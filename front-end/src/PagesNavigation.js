@@ -37,6 +37,7 @@ export function SectionContenu(props) {
           {...props.configDocument}
           domaineActif={props.domaineActif}
           changerDomaine={props.changerDomaine}
+          fonctionsNavigation={props.fonctionsNavigation}
         />
         {pageContenu}
       </div>
@@ -113,7 +114,8 @@ function MenuGauche(props) {
     <div className="w3-col m3">
       <MenuGaucheTop {...props}/>
       <MenuGaucheNavigation
-        {...props}
+        domaines={props.domaines}
+        {...props.fonctionsNavigation}
         />
     </div>
   );
@@ -186,7 +188,8 @@ function MenuGaucheNavigation(props) {
 
   const menu = (
     <div className="w3-white menu-domaine-gauche">
-      <button key='Accueil' className='w3-button w3-block w3-theme-l2 w3-left-align bouton-menu-gauche'>
+      <button key='Accueil' className='w3-button w3-block w3-theme-l2 w3-left-align bouton-menu-gauche'
+        onClick={props.afficherAccueil}>
         <i className="fa fa-home fa-fw w3-margin-right"></i>
         Accueil
       </button>
