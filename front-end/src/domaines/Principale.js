@@ -10,8 +10,15 @@ export class InterfacePrincipale extends React.Component {
     afficherGestionTokens: false,
   }
 
-  gestionTokens = () => {
-    this.setState({afficherGestionTokens: true});
+  fonctionsNavigation = {
+    retourPrincipale: () => {
+      this.setState({
+        afficherGestionTokens: false,
+      });
+    },
+    afficherGestionTokens: () => {
+      this.setState({afficherGestionTokens: true});
+    },
   }
 
   render() {
@@ -19,15 +26,16 @@ export class InterfacePrincipale extends React.Component {
     let contenu;
     if(this.state.afficherGestionTokens) {
       contenu = (
-        <GestionTokens />
+        <GestionTokens
+          {...this.fonctionsNavigation} />
       );
     } else {
       contenu = (
         <div>
-          <h2>Fonctions de gestion de votre MilleGrille</h2>
+          <h2 className="w3-opacity">Fonctions de gestion de votre MilleGrille</h2>
           <ul>
             <li>
-              <button className="aslink" onClick={this.gestionTokens}>
+              <button className="aslink" onClick={this.fonctionsNavigation.afficherGestionTokens}>
                 Gerer les tokens de securite
               </button>
             </li>
@@ -37,9 +45,17 @@ export class InterfacePrincipale extends React.Component {
     }
 
     return (
-      <div>
-        <h1>Interface principale</h1>
-        {contenu}
+
+      <div className="w3-col m9">
+        <div className="w3-row-padding">
+          <div className="w3-col m12">
+            <div className="w3-card w3-round w3-white">
+              <div className="w3-container w3-padding">
+                {contenu}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -104,6 +120,11 @@ class GestionTokens extends React.Component {
               Generer un PIN
             </button> temporaire pour connecter un nouveau token.
             PIN actuel: {this.state.pin}
+          </li>
+          <li>
+            <button className="aslink" onClick={this.props.retourPrincipale}>
+              Retour
+            </button>
           </li>
         </ul>
       </div>

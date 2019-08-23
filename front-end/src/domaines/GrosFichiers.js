@@ -506,13 +506,20 @@ export class GrosFichiers extends React.Component {
     } else if(this.state.repertoireCourant){
       affichagePrincipal = (
         <div>
-          <NavigationRepertoire
-            repertoireCourant={this.state.repertoireCourant}
-            downloadUrl={this.state.downloadUrl}
+          <div className="w3-card w3-round w3-white">
+            <div className="w3-container w3-padding">
+              <NavigationRepertoire
+                repertoireCourant={this.state.repertoireCourant}
+                downloadUrl={this.state.downloadUrl}
 
-            afficherPopupCreerRepertoire={this.afficherPopupCreerRepertoire}
-            {...this.repertoireActions}
-            />
+                afficherPopupCreerRepertoire={this.afficherPopupCreerRepertoire}
+                {...this.repertoireActions}
+                />
+            </div>
+          </div>
+
+          <br/>
+
           <PanneauFichiersIcones
             repertoire={this.state.repertoireCourant}
             operationCopierDeplacer={this.state.operationCopierDeplacer}
@@ -528,9 +535,7 @@ export class GrosFichiers extends React.Component {
       <div className="w3-col m9">
         <div className="w3-row-padding">
           <div className="w3-col m12">
-            <div>
-              {affichagePrincipal}
-            </div>
+            {affichagePrincipal}
           </div>
         </div>
         <GrosFichierAfficherPopup
