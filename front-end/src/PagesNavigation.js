@@ -25,9 +25,19 @@ export function SectionContenu(props) {
       />
     )
   } else {
-    pageContenu = (
-      <Accueil/>
-    )
+    if(props.pageActive === 'listeDomaines') {
+      pageContenu = (
+        <ListeDomaines
+          {...props.configDocument}
+          fonctionsNavigation={props.fonctionsNavigation}
+          />
+      )
+    } else {
+      // Par defaut on affiche la page d'accueil
+      pageContenu = (
+        <Accueil/>
+      )
+    }
   }
 
   return (
@@ -36,7 +46,6 @@ export function SectionContenu(props) {
         <MenuGauche
           {...props.configDocument}
           domaineActif={props.domaineActif}
-          changerDomaine={props.changerDomaine}
           fonctionsNavigation={props.fonctionsNavigation}
         />
         {pageContenu}
@@ -83,6 +92,55 @@ function Accueil(props) {
                 Bienvenue a Coup D'Oeil.
               </h2>
               <p>Choisissez un domaine dans le menu de gauche pour poursuivre.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ListeDomaines(props) {
+
+  let listeDomaines = [];
+
+  if(props.domaines) {
+    for(var idx in props.domaines) {
+      const domaine = props.domaines[idx];
+
+      // Verifier si le domaine est charge
+      if(domainesConnus[domaine.description]) {
+
+        listeDomaines.push((
+          <li key={domaine.description}>
+            <button
+              key={domaine.description}
+              className="aslink"
+              onClick={props.fonctionsNavigation.changerDomaine}
+              data-domaine={domaine.description} >
+                {domaine.description}
+            </button>
+          </li>
+        ));
+      }
+    }
+  }
+
+
+  return (
+    <div className="w3-col m9">
+      <div className="w3-row-padding">
+        <div className="w3-col m12">
+          <div className="w3-card w3-round w3-white">
+            <div className="w3-container w3-padding">
+              <h2 className="w3-opacity">
+                Liste des domaines disponibles
+              </h2>
+
+              <ul>
+                {listeDomaines}
+              </ul>
+
             </div>
           </div>
         </div>
@@ -193,7 +251,8 @@ function MenuGaucheNavigation(props) {
         <i className="fa fa-home fa-fw w3-margin-right"></i>
         Accueil
       </button>
-      <button key='Domaines' className='w3-button w3-block w3-theme-l2 w3-left-align bouton-menu-gauche'>
+      <button key='Domaines' className='w3-button w3-block w3-theme-l2 w3-left-align bouton-menu-gauche'
+        onClick={props.afficherListeDomaines}>
         <i className="fa fa-sliders fa-fw w3-margin-right"></i>
         Domaines
       </button>

@@ -37,21 +37,27 @@ export class InterfacePrincipale extends React.Component {
       )
     } else {
       contenu = (
-        <div>
-          <h2 className="w3-opacity">Fonctions de gestion de votre MilleGrille</h2>
-          <ul>
-            <li>
-              <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="gestionTokens">
-                Gerer les tokens de securite
-              </button>
-            </li>
-            <li>
-              <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="gestionProprietesMilleGrille">
-                Gerer les proprietes de la MilleGrille
-              </button>
-            </li>
-          </ul>
-        </div>
+
+            <div className="w3-col m12">
+              <div className="w3-card w3-round w3-white">
+                <div className="w3-container w3-padding">
+                  <h2 className="w3-opacity">Fonctions de gestion de votre MilleGrille</h2>
+
+                  <ul>
+                    <li>
+                      <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="gestionTokens">
+                        Gerer les tokens de securite
+                      </button>
+                    </li>
+                    <li>
+                      <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="gestionProprietesMilleGrille">
+                        Gerer les proprietes de la MilleGrille
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
       )
     }
 

@@ -16,21 +16,37 @@ class EcranApp extends React.Component {
 
   state = {
     configDocument: null,
-    domaineActif: null,
+
+    navigationState: {
+      domaineActif: null,
+      pageActive: null,
+    }
   }
 
   fonctionsNavigation = {
     afficherAccueil: () => {
       this.setState({
-        domaineActif: null
+        navigationState: {
+          domaineActif: null,
+          pageActive: 'accueil',
+        }
+      });
+    },
+
+    afficherListeDomaines: () => {
+      this.setState({
+        navigationState: {
+          domaineActif: null,
+          pageActive: 'listeDomaines',
+        }
       });
     },
 
     changerDomaine: (event) => {
       const domaine = event.currentTarget.dataset.domaine;
-      // console.debug('Domaine change vers: ' + domaine);
+       console.debug('Domaine change vers: ' + domaine);
       if(domaine) {
-        this.setState({domaineActif: domaine});
+        this.setState({navigationState: {domaineActif: domaine}});
       }
     },
 
@@ -77,10 +93,11 @@ class EcranApp extends React.Component {
         <NavBar configDocument={this.state.configDocument}/>
         <SectionContenu
           configDocument={this.state.configDocument}
-          domaineActif={this.state.domaineActif}
           changerDomaine={this.changerDomaine}
           changerMenuGauche={this.changerMenuGauche}
-          fonctionsNavigation={this.fonctionsNavigation} />
+          fonctionsNavigation={this.fonctionsNavigation}
+          {...this.state.navigationState}
+          />
       </div>
     );
   }
