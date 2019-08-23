@@ -41,7 +41,8 @@ export class Accueil extends React.Component {
 
 export class NavigationRepertoire extends React.Component {
   // Affiche la liste des sous-repertoires et une breadcrumb pour remonter
-  render() {
+
+  pathRepertoire() {
     let pathRepertoire;
     if(this.props.repertoireCourant.nom === '/') {
       pathRepertoire = (
@@ -105,11 +106,28 @@ export class NavigationRepertoire extends React.Component {
       )
     }
 
+    return pathRepertoire;
+  }
+
+  informationRepertoire() {
+    console.log(this.props.repertoireCourant);
+    return (
+      <div>
+        <div>
+          {this.props.repertoireCourant.commentaires}
+        </div>
+      </div>
+    );
+  }
+
+  render() {
+
     return (
       <div className="w3-card w3-round w3-white priveHeader">
         <div className="w3-container w3-padding">
-          {pathRepertoire}
+          {this.pathRepertoire()}
           <FileUploadSection repertoireCourant={this.props.repertoireCourant}/>
+          {this.informationRepertoire()}
         </div>
       </div>
     );
@@ -228,6 +246,10 @@ export class FileUploadSection extends React.Component {
               <input {...getInputProps()} />
               <span className="fa fa-upload fa-2x"/>
             </div>
+            <select value={this.props.repertoireCourant.securite} onChange="this.props.changerSecuriteRepertoire">
+              <option value="2.prive">Prive</option>
+              <option value="3.protege">Protege</option>
+            </select>
           </section>
         )}
       </Dropzone>

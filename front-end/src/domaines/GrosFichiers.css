@@ -31,15 +31,16 @@
   flex-direction: column;
 }
 
-section.uploadIcon DIV {
+section.uploadIcon {
   position: absolute;
   text-align: center;
   border: 1px solid black;
   top: 8px;
   right: 16px;
+}
+
+section.uploadIcon DIV {
   cursor: pointer;
-  width: 3em;
-  height: 2.5em;
   background: white;
   opacity: 0.4;
 }
