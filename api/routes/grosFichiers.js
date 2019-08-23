@@ -102,17 +102,11 @@ router.post('/local/*', function(req, res, next) {
   let fuuid = req.body.fuuid;
   console.debug("local fichier: " + req.url + " fuuid: " + fuuid);
 
-  // delete req.body;
-
-  let targetConsignation = serveurConsignation + '/grosFichiers/local/' + fuuid;
-  console.debug("Transfert vers: " + targetConsignation);
-  console.debug(pki.ca);
-
   let securite = req.body.securite;
   let promiseStream = null;
   if(securite === '3.protege' || securite === '4.secure') {
     console.debug("Le fichier est crypte. On doit demander un pipe de decryptage");
-    promiseStream = fichierProcesseurDownloadCrypte.getDecipherPipe4fuuid()
+    promiseStream = fichierProcesseurDownloadCrypte.getDecipherPipe4fuuid(fuuid)
     .then(pipeDecipher=>{
       return pipeDecipher.pipe(res); // Pipe au travers du decipher
     })
@@ -123,7 +117,7 @@ router.post('/local/*', function(req, res, next) {
   }
 
   promiseStream.then(pipe=>{
-    _pipeFileToResult(pipe, securite, res);
+    _pipeFileToResult(req, res, pipe, securite);
   })
   .catch(err=>{
     console.error("Erreur download fichier");
@@ -133,13 +127,19 @@ router.post('/local/*', function(req, res, next) {
 
 });
 
-function _pipeFileToResult(pipes, securite, res) {
+function _pipeFileToResult(req, res, pipes, securite) {
+  let fuuid = req.body.fuuid;
+
   // Connecter au serveur consignation.
   let headers = {
     fuuid: req.body.fuuid,
     contenttype: req.body.contenttype,
     securite: securite,
   }
+
+  let targetConsignation = serveurConsignation + '/grosFichiers/local/' + fuuid;
+  console.debug("Transfert vers: " + targetConsignation);
+  console.debug(pki.ca);
 
   const options = {
     url: targetConsignation,

@@ -143,16 +143,22 @@ class ProcesseurDownloadCrypte {
       console.debug("Recu message pour decrypter fuuid: " + fuuid);
       let messageContent = decodeURIComponent(escape(reponse.content));
       let json_message = JSON.parse(messageContent);
-      let cleSecrete = Buffer.from(json_message.cle);
-      let iv = json_message.iv;
+      let cleSecrete = forge.util.decode64(json_message.cle);
+      let iv = Buffer.from(json_message.iv, 'base64');
+      console.debug("IV (" + iv.length + "): ");
+      console.debug(iv);
 
       // Decrypter la cle secrete avec notre cle privee
-      var decryptedSecretKey = privateKey.decrypt(cleSecrete, 'RSA-OAEP', {
+      var decryptedSecretKey = this.key.decrypt(cleSecrete, 'RSA-OAEP', {
         md: forge.md.sha256.create(),
         mgf1: {
           md: forge.md.sha256.create()
         }
       });
+      console.debug("Cle secrete decryptee string " + decryptedSecretKey);
+      decryptedSecretKey = Buffer.from(forge.util.binary.hex.decode(decryptedSecretKey));
+      console.debug("Cle secrete decryptee (" + decryptedSecretKey.length + ") bytes");
+      console.debug(decryptedSecretKey);
 
       // Creer un decipher stream
       var decipher = crypto.createDecipheriv('aes256', decryptedSecretKey, iv);
