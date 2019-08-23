@@ -21,7 +21,7 @@ export function SectionContenu(props) {
     let SectionDomaine = domainesConnus[props.domaineActif]
     pageContenu = (
       <SectionDomaine
-        changerMenuGauche={props.changerMenuGauche}
+        {...props}
       />
     )
   } else {

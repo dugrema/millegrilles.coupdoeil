@@ -7,36 +7,47 @@ import webSocketManager from '../WebSocketManager';
 export class InterfacePrincipale extends React.Component {
 
   state = {
-    afficherGestionTokens: false,
+    ecranCourant: null,
   }
 
   fonctionsNavigation = {
     retourPrincipale: () => {
       this.setState({
-        afficherGestionTokens: false,
+        ecranCourant: null,
       });
     },
-    afficherGestionTokens: () => {
-      this.setState({afficherGestionTokens: true});
+    afficherEcran: (event) => {
+      this.setState({ecranCourant: event.currentTarget.value});
     },
   }
 
   render() {
 
     let contenu;
-    if(this.state.afficherGestionTokens) {
+    if(this.state.ecranCourant === 'gestionTokens') {
       contenu = (
         <GestionTokens
           {...this.fonctionsNavigation} />
       );
+    } else if(this.state.ecranCourant === 'gestionProprietesMilleGrille') {
+      contenu = (
+        <GestionProprietesMilleGrille
+          {...this.fonctionsNavigation}
+          nomMilleGrille={this.props.configDocument.nom_millegrille}/>
+      )
     } else {
       contenu = (
         <div>
           <h2 className="w3-opacity">Fonctions de gestion de votre MilleGrille</h2>
           <ul>
             <li>
-              <button className="aslink" onClick={this.fonctionsNavigation.afficherGestionTokens}>
+              <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="gestionTokens">
                 Gerer les tokens de securite
+              </button>
+            </li>
+            <li>
+              <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="gestionProprietesMilleGrille">
+                Gerer les proprietes de la MilleGrille
               </button>
             </li>
           </ul>
@@ -48,13 +59,7 @@ export class InterfacePrincipale extends React.Component {
 
       <div className="w3-col m9">
         <div className="w3-row-padding">
-          <div className="w3-col m12">
-            <div className="w3-card w3-round w3-white">
-              <div className="w3-container w3-padding">
-                {contenu}
-              </div>
-            </div>
-          </div>
+            {contenu}
         </div>
       </div>
     )
@@ -107,28 +112,82 @@ class GestionTokens extends React.Component {
 
   render() {
     return(
-      <div>
-        <h1>Gestions tokens</h1>
-        <ul>
-          <li>
-            <button onClick={this.ajouterToken}>
-              Ajouter token
-            </button>
-          </li>
-          <li>
-            <button onClick={this.genererPinTemporaireAjoutDevice}>
-              Generer un PIN
-            </button> temporaire pour connecter un nouveau token.
-            PIN actuel: {this.state.pin}
-          </li>
-          <li>
-            <button className="aslink" onClick={this.props.retourPrincipale}>
-              Retour
-            </button>
-          </li>
-        </ul>
+      <div className="w3-col m12">
+        <div className="w3-card w3-round w3-white">
+          <div className="w3-container w3-padding">
+            <div>
+              <h1>Gestion tokens</h1>
+              <ul>
+                <li>
+                  <button onClick={this.ajouterToken}>
+                    Ajouter token
+                  </button>
+                </li>
+                <li>
+                  <button onClick={this.genererPinTemporaireAjoutDevice}>
+                    Generer un PIN
+                  </button> temporaire pour connecter un nouveau token.
+                  PIN actuel: {this.state.pin}
+                </li>
+                <li>
+                  <button className="aslink" onClick={this.props.retourPrincipale}>
+                    Retour
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
+}
+
+class GestionProprietesMilleGrille extends React.Component {
+
+  changerNomMilleGrille = event => {
+    let form = event.currentTarget.form;
+    let nomMilleGrille = form.nomMilleGrille.value;
+    console.debug("Renommer la millegrille: " + nomMilleGrille);
+    let requete = {
+    };
+  }
+
+  render() {
+    return (
+      <div className="w3-col m12">
+
+        <div className="w3-card w3-round w3-white">
+          <div className="w3-container w3-padding">
+            <div>
+              <h1 className="w3-opacity">Gestion de la MilleGrille</h1>
+              <button className="aslink" onClick={this.props.retourPrincipale}>
+                Retour
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <br/>
+
+        <div className="w3-card w3-round w3-white">
+          <div className="w3-container w3-padding">
+            <div>
+              <h2 className="w3-opacity">Changer le nom de la MilleGrille</h2>
+
+              <form onSubmit={event => event.preventDefault()}>
+                <input type="text" name="nomMilleGrille" defaultValue={this.props.nomMilleGrille}/>
+                <input type="button" name="changerNomMilleGrille"
+                  value="Renommer"
+                  onClick={this.changerNomMilleGrille}
+                />
+              </form>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    );
+  }
 }
