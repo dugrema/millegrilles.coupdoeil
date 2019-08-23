@@ -490,29 +490,23 @@ export class GrosFichiers extends React.Component {
             />
         </div>
       )
-    } else if(this.state.repertoireCourant || this.state.repertoireRacine){
-      var repertoireCourant = this.state.repertoireCourant;
-      if(!repertoireCourant) {
-        repertoireCourant = this.state.repertoireRacine;
-      }
-
+    } else if(this.state.repertoireCourant){
       affichagePrincipal = (
         <div>
           <NavigationRepertoire
-            repertoireCourant={repertoireCourant}
+            repertoireCourant={this.state.repertoireCourant}
             downloadUrl={this.state.downloadUrl}
 
             afficherPopupCreerRepertoire={this.afficherPopupCreerRepertoire}
             {...this.repertoireActions}
             />
           <PanneauFichiersIcones
-            repertoire={repertoireCourant}
+            repertoire={this.state.repertoireCourant}
             operationCopierDeplacer={this.state.operationCopierDeplacer}
 
             creerRepertoire={this.afficherPopupCreerRepertoire}
             {...this.fichierActions}
             />
-
         </div>
       )
     }

@@ -82,7 +82,6 @@ class EcranApp extends React.Component {
           domaineActif={this.state.domaineActif}
           changerDomaine={this.changerDomaine}
           changerMenuGauche={this.changerMenuGauche}/>
-        <Footer/>
       </div>
     );
   }
@@ -103,7 +102,8 @@ function SectionContenu(props) {
     <div className="w3-container w3-content divtop">
       <div className="w3-row">
         <MenuGauche
-          configDocument={props.configDocument}
+          {...props.configDocument}
+          domaineActif={props.domaineActif}
           changerDomaine={props.changerDomaine}
         />
         <SectionDomaine
@@ -162,51 +162,41 @@ function Footer(props) {
 function MenuGauche(props) {
   return (
     <div className="w3-col m3">
-      <MenuGaucheTop configDocument={props.configDocument}/>
-      <MenuGaucheListeDomaines
-        configDocument={props.configDocument}
-        changerDomaine={props.changerDomaine}
-      />
-      <MenuGaucheNavigation/>
+      <MenuGaucheTop {...props}/>
+      <MenuGaucheNavigation
+        {...props}
+        />
     </div>
   );
 }
 
 function MenuGaucheTop(props) {
 
-  const configDocument=props.configDocument;
-  var nomMillegrille='N.D.', urlMilleGrille='N.D.';
-  if(props.configDocument) {
-    nomMillegrille = configDocument.nom_millegrille;
-    urlMilleGrille = configDocument.adresse_url_base;
-  }
-
   return (
     <div className="w3-card w3-round w3-white w3-card_BR">
       <div className="w3-container">
-        <h4 className="w3-center">{nomMillegrille}</h4>
+        <h4 className="w3-center">{props.domaineActif}</h4>
        <hr/>
        <p>
          <i className="fa fa-home fa-fw w3-margin-right w3-text-theme"></i>
-         {urlMilleGrille}
+         {props.nom_millegrille}
        </p>
       </div>
     </div>
   );
 }
 
-function MenuGaucheListeDomaines(props) {
+function MenuGaucheNavigation(props) {
 
-  const configDocument=props.configDocument;
   const listeDomaines = [], listeDomainesInconnus = [];
 
-  if(configDocument && configDocument.domaines) {
-    for(var idx in configDocument.domaines) {
-      const domaine = configDocument.domaines[idx];
+  if(props.domaines) {
+    for(var idx in props.domaines) {
+      const domaine = props.domaines[idx];
       let classe_rang = 'w3-tag w3-small w3-theme-d' + domaine.rang;
 
       // Verifier si le domaine est charge
-      if(domainesConnus[domaine.description]) {
+      if(domainesConnus[props.description]) {
         listeDomaines.push((
           <span
             key={domaine.description}
@@ -237,16 +227,6 @@ function MenuGaucheListeDomaines(props) {
         <p>
           Domaines non supportes<br/>{listeDomainesInconnus}
         </p>
-      </div>
-    </div>
-  );
-}
-
-function MenuGaucheNavigation(props) {
-  return(
-    <div className="w3-card w3-round w3-card_BR">
-      <div className="w3-white menu-domaine-gauche">
-        Boutons!
       </div>
     </div>
   );

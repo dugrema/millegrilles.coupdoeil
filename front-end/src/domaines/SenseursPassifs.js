@@ -261,7 +261,6 @@ function AfficherNoeuds(props) {
     <div className="w3-col m9">
       <div className="w3-row-padding">
         <div className="w3-col m12">
-          <h1>Domaine SenseursPassifs</h1>
           {liste}
         </div>
       </div>
