@@ -177,7 +177,7 @@ class MulterCryptoStorage {
 
   _removeFile (req, file, cb) {
     // Note: Le fichier ne devrait meme pas etre cree, PUT au serveur directement.
-    fs.unlink(file.path, cb)
+    // fs.unlink(file.path, cb)
   }
 
   _traiterFichier(pipes, params, cb) {

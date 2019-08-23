@@ -108,7 +108,8 @@ router.post('/local/*', function(req, res, next) {
     console.debug("Le fichier est crypte. On doit demander un pipe de decryptage");
     promiseStream = fichierProcesseurDownloadCrypte.getDecipherPipe4fuuid(fuuid)
     .then(pipeDecipher=>{
-      return pipeDecipher.pipe(res); // Pipe au travers du decipher
+      pipeDecipher.pipe(res);
+      return pipeDecipher; // Pipe au travers du decipher
     })
   } else {
     promiseStream = new Promise((resolve, reject)=>{
