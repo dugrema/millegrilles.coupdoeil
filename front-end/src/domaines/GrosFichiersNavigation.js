@@ -42,18 +42,67 @@ export class Accueil extends React.Component {
 export class NavigationRepertoire extends React.Component {
   // Affiche la liste des sous-repertoires et une breadcrumb pour remonter
   render() {
-    var repertoireCourant1 = this.props.repertoireCourant;
+    let pathRepertoire;
+    if(this.props.repertoireCourant.nom == '/') {
+      pathRepertoire = (
+        <span>
+          Prive
+        </span>
+      )
+    } else {
+
+      let chemin = [];
+      chemin.push(
+        <button
+          key={this.props.repertoirePrive.repertoire_uuid}
+          className="aslink"
+          value={this.props.repertoirePrive.repertoire_uuid}
+          onClick={this.props.afficherRepertoire}>
+            Prive/
+        </button>
+      );
+
+      // Couper le chemin intermediaire, on garde le parent
+      console.log(this.props.repertoireCourant);
+      let cheminsRepertoires = this.props.repertoireCourant.chemin_repertoires;
+      cheminsRepertoires = cheminsRepertoires.substring(1);  // Enlever leading '/'
+      let chemins = cheminsRepertoires.split('/');
+      if(chemins[0] !== '') for(var idx in chemins) {
+        let nomRepertoire = chemins[idx];
+        if(idx == chemins.length-1) {
+          chemin.push(
+            <button
+              key={this.props.repertoireCourant.parent_id}
+              className="aslink"
+              value={this.props.repertoireCourant.parent_id}
+              onClick={this.props.afficherRepertoire}>
+                {nomRepertoire}/
+            </button>
+          )
+        } else {
+          chemin.push(
+            <span key={nomRepertoire+idx}>{nomRepertoire}</span>
+          )
+        }
+      }
+
+      chemin.push(
+        <span key={this.props.repertoireCourant.repertoire_uuid}>
+          {this.props.repertoireCourant.nom}
+        </span>
+      )
+
+      pathRepertoire = (
+        <span>
+          {chemin}
+        </span>
+      )
+    }
 
     return (
-      <div>
-        <p>Repertoire {repertoireCourant1.nom}</p>
-        <button
-          className="aslink"
-          value={repertoireCourant1.parent_id}
-          onClick={this.props.afficherRepertoire}>{repertoireCourant1.chemin_repertoires}</button>
-        <p>{repertoireCourant1.commentaires}</p>
-
-        <FileUploadSection repertoireCourant={repertoireCourant1}/>
+      <div className="priveHeader">
+        {pathRepertoire}
+        <FileUploadSection repertoireCourant={this.props.repertoireCourant}/>
       </div>
     );
   }

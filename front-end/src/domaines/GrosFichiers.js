@@ -19,7 +19,16 @@ export class GrosFichiers extends React.Component {
     this.state = {
 
       // Variables pour navigation des repertoires/fichiers
-      repertoireRacine: null,   // Par defaut, on affiche la racine
+      repertoiresZones: {
+        repertoirePublic: null,    // Repertoire des documents publies
+        repertoirePrive: null,     // Repertoire des documents prives et proteges
+        repertoireSecure: null,    // Repertoire des documents secures
+        repertoireCorbeille: null, // Repertoire des documents supprimes
+        repertoireOrphelins: null, // Repertoire des documents orphelins
+
+        zoneCourante: '2.prive',  // 1.public, 2.prive, 4.secure, corbeille, orphelins
+      },
+
       repertoireCourant: null,  // Repertoire a afficher (si pas null et fichier null)
       fichierCourant: null,     // Fichier a afficher (si pas null)
 
@@ -344,7 +353,6 @@ export class GrosFichiers extends React.Component {
 
       this.setState({'selection': {}}); // Clear
     },
-
   }
 
   // Configuration statique du composant:
@@ -363,14 +371,14 @@ export class GrosFichiers extends React.Component {
       domaine = 'requete.millegrilles.domaines.GrosFichiers';
     }
 
-    console.debug("Transmettre requete");
-    console.debug(requete);
+    // console.debug("Transmettre requete");
+    // console.debug(requete);
 
     // Retourne la promise pour chaining then/catch
     return webSocketManager.transmettreRequete(domaine, requete)
     .then( docsRecu => {
-      console.debug("Reponse requete, documents recu");
-      console.debug(docsRecu);
+      // console.debug("Reponse requete, documents recu");
+      // console.debug(docsRecu);
       return docsRecu;  // Recuperer avec un then(resultats=>{})
     });
   }
@@ -391,14 +399,43 @@ export class GrosFichiers extends React.Component {
     })
   }
 
+  repertoireZoneCourante() {
+    let zoneCourante = this.state.repertoiresZones.zoneCourante;
+    console.debug("Zone courante: " + zoneCourante);
+    console.debug(this.state.repertoiresZones);
+    let repertoireZone = null;
+    if(!zoneCourante) {
+      console.error("Erreur, zone courante pas settee. On met prive par defaut");
+      repertoireZone = this.state.repertoiresZones.repertoirePrive;
+    } else if(zoneCourante === '1.public') {
+      repertoireZone = this.state.repertoiresZones.repertoirePublic;
+    } else if(zoneCourante === '2.prive') {
+      repertoireZone = this.state.repertoiresZones.repertoirePrive;
+    } else if(zoneCourante === '4.secure') {
+      repertoireZone = this.state.repertoiresZones.repertoireSecure;
+    } else if(zoneCourante === 'corbeille') {
+      repertoireZone =  this.state.repertoiresZones.repertoireCorbeille;
+    } else if(zoneCourante === 'orphelins') {
+      repertoireZone = this.state.repertoiresZones.repertoireOrphelins;
+    } else {
+      console.warn("Erreur get repertoire zone (inconnue: " + zoneCourante + "), on met defaut a Prive");
+      repertoireZone = this.state.repertoiresZones.repertoirePrive;
+    }
+
+    return repertoireZone;
+  }
+
   changerRepertoire(uuidRepertoire) {
-    if(uuidRepertoire && uuidRepertoire !== this.state.repertoireRacine.repertoire_uuid) {
+    let repertoireZoneCourante = this.repertoireZoneCourante();
+    // console.debug("Repertoire zone courante: ");
+    // console.debug(repertoireZoneCourante);
+    if(uuidRepertoire && uuidRepertoire !== repertoireZoneCourante.repertoire_uuid) {
       this.chargerDocument({
         requetes: [{'filtre': {'repertoire_uuid': uuidRepertoire, '_mg-libelle': 'repertoire'}}]
       })
       .then(resultats=>{
-        console.debug("Resultats afficherRepertoire");
-        console.debug(resultats);
+        // console.debug("Resultats afficherRepertoire");
+        // console.debug(resultats);
         let repertoire = resultats[0][0];
         this.setState({repertoireCourant: repertoire});
       })
@@ -408,7 +445,7 @@ export class GrosFichiers extends React.Component {
       })
     } else {
       // Retour au repertoire racine
-      this.setState({repertoireCourant: null})
+      this.setState({repertoireCourant: repertoireZoneCourante})
     }
   }
 
@@ -430,16 +467,14 @@ export class GrosFichiers extends React.Component {
     console.debug("Message de MQ: " + routingKey);
 
     if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.racine') {
-      console.debug("Update repertoire racine");
-      console.debug(doc);
+      // console.debug("Update repertoire racine");
+      // console.debug(doc);
       var newState = {
-        repertoireRacine: doc
+        repertoiresZones: {
+          ...this.state.repertoireZones,
+          repertoirePrive: doc
+        }
       }
-      // if(!this.state.repertoireCourant) {
-      //   // Initialiser le repertoire courant avec la racine
-      //   newState.repertoireCourant = doc;
-      // }
-
       this.setState(newState);
     } else if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire') {
       // Verifier si repertoire courant correspond
@@ -472,10 +507,13 @@ export class GrosFichiers extends React.Component {
       // On recoit une liste de resultats, avec une liste de documents.
       // On veut juste conserver le 1er resultat de la 1ere (seule) requete.
       // Mettre le repertoire racine comme repertoire courant.
-      var repertoireRacine = docs[0][0];
+      var repertoirePrive = docs[0][0];
       this.setState({
-        repertoireRacine: repertoireRacine,
-        repertoireCourant: repertoireRacine
+        repertoiresZones: {
+          ...this.state.repertoiresZones,
+          repertoirePrive: repertoirePrive,
+        },
+        repertoireCourant: repertoirePrive,
       })
     })
     .catch(err=>{
@@ -510,6 +548,7 @@ export class GrosFichiers extends React.Component {
             <div className="w3-container w3-padding">
               <NavigationRepertoire
                 repertoireCourant={this.state.repertoireCourant}
+                {...this.state.repertoiresZones}
                 downloadUrl={this.state.downloadUrl}
 
                 afficherPopupCreerRepertoire={this.afficherPopupCreerRepertoire}

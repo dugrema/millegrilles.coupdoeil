@@ -9,6 +9,8 @@ div.PanneauFichiersIcones {
 
   background-color: #dbebf5;
 
+  min-height: 40vh;
+
   /* Debug */
   border: 1pt black solid;
 }

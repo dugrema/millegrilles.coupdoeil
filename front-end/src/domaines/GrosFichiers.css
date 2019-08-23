@@ -10,7 +10,7 @@
   background-color: rgba(0,0,0, 0.5);
 }
 
-.popupinner {  
+.popupinner {
   position: absolute;
   left: 25%;
   right: 25%;
@@ -19,4 +19,14 @@
   margin: auto;
   border-radius: 20px;
   background: white;
+}
+
+.priveHeader {
+  background: #d2edf4;
+  background-image: linear-gradient(to bottom, #d0edf5, #e1e5f0 100%);
+  position: relative;
+
+  min-height: 10vh;
+  display: flex;
+  flex-direction: column;
 }
