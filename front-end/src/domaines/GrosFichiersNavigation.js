@@ -43,7 +43,7 @@ export class NavigationRepertoire extends React.Component {
   // Affiche la liste des sous-repertoires et une breadcrumb pour remonter
   render() {
     let pathRepertoire;
-    if(this.props.repertoireCourant.nom == '/') {
+    if(this.props.repertoireCourant.nom === '/') {
       pathRepertoire = (
         <span>
           Prive
@@ -53,35 +53,40 @@ export class NavigationRepertoire extends React.Component {
 
       let chemin = [];
       chemin.push(
-        <button
-          key={this.props.repertoirePrive.repertoire_uuid}
-          className="aslink"
-          value={this.props.repertoirePrive.repertoire_uuid}
-          onClick={this.props.afficherRepertoire}>
-            Prive/
-        </button>
+        <span key={this.props.repertoirePrive.repertoire_uuid}>
+          <button
+            className="aslink"
+            value={this.props.repertoirePrive.repertoire_uuid}
+            onClick={this.props.afficherRepertoire}>
+              Prive
+          </button>
+          /
+        </span>
       );
 
       // Couper le chemin intermediaire, on garde le parent
-      console.log(this.props.repertoireCourant);
+      // console.debug(this.props.repertoireCourant);
       let cheminsRepertoires = this.props.repertoireCourant.chemin_repertoires;
       cheminsRepertoires = cheminsRepertoires.substring(1);  // Enlever leading '/'
       let chemins = cheminsRepertoires.split('/');
       if(chemins[0] !== '') for(var idx in chemins) {
         let nomRepertoire = chemins[idx];
-        if(idx == chemins.length-1) {
+        let dernier = ''+(chemins.length-1);  // String pour comparer a idx
+        if(idx == dernier) {
           chemin.push(
-            <button
-              key={this.props.repertoireCourant.parent_id}
-              className="aslink"
-              value={this.props.repertoireCourant.parent_id}
-              onClick={this.props.afficherRepertoire}>
-                {nomRepertoire}/
-            </button>
+            <span key={this.props.repertoireCourant.parent_id}>
+              <button
+                className="aslink"
+                value={this.props.repertoireCourant.parent_id}
+                onClick={this.props.afficherRepertoire}>
+                  {nomRepertoire}
+              </button>
+              /
+            </span>
           )
         } else {
           chemin.push(
-            <span key={nomRepertoire+idx}>{nomRepertoire}</span>
+            <span key={nomRepertoire+idx}>{nomRepertoire}/</span>
           )
         }
       }
@@ -92,6 +97,7 @@ export class NavigationRepertoire extends React.Component {
         </span>
       )
 
+      // Retourner le chemin complet
       pathRepertoire = (
         <span>
           {chemin}
@@ -100,9 +106,11 @@ export class NavigationRepertoire extends React.Component {
     }
 
     return (
-      <div className="priveHeader">
-        {pathRepertoire}
-        <FileUploadSection repertoireCourant={this.props.repertoireCourant}/>
+      <div className="w3-card w3-round w3-white priveHeader">
+        <div className="w3-container w3-padding">
+          {pathRepertoire}
+          <FileUploadSection repertoireCourant={this.props.repertoireCourant}/>
+        </div>
       </div>
     );
   }
@@ -215,10 +223,10 @@ export class FileUploadSection extends React.Component {
     return (
       <Dropzone onDrop={this.uploadFileProcessor}>
         {({getRootProps, getInputProps}) => (
-          <section>
+          <section className="uploadIcon">
             <div {...getRootProps()}>
               <input {...getInputProps()} />
-              <p>Cliquer ici pour upload ou DnD fichiers ici.</p>
+              <span className="fa fa-upload fa-2x"/>
             </div>
           </section>
         )}

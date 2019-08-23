@@ -156,8 +156,8 @@ class GestionProprietesMilleGrille extends React.Component {
     let form = event.currentTarget.form;
     let nomMilleGrille = form.nomMilleGrille.value;
     console.debug("Renommer la millegrille: " + nomMilleGrille);
-    let requete = {
-    };
+    //let requete = {
+    //};
   }
 
   render() {

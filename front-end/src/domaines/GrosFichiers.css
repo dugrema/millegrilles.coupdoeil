@@ -30,3 +30,24 @@
   display: flex;
   flex-direction: column;
 }
+
+section.uploadIcon DIV {
+  position: absolute;
+  text-align: center;
+  border: 1px solid black;
+  top: 8px;
+  right: 16px;
+  cursor: pointer;
+  width: 3em;
+  height: 2.5em;
+  background: white;
+  opacity: 0.4;
+}
+
+section.uploadIcon SPAN {
+
+}
+
+span.repertoireZone {
+
+}

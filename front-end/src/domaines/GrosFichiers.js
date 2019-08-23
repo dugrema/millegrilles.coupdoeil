@@ -544,18 +544,14 @@ export class GrosFichiers extends React.Component {
     } else if(this.state.repertoireCourant){
       affichagePrincipal = (
         <div>
-          <div className="w3-card w3-round w3-white">
-            <div className="w3-container w3-padding">
-              <NavigationRepertoire
-                repertoireCourant={this.state.repertoireCourant}
-                {...this.state.repertoiresZones}
-                downloadUrl={this.state.downloadUrl}
+          <NavigationRepertoire
+            repertoireCourant={this.state.repertoireCourant}
+            {...this.state.repertoiresZones}
+            downloadUrl={this.state.downloadUrl}
 
-                afficherPopupCreerRepertoire={this.afficherPopupCreerRepertoire}
-                {...this.repertoireActions}
-                />
-            </div>
-          </div>
+            afficherPopupCreerRepertoire={this.afficherPopupCreerRepertoire}
+            {...this.repertoireActions}
+            />
 
           <br/>
 
