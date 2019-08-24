@@ -66,21 +66,21 @@ class RabbitMQWrapper {
         return conn.createChannel();
       }).then( (ch) => {
         this.channel = ch;
-        console.log("Channel ouvert");
+        console.debug("Channel ouvert");
         return this.ecouter();
       }).then(()=>{
-        console.log("Connexion et channel prets");
+        console.debug("Connexion et channel prets");
 
         // Transmettre le certificat
         let messageCertificat = pki.preparerMessageCertificat();
         let fingerprint = messageCertificat.fingerprint;
-        console.log("Transmission certificat " + fingerprint);
+        // console.debug("Transmission certificat " + fingerprint);
 
         let messageJSONStr = JSON.stringify(messageCertificat);
         this._publish(
           'pki.certificat.' + fingerprint, messageJSONStr
         );
-        console.log("Certificat transmis");
+        // console.debug("Certificat transmis");
       }).catch(err => {
         this.connection = null;
         console.error("Erreur connexion RabbitMQ");
@@ -140,15 +140,16 @@ class RabbitMQWrapper {
         exclusive: true,
       })
       .then( (q) => {
-        console.log("Queue reponse globale cree"),
-        console.log(q);
+        console.debug("Queue reponse globale cree"),
+        // console.log(q);
         this.reply_q = q;
 
         this.channel.consume(
           q.queue,
           (msg) => {
+            // console.log('1. Message recu');
             let correlationId = msg.properties.correlationId;
-            let messageContent = decodeURIComponent(escape(msg.content));
+            let messageContent = msg.content.toString('utf-8');
             let routingKey = msg.fields.routingKey;
 
             if(correlationId) {
@@ -189,15 +190,17 @@ class RabbitMQWrapper {
         })
       })
       .then(q=>{
-        console.log("Queue reponse usager via websocket cree"),
-        console.log(q);
+        // console.log("Queue reponse usager via websocket cree"),
+        // console.log(q);
         socketResources.reply_q = q;
 
         // Activer la lecture de message et callback pour notre websocket
         socketResources.mqChannel.consume(
           q.queue,
           (msg) => {
-            let messageContent = decodeURIComponent(escape(msg.content));
+            // console.log('2. Message recu');
+            // console.log(msg.content.toString('utf-8'));
+            let messageContent = msg.content.toString('utf-8');
             let json_message = JSON.parse(messageContent);
             let routingKey = msg.fields.routingKey;
 

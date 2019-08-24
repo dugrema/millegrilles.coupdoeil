@@ -153,7 +153,7 @@ export class AffichageFichier extends React.Component {
 
             <div className="proprietes">
               <div>Date: {dateFichierCourant.toString()}</div>
-              <div>Taille: { new Number(fichierCourant.taille / (1024*1024)).toFixed(2) } MB ({fichierCourant.taille} octets)</div>
+              <div>Taille: { (fichierCourant.taille / (1024*1024)).toFixed(2) } MB ({fichierCourant.taille} octets)</div>
               <div>Securite: {fichierCourant.securite}</div>
               <div>FUUID: {fichierCourant.fuuid_v_courante}</div>
               <div>{fichierCourant.commentaires}</div>

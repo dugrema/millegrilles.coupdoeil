@@ -23,11 +23,11 @@ class WebSocketResources {
     if(this.mqChannel) {
       try {
         if(this.reply_q) {
-          console.debug("Delete reply Q pour socket " + this.socket.id);
+          // console.debug("Delete reply Q pour socket " + this.socket.id);
           this.mqChannel.deleteQueue(this.reply_q.queue).catch(err=>{});
         }
       } finally {
-        console.debug("Fermeture channel MQ pour socket " + this.socket.id);
+        // console.debug("Fermeture channel MQ pour socket " + this.socket.id);
         this.mqChannel.close().catch(err=>{});
       }
 
@@ -62,12 +62,12 @@ class WebSocketApp {
 
       let socket = socketResources.socket;
       if(socketResources.expiration < tempsCourant){
-        console.debug("On deconnecte un socket pas authentifie expire: " + socket_id);
+        // console.debug("On deconnecte un socket pas authentifie expire: " + socket_id);
         socket.disconnect();
       }
 
       if(socket.disconnected) {
-        console.debug("Nettoyage socket pas authentifie: " + socket_id);
+        // console.debug("Nettoyage socket pas authentifie: " + socket_id);
         socketResources.close();
         delete this.new_sockets[socket_id];
       }
@@ -87,7 +87,7 @@ class WebSocketApp {
   }
 
   disconnectedHandler(socket) {
-    console.debug("Socket deconnecte " + socket.id);
+    // console.debug("Socket deconnecte " + socket.id);
 
     let socketResources = this.new_sockets[socket.id] || this.authenticated_sockets[socket.id];
     if(socketResources) {
@@ -168,7 +168,7 @@ class WebSocketApp {
       rabbitMQ.singleton
         .transmettreRequete(routingKey, requete)
       .then( reponse => {
-        let messageContent = decodeURIComponent(escape(reponse.content));
+        let messageContent = reponse.content.toString('utf-8');
         let json_message = JSON.parse(messageContent);
         cb(json_message.resultats); // On transmet juste les resultats
       })
@@ -205,7 +205,7 @@ class WebSocketApp {
       socket.emit('challengeEnregistrerDevice', challengeResponse, (reponse)=>{
         const { key, challenge } = parseRegisterRequest(reponse);
 
-        console.log("Parsed: key, challenge de nouveau device");
+        // console.debug("Parsed: key, challenge de nouveau device");
 
         var infoToken = {
             'cle': key
@@ -216,7 +216,7 @@ class WebSocketApp {
             infoToken, 'millegrilles.domaines.Principale.ajouterToken')
           .then( msg => {
             console.debug("Recu confirmation d'ajout de device'");
-            console.debug(msg);
+            // console.debug(msg);
           })
           .catch( err => {
             console.error("Erreur message");
