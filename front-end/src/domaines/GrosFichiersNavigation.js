@@ -187,7 +187,7 @@ export class AffichageFichier extends React.Component {
     versions.forEach(version=>{
       let dateVersion = new Date(0);
       dateVersion.setUTCSeconds(version.date_version);
-      let taille = new Number(version.taille/(1024*1024)).toFixed(2);
+      let taille = (version.taille/(1024*1024)).toFixed(2);
       affichageVersions.push(
         <li key={version.fuuid}>
           {dateVersion.toString()}<br/>

@@ -129,10 +129,16 @@ export class GrosFichiers extends React.Component {
           'millegrilles.domaines.GrosFichiers.renommerFichier', transaction);
       }
 
-      this.setState({popupRenommerFichierValeurs: null});
+      this.setState({
+        ...this.state.popupProps,
+        popupProps: {popupRenommerFichierValeurs: null}
+      });
     },
     annulerChangerNomFichier: (event) => {
-      this.setState({popupRenommerFichierValeurs: null});
+      this.setState({
+        ...this.state.popupProps,
+        popupProps: {popupRenommerFichierValeurs: null}
+      });
     },
 
     supprimerRepertoire: (event) => {
@@ -279,6 +285,23 @@ export class GrosFichiers extends React.Component {
         let infoitem = selection[uuid];
         let typeitem = infoitem.type;
         console.debug(typeitem + " " + uuid);
+
+        if(typeitem === 'fichier') {
+          let transaction = {
+            "uuid": uuid,
+          }
+
+          webSocketManager.transmettreTransaction(
+            'millegrilles.domaines.GrosFichiers.supprimerFichier', transaction)
+          .then(msg=>{
+            console.debug("Fichier supprime: " + uuid);
+          }).catch(err=>{
+            console.error("Erreur suppression fichier");
+            console.error(err);
+          });
+        } else if(typeitem === 'repertoire') {
+          console.warn("Suppression repertoire pas encore supportee");
+        }
       }
     },
 
@@ -315,26 +338,6 @@ export class GrosFichiers extends React.Component {
       } else if(type === 'fichier') {
         this.afficherProprietesFichier(uuid);
       }
-    },
-
-    afficherPopupRenommer: (uuid, type) => {
-      console.debug("Renommer " + type + ", uuid " + uuid);
-      let repertoireCourant = this.state.repertoireCourant || this.state.repertoireRacine;
-
-      if(type === 'fichier') {
-        let nomFichier = repertoireCourant.fichiers[uuid].nom;
-        this.setState({popupProps: {popupRenommerFichierValeurs: {
-          nom: nomFichier,
-          uuidFichier: uuid,
-        }}});
-      } else if(type === 'repertoire') {
-        let nomRepertoire = repertoireCourant.repertoires[uuid].nom;
-        this.setState({popupRenommerRepertoireValeurs: {
-          nom: nomRepertoire,
-          uuidRepertoire: uuid,
-        }});
-      }
-
     },
 
   }
@@ -475,6 +478,27 @@ export class GrosFichiers extends React.Component {
     }}});
   }
 
+  afficherPopupRenommer = (uuid, type) => {
+    console.debug("Renommer " + type + ", uuid " + uuid);
+    let repertoireCourant = this.state.repertoireCourant || this.state.repertoireRacine;
+
+    if(type === 'fichier') {
+      let nomFichier = repertoireCourant.fichiers[uuid].nom;
+      this.setState({popupProps: {popupRenommerFichierValeurs: {
+        nom: nomFichier,
+        uuidFichier: uuid,
+      }}});
+    } else if(type === 'repertoire') {
+      let nomRepertoire = repertoireCourant.repertoires[uuid].nom;
+      this.setState({popupRenommerRepertoireValeurs: {
+        nom: nomRepertoire,
+        uuidRepertoire: uuid,
+      }});
+    }
+
+  }
+
+
   deplacerRepertoire = (event) => {
 
   }
@@ -491,6 +515,12 @@ export class GrosFichiers extends React.Component {
           repertoirePrive: doc
         }
       }
+
+      // Verifier si le repertoire courant est ce meme repertoire qu'on vient de recevoir
+      if(this.state.repertoireCourant && doc.repertoire_uuid === this.state.repertoireCourant.repertoire_uuid) {
+        newState.repertoireCourant = doc;
+      }
+
       this.setState(newState);
     } else if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire') {
       // Verifier si repertoire courant correspond
@@ -577,6 +607,7 @@ export class GrosFichiers extends React.Component {
             operationCopierDeplacer={this.state.operationCopierDeplacer}
 
             creerRepertoire={this.afficherPopupCreerRepertoire}
+            renommer={this.afficherPopupRenommer}
             {...this.fichierActions}
             />
         </div>
