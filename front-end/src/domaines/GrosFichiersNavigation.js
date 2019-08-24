@@ -139,28 +139,38 @@ export class AffichageFichier extends React.Component {
   render() {
     // Affiche l'information d'un fichier et la liste des versions
     let fichierCourant = this.props.fichierCourant;
+    let dateFichierCourant = new Date(0);
+    dateFichierCourant.setUTCSeconds(fichierCourant.date_v_courante);
 
     let informationFichier = (
-      <div>
-        <h2>{fichierCourant.nom}</h2>
-        <button
-          className="aslink"
-          onClick={this.props.retourRepertoireFichier}>{fichierCourant.chemin_repertoires}</button>
-        <p>Taille: {fichierCourant.taille} octets</p>
-        <p>Date: {fichierCourant.date_v_courante}</p>
-        <p>FUUID: {fichierCourant.fuuid_v_courante}</p>
-        <p>{fichierCourant.commentaires}</p>
-        <button
-          className="aslink"
-          value={fichierCourant.nom}
-          data-uuidfichier={fichierCourant.uuid}
-          onClick={this.props.afficherChangerNomFichier}>Renommer</button>
-        <button
-          className="aslink"
-          value={fichierCourant.nom}
-          data-uuidfichier={fichierCourant.uuid}
-          onClick={this.props.supprimerFichier}>Supprimer</button>
-      </div>
+
+        <div className="w3-card w3-round w3-white">
+          <div className="w3-container w3-padding">
+            <h2 className="w3-opacity">{fichierCourant.nom}</h2>
+            <button
+              className="aslink"
+              onClick={this.props.retourRepertoireFichier}>{fichierCourant.chemin_repertoires}</button>
+
+            <div className="proprietes">
+              <div>Date: {dateFichierCourant.toString()}</div>
+              <div>Taille: { new Number(fichierCourant.taille / (1024*1024)).toFixed(2) } MB ({fichierCourant.taille} octets)</div>
+              <div>Securite: {fichierCourant.securite}</div>
+              <div>FUUID: {fichierCourant.fuuid_v_courante}</div>
+              <div>{fichierCourant.commentaires}</div>
+            </div>
+
+            <div className="buttonBar">
+              <button
+                value={fichierCourant.nom}
+                data-uuidfichier={fichierCourant.uuid}
+                onClick={this.props.afficherChangerNomFichier}>Renommer</button>
+              <button
+                value={fichierCourant.nom}
+                data-uuidfichier={fichierCourant.uuid}
+                onClick={this.props.supprimerFichier}>Supprimer</button>
+            </div>
+          </div>
+        </div>
     );
 
     let versions = []
@@ -175,19 +185,37 @@ export class AffichageFichier extends React.Component {
 
     let affichageVersions = [];
     versions.forEach(version=>{
+      let dateVersion = new Date(0);
+      dateVersion.setUTCSeconds(version.date_version);
+      let taille = new Number(version.taille/(1024*1024)).toFixed(2);
       affichageVersions.push(
         <li key={version.fuuid}>
-          {version.date_version} / {version.taille} octets / {version.nom}
+          {dateVersion.toString()}<br/>
+          {taille} MB / {version.nom} / Securite: {version.securite}
+          <button
+            onClick={this.props.telechargerEvent}
+            value={fichierCourant.uuid}
+            data-fuuid={version.fuuid}
+            data-securite={version.securite}>
+            Download
+          </button>
         </li>
       );
     })
 
     return (
-      <div>
+      <div className="w3-col m12">
         {informationFichier}
 
-        <h2>Versions</h2>
-        <ul>{affichageVersions}</ul>
+        <br/>
+
+        <div className="w3-card w3-round w3-white">
+          <div className="w3-container w3-padding">
+            <h2 className="w3-opacity">Versions</h2>
+            <ul>{affichageVersions}</ul>
+          </div>
+        </div>
+
       </div>
     )
   }

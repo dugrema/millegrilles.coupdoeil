@@ -52,3 +52,7 @@ section.uploadIcon DIV {
 .securite-protege {
   color: green;
 }
+
+.buttonBar button {
+  margin-right: 0.5em;
+}

@@ -323,7 +323,7 @@ class MenuContextuel extends React.Component {
   telecharger = (event) => {
     let parametres = this.props.parametres;
     if(parametres.type === 'fichier') {
-      this.props.telecharger(parametres.fichieruuid);
+      this.props.telecharger({'uuidfichier': parametres.fichieruuid});
     } else {
       console.error("Tentative de telechargement de repertoire (non supporte)");
     }

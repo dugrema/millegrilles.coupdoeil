@@ -181,7 +181,18 @@ export class GrosFichiers extends React.Component {
       console.debug("Upload vers " + repertoireDestination);
     },
 
-    telecharger: uuidfichier => {
+    telechargerEvent: event => {
+      let uuidfichier = event.currentTarget.value;
+      let fuuid_version = event.currentTarget.dataset.fuuid;
+      let securite = event.currentTarget.dataset.securite;
+      this.fichierActions.telecharger({
+        uuidfichier: uuidfichier,
+        fuuid: fuuid_version,
+        securite: securite,
+      });
+    },
+
+    telecharger: ({uuidfichier, fuuid, securite}) => {
       // Trouver fichier dans information repertoire
       let infoRepertoire = this.state.repertoireCourant || this.state.repertoireRacine;
       console.debug(infoRepertoire);
@@ -190,7 +201,12 @@ export class GrosFichiers extends React.Component {
       if(!fichier) {
         throw new Error("Erreur fichier inconnu: " + uuidfichier)
       }
-      let fuuid = fichier.fuuid_v_courante;
+      if(!fuuid) {
+        fuuid = fichier.fuuid_v_courante;
+      }
+      if(!securite) {
+        securite = fichier.securite;
+      }
       let nomFichier = fichier.nom;
       let contentType = fichier.mimetype;
 
@@ -206,7 +222,7 @@ export class GrosFichiers extends React.Component {
         form.nomfichier.value = nomFichier;
         form.contenttype.value = contentType;
         form.authtoken.value = token;
-        form.securite.value = fichier.securite;
+        form.securite.value = securite;
 
         console.debug("2. Submit preparation, download " + form.action + ", recu token " + form.authtoken.value);
         form.submit(); // Token pret, submit.
@@ -538,6 +554,7 @@ export class GrosFichiers extends React.Component {
             fichierCourant={this.state.fichierCourant}
             downloadUrl={this.state.downloadUrl}
             retourRepertoireFichier={this.retourRepertoireFichier}
+            {...this.fichierActions}
             />
         </div>
       )
