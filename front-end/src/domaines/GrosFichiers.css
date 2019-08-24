@@ -45,10 +45,10 @@ section.uploadIcon DIV {
   opacity: 0.4;
 }
 
-section.uploadIcon SPAN {
+.securite-prive {
 
 }
 
-span.repertoireZone {
-
+.securite-protege {
+  color: green;
 }

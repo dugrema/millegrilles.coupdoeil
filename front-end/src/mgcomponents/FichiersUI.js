@@ -149,7 +149,14 @@ class PanneauFichiersIcones extends React.Component {
       icone = 'fa-file-o'; // Par defaut un icone generique
     }
 
-    return 'fa ' + icone + ' fa-5x';
+    let classNameIcon = 'fa ' + icone + ' fa-5x';
+
+    if(fichier.securite) {
+      let securite = fichier.securite.split('.')[1];
+      classNameIcon += classNameIcon + ' securite-' + securite;
+    }
+
+    return classNameIcon;
   }
 
   trierListe(items) {
