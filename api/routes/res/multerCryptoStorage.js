@@ -127,7 +127,9 @@ class MulterCryptoStorage {
   _handleFile (req, file, cb) {
 
     var pipes = file.stream;
-    var crypte = true;
+    var securite = req.body.securite;
+    console.log("Securite fichier: " + securite);
+    var crypte = securite === '3.protege' || securite === '4.secure';
 
     var params = {
       req: req,

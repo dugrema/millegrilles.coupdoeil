@@ -9,13 +9,15 @@ const forge = require('node-forge');
 
 class ProcesseurUpload {
 
-  ajouterFichier(fichier, repertoire_uuid, serveurConsignation) {
+  ajouterFichier(req, fichier, serveurConsignation) {
     var promise = new Promise((resolve, reject)=>{
       // console.debug('Traitement fichier');
       // console.debug(fichier);
 
       // Creer le uuid de fichier, pour cette version.
       let fileUuid = fichier.fileuuid;
+      var repertoire_uuid = req.body.repertoire_uuid;
+      var securite = req.body.securite;
       let pathServeur = serveurConsignation + '/' + path.join('grosfichiers', 'local', 'nouveauFichier', fileUuid);
       // let fuuide = this.formatterPath(fileUuid, 'dat');
       let crypte = (fichier.encryptedSecretKey)?true:false;
@@ -33,7 +35,7 @@ class ProcesseurUpload {
         // console.debug("Put complete, sending record to MQ");
         let transactionNouvelleVersion = {
           fuuid: fileUuid,
-          securite: '3.protege',
+          securite: securite,
           repertoire_uuid: repertoire_uuid,
           nom: fichier.originalname,
           taille: fichier.size,

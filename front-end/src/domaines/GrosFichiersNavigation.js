@@ -73,7 +73,7 @@ export class NavigationRepertoire extends React.Component {
       if(chemins[0] !== '') for(var idx in chemins) {
         let nomRepertoire = chemins[idx];
         let dernier = ''+(chemins.length-1);  // String pour comparer a idx
-        if(idx == dernier) {
+        if(idx === dernier) {
           chemin.push(
             <span key={this.props.repertoireCourant.parent_id}>
               <button
@@ -200,6 +200,9 @@ export class FileUploadSection extends React.Component {
     console.debug(acceptedFiles);
 
     let repertoire_uuid = this.props.repertoireCourant.repertoire_uuid;
+    let securite = this.props.repertoireCourant.securite;
+
+    console.debug("Upload fichier avec securite: " + securite);
 
     // Demander un token (OTP) via websockets
     // Permet de se connecter au serveur pour transmetter le fichier.
@@ -208,12 +211,13 @@ export class FileUploadSection extends React.Component {
       // console.debug("Utilisation token " + token);
       let data = new FormData();
       data.append('repertoire_uuid', repertoire_uuid);
+      data.append('securite', securite);
       acceptedFiles.forEach( file=> {
         data.append('grosfichier', file);
       })
       let config = {
         headers: {
-          'authtoken': token
+          'authtoken': token,
         }
       }
 
@@ -226,6 +230,22 @@ export class FileUploadSection extends React.Component {
       console.error(err);
     })
 
+  }
+
+  changerSecuriteRepertoire = event => {
+    let securite = event.currentTarget.value;
+    let repertoireUuid = this.props.repertoireCourant.repertoire_uuid;
+    console.debug("changerSecuriteRepertoire: " + securite + " repertoire uuid: " + repertoireUuid);
+    let transaction = {
+      "repertoire_uuid": repertoireUuid,
+      "securite": securite,
+    }
+
+    let routingKey = 'millegrilles.domaines.GrosFichiers.changerSecuriteRepertoire';
+    webSocketManager.transmettreTransaction(routingKey, transaction)
+    .then(msg=>{
+      console.debug("Securite changee a " + securite + " pour repertoire " + repertoireUuid);
+    })
   }
 
   uploadSuccess(response) {
@@ -246,7 +266,9 @@ export class FileUploadSection extends React.Component {
               <input {...getInputProps()} />
               <span className="fa fa-upload fa-2x"/>
             </div>
-            <select value={this.props.repertoireCourant.securite} onChange="this.props.changerSecuriteRepertoire">
+            <select
+                value={this.props.repertoireCourant.securite}
+                onChange={this.changerSecuriteRepertoire}>
               <option value="2.prive">Prive</option>
               <option value="3.protege">Protege</option>
             </select>

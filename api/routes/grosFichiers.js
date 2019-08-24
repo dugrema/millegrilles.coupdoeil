@@ -78,7 +78,7 @@ router.put(
   // console.debug('*****FICHIERS******');
   // console.debug(req.files);
   req.files['grosfichier'].forEach(fichier=>{
-    fichierProcesseurUpload.ajouterFichier(fichier, repertoire_uuid, serveurConsignation)
+    fichierProcesseurUpload.ajouterFichier(req, fichier, serveurConsignation)
     .then(params => {
       // console.debug("Traitement fichier termine: " + params);
       // console.debug(params);
@@ -100,9 +100,9 @@ router.post('/local/*', function(req, res, next) {
   // console.debug(req.body);
 
   let fuuid = req.body.fuuid;
-  console.debug("local fichier: " + req.url + " fuuid: " + fuuid);
-
   let securite = req.body.securite;
+  console.debug("local fichier: " + req.url + " fuuid: " + fuuid + ", securite: " + securite);
+
   let promiseStream = null;
   if(securite === '3.protege' || securite === '4.secure') {
     console.debug("Le fichier est crypte. On doit demander un pipe de decryptage");
