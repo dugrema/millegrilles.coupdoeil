@@ -1,6 +1,5 @@
 import React from 'react';
 import Dropzone from 'react-dropzone';
-import axios from 'axios';
 import webSocketManager from '../WebSocketManager';
 
 export class GrosFichiersRenderDownloadForm extends React.Component {
@@ -126,7 +125,10 @@ export class NavigationRepertoire extends React.Component {
       <div className="w3-card w3-round w3-white priveHeader">
         <div className="w3-container w3-padding">
           {this.pathRepertoire()}
-          <FileUploadSection repertoireCourant={this.props.repertoireCourant}/>
+          <FileUploadSection
+            repertoireCourant={this.props.repertoireCourant}
+            {...this.props.uploadActions}
+            />
           {this.informationRepertoire()}
         </div>
       </div>
@@ -207,8 +209,6 @@ export class AffichageFichier extends React.Component {
       <div className="w3-col m12">
         {informationFichier}
 
-        <br/>
-
         <div className="w3-card w3-round w3-white">
           <div className="w3-container w3-padding">
             <h2 className="w3-opacity">Versions</h2>
@@ -219,6 +219,81 @@ export class AffichageFichier extends React.Component {
       </div>
     )
   }
+}
+
+export class FileUploadMonitor extends React.Component {
+
+  preparerListeCourants() {
+    let liste = [];
+
+    for(let idx in this.props.uploadsCourants) {
+      let valeur = this.props.uploadsCourants[idx];
+
+      let classeIcone = 'fa fa-upload';
+      if(idx === ''+0) {
+        classeIcone = 'fa fa-spinner fa-pulse';
+      }
+
+      liste.push(
+        <div key={valeur.repertoire_uuid + '/' + valeur.path}>
+          <div className="w3-col m1">
+            <i className={classeIcone}/>
+          </div>
+          <div className="w3-col m9">
+            {valeur.path}
+          </div>
+          <div className="w3-col m2">
+            {valeur.progres}%
+          </div>
+        </div>
+      );
+    }
+
+    return liste;
+  }
+
+  preparerListeCompletes() {
+    let liste = [];
+
+    for(let idx in this.props.uploadsCompletes) {
+      let valeur = this.props.uploadsCompletes[idx];
+
+      let classeIcone = 'fa fa-check';
+      //if( erreur ) {
+      //  classeIcone = 'fa fa-window-close error';
+      //}
+
+      liste.push(
+        <div key={valeur.repertoire_uuid + '/' + valeur.path}>
+          <div className="w3-col m1">
+            <i className={classeIcone}/>
+          </div>
+          <div className="w3-col m9">
+            {valeur.path}
+          </div>
+          <div className="w3-col m2">
+            {valeur.progres}%
+          </div>
+        </div>
+      );
+    }
+
+    return liste;
+  }
+
+  render() {
+    return(
+      <div className="w3-card w3-round w3-white">
+        <div className="w3-container w3-padding">
+          <h2>Uploads completes</h2>
+          {this.preparerListeCompletes()}
+          <h2>Uploads en cours</h2>
+          {this.preparerListeCourants()}
+        </div>
+      </div>
+    );
+  }
+
 }
 
 export class FileUploadSection extends React.Component {
@@ -232,31 +307,41 @@ export class FileUploadSection extends React.Component {
 
     console.debug("Upload fichier avec securite: " + securite);
 
-    // Demander un token (OTP) via websockets
-    // Permet de se connecter au serveur pour transmetter le fichier.
-    webSocketManager.demanderTokenTransfert()
-    .then(token=>{
-      // console.debug("Utilisation token " + token);
-      let data = new FormData();
-      data.append('repertoire_uuid', repertoire_uuid);
-      data.append('securite', securite);
-      acceptedFiles.forEach( file=> {
-        data.append('grosfichier', file);
-      })
-      let config = {
-        headers: {
-          'authtoken': token,
-        }
-      }
+    // console.debug("Utilisation token " + token);
+    // let promiseUploadQueue = null;
 
-      axios.put('/grosFichiers/nouveauFichier', data, config)
-        .then(response => this.uploadSuccess(response))
-        .catch(error => this.uploadFail(error));
-    })
-    .catch(err=>{
-      console.error("Erreur transfert fichiers");
-      console.error(err);
-    })
+    acceptedFiles.forEach( file=> {
+      // Ajouter le fichier a l'upload queue
+      this.props.ajouterUpload(file, {repertoire_uuid, securite});
+
+      // Demander un token (OTP) via websockets
+      // Permet de se connecter au serveur pour transmetter le fichier.
+      // let promise =
+      //   webSocketManager.demanderTokenTransfert()
+      //   .then(token=>{
+      //     let data = new FormData();
+      //     data.append('repertoire_uuid', repertoire_uuid);
+      //     data.append('securite', securite);
+      //     data.append('grosfichier', file);
+      //     let config = {
+      //       headers: {
+      //         'authtoken': token,
+      //       },
+      //       onUploadProgress: this.props.uploadProgress,
+      //       //cancelToken: new CancelToken(function (cancel) {
+      //       // }),
+      //     }
+      //
+      //     return axios.put('/grosFichiers/nouveauFichier', data, config);
+      //   })
+      //
+      // if(!promiseUploadQueue) {
+      //   promiseUploadQueue = promise;
+      // } else {
+      //   promiseUploadQueue = promiseUploadQueue.then(promise);
+      // }
+
+    });
 
   }
 

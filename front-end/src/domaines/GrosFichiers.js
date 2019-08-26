@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from 'axios';
 
 import './GrosFichiers.css';
 import webSocketManager from '../WebSocketManager';
@@ -7,7 +8,7 @@ import webSocketManager from '../WebSocketManager';
 import {PanneauFichiersIcones} from '../mgcomponents/FichiersUI.js';
 import {GrosFichierAfficherPopup} from './GrosFichiersPopups';
 import {NavigationRepertoire, AffichageFichier,
-  GrosFichiersRenderDownloadForm} from './GrosFichiersNavigation.js'
+  GrosFichiersRenderDownloadForm, FileUploadMonitor} from './GrosFichiersNavigation.js'
 
 export class GrosFichiers extends React.Component {
 
@@ -15,6 +16,9 @@ export class GrosFichiers extends React.Component {
     super(props);
     this.refFormulaireDownload = React.createRef();
     // this.download = this.download.bind(this);
+
+    this.uploadEnCours = false;  // True quand un upload est en marche
+    this.uploadRetryTimer = null;  // Timer avant prochain essaie d'upload
 
     this.state = {
 
@@ -50,6 +54,10 @@ export class GrosFichiers extends React.Component {
       preparerUpload: null,
 
       downloadUrl: '/grosFichiers/local',
+
+      uploadsCourants: [], // Upload Q du navigateur
+      uploadsCompletes: [], // Uploads en attente de confirmation via MQ
+
     };
 
   }
@@ -374,6 +382,67 @@ export class GrosFichiers extends React.Component {
     },
   }
 
+  uploadActions = {
+    ajouterUpload: (acceptedFile, fileInfo) => {
+      console.debug("Commencer upload");
+      console.debug(fileInfo);
+
+      // Copier array d'uploads courants, ajouter copie d'info fichiers
+      let uploadsCourants = [...this.state.uploadsCourants];
+      uploadsCourants.push({acceptedFile, ...fileInfo, progres: 0, path: acceptedFile.path});
+
+      // Mettre a jour la liste des uploads;
+      this.setState({uploadsCourants});
+
+      if(!this.uploadEnCours) {
+        // Lance l'upload du fichier
+        this.uploaderProchainFichier();
+      }
+    },
+    annulerUpload: (event) => {
+      console.debug("Annuler upload");
+      console.debug(event);
+
+    },
+    uploadProgress: (event) => {
+      let loaded = event.loaded, total = event.total;
+      let pourcent = (Math.ceil(loaded/total*100));
+      console.debug("Progres upload: " + pourcent + '%');
+
+      let uploadCourant = {...this.state.uploadsCourants[0]};
+      uploadCourant.loaded = event.loaded;
+      uploadCourant.total = event.total;
+      uploadCourant.progres = pourcent;
+
+      let uploadsCourants = [uploadCourant, ...this.state.uploadsCourants.slice(1)];
+      this.setState({uploadsCourants});
+    },
+    uploadTermine: (msg) => {
+      // L'upload est termine sur le navigateur, mais on attend toujours la
+      // confirmation via un update MQ (document fichier).
+      console.debug("Upload termine");
+      console.debug(msg);
+
+      // Mettre timer pour donner 30 secondes au backend pour finir le traitement,
+      // sans quoi on considere le fichier incomplet avec erreur au back-end.
+      let uploadComplete = {...this.state.uploadsCourants[0]};
+      uploadComplete.state = msg.status;
+
+      let uploadsCompletes = [...this.state.uploadsCompletes];
+      uploadsCompletes.push(uploadComplete);
+
+      let uploadsCourants = this.state.uploadsCourants.slice(1); // Enlever premier item
+      this.setState({uploadsCompletes, uploadsCourants}, ()=>{
+        // Enchainer le prochain upload (si applicable)
+        if(uploadsCourants.length > 0) {
+          console.debug("Prochain upload: " + uploadsCourants[0].path);
+          this.uploaderProchainFichier();
+        }
+      });
+
+    },
+  }
+
   // Configuration statique du composant:
   //   subscriptions: Le nom des routing keys qui vont etre ecoutees
   config = {
@@ -400,6 +469,59 @@ export class GrosFichiers extends React.Component {
       // console.debug(docsRecu);
       return docsRecu;  // Recuperer avec un then(resultats=>{})
     });
+  }
+
+  uploaderProchainFichier() {
+    // Utilise l'upload Q pour initialiser le prochain upload
+    if(this.uploadEnCours) {
+      console.error("Upload deja en cours");
+      return;
+    }
+
+    if(this.state.uploadsCourants.length > 0){
+      this.uploadEnCours = true;
+
+      // Demander un token (OTP) via websockets
+      webSocketManager.demanderTokenTransfert()
+      .then(token=>{
+        let uploadInfo = this.state.uploadsCourants[0];
+        console.debug("Token obtenu, debut de l'upload de " + uploadInfo.path);
+
+        let data = new FormData();
+        data.append('repertoire_uuid', uploadInfo.repertoire_uuid);
+        data.append('securite', uploadInfo.securite);
+        data.append('grosfichier', uploadInfo.acceptedFile);
+        let config = {
+          headers: {
+            'authtoken': token,
+          },
+          onUploadProgress: this.uploadActions.uploadProgress,
+          //cancelToken: new CancelToken(function (cancel) {
+          // }),
+        }
+
+        return axios.put('/grosFichiers/nouveauFichier', data, config);
+      })
+      .then(msg=>{
+        this.uploadEnCours = false;  // Permet d'enchainer les uploads
+        this.uploadActions.uploadTermine(msg);
+      })
+      .catch(err=>{
+        console.error("Erreur upload, on va reessayer plus tard");
+        console.debug(err);
+        this.uploadRetryTimer = setTimeout(()=>{
+          this.uploadEnCours = false;   // Reset flag pour permettre l'upload
+          this.uploaderProchainFichier();
+        }, 10000);
+      })
+      .finally(()=>{
+        this.uploadEnCours = false;
+      });
+    } else {
+      this.uploadEnCours = false;
+      console.debug("Il n'y a rien a uploader.");
+    }
+
   }
 
   afficherProprietesFichier(uuidFichier) {
@@ -576,6 +698,18 @@ export class GrosFichiers extends React.Component {
   render() {
     // Determiner le contenu de l'ecran en fonction de l'etat
     // Affichage: 1.fichier, ou 2.repertoire, ou 3.repertoire racine
+    let uploadProgress = null;
+    if(this.state.uploadsCourants.length > 0 || this.state.uploadsCompletes.length > 0) {
+      uploadProgress = (
+        <div>
+          <FileUploadMonitor
+            uploadsCourants={this.state.uploadsCourants}
+            uploadsCompletes={this.state.uploadsCompletes}
+            />
+        </div>
+      )
+    }
+
     let affichagePrincipal;
     if (this.state.fichierCourant) {
       affichagePrincipal = (
@@ -593,14 +727,17 @@ export class GrosFichiers extends React.Component {
         <div>
           <NavigationRepertoire
             repertoireCourant={this.state.repertoireCourant}
+            uploadActions={this.uploadActions}
+
             {...this.state.repertoiresZones}
             downloadUrl={this.state.downloadUrl}
 
             afficherPopupCreerRepertoire={this.afficherPopupCreerRepertoire}
             {...this.repertoireActions}
+
             />
 
-          <br/>
+          {uploadProgress}
 
           <PanneauFichiersIcones
             repertoire={this.state.repertoireCourant}
