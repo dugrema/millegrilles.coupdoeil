@@ -441,6 +441,9 @@ export class GrosFichiers extends React.Component {
       });
 
     },
+    clearUploadsCompletes: (event) => {
+      this.setState({uploadsCompletes: []});  // Nouvelle liste
+    }
   }
 
   // Configuration statique du composant:
@@ -705,6 +708,7 @@ export class GrosFichiers extends React.Component {
           <FileUploadMonitor
             uploadsCourants={this.state.uploadsCourants}
             uploadsCompletes={this.state.uploadsCompletes}
+            {...this.uploadActions}
             />
         </div>
       )

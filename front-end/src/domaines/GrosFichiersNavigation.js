@@ -278,7 +278,14 @@ export class FileUploadMonitor extends React.Component {
       );
     }
 
-    return liste;
+    return (
+      <div>
+        <div>
+          <button onClick={this.props.clearUploadsCompletes}>Clear</button>
+          </div>
+        {liste}
+      </div>
+    );
   }
 
   render() {
