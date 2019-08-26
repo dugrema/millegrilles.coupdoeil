@@ -197,16 +197,25 @@ export class GrosFichiers extends React.Component {
 
     telechargerEvent: event => {
       let uuidfichier = event.currentTarget.value;
-      let fuuid_version = event.currentTarget.dataset.fuuid;
-      let securite = event.currentTarget.dataset.securite;
+      let dataset = event.currentTarget.dataset;
+      let fuuid_version = dataset.fuuid;
+      let securite = dataset.securite;
+
+      let opts = {};
+      if(dataset.notarget) {
+        console.log("DOWNLOAD NO TARGET");
+        opts.target = 'none';
+      }
+
       this.fichierActions.telecharger({
-        uuidfichier: uuidfichier,
+        uuidfichier,
         fuuid: fuuid_version,
-        securite: securite,
+        securite,
+        opts,
       });
     },
 
-    telecharger: ({uuidfichier, fuuid, securite}) => {
+    telecharger: ({uuidfichier, fuuid, securite, opts}) => {
       // Trouver fichier dans information repertoire
       let infoRepertoire = this.state.repertoireCourant || this.state.repertoireRacine;
       console.debug(infoRepertoire);
@@ -237,6 +246,13 @@ export class GrosFichiers extends React.Component {
         form.contenttype.value = contentType;
         form.authtoken.value = token;
         form.securite.value = securite;
+
+        if(opts) {
+          if(opts.target || opts.target === 'none') {
+            console.log("Form Target null");
+            form.target = '_self';
+          }
+        }
 
         console.debug("2. Submit preparation, download " + form.action + ", recu token " + form.authtoken.value);
         form.submit(); // Token pret, submit.

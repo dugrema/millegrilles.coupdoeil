@@ -201,6 +201,14 @@ export class AffichageFichier extends React.Component {
             data-securite={version.securite}>
             Download
           </button>
+          <button
+            onClick={this.props.telechargerEvent}
+            value={fichierCourant.uuid}
+            data-fuuid={version.fuuid}
+            data-securite={version.securite}
+            data-notarget='true'>
+            Download no-tab
+          </button>
         </li>
       );
     })
