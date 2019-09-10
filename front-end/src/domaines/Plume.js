@@ -15,7 +15,10 @@ export class Plume extends React.Component {
 
   fonctionsEdition = {
     fermerEditeur: event => {
-      this.setState({editionDocument: null});
+      this.setState({editionDocument: null, affichageDocument: null});
+    },
+    fermerAffichage: event => {
+      this.setState({affichageDocument: null});
     }
   }
 
@@ -34,12 +37,15 @@ export class Plume extends React.Component {
 
       let domaine = 'millegrilles.domaines.Plume.supprimerDocument';
 
+      // Changement d'affichage si on a cliquer dans Edition ou Afficher
+      this.setState({affichageDocument: null, editionDocument: null});
+
       return webSocketManager.transmettreTransaction(domaine, transaction);
     },
     afficherDocument: event => {
       let uuid = event.currentTarget.value;
       this.setState({affichageDocument: uuid});
-    }
+    },
   }
 
   fonctionsPublication = {
@@ -61,8 +67,14 @@ export class Plume extends React.Component {
       contenu = (
         <PlumeEditeur
           fonctionsEdition={this.fonctionsEdition}
-          contenuDocument={this.state.contenuDocument}
           editionDocument={this.state.editionDocument} />
+      )
+    } else if(this.state.affichageDocument) {
+      contenu = (
+        <PlumeAfficher
+          fonctionsEdition={this.fonctionsEdition}
+          fonctionsGestion={this.fonctionsGestion}
+          affichageDocument={this.state.affichageDocument} />
       )
     } else {
       contenu = (
@@ -175,7 +187,7 @@ class ListeDocumentsPlume extends React.Component {
 
         liste.push(
           <div key={doc.uuid}>
-            {titre}
+            <button className='aslink' onClick={this.props.fonctionsGestion.afficherDocument} value={doc.uuid}>{titre}</button>
             <button onClick={this.props.fonctionsGestion.editerDocument} value={doc.uuid}>Editer</button>
             <button onClick={this.supprimerDocument} value={doc.uuid}>Supprimer</button>
           </div>
@@ -202,6 +214,139 @@ class ListeDocumentsPlume extends React.Component {
       </div>
     );
   }
+}
+
+class PlumeAfficher extends React.Component {
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      uuid: props.affichageDocument,
+      titre: '',
+      dateCreation: '',
+      dateModification: '',
+      categories: '',
+      texte: '',
+      quilldelta: '',
+      securite: '2.prive',
+      documentPret: false,
+    }
+
+    // Bind des fonctions
+  }
+
+  chargerDocument(uuid) {
+    let domaine = 'requete.millegrilles.domaines.Plume';
+    let requete = {
+      'filtre': {
+          '_mg-libelle': 'plume',
+          'uuid': uuid,
+      },
+    };
+    let requetes = {'requetes': [requete]};
+    webSocketManager.transmettreRequete(domaine, requetes)
+    .then( docsRecu => {
+      // console.debug("Reponse requete, document recu");
+      // console.debug(docsRecu);
+      return docsRecu[0][0];  // Recuperer avec un then(resultats=>{})
+   })
+   .then(msg => {
+     this.setState({
+       titre: msg.titre,
+       categories: msg.categories.join(' '),
+       dateModification: msg['_mg-derniere-modification'],
+       dateCreation: msg['_mg-creation'],
+       texte: msg.texte,
+       quilldelta: msg.quilldelta,
+       securite: msg.securite,
+       documentPret: true,
+     });
+
+   })
+   .catch(err=>{
+     console.error("Erreur requete document plume");
+     console.error(err);
+   });
+  }
+
+  componentDidMount() {
+    this.chargerDocument(this.state.uuid);
+  }
+
+  afficherEntete() {
+    return (
+      <div className="w3-card w3-round w3-white">
+        <div className="w3-container w3-padding">
+          <h2 className="w3-opacity">Plume</h2>
+        </div>
+      </div>
+    );
+  }
+
+  afficherInfoDoc() {
+    return (
+      <div className="w3-card w3-round w3-white">
+        <div className="w3-container w3-padding">
+          <div>Titre document : {this.state.titre}</div>
+          <div>Date création : {dateformatter.format_datetime(this.state.dateCreation)}</div>
+          <div>Derniere modification : {dateformatter.format_datetime(this.state.dateModification)}</div>
+          <div>Catégories : {this.state.categories}</div>
+        </div>
+      </div>
+    );
+  }
+
+  afficherActions() {
+    return (
+      <div className="w3-card w3-round w3-white">
+        <div className="w3-container w3-padding">
+          <button onClick={this.props.fonctionsGestion.editerDocument} value={this.state.uuid}>Editer</button>
+          <button onClick={this.props.fonctionsGestion.supprimerDocument}>Supprimer</button>
+          <button onClick={this.props.fonctionsEdition.fermerAffichage}>Fermer</button>
+        </div>
+      </div>
+    );
+  }
+
+  afficherQuillEditeur() {
+    let modules={toolbar: null};
+    return (
+      <div className="w3-card w3-round w3-white">
+        <div className="w3-container w3-padding">
+          <ReactQuill ref={this.refEditeurQuill} theme="snow"
+                      defaultValue={this.state.quilldelta}
+                      onChange={this.changerTexte}
+                      readOnly={true}
+                      modules={modules}/>
+        </div>
+      </div>
+    )
+  }
+
+  render() {
+    let mainArea;
+    if(this.state.documentPret) {
+      mainArea = (
+        <div>
+          {this.afficherInfoDoc()}
+          {this.afficherActions()}
+          {this.afficherQuillEditeur()}
+        </div>
+      );
+    } else {
+      mainArea = (
+        <div>Chargement du document en cours</div>
+      )
+    }
+    return (
+      <div className="w3-col m12">
+        {this.afficherEntete()}
+        {mainArea}
+      </div>
+    );
+  }
+
 }
 
 class PlumeEditeur extends React.Component {
