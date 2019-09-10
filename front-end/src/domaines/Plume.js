@@ -2,6 +2,7 @@ import React from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import './Plume.css';
+import {dateformatter} from '../formatters.js'
 
 import webSocketManager from '../WebSocketManager';
 
@@ -13,13 +14,6 @@ export class Plume extends React.Component {
   }
 
   fonctionsEdition = {
-    sauvegarder: contenuDocument => {
-      console.debug("Sauvegarder document");
-      console.debug(contenuDocument);
-
-      let contents = JSON.stringify(contenuDocument.texte);
-      console.debug(contents);
-    },
     fermerEditeur: event => {
       this.setState({editionDocument: null});
     }
@@ -67,7 +61,8 @@ export class Plume extends React.Component {
       contenu = (
         <PlumeEditeur
           fonctionsEdition={this.fonctionsEdition}
-          contenuDocument={this.state.contenuDocument} />
+          contenuDocument={this.state.contenuDocument}
+          editionDocument={this.state.editionDocument} />
       )
     } else {
       contenu = (
@@ -145,8 +140,8 @@ class ListeDocumentsPlume extends React.Component {
     let requetes = {'requetes': [requete]};
     webSocketManager.transmettreRequete(domaine, requetes)
     .then( docsRecu => {
-      console.debug("Reponse requete, documents recu");
-      console.debug(docsRecu);
+      // console.debug("Reponse requete, documents recu");
+      // console.debug(docsRecu);
       return docsRecu[0];  // Recuperer avec un then(resultats=>{})
    })
    .then(listeDocuments => this.setState({listeDocuments: listeDocuments}))
@@ -216,16 +211,24 @@ class PlumeEditeur extends React.Component {
 
     this.refEditeurQuill = React.createRef();
 
+    let uuid = null, documentPret = true;
+    if(props.editionDocument !== 'nouveau') {
+      uuid = props.editionDocument;
+      documentPret = false; // En fait c'est pour indiquer chargement en cours
+    }
+
     this.state = {
+      uuid: uuid,
       titre: '',
-      dateCreation: Math.floor(new Date().getTime()/1000),
-      dateModification: Math.floor(new Date().getTime()/1000),
+      dateCreation: '',
+      dateModification: '',
       categories: '',
       texte: '',
       quilldelta: '',
       securite: '2.prive',
       modifie: false,
       sauvegardeEnCours: false,
+      documentPret: documentPret,
     }
 
     // Bind des fonctions
@@ -241,7 +244,6 @@ class PlumeEditeur extends React.Component {
     this.setState({
       quilldelta: editor.getContents(),
       texte: editor.getText(),
-      dateModification: Math.floor(new Date().getTime()/1000),
       modifie: false,
       sauvegardeEnCours: true,
     }, ()=>{
@@ -264,7 +266,7 @@ class PlumeEditeur extends React.Component {
       .then(msg=>{
         if(msg.uuid) {
           // Nouveau document
-          console.debug("Nouveau document cree: UUID " + msg.uuid);
+          // console.debug("Nouveau document cree: UUID " + msg.uuid);
           this.setState({
             uuid: msg.uuid,
             dateModification: msg['_mg-derniere-modification'],
@@ -272,7 +274,7 @@ class PlumeEditeur extends React.Component {
             sauvegardeEnCours: false,
           });
         } else {
-          console.debug("Modification document completee");
+          // console.debug("Modification document completee");
           this.setState({
             dateModification: msg['_mg-derniere-modification'],
             sauvegardeEnCours: false,
@@ -301,7 +303,7 @@ class PlumeEditeur extends React.Component {
   }
 
   changerTexte(content, delta, source, editor) {
-    this.setState({modifie: true});
+    this.setState({texte: content, modifie: true});
   }
 
   fermerEditeur(event) {
@@ -314,8 +316,55 @@ class PlumeEditeur extends React.Component {
     // }
   }
 
-  componentDidMount() {
+  chargerDocument(uuid) {
+    let domaine = 'requete.millegrilles.domaines.Plume';
+    let requete = {
+      'filtre': {
+          '_mg-libelle': 'plume',
+          'uuid': uuid,
+      },
+    };
+    let requetes = {'requetes': [requete]};
+    webSocketManager.transmettreRequete(domaine, requetes)
+    .then( docsRecu => {
+      // console.debug("Reponse requete, document recu");
+      // console.debug(docsRecu);
+      return docsRecu[0][0];  // Recuperer avec un then(resultats=>{})
+   })
+   .then(msg => {
+     // console.debug("Contenu charge: ");
+     // console.debug(msg);
 
+     this.setState({
+       titre: msg.titre,
+       categories: msg.categories.join(' '),
+       dateModification: msg['_mg-derniere-modification'],
+       dateCreation: msg['_mg-creation'],
+       texte: msg.texte,
+       quilldelta: msg.quilldelta,
+       securite: msg.securite,
+       sauvegardeEnCours: false,
+       documentPret: true,
+     }, ()=>{
+       // console.debug("Etat apres chargement");
+       // console.debug(this.state);
+       // let editor = this.refEditeurQuill.current.getEditor();
+       // editor.setContents(this.state.quilldelta);
+       // this.refEditeurQuill.setContents(this.state.quilldelta);
+     });
+   })
+   .catch(err=>{
+     console.error("Erreur requete documents plume");
+     console.error(err);
+   });
+  }
+
+  componentDidMount() {
+    // Verifier si on edite un fichier existant ou un nouveau fichier
+    if(this.state.uuid) {
+      // Charger le document
+      this.chargerDocument(this.state.uuid);
+    }
   }
 
   afficherEntete() {
@@ -334,10 +383,10 @@ class PlumeEditeur extends React.Component {
         <div className="w3-container w3-padding">
           <div>
             Titre document :
-            <input type="text" value={this.state.titre} size='50' onChange={this.changerTitre}/>
+            <input type="text" value={this.state.titre} size='50' onChange={this.changerTitre} />
           </div>
-          <div>Date création : {this.state.dateCreation}</div>
-          <div>Derniere modification : {this.state.dateModification}</div>
+          <div>Date création : {dateformatter.format_datetime(this.state.dateCreation)}</div>
+          <div>Derniere modification : {dateformatter.format_datetime(this.state.dateModification)}</div>
           <div>
             <span title="tags - minuscules, séparés par des espaces">Catégories</span> :
             <input type="text" value={this.state.categories} size='50' onChange={this.changerCategories}/>
@@ -366,19 +415,32 @@ class PlumeEditeur extends React.Component {
         <div className="w3-container w3-padding">
           <ReactQuill ref={this.refEditeurQuill} theme="snow"
                       defaultValue={this.state.quilldelta}
-                      onChange={this.changerTexte} />
+                      onChange={this.changerTexte}
+                      />
         </div>
       </div>
-    );
+    )
   }
 
   render() {
+    let mainArea;
+    if(this.state.documentPret) {
+      mainArea = (
+        <div>
+          {this.afficherInfoDoc()}
+          {this.afficherActions()}
+          {this.afficherQuillEditeur()}
+        </div>
+      );
+    } else {
+      mainArea = (
+        <div>Chargement du document en cours</div>
+      )
+    }
     return (
       <div className="w3-col m12">
         {this.afficherEntete()}
-        {this.afficherInfoDoc()}
-        {this.afficherActions()}
-        {this.afficherQuillEditeur()}
+        {mainArea}
       </div>
     );
   }
