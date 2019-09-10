@@ -233,7 +233,9 @@ class WebSocketApp {
       rabbitMQ.singleton.transmettreTransactionFormattee(
         transaction, routingKey
       ).then(msg=>{
-        cb(msg);
+        let messageContent = msg.content.toString('utf-8');
+        let json_message = JSON.parse(messageContent);
+        cb(json_message);
       }).catch(err =>{
         console.error("Erreur transmission transaction");
         console.error(err);
