@@ -5,11 +5,13 @@ import React from 'react';
 import {SenseursPassifs} from './domaines/SenseursPassifs';
 import {GrosFichiers} from './domaines/GrosFichiers';
 import {InterfacePrincipale} from './domaines/Principale.js';
+import {Plume} from './domaines/Plume.js';
 
 const domainesConnus = {
   'SenseursPassifs': SenseursPassifs,
   'GrosFichiers': GrosFichiers,
   'Principale': InterfacePrincipale,
+  'Plume': Plume,
 };
 
 export function SectionContenu(props) {
