@@ -5,14 +5,25 @@ import './Plume.css';
 
 export class Plume extends React.Component {
 
+  refEditeurQuill = React.createRef();
+
   state = {
     editionDocument: null,
     affichageDocument: null,
+    contenuDocument: {
+      titre: null,
+      dateCreation: null,
+      dateModification: null,
+      categories: null,
+      texte: null,
+      securite: '2.prive',
+    },
   }
 
   fonctionsEdition = {
     sauvegarder: event => {
-
+      let editor = this.refEditeurQuill.current.getEditor();
+      console.log(editor.getContents());
     },
     appliquerDeltaLocal: event => {
 
@@ -52,7 +63,9 @@ export class Plume extends React.Component {
     if(this.state.editionDocument) {
       contenu = (
         <PlumeEditeur
-          fonctionsEdition={this.fonctionsEdition}/>
+          fonctionsEdition={this.fonctionsEdition}
+          contenuDocument={this.state.contenuDocument}
+          refEditeurQuill={this.refEditeurQuill} />
       )
     } else {
       contenu = (
@@ -82,15 +95,6 @@ export class Plume extends React.Component {
 
 class PlumeEditeur extends React.Component {
 
-  state = {
-    titre: null,
-    dateCreation: null,
-    dateModification: null,
-    categories: null,
-    texte: null,
-    securite: '2.prive',
-  }
-
   afficherEntete() {
     return (
       <div className="w3-card w3-round w3-white">
@@ -113,11 +117,23 @@ class PlumeEditeur extends React.Component {
     );
   }
 
+  afficherActions() {
+    return (
+      <div className="w3-card w3-round w3-white">
+        <div className="w3-container w3-padding">
+          <button
+            onClick={this.props.fonctionsEdition.sauvegarder}>Sauvegarder</button>
+        </div>
+      </div>
+    );
+  }
+
   afficherQuillEditeur() {
     return (
       <div className="w3-card w3-round w3-white">
         <div className="w3-container w3-padding">
-          <ReactQuill value={this.state.texte}
+          <ReactQuill ref={this.props.refEditeurQuill} theme="snow"
+                      value={this.props.contenuDocument.texte}
                       onChange={this.props.fonctionsEdition.changementQuill} />
         </div>
       </div>
@@ -129,6 +145,7 @@ class PlumeEditeur extends React.Component {
       <div className="w3-col m12">
         {this.afficherEntete()}
         {this.afficherInfoDoc()}
+        {this.afficherActions()}
         {this.afficherQuillEditeur()}
       </div>
     );
