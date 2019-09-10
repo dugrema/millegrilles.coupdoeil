@@ -10,7 +10,6 @@ export class Plume extends React.Component {
   state = {
     editionDocument: null,
     affichageDocument: null,
-    listeDocuments: null,
   }
 
   fonctionsEdition = {
@@ -31,40 +30,21 @@ export class Plume extends React.Component {
       this.setState({editionDocument: 'nouveau'});
     },
     editerDocument: event => {
-
+      let uuid = event.currentTarget.value;
+      this.setState({editionDocument: uuid});
     },
-    listerDocuments: event => {
-      let domaine = 'requete.millegrilles.domaines.Plume';
-      let requete = {
-        'filtre': {
-            '_mg-libelle': 'plume',
-            // 'categories': {'$in': ['cat1']},
-        },
-        // 'sort': [('_mg-derniere-modification', -1)],
-        'projection': {
-            'uuid': 1,
-            '_mg-creation': 1,
-            '_mg-derniere-modification': 1,
-            'categories': 1,
-            'securite': 1,
-            'titre': 1,
-        }
-      };
-      let requetes = {'requetes': [requete]};
-      webSocketManager.transmettreRequete(domaine, requetes)
-      .then( docsRecu => {
-        console.debug("Reponse requete, documents recu");
-        console.debug(docsRecu);
-        return docsRecu[0][0];  // Recuperer avec un then(resultats=>{})
-     })
-     .then(listeDocuments => this.setState({listeDocuments: listeDocuments}))
-     .catch(err=>{
-       console.error("Erreur requete documents plume");
-       console.error(err);
-     });
+    supprimerDocument: uuid => {
+      let transaction = {
+        uuid: uuid,
+      }
+
+      let domaine = 'millegrilles.domaines.Plume.supprimerDocument';
+
+      return webSocketManager.transmettreTransaction(domaine, transaction);
     },
     afficherDocument: event => {
-
+      let uuid = event.currentTarget.value;
+      this.setState({affichageDocument: uuid});
     }
   }
 
@@ -78,8 +58,6 @@ export class Plume extends React.Component {
   }
 
   componentDidMount() {
-    // Faire requete pour charger la liste des documents
-    this.fonctionsGestion.listerDocuments();
   }
 
   render() {
@@ -94,6 +72,7 @@ export class Plume extends React.Component {
     } else {
       contenu = (
         <div className="w3-col m12">
+
           <div className="w3-card w3-round w3-white">
             <div className="w3-container w3-padding">
               <h2 className="w3-opacity">Plume</h2>
@@ -102,6 +81,10 @@ export class Plume extends React.Component {
                 onClick={this.fonctionsGestion.nouveauDocument}>Nouveau document</button>
             </div>
           </div>
+
+          <ListeDocumentsPlume
+            fonctionsGestion={this.fonctionsGestion} />
+
         </div>
       )
     }
@@ -115,6 +98,115 @@ export class Plume extends React.Component {
     )
   }
 
+}
+
+class ListeDocumentsPlume extends React.Component {
+
+  state = {
+    listeDocuments: null,
+  }
+
+  supprimerDocument = event => {
+    let uuid = event.currentTarget.value;
+    this.props.fonctionsGestion.supprimerDocument(uuid)
+    .then(msg=>{
+      let nouvelleListe = [];
+      for(let idx in this.state.listeDocuments) {
+        let doc = this.state.listeDocuments[idx];
+        if(doc.uuid !== uuid) {
+          nouvelleListe.push(doc);
+        }
+      }
+      this.setState({listeDocuments: nouvelleListe});
+    })
+    .catch(err=>{
+      console.error("Erreur suppression document");
+      console.error(err);
+    })
+  }
+
+  listerDocuments(event) {
+    let domaine = 'requete.millegrilles.domaines.Plume';
+    let requete = {
+      'filtre': {
+          '_mg-libelle': 'plume',
+          // 'categories': {'$in': ['cat1']},
+      },
+      // 'sort': [('_mg-derniere-modification', -1)],
+      'projection': {
+          'uuid': 1,
+          '_mg-creation': 1,
+          '_mg-derniere-modification': 1,
+          'categories': 1,
+          'securite': 1,
+          'titre': 1,
+      }
+    };
+    let requetes = {'requetes': [requete]};
+    webSocketManager.transmettreRequete(domaine, requetes)
+    .then( docsRecu => {
+      console.debug("Reponse requete, documents recu");
+      console.debug(docsRecu);
+      return docsRecu[0];  // Recuperer avec un then(resultats=>{})
+   })
+   .then(listeDocuments => this.setState({listeDocuments: listeDocuments}))
+   .catch(err=>{
+     console.error("Erreur requete documents plume");
+     console.error(err);
+   });
+  }
+
+  componentDidMount() {
+    // Faire requete pour charger la liste des documents
+    this.listerDocuments();
+  }
+
+  genererListe() {
+    let liste = [];
+    if(this.state.listeDocuments) {
+      let listeDocuments = this.state.listeDocuments;
+      for(var idx in listeDocuments) {
+        let doc = listeDocuments[idx];
+        // console.debug("Document: ");
+        // console.debug(idx);
+        // console.debug(doc);
+
+        let titre;
+        if(doc.titre) {
+          titre = doc.titre;
+        } else {
+          titre = doc.uuid;
+        }
+
+        liste.push(
+          <div key={doc.uuid}>
+            {titre}
+            <button onClick={this.props.fonctionsGestion.editerDocument} value={doc.uuid}>Editer</button>
+            <button onClick={this.supprimerDocument} value={doc.uuid}>Supprimer</button>
+          </div>
+        );
+      }
+    }
+
+    return (
+      <div>
+        {liste}
+      </div>
+    );
+  }
+
+  render() {
+    let liste = this.genererListe();
+
+    return (
+      <div className="w3-card w3-round w3-white">
+        <div className="w3-container w3-padding">
+          <h2 className="w3-opacity">Liste documents</h2>
+          {liste}
+        </div>
+      </div>
+    );
+  }
 }
 
 class PlumeEditeur extends React.Component {
