@@ -5,31 +5,18 @@ import './Plume.css';
 
 export class Plume extends React.Component {
 
-  refEditeurQuill = React.createRef();
-
   state = {
     editionDocument: null,
     affichageDocument: null,
-    contenuDocument: {
-      titre: null,
-      dateCreation: null,
-      dateModification: null,
-      categories: null,
-      texte: null,
-      securite: '2.prive',
-    },
   }
 
   fonctionsEdition = {
-    sauvegarder: event => {
-      let editor = this.refEditeurQuill.current.getEditor();
-      console.log(editor.getContents());
+    sauvegarder: contenuDocument => {
+      console.debug("Sauvegarder document");
+      console.debug(contenuDocument);
     },
-    appliquerDeltaLocal: event => {
-
-    },
-    changementQuill: event => {
-
+    fermerEditeur: event => {
+      this.setState({editionDocument: null});
     }
   }
 
@@ -64,8 +51,7 @@ export class Plume extends React.Component {
       contenu = (
         <PlumeEditeur
           fonctionsEdition={this.fonctionsEdition}
-          contenuDocument={this.state.contenuDocument}
-          refEditeurQuill={this.refEditeurQuill} />
+          contenuDocument={this.state.contenuDocument} />
       )
     } else {
       contenu = (
@@ -95,6 +81,62 @@ export class Plume extends React.Component {
 
 class PlumeEditeur extends React.Component {
 
+  constructor(props) {
+    super(props);
+
+    this.refEditeurQuill = React.createRef();
+
+    this.state = {
+      titre: '',
+      dateCreation: Math.floor(new Date().getTime()/1000),
+      dateModification: Math.floor(new Date().getTime()/1000),
+      categories: '',
+      texte: '',
+      securite: '2.prive',
+      modifie: false,
+    }
+
+    // Bind des fonctions
+    this.sauvegarder = this.sauvegarder.bind(this);
+    this.changerTitre = this.changerTitre.bind(this);
+    this.changerTexte = this.changerTexte.bind(this);
+    this.fermerEditeur = this.fermerEditeur.bind(this);
+  }
+
+  sauvegarder() {
+    let editor = this.refEditeurQuill.current.getEditor();
+    this.setState({
+      texte: editor.getContents(),
+      dateModification: Math.floor(new Date().getTime()/1000),
+      modifie: false,
+    }, ()=>{
+      this.props.fonctionsEdition.sauvegarder({...this.state})
+    });
+  }
+
+  changerTitre(event) {
+    let value = event.currentTarget.value;
+    this.setState({titre: value, modifie: true});
+  }
+
+  changerTexte(content, delta, source, editor) {
+    this.setState({modifie: true});
+  }
+
+  fermerEditeur(event) {
+    // if(this.state.modifie) {
+    //   console.debug("Document modifie");
+    //   let resultat = window.confirm("Document modifie, sauvegarder?");
+    //   console.debug(resultat);
+    // } else {
+    this.props.fonctionsEdition.fermerEditeur();
+    // }
+  }
+
+  componentDidMount() {
+
+  }
+
   afficherEntete() {
     return (
       <div className="w3-card w3-round w3-white">
@@ -109,7 +151,10 @@ class PlumeEditeur extends React.Component {
     return (
       <div className="w3-card w3-round w3-white">
         <div className="w3-container w3-padding">
-          <div>Titre document : </div>
+          <div>
+            Titre document :
+            <input type="text" value={this.state.titre} onChange={this.changerTitre}/>
+          </div>
           <div>Date création : </div>
           <div><span title="(tags - minuscules, séparés par des espaces">Catégories</span> : </div>
         </div>
@@ -122,7 +167,9 @@ class PlumeEditeur extends React.Component {
       <div className="w3-card w3-round w3-white">
         <div className="w3-container w3-padding">
           <button
-            onClick={this.props.fonctionsEdition.sauvegarder}>Sauvegarder</button>
+            onClick={this.sauvegarder}>Sauvegarder</button>
+          <button
+            onClick={this.fermerEditeur}>Fermer</button>
         </div>
       </div>
     );
@@ -132,9 +179,9 @@ class PlumeEditeur extends React.Component {
     return (
       <div className="w3-card w3-round w3-white">
         <div className="w3-container w3-padding">
-          <ReactQuill ref={this.props.refEditeurQuill} theme="snow"
-                      value={this.props.contenuDocument.texte}
-                      onChange={this.props.fonctionsEdition.changementQuill} />
+          <ReactQuill ref={this.refEditeurQuill} theme="snow"
+                      defaultValue={this.state.texte}
+                      onChange={this.changerTexte} />
         </div>
       </div>
     );
