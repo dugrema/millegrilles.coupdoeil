@@ -555,13 +555,52 @@ class PlumeEditeur extends React.Component {
   }
 
   afficherQuillEditeur() {
+    let toolbarOptions = [
+      ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+        ['blockquote', 'code-block'],
+
+        [{ 'header': 1 }, { 'header': 2 }],               // custom button values
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+        [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+        [{ 'direction': 'rtl' }],                         // text direction
+
+        [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+
+        [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+        [{ 'font': [] }],
+        [{ 'align': [] }],
+
+        //['link', 'image', 'imageLink'],
+        ['link', 'image'],
+
+        ['clean']                                         // remove formatting button
+    ];
+    // function imageHandler() {
+    //     var range = this.quill.getSelection();
+    //     var value = prompt('What is the image URL');
+    //     if(value){
+    //         this.quill.insertEmbed(range.index, 'image', value, 'USER');
+    //     }
+    // }
+
+    let modules = {
+      toolbar: {
+        container: toolbarOptions,
+        handlers: {
+          // imageLink: imageHandler
+        }
+      }
+    }
+
     return (
       <div className="w3-card w3-round w3-white">
         <div className="w3-container w3-padding">
           <ReactQuill ref={this.refEditeurQuill} theme="snow"
                       defaultValue={this.state.quilldelta}
                       onChange={this.changerTexte}
-                      />
+                      modules={modules} />
         </div>
       </div>
     )
