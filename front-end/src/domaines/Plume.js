@@ -46,6 +46,15 @@ export class Plume extends React.Component {
       let uuid = event.currentTarget.value;
       this.setState({affichageDocument: uuid});
     },
+    publierDocument: event => {
+      let uuid = event.currentTarget.value;
+      let transaction = {
+        uuid: uuid,
+      }
+      let domaine = 'millegrilles.domaines.Plume.publierDocument';
+
+      return webSocketManager.transmettreTransaction(domaine, transaction);
+    }
   }
 
   fonctionsPublication = {
@@ -257,6 +266,7 @@ class PlumeAfficher extends React.Component {
        categories: msg.categories.join(' '),
        dateModification: msg['_mg-derniere-modification'],
        dateCreation: msg['_mg-creation'],
+       datePublication: msg['datePublication'],
        texte: msg.texte,
        quilldelta: msg.quilldelta,
        securite: msg.securite,
@@ -291,6 +301,7 @@ class PlumeAfficher extends React.Component {
           <div>Titre document : {this.state.titre}</div>
           <div>Date création : {dateformatter.format_datetime(this.state.dateCreation)}</div>
           <div>Derniere modification : {dateformatter.format_datetime(this.state.dateModification)}</div>
+          <div>Date publication : {dateformatter.format_datetime(this.state.datePublication)}</div>
           <div>Catégories : {this.state.categories}</div>
         </div>
       </div>
@@ -302,7 +313,8 @@ class PlumeAfficher extends React.Component {
       <div className="w3-card w3-round w3-white">
         <div className="w3-container w3-padding">
           <button onClick={this.props.fonctionsGestion.editerDocument} value={this.state.uuid}>Editer</button>
-          <button onClick={this.props.fonctionsGestion.supprimerDocument}>Supprimer</button>
+          <button onClick={this.props.fonctionsGestion.supprimerDocument} value={this.state.uuid}>Supprimer</button>
+          <button onClick={this.props.fonctionsGestion.publierDocument} value={this.state.uuid}>Publier</button>
           <button onClick={this.props.fonctionsEdition.fermerAffichage}>Fermer</button>
         </div>
       </div>
