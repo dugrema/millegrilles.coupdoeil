@@ -27,7 +27,7 @@ class RabbitMQWrapper {
 
   connect(url) {
     this.url = url;
-    this._connect();
+    return this._connect();
   }
 
   _connect() {
@@ -52,7 +52,7 @@ class RabbitMQWrapper {
       }
       options['credentials'] = amqplib.credentials.external();
 
-      amqplib.connect(this.url, options)
+      return amqplib.connect(this.url, options)
       .then( conn => {
         console.debug("Connexion a RabbitMQ reussie");
         this.connection = conn;
@@ -214,20 +214,74 @@ class RabbitMQWrapper {
 
   // Utiliser cette methode pour simplifier le formattage d'une transaction.
   // Il faut fournir le contenu de la transaction et le domaine (routing)
-  transmettreTransactionFormattee(message, domaine) {
-    let messageFormatte = message;  // Meme objet si ca cause pas de problemes
-    let infoTransaction = this._formatterInfoTransaction(domaine);
+  transmettreTransactionFormattee(message, domaine, domaineCrypte) {
+    // Fare un shallow copy du message
+    let messageFormatte = {};
+    Object.assign(messageFormatte, message);
+
+    const routingKey = 'transaction.nouvelle';
+    const infoTransaction = this._formatterInfoTransaction(domaine);
     const correlation = infoTransaction['uuid-transaction'];
     messageFormatte['en-tete'] = infoTransaction;
 
-    // Signer le message avec le certificat
-    this._signerMessage(messageFormatte);
-    const jsonMessage = JSON.stringify(message);
+    // Crypter le contenu au besoin
+    let promise;
+    if(messageFormatte['a_crypter']) {
+      // Enlever element a_cypter de la transaction principale
+      let contenuACrypter = messageFormatte['a_crypter'];
+      delete messageFormatte['a_crypter'];
+      promise = this._transmettreMessageCle(messageFormatte, correlation);
+    } else {
+      promise = new Promise((resolve, reject)=>{resolve(messageFormatte)});
+    }
 
-    // Transmettre la nouvelle transaction. La promise permet de traiter
-    // le message de reponse.
-    let routingKey = 'transaction.nouvelle';
-    let promise = this._transmettre(routingKey, jsonMessage, correlation);
+    // Utiliser la promise pour recuperer le contenu du message
+    // Si le message contient un element 'a_crypter', il sera remplace
+    // par crypte='... contenu base64 ...'.
+    promise.then(messageATransmettre=>{
+      // Signer le message avec le certificat
+      this._signerMessage(messageATransmettre);
+      const jsonMessage = JSON.stringify(messageATransmettre);
+
+      // Transmettre la nouvelle transaction. La promise permet de traiter
+      // le message de reponse.
+      return this._transmettre(routingKey, jsonMessage, correlation);
+    })
+
+    return promise;
+  }
+
+  _transmettreMessageCle(contenuACrypter, correlation) {
+    let promise = pki.crypterContenu(contenuACrypter)
+    .then(({contenuCrypte, encryptedSecretKey, iv})=>{
+      // Inserer contenu crypte dans message
+      messageFormatte['crypte'] = contenuCrypte;
+
+      // Transmettre transaction pour la cle
+      let infoTransactionCle = this._formatterInfoTransaction(domaineCrypte);
+      let transactionCle = {
+        domaine: domaineCrypte,
+        'identificateurs_document': {
+          uuid: correlation,
+        },
+        fingerprint: 'abcd',
+        cle: encryptedSecretKey,
+        iv: iv,
+      };
+
+      // Signer le message avec le certificat
+      this._signerMessage(transactionCle);
+      const jsonMessageCle = JSON.stringify(transactionCle);
+
+      // Transmettre la nouvelle transaction. La promise permet de traiter
+      // le message de reponse.
+      let correlationCle = infoTransaction['uuid-transaction'];
+
+      return this._transmettre(routingKey, jsonMessageCle, correlationCle)
+      .then(()=>{
+        return contenuCrypte;
+      });
+    })
 
     return promise;
   }

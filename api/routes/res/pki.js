@@ -1,6 +1,8 @@
 const crypto = require('crypto');
+const forge = require('node-forge');
 const x509 = require('x509');
 const stringify = require('json-stable-stringify');
+const rabbitMQ = require('./rabbitMQ');
 const fs = require('fs');
 
 class PKIUtils {
@@ -18,6 +20,7 @@ class PKIUtils {
     this.cle = null;
     this.cert = null;
     this.ca = null;
+    this.certificatMaitreDesCles = null;
 
     this.chargerPEMs();
     this._verifierCertificat();
@@ -120,6 +123,76 @@ class PKIUtils {
 
     return transactionCertificat;
   }
+
+  demanderCertificatMaitreDesCles() {
+    if(this.certificatMaitreDesCles) {
+      return new Promise((resolve, reject) => {
+        resolve(this.certificatMaitreDesCles);
+      });
+    } else {
+      let objet_crypto = this;
+      console.debug("Demander certificat MaitreDesCles");
+      var requete = {
+        '_evenements': 'certMaitreDesCles'
+      }
+      var routingKey = 'requete.millegrilles.domaines.MaitreDesCles.certMaitreDesCles';
+      return rabbitMQ.singleton.transmettreRequete(routingKey, requete)
+      .then(reponse=>{
+        let messageContent = decodeURIComponent(escape(reponse.content));
+        let json_message = JSON.parse(messageContent);
+        // console.debug("Reponse cert maitre des cles");
+        // console.debug(messageContent);
+        objet_crypto.certificatMaitreDesCles = forge.pki.certificateFromPem(json_message.certificat);
+        return objet_crypto.certificatMaitreDesCles;
+      })
+    }
+  }
+
+  crypterContenu(contenu) {
+    // Crypte un dict en JSON et retourne la valeur base64 pour
+    // le contenu et la cle secrete cryptee.
+    let cipherEtCle = this._creerCipherKey();
+    let cipher = cipherEtCle.cipher,
+        encryptedSecretKey = cipherEtCle.encryptedSecretKey,
+        iv = cipherEtCle.iv;
+
+    let contenuString = JSON.stringify(message);
+    let contenuCrypte = cipher.update(contenuString, 'utf8', 'base64');
+    contenuCrypte += cipher.final('base64');
+
+    console.debug("Contenu crypte: ");
+    console.debug(contenuCrypte);
+
+    return {contenuCrypte, encryptedSecretKey, iv};
+  }
+
+  _creerCipherKey() {
+    var cipher = crypto.createCipheriv(this.algorithm, key, iv);
+
+    // Encoder la cle secrete
+    // Convertir buffer en bytes string pour node-forge
+    var keyByteString = forge.util.bytesToHex(key);
+    var encryptedSecretKey = this.certificat.publicKey.encrypt(keyByteString, this.rsaAlgorithm, {
+      md: forge.md.sha256.create(),
+      mgf1: {
+        md: forge.md.sha256.create()
+      }
+    });
+    encryptedSecretKey = forge.util.encode64(encryptedSecretKey);
+
+    return {cipher, encryptedSecretKey, iv};
+  }
+
+  _genererKeyAndIV(cb) {
+    var lenBuffer = 16 + 32;
+    crypto.pseudoRandomBytes(lenBuffer, (err, pseudoRandomBytes) => {
+      // Creer deux buffers, iv (16 bytes) et password (24 bytes)
+      var iv = pseudoRandomBytes.slice(0, 16);
+      var key = pseudoRandomBytes.slice(16, pseudoRandomBytes.length);
+      cb(err, {key: key, iv: iv});
+    });
+  }
+
 
 };
 
