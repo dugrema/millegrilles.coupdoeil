@@ -230,8 +230,11 @@ class WebSocketApp {
     socket.on('transaction', (message, cb) => {
       let routingKey = message.routingKey;
       let transaction = message.transaction;
+      let idDocumentCrypte = message.idDocumentCrypte;
+      console.log("Transaction recue");
+      console.log(message);
       rabbitMQ.singleton.transmettreTransactionFormattee(
-        transaction, routingKey
+        transaction, routingKey, idDocumentCrypte
       ).then(msg=>{
         let messageContent = msg.content.toString('utf-8');
         let json_message = JSON.parse(messageContent);

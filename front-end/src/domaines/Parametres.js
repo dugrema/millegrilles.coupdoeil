@@ -1,4 +1,5 @@
 import React from 'react';
+import webSocketManager from '../WebSocketManager';
 
 export class Parametres extends React.Component {
 
@@ -102,6 +103,30 @@ class GestionEmailSmtp extends React.Component {
   soumettre = event => {
     console.debug("Soumettre formulaire: ");
     console.debug(this.state);
+
+    let transaction = {
+      ...this.state,
+    }
+    transaction['a_crypter'] = {
+      motDePasse: this.state.motDePasse
+    }
+    delete transaction['motDePasse'];
+
+    let idDocumentCrypte = {
+      domaine: 'millegrilles.domaines.Parametres',
+      'mg-libelle': 'email.stmp',
+    };
+
+    let domaine = 'millegrilles.domaines.Parametres.modifierEmailSmtp';
+    webSocketManager.transmettreTransaction(domaine, transaction, idDocumentCrypte)
+    .then(reponse=>{
+      // Complet, on retourne a la page Parametres
+      this.props.retourParametres(event);
+    })
+    .catch(err=>{
+      console.error("Erreur sauvegarde");
+      console.error(err);
+    });
   }
 
   renderFormulaire() {

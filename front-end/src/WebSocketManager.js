@@ -75,13 +75,13 @@ class WebSocketManager {
     return promise;
   }
 
-  transmettreTransaction(routingKey, transaction) {
+  transmettreTransaction(routingKey, transaction, idDocumentCrypte) {
     let socket = this.socket;
     let promise = new Promise((resolve, reject) => {
-      let enveloppe = {
-        'routingKey': routingKey,
-        'transaction': transaction
-      };
+      let enveloppe = {routingKey, transaction};
+      if(idDocumentCrypte) {
+        enveloppe['idDocumentCrypte'] = idDocumentCrypte
+      }
 
       // Transmettre requete
       socket.emit('transaction', enveloppe, reponse=>{

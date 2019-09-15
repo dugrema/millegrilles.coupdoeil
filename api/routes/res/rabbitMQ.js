@@ -1,8 +1,11 @@
-var amqplib = require('amqplib');
-var os = require('os');
-var fs = require('fs');
-var uuidv4 = require('uuid/v4');
-var pki = require('./pki.js');
+const amqplib = require('amqplib');
+const os = require('os');
+const fs = require('fs');
+const uuidv4 = require('uuid/v4');
+const pki = require('./pki.js');
+const forge = require('node-forge');
+
+const routingKeyNouvelleTransaction = 'transaction.nouvelle';
 
 class RabbitMQWrapper {
 
@@ -23,6 +26,8 @@ class RabbitMQWrapper {
     // this.setHostname();
 
     this.routingKeyManager = new RoutingKeyManager(this);
+
+    this.certificatMaitreDesCles = null;
   }
 
   connect(url) {
@@ -214,12 +219,11 @@ class RabbitMQWrapper {
 
   // Utiliser cette methode pour simplifier le formattage d'une transaction.
   // Il faut fournir le contenu de la transaction et le domaine (routing)
-  transmettreTransactionFormattee(message, domaine, domaineCrypte) {
+  transmettreTransactionFormattee(message, domaine, idDocumentCrypte) {
     // Fare un shallow copy du message
     let messageFormatte = {};
     Object.assign(messageFormatte, message);
 
-    const routingKey = 'transaction.nouvelle';
     const infoTransaction = this._formatterInfoTransaction(domaine);
     const correlation = infoTransaction['uuid-transaction'];
     messageFormatte['en-tete'] = infoTransaction;
@@ -230,7 +234,11 @@ class RabbitMQWrapper {
       // Enlever element a_cypter de la transaction principale
       let contenuACrypter = messageFormatte['a_crypter'];
       delete messageFormatte['a_crypter'];
-      promise = this._transmettreMessageCle(messageFormatte, correlation);
+      promise = this._transmettreMessageCle(contenuACrypter, correlation, idDocumentCrypte)
+      .then(contenuCrypte=>{
+        messageFormatte['crypte'] = contenuCrypte;
+        return messageFormatte;
+      })
     } else {
       promise = new Promise((resolve, reject)=>{resolve(messageFormatte)});
     }
@@ -245,29 +253,43 @@ class RabbitMQWrapper {
 
       // Transmettre la nouvelle transaction. La promise permet de traiter
       // le message de reponse.
-      return this._transmettre(routingKey, jsonMessage, correlation);
+      return this._transmettre(routingKeyNouvelleTransaction, jsonMessage, correlation);
     })
 
     return promise;
   }
 
-  _transmettreMessageCle(contenuACrypter, correlation) {
-    let promise = pki.crypterContenu(contenuACrypter)
+  _transmettreMessageCle(contenuACrypter, correlation, idDocumentCrypte) {
+    let promise = this.demanderCertificatMaitreDesCles()
+    .then(certificat=>pki.crypterContenu(certificat, contenuACrypter))
     .then(({contenuCrypte, encryptedSecretKey, iv})=>{
-      // Inserer contenu crypte dans message
-      messageFormatte['crypte'] = contenuCrypte;
-
       // Transmettre transaction pour la cle
-      let infoTransactionCle = this._formatterInfoTransaction(domaineCrypte);
+      // Le ma
+      const routingKeyCle = 'millegrilles.domaines.MaitreDesCles.nouvelleCle.document';
+      let infoTransactionCle = this._formatterInfoTransaction(routingKeyCle);
       let transactionCle = {
-        domaine: domaineCrypte,
-        'identificateurs_document': {
-          uuid: correlation,
-        },
+        'en-tete': infoTransactionCle,
         fingerprint: 'abcd',
         cle: encryptedSecretKey,
         iv: iv,
       };
+
+      // Copier les cles du document dans la transaction
+      // domaine, mg-libelle, identificateurs_document
+      // "domaine": "millegrilles.domaines.Parametres",
+      // "mg-libelle": ConstantesParametres.LIBVAL_EMAIL_SMTP,
+      // ConstantesMaitreDesCles.TRANSACTION_CHAMP_IDENTIFICATEURS_DOCUMENTS: {
+      //     "uuid": "39c1e1b0-b6ee-11e9-b0cd-d30e8faa841c",
+      // },
+      for(let key in idDocumentCrypte) {
+        let value = idDocumentCrypte[key];
+        transactionCle[key] = value;
+      }
+
+      // Inserer le uuid de la transaction pour identifier le document
+      transactionCle['identificateurs_document'] = {
+        uuid: correlation,
+      }
 
       // Signer le message avec le certificat
       this._signerMessage(transactionCle);
@@ -275,13 +297,13 @@ class RabbitMQWrapper {
 
       // Transmettre la nouvelle transaction. La promise permet de traiter
       // le message de reponse.
-      let correlationCle = infoTransaction['uuid-transaction'];
+      let correlationCle = infoTransactionCle['uuid-transaction'];
 
-      return this._transmettre(routingKey, jsonMessageCle, correlationCle)
+      return this._transmettre(routingKeyNouvelleTransaction, jsonMessageCle, correlationCle)
       .then(()=>{
         return contenuCrypte;
       });
-    })
+    });
 
     return promise;
   }
@@ -460,6 +482,30 @@ class RabbitMQWrapper {
     })
 
     return promise;
+  }
+
+  demanderCertificatMaitreDesCles() {
+    if(this.certificatMaitreDesCles) {
+      return new Promise((resolve, reject) => {
+        resolve(this.certificatMaitreDesCles);
+      });
+    } else {
+      let objet_crypto = this;
+      console.debug("Demander certificat MaitreDesCles");
+      var requete = {
+        '_evenements': 'certMaitreDesCles'
+      }
+      var routingKey = 'requete.millegrilles.domaines.MaitreDesCles.certMaitreDesCles';
+      return this.transmettreRequete(routingKey, requete)
+      .then(reponse=>{
+        let messageContent = decodeURIComponent(escape(reponse.content));
+        let json_message = JSON.parse(messageContent);
+        // console.debug("Reponse cert maitre des cles");
+        // console.debug(messageContent);
+        objet_crypto.certificatMaitreDesCles = forge.pki.certificateFromPem(json_message.certificat);
+        return objet_crypto.certificatMaitreDesCles;
+      })
+    }
   }
 
 }

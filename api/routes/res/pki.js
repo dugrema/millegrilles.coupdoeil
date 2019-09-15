@@ -2,7 +2,6 @@ const crypto = require('crypto');
 const forge = require('node-forge');
 const x509 = require('x509');
 const stringify = require('json-stable-stringify');
-const rabbitMQ = require('./rabbitMQ');
 const fs = require('fs');
 
 class PKIUtils {
@@ -20,7 +19,9 @@ class PKIUtils {
     this.cle = null;
     this.cert = null;
     this.ca = null;
-    this.certificatMaitreDesCles = null;
+
+    this.algorithm = 'aes256';
+    this.rsaAlgorithm = 'RSA-OAEP';
 
     this.chargerPEMs();
     this._verifierCertificat();
@@ -124,63 +125,50 @@ class PKIUtils {
     return transactionCertificat;
   }
 
-  demanderCertificatMaitreDesCles() {
-    if(this.certificatMaitreDesCles) {
-      return new Promise((resolve, reject) => {
-        resolve(this.certificatMaitreDesCles);
-      });
-    } else {
-      let objet_crypto = this;
-      console.debug("Demander certificat MaitreDesCles");
-      var requete = {
-        '_evenements': 'certMaitreDesCles'
-      }
-      var routingKey = 'requete.millegrilles.domaines.MaitreDesCles.certMaitreDesCles';
-      return rabbitMQ.singleton.transmettreRequete(routingKey, requete)
-      .then(reponse=>{
-        let messageContent = decodeURIComponent(escape(reponse.content));
-        let json_message = JSON.parse(messageContent);
-        // console.debug("Reponse cert maitre des cles");
-        // console.debug(messageContent);
-        objet_crypto.certificatMaitreDesCles = forge.pki.certificateFromPem(json_message.certificat);
-        return objet_crypto.certificatMaitreDesCles;
-      })
-    }
-  }
-
-  crypterContenu(contenu) {
+  crypterContenu(certificat, contenu) {
     // Crypte un dict en JSON et retourne la valeur base64 pour
     // le contenu et la cle secrete cryptee.
-    let cipherEtCle = this._creerCipherKey();
-    let cipher = cipherEtCle.cipher,
-        encryptedSecretKey = cipherEtCle.encryptedSecretKey,
-        iv = cipherEtCle.iv;
+    return this._creerCipherKey(certificat).then(({cipher, encryptedSecretKey, iv}) => {
+      let contenuString = JSON.stringify(contenu);
+      let contenuCrypte = cipher.update(contenuString, 'utf8', 'base64');
+      contenuCrypte += cipher.final('base64');
 
-    let contenuString = JSON.stringify(message);
-    let contenuCrypte = cipher.update(contenuString, 'utf8', 'base64');
-    contenuCrypte += cipher.final('base64');
+      console.debug("Contenu crypte: ");
+      console.debug(contenuCrypte);
 
-    console.debug("Contenu crypte: ");
-    console.debug(contenuCrypte);
-
-    return {contenuCrypte, encryptedSecretKey, iv};
+      return {contenuCrypte, encryptedSecretKey, iv};
+    });
   }
 
-  _creerCipherKey() {
-    var cipher = crypto.createCipheriv(this.algorithm, key, iv);
+  _creerCipherKey(certificat) {
+    let promise = new Promise((resolve, reject) => {
+      this._genererKeyAndIV((err, {key, iv})=>{
+        if(err) {
+          reject(err);
+        }
 
-    // Encoder la cle secrete
-    // Convertir buffer en bytes string pour node-forge
-    var keyByteString = forge.util.bytesToHex(key);
-    var encryptedSecretKey = this.certificat.publicKey.encrypt(keyByteString, this.rsaAlgorithm, {
-      md: forge.md.sha256.create(),
-      mgf1: {
-        md: forge.md.sha256.create()
-      }
+        var cipher = crypto.createCipheriv(this.algorithm, key, iv);
+
+        // Encoder la cle secrete
+        // Convertir buffer en bytes string pour node-forge
+        var keyByteString = forge.util.bytesToHex(key);
+        var encryptedSecretKey = certificat.publicKey.encrypt(keyByteString, this.rsaAlgorithm, {
+          md: forge.md.sha256.create(),
+          mgf1: {
+            md: forge.md.sha256.create()
+          }
+        });
+
+        // Encoder en base64
+        encryptedSecretKey = forge.util.encode64(encryptedSecretKey);
+        iv = iv.toString('base64');
+
+        resolve({cipher, encryptedSecretKey, iv});
+
+      });
     });
-    encryptedSecretKey = forge.util.encode64(encryptedSecretKey);
 
-    return {cipher, encryptedSecretKey, iv};
+    return promise;
   }
 
   _genererKeyAndIV(cb) {
