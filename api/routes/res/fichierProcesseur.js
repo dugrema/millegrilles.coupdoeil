@@ -56,7 +56,9 @@ class ProcesseurUpload {
           // (condition blocking pour le processus de traitement du fichier)
           let transactionInformationCryptee = {
             domaine: 'millegrilles.domaines.GrosFichiers',
-            fuuid: fileUuid,
+            'identificateurs_document': {
+              fuuid: fileUuid,
+            },
             fingerprint: 'abcd',
             cle: fichier.encryptedSecretKey,
             iv: fichier.iv,
@@ -145,6 +147,12 @@ class ProcesseurDownloadCrypte {
       console.debug("Recu message pour decrypter fuuid: " + fuuid);
       let messageContent = decodeURIComponent(escape(reponse.content));
       let json_message = JSON.parse(messageContent);
+      if(json_message.acces)  {
+        if(json_message.acces === '0.refuse') {
+          throw "Access refuse au fichier " + fuuid;
+        }
+      }
+      console.debug(json_message);
       let cleSecrete = forge.util.decode64(json_message.cle);
       let iv = Buffer.from(json_message.iv, 'base64');
       console.debug("IV (" + iv.length + "): ");
