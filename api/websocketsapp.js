@@ -231,8 +231,6 @@ class WebSocketApp {
       let routingKey = message.routingKey;
       let transaction = message.transaction;
       let idDocumentCrypte = message.idDocumentCrypte;
-      console.log("Transaction recue");
-      console.log(message);
       rabbitMQ.singleton.transmettreTransactionFormattee(
         transaction, routingKey, idDocumentCrypte
       ).then(msg=>{
@@ -242,6 +240,7 @@ class WebSocketApp {
       }).catch(err =>{
         console.error("Erreur transmission transaction");
         console.error(err);
+        cb({'err': err.toString()});
       })
     });
 

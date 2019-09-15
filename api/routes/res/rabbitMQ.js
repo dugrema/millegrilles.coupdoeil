@@ -246,7 +246,7 @@ class RabbitMQWrapper {
     // Utiliser la promise pour recuperer le contenu du message
     // Si le message contient un element 'a_crypter', il sera remplace
     // par crypte='... contenu base64 ...'.
-    promise.then(messageATransmettre=>{
+    return promise.then(messageATransmettre=>{
       // Signer le message avec le certificat
       this._signerMessage(messageATransmettre);
       const jsonMessage = JSON.stringify(messageATransmettre);
@@ -256,7 +256,6 @@ class RabbitMQWrapper {
       return this._transmettre(routingKeyNouvelleTransaction, jsonMessage, correlation);
     })
 
-    return promise;
   }
 
   _transmettreMessageCle(contenuACrypter, correlation, idDocumentCrypte) {
