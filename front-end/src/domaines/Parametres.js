@@ -1,6 +1,9 @@
 import React from 'react';
 import webSocketManager from '../WebSocketManager';
 
+const domaine = 'millegrilles.domaines.Parametres';
+const libelle_emailSmtp = 'email.stmp'
+
 export class Parametres extends React.Component {
 
   state = {
@@ -72,11 +75,27 @@ class GestionEmailSmtp extends React.Component {
   state = {
     actif: false,
     host: '',
-    port: 443,
+    port: 465,
     usager: '',
-    motDePasse: '',
     destinataires: '',
     origine: '',
+
+    contenuCrypte: '',
+    motDePasse: '',
+    changerMotDePasse: false,
+  }
+
+  extraireDonnees(source) {
+    let donnees =  {
+      actif: source.actif,
+      origine: source.origine,
+      destinataires: source.destinataires,
+      host: source.host,
+      port: source.port,
+      usager: source.usager,
+    }
+
+    return donnees;
   }
 
   changeActif = event => {
@@ -100,17 +119,18 @@ class GestionEmailSmtp extends React.Component {
   changeMotDePasse = event => {
     this.setState({motDePasse: event.currentTarget.value});
   }
+  toggleChangerMotDePasse = event => {
+    this.setState({changerMotDePasse: true});
+  }
   soumettre = event => {
+    let transaction = this.extraireDonnees(this.state);
+    if(this.state.changerMotDePasse) {
+      transaction['a_crypter'] = {
+        motDePasse: this.state.motDePasse
+      }
+    }
     console.debug("Soumettre formulaire: ");
-    console.debug(this.state);
-
-    let transaction = {
-      ...this.state,
-    }
-    transaction['a_crypter'] = {
-      motDePasse: this.state.motDePasse
-    }
-    delete transaction['motDePasse'];
+    console.debug(transaction);
 
     let idDocumentCrypte = {
       domaine: 'millegrilles.domaines.Parametres',
@@ -133,7 +153,54 @@ class GestionEmailSmtp extends React.Component {
     });
   }
 
+  chargerParametresCourriel() {
+    let routingKey = 'requete.' + domaine;;
+    let requete = {
+      'filtre': {
+          '_mg-libelle': libelle_emailSmtp,
+          // 'categories': {'$in': ['cat1']},
+      },
+    };
+    let requetes = {'requetes': [requete]};
+    webSocketManager.transmettreRequete(routingKey, requetes)
+    .then( docsRecu => {
+      console.log("Docs recus requete");
+      console.log(docsRecu);
+      return docsRecu[0][0];  // Recuperer avec un then(resultats=>{})
+   })
+   .then(paramsEmailSmtp => {
+     var changerMotDePasse = true;
+     if(paramsEmailSmtp.crypte && paramsEmailSmtp.crypte !== '') {
+       changerMotDePasse = false;
+     }
+     let donnees = this.extraireDonnees(paramsEmailSmtp);
+     donnees.changerMotDePasse = changerMotDePasse;
+
+     this.setState(donnees);
+   })
+   .catch(err=>{
+     console.error("Erreur requete documents plume");
+     console.error(err);
+   });
+  }
+
+  componentDidMount() {
+    this.chargerParametresCourriel();
+  }
+
   renderFormulaire() {
+
+    let boutonMotDePasse;
+    if(this.state.changerMotDePasse) {
+      boutonMotDePasse = (
+        <input type="password" value={this.state.motDePasse} onChange={this.changeMotDePasse} size="40"/>
+      )
+    } else {
+      boutonMotDePasse = (
+        <button onClick={this.toggleChangerMotDePasse}>Changer</button>
+      )
+    }
+
     return (
       <div className="w3-container formulaire">
         <div>
@@ -146,19 +213,19 @@ class GestionEmailSmtp extends React.Component {
           </div>
         </div>
         <div>
-          <div className="w3-col m4 label">Serveur</div>
+          <div className="w3-col m4 label">Serveur SMTP</div>
           <div className="w3-col m8 champ"><input type="text" value={this.state.host} onChange={this.changeHost} size="40"/></div>
         </div>
         <div>
-          <div className="w3-col m4 label">Port</div>
+          <div className="w3-col m4 label">Port (SSL)</div>
           <div className="w3-col m8 champ"><input type="text" value={this.state.port} onChange={this.changePort} size="40"/></div>
         </div>
         <div>
-          <div className="w3-col m4 label">Origine</div>
+          <div className="w3-col m4 label">Courriel origine</div>
           <div className="w3-col m8 champ"><input type="text" value={this.state.origine} onChange={this.changeOrigine} size="40"/></div>
         </div>
         <div>
-          <div className="w3-col m4 label">Destinataires</div>
+          <div className="w3-col m4 label">Courriels destinataire <i className="fa fa-info-circle" title="Separer par des virgules"></i></div>
           <div className="w3-col m8 champ"><input type="text" value={this.state.destinataires} onChange={this.changeDestinataires} size="40"/></div>
         </div>
         <div>
@@ -167,7 +234,9 @@ class GestionEmailSmtp extends React.Component {
         </div>
         <div>
           <div className="w3-col m4 label">Mot de passe</div>
-          <div className="w3-col m8 champ"><input type="password" value={this.state.motDePasse} onChange={this.changeMotDePasse} size="40"/></div>
+          <div className="w3-col m8 champ">
+            {boutonMotDePasse}
+          </div>
         </div>
         <div className="w3-col m12 w3-center boutons">
           <button onClick={this.soumettre} value="Soumettre">Soumettre</button>
@@ -180,17 +249,26 @@ class GestionEmailSmtp extends React.Component {
   render() {
     return (
       <div className="w3-col m12">
+
         <div className="w3-card w3-round w3-white">
           <div className="w3-container w3-padding">
             <div>
-              <h1>Notifications courriel</h1>
+              <h2 className="w3-opacity">Notifications courriel</h2>
               <p>
                 Cette page permet de configurer un serveur courriel (SMTP) pour transmettre des notifications.
               </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="w3-card w3-round w3-white">
+          <div className="w3-container w3-padding">
+            <div>
               {this.renderFormulaire()}
             </div>
           </div>
         </div>
+
       </div>
     );
   }
