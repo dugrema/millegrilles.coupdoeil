@@ -228,11 +228,13 @@ class WebSocketApp {
 
     // Expose l'appel aux transactions MQ.
     socket.on('transaction', (message, cb) => {
+      console.log("Message");
+      console.log(message);
       let routingKey = message.routingKey;
       let transaction = message.transaction;
-      let idDocumentCrypte = message.idDocumentCrypte;
+      let opts = message.opts;
       rabbitMQ.singleton.transmettreTransactionFormattee(
-        transaction, routingKey, idDocumentCrypte
+        transaction, routingKey, opts
       ).then(msg=>{
         let messageContent = msg.content.toString('utf-8');
         let json_message = JSON.parse(messageContent);

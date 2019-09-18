@@ -134,11 +134,11 @@ class GestionEmailSmtp extends React.Component {
 
     let idDocumentCrypte = {
       domaine: 'millegrilles.domaines.Parametres',
-      'mg-libelle': 'email.stmp',
+      '_mg-libelle': 'email.stmp',
     };
 
     let domaine = 'millegrilles.domaines.Parametres.modifierEmailSmtp';
-    webSocketManager.transmettreTransaction(domaine, transaction, idDocumentCrypte)
+    webSocketManager.transmettreTransaction(domaine, transaction, {idDocumentCrypte})
     .then(reponse=>{
       if(reponse.err) {
         console.error("Erreur transaction");

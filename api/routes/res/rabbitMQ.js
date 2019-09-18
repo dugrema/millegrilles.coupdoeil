@@ -219,12 +219,12 @@ class RabbitMQWrapper {
 
   // Utiliser cette methode pour simplifier le formattage d'une transaction.
   // Il faut fournir le contenu de la transaction et le domaine (routing)
-  transmettreTransactionFormattee(message, domaine, idDocumentCrypte) {
+  transmettreTransactionFormattee(message, domaine, opts) {
     // Fare un shallow copy du message
     let messageFormatte = {};
     Object.assign(messageFormatte, message);
 
-    const infoTransaction = this._formatterInfoTransaction(domaine);
+    const infoTransaction = this._formatterInfoTransaction(domaine, opts);
     const correlation = infoTransaction['uuid-transaction'];
     messageFormatte['en-tete'] = infoTransaction;
 
@@ -234,6 +234,7 @@ class RabbitMQWrapper {
       // Enlever element a_cypter de la transaction principale
       let contenuACrypter = messageFormatte['a_crypter'];
       delete messageFormatte['a_crypter'];
+      let idDocumentCrypte = opts.idDocumentCrypte;
       promise = this._transmettreMessageCle(contenuACrypter, correlation, idDocumentCrypte)
       .then(contenuCrypte=>{
         messageFormatte['crypte'] = contenuCrypte;
@@ -265,30 +266,30 @@ class RabbitMQWrapper {
       // Transmettre transaction pour la cle
       // Le ma
       const routingKeyCle = 'millegrilles.domaines.MaitreDesCles.nouvelleCle.document';
-      let infoTransactionCle = this._formatterInfoTransaction(routingKeyCle);
+      let infoTransactionCle = this._formatterInfoTransaction(routingKeyCle, {version: 5});
       let transactionCle = {
         'en-tete': infoTransactionCle,
         fingerprint: 'abcd',
         cle: encryptedSecretKey,
         iv: iv,
+        domaine: idDocumentCrypte.domaine,
+        'uuid-transaction': correlation,
       };
 
       // Copier les cles du document dans la transaction
-      // domaine, mg-libelle, identificateurs_document
-      // "domaine": "millegrilles.domaines.Parametres",
-      // "mg-libelle": ConstantesParametres.LIBVAL_EMAIL_SMTP,
-      // ConstantesMaitreDesCles.TRANSACTION_CHAMP_IDENTIFICATEURS_DOCUMENTS: {
-      //     "uuid": "39c1e1b0-b6ee-11e9-b0cd-d30e8faa841c",
+      // domaine: transmis dans idDocumentCrypte, e.g. "millegrilles.domaines.Parametres",
+      // uuid-transaction: param correlation
+      // identificateurs_document: {
+      //     "_mg-libelle": ConstantesParametres.LIBVAL_EMAIL_SMTP
       // },
+      let id_document = {};
       for(let key in idDocumentCrypte) {
         let value = idDocumentCrypte[key];
-        transactionCle[key] = value;
+        if(key !== 'domaine') {  // Domaine copie en dehors de l'identificateur, V5 transaction
+          id_document[key] = value;
+        }
       }
-
-      // Inserer le uuid de la transaction pour identifier le document
-      transactionCle['identificateurs_document'] = {
-        uuid: correlation,
-      }
+      transactionCle['identificateurs_document'] = id_document
 
       // Signer le message avec le certificat
       this._signerMessage(transactionCle);
@@ -307,9 +308,14 @@ class RabbitMQWrapper {
     return promise;
   }
 
-  _formatterInfoTransaction(domaine) {
+  _formatterInfoTransaction(domaine, opts) {
     // Ces valeurs n'ont de sens que sur le serveur.
     // Calculer secondes UTC (getTime retourne millisecondes locales)
+    let version = 4;
+    if(opts) {
+      version = opts.version || version;
+    }
+
     let dateUTC = (new Date().getTime()/1000) + new Date().getTimezoneOffset()*60;
     let tempsLecture = Math.trunc(dateUTC);
     let sourceSystem = 'coupdoeil/' + 'dev2.maple.mdugre.info' + "@" + pki.getCommonName();
@@ -320,7 +326,7 @@ class RabbitMQWrapper {
       'estampille': tempsLecture,
       'certificat': pki.getFingerprint(),
       'hachage-contenu': '',  // Doit etre calcule a partir du contenu
-      'version': 4
+      'version': version
     };
 
     return infoTransaction;
