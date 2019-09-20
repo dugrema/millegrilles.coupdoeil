@@ -42,9 +42,6 @@ export class NavigationRepertoire extends React.Component {
   // Affiche la liste des sous-repertoires et une breadcrumb pour remonter
 
   pathRepertoire() {
-    console.log("PROPS!")
-    console.log(this.props);
-    
     var pathRepertoire;
     let nomRepertoireBase = 'Prive';  // Par defaut
     let repertoireZoneCourante = this.props.zoneCourante;
@@ -122,7 +119,7 @@ export class NavigationRepertoire extends React.Component {
   }
 
   informationRepertoire() {
-    console.log(this.props.repertoireCourant);
+    console.debug(this.props.repertoireCourant);
     return (
       <div>
         <div>
