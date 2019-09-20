@@ -490,6 +490,8 @@ export class GrosFichiers extends React.Component {
       'noeuds.source.millegrilles_domaines_GrosFichiers.fichier',
       'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire',
       'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.racine',
+      'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.corbeille',
+      'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.orphelins',
     ]
   };
 
@@ -742,6 +744,7 @@ export class GrosFichiers extends React.Component {
         repertoiresZones: {
           ...this.state.repertoiresZones,
           ...zones,
+          zoneCourante: repertoirePrive,
         },
         repertoireCourant: repertoirePrive,
       })

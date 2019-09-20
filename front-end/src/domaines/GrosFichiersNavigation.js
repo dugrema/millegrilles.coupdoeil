@@ -42,6 +42,9 @@ export class NavigationRepertoire extends React.Component {
   // Affiche la liste des sous-repertoires et une breadcrumb pour remonter
 
   pathRepertoire() {
+    console.log("PROPS!")
+    console.log(this.props);
+    
     var pathRepertoire;
     let nomRepertoireBase = 'Prive';  // Par defaut
     let repertoireZoneCourante = this.props.zoneCourante;
@@ -52,7 +55,9 @@ export class NavigationRepertoire extends React.Component {
         nomRepertoireBase = 'Corbeille';
       } else if(mg_libelle_zone === 'repertoire.orphelins') {
         nomRepertoireBase = 'Orphelins';
-      } else {
+      }
+
+      if(repertoireZoneCourante !== this.props.repertoireCourant){
 
         let chemin = [];
         chemin.push(
