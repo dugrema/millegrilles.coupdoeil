@@ -24,13 +24,12 @@ export class GrosFichiers extends React.Component {
 
       // Variables pour navigation des repertoires/fichiers
       repertoiresZones: {
-        repertoirePublic: null,    // Repertoire des documents publies
         repertoirePrive: null,     // Repertoire des documents prives et proteges
         repertoireSecure: null,    // Repertoire des documents secures
         repertoireCorbeille: null, // Repertoire des documents supprimes
         repertoireOrphelins: null, // Repertoire des documents orphelins
 
-        zoneCourante: '2.prive',  // 1.public, 2.prive, 4.secure, corbeille, orphelins
+        zoneCourante: null,  // 1.public, 2.prive, 4.secure, corbeille, orphelins
       },
 
       repertoireCourant: null,  // Repertoire a afficher (si pas null et fichier null)
@@ -396,6 +395,28 @@ export class GrosFichiers extends React.Component {
 
       this.setState({'selection': {}}); // Clear
     },
+    changerRepertoireSpecial: event => {
+      let repertoireLabel = event.currentTarget.value;
+      console.debug("Switch repertoire base: " + repertoireLabel);
+      let repertoire;
+      if(repertoireLabel === 'Prive') {
+        repertoire = this.state.repertoiresZones.repertoirePrive;
+      } else if(repertoireLabel === 'Corbeille') {
+        repertoire = this.state.repertoiresZones.repertoireCorbeille;
+      } else if(repertoireLabel === 'Orphelins') {
+        repertoire = this.state.repertoiresZones.repertoireOrphelins;
+      }
+
+      if(repertoire) {
+        this.setState({
+          repertoireZoneCourante: repertoire,
+          repertoireCourant: repertoire,
+        });
+      } else {
+        console.log("Aucun repertoire special trouve");
+        console.log(this.state.repertoiresZones);
+      }
+    }
   }
 
   uploadActions = {
@@ -567,19 +588,8 @@ export class GrosFichiers extends React.Component {
     if(!zoneCourante) {
       console.error("Erreur, zone courante pas settee. On met prive par defaut");
       repertoireZone = this.state.repertoiresZones.repertoirePrive;
-    } else if(zoneCourante === '1.public') {
-      repertoireZone = this.state.repertoiresZones.repertoirePublic;
-    } else if(zoneCourante === '2.prive') {
-      repertoireZone = this.state.repertoiresZones.repertoirePrive;
-    } else if(zoneCourante === '4.secure') {
-      repertoireZone = this.state.repertoiresZones.repertoireSecure;
-    } else if(zoneCourante === 'corbeille') {
-      repertoireZone =  this.state.repertoiresZones.repertoireCorbeille;
-    } else if(zoneCourante === 'orphelins') {
-      repertoireZone = this.state.repertoiresZones.repertoireOrphelins;
     } else {
-      console.warn("Erreur get repertoire zone (inconnue: " + zoneCourante + "), on met defaut a Prive");
-      repertoireZone = this.state.repertoiresZones.repertoirePrive;
+      repertoireZone = this.state.repertoiresZones.zoneCourante;
     }
 
     return repertoireZone;
@@ -647,13 +657,25 @@ export class GrosFichiers extends React.Component {
   processMessage = (routingKey, doc) => {
     console.debug("Message de MQ: " + routingKey);
 
-    if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.racine') {
+    if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.racine' ||
+       routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.corbeille' ||
+       routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.orphelins') {
+
       // console.debug("Update repertoire racine");
       // console.debug(doc);
+      let update = {};
+      if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.racine') {
+        update['repertoirePrive'] = doc;
+      } else if (routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.corbeille') {
+        update['repertoireCorbeille'] = doc;
+      } else if (routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.orphelins') {
+        update['repertoireOrphelins'] = doc;
+      }
+
       var newState = {
         repertoiresZones: {
           ...this.state.repertoireZones,
-          repertoirePrive: doc
+          ...update,
         }
       }
 
@@ -686,19 +708,40 @@ export class GrosFichiers extends React.Component {
     // Enregistrer les routingKeys de documents
     webSocketManager.subscribe(this.config.subscriptions, this.processMessage);
 
-    // Charger le document repertoire.racine.
+    // Charger les documents pour les repertoires speciaux.
     this.chargerDocument({
-      requetes: [{'filtre': {'_mg-libelle': 'repertoire.racine'}}]
+      requetes: [{'filtre': {'_mg-libelle': {'$in': [
+        'repertoire.racine',
+        'repertoire.corbeille',
+        'repertoire.orphelins',
+      ]}}}]
     })
     .then(docs=>{
+      console.debug("Documents speciaux");
+      console.debug(docs);
       // On recoit une liste de resultats, avec une liste de documents.
       // On veut juste conserver le 1er resultat de la 1ere (seule) requete.
       // Mettre le repertoire racine comme repertoire courant.
-      var repertoirePrive = docs[0][0];
+      const repertoiresSpeciaux = docs[0];
+      let repertoirePrive;
+      let zones = {};
+      for(let idx in repertoiresSpeciaux) {
+        let repertoire = repertoiresSpeciaux[idx];
+        let mg_libelle = repertoire['_mg-libelle'];
+        if(mg_libelle === 'repertoire.racine') {
+          repertoirePrive = repertoire;
+          zones['repertoirePrive'] = repertoire;
+        } else if(mg_libelle === 'repertoire.corbeille') {
+          zones['repertoireCorbeille'] = repertoire;
+        } else if(mg_libelle === 'repertoire.orphelins') {
+          zones['repertoireOrphelins'] = repertoire;
+        }
+      }
+
       this.setState({
         repertoiresZones: {
           ...this.state.repertoiresZones,
-          repertoirePrive: repertoirePrive,
+          ...zones,
         },
         repertoireCourant: repertoirePrive,
       })

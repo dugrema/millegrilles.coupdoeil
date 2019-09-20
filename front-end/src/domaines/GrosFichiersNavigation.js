@@ -42,67 +42,75 @@ export class NavigationRepertoire extends React.Component {
   // Affiche la liste des sous-repertoires et une breadcrumb pour remonter
 
   pathRepertoire() {
-    let pathRepertoire;
-    if(this.props.repertoireCourant.nom === '/') {
-      pathRepertoire = (
-        <span>
-          Prive
-        </span>
-      )
-    } else {
+    var pathRepertoire;
+    let nomRepertoireBase = 'Prive';  // Par defaut
+    let repertoireZoneCourante = this.props.zoneCourante;
 
-      let chemin = [];
-      chemin.push(
-        <span key={this.props.repertoirePrive.repertoire_uuid}>
-          <button
-            className="aslink"
-            value={this.props.repertoirePrive.repertoire_uuid}
-            onClick={this.props.afficherRepertoire}>
-              Prive
-          </button>
-          /
-        </span>
-      );
+    if(repertoireZoneCourante) {
+      let mg_libelle_zone = repertoireZoneCourante['_mg-libelle'];
+      if(mg_libelle_zone === 'repertoire.corbeille') {
+        nomRepertoireBase = 'Corbeille';
+      } else if(mg_libelle_zone === 'repertoire.orphelins') {
+        nomRepertoireBase = 'Orphelins';
+      } else {
 
-      // Couper le chemin intermediaire, on garde le parent
-      // console.debug(this.props.repertoireCourant);
-      let cheminsRepertoires = this.props.repertoireCourant.chemin_repertoires;
-      cheminsRepertoires = cheminsRepertoires.substring(1);  // Enlever leading '/'
-      let chemins = cheminsRepertoires.split('/');
-      if(chemins[0] !== '') for(var idx in chemins) {
-        let nomRepertoire = chemins[idx];
-        let dernier = ''+(chemins.length-1);  // String pour comparer a idx
-        if(idx === dernier) {
-          chemin.push(
-            <span key={this.props.repertoireCourant.parent_id}>
-              <button
-                className="aslink"
-                value={this.props.repertoireCourant.parent_id}
-                onClick={this.props.afficherRepertoire}>
-                  {nomRepertoire}
-              </button>
-              /
-            </span>
-          )
-        } else {
-          chemin.push(
-            <span key={nomRepertoire+idx}>{nomRepertoire}/</span>
-          )
+        let chemin = [];
+        chemin.push(
+          <span key={repertoireZoneCourante.repertoire_uuid}>
+            <button
+              className="aslink"
+              value={repertoireZoneCourante.repertoire_uuid}
+              onClick={this.props.afficherRepertoire}>
+                {nomRepertoireBase}
+            </button>
+            /
+          </span>
+        );
+
+        // Couper le chemin intermediaire, on garde le parent
+        // console.debug(this.props.repertoireCourant);
+        let cheminsRepertoires = this.props.repertoireCourant.chemin_repertoires;
+        cheminsRepertoires = cheminsRepertoires.substring(1);  // Enlever leading '/'
+        let chemins = cheminsRepertoires.split('/');
+        if(chemins[0] !== '') for(var idx in chemins) {
+          let nomRepertoire = chemins[idx];
+          let dernier = ''+(chemins.length-1);  // String pour comparer a idx
+          if(idx === dernier) {
+            chemin.push(
+              <span key={this.props.repertoireCourant.parent_id}>
+                <button
+                  className="aslink"
+                  value={this.props.repertoireCourant.parent_id}
+                  onClick={this.props.afficherRepertoire}>
+                    {nomRepertoire}
+                </button>
+                /
+              </span>
+            )
+          } else {
+            chemin.push(
+              <span key={nomRepertoire+idx}>{nomRepertoire}/</span>
+            )
+          }
         }
+
+        chemin.push(
+          <span key={this.props.repertoireCourant.repertoire_uuid}>
+            {this.props.repertoireCourant.nom}
+          </span>
+        )
+
+        // Retourner le chemin complet
+        pathRepertoire = (
+          <span>
+            {chemin}
+          </span>
+        )
       }
+    }
 
-      chemin.push(
-        <span key={this.props.repertoireCourant.repertoire_uuid}>
-          {this.props.repertoireCourant.nom}
-        </span>
-      )
-
-      // Retourner le chemin complet
-      pathRepertoire = (
-        <span>
-          {chemin}
-        </span>
-      )
+    if(!pathRepertoire) {
+      pathRepertoire = (<span>{nomRepertoireBase}</span>);
     }
 
     return pathRepertoire;
@@ -119,6 +127,16 @@ export class NavigationRepertoire extends React.Component {
     );
   }
 
+  boutonsRepertoiresSpeciaux() {
+    return (
+      <div>
+        <button onClick={this.props.changerRepertoireSpecial} value="Prive">Prive</button>
+        <button onClick={this.props.changerRepertoireSpecial} value="Corbeille">Corbeille</button>
+        <button onClick={this.props.changerRepertoireSpecial} value="Orphelins">Orphelins</button>
+      </div>
+    );
+  }
+
   render() {
 
     return (
@@ -129,6 +147,7 @@ export class NavigationRepertoire extends React.Component {
             repertoireCourant={this.props.repertoireCourant}
             {...this.props.uploadActions}
             />
+          {this.boutonsRepertoiresSpeciaux()}
           {this.informationRepertoire()}
         </div>
       </div>
