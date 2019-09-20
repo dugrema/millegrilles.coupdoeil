@@ -674,7 +674,7 @@ export class GrosFichiers extends React.Component {
 
       var newState = {
         repertoiresZones: {
-          ...this.state.repertoireZones,
+          ...this.state.repertoiresZones,
           ...update,
         }
       }
