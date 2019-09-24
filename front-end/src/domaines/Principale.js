@@ -30,7 +30,7 @@ export class InterfacePrincipale extends React.Component {
 
           <ul>
             <li>
-              Version de Coup D'Oeil: <span title={manifest.date}>{manifest.version}</span>
+              Version de Coup D&quote;Oeil: <span title={manifest.date}>{manifest.version}</span>
             </li>
           </ul>
         </div>
@@ -70,11 +70,13 @@ export class InterfacePrincipale extends React.Component {
           {...this.fonctionsNavigation} />
       );
     } else if(this.state.ecranCourant === 'gestionProprietesMilleGrille') {
-      contenu = (
-        <GestionProprietesMilleGrille
-          {...this.fonctionsNavigation}
-          nomMilleGrille={this.props.configDocument.nom_millegrille}/>
-      )
+      if(this.props.documentIdMillegrille) {
+        contenu = (
+          <GestionProprietesMilleGrille
+            {...this.fonctionsNavigation}
+            nomMilleGrille={this.props.documentIdMillegrille.nom_millegrille}/>
+        )
+      }
     } else {
       contenu = (
         <div className="w3-col m12">

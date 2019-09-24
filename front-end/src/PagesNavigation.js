@@ -49,6 +49,7 @@ export function SectionContenu(props) {
     <div className="w3-container w3-content divtop">
       <div className="w3-row">
         <MenuGauche
+          documentIdMillegrille={props.documentIdMillegrille}
           documentDomaines={props.documentDomaines}
           domaineActif={props.domaineActif}
           fonctionsNavigation={props.fonctionsNavigation}
@@ -176,7 +177,9 @@ function ListeDomaines(props) {
 function MenuGauche(props) {
   return (
     <div className="w3-col m3">
-      <MenuGaucheTop {...props}/>
+      <MenuGaucheTop
+        documentIdMillegrille={props.documentIdMillegrille}
+        domaineActif={props.domaineActif} />
       <MenuGaucheNavigation
         documentDomaines={props.documentDomaines}
         {...props.fonctionsNavigation}
@@ -198,6 +201,11 @@ function MenuGaucheTop(props) {
     )
   }
 
+  let nomMilleGrille = '';
+  if(props.documentIdMillegrille) {
+    nomMilleGrille = props.documentIdMillegrille.nom_millegrille
+  }
+
   return (
     <div className="w3-card w3-round w3-white w3-card_BR">
       <div className="w3-container">
@@ -205,7 +213,7 @@ function MenuGaucheTop(props) {
        <hr/>
        <p>
          <i className="fa fa-home fa-fw w3-margin-right w3-text-theme"></i>
-         {props.nom_millegrille}
+         {nomMilleGrille}
        </p>
       </div>
     </div>
