@@ -82,14 +82,15 @@ router.put(
     .then(params => {
       // console.debug("Traitement fichier termine: " + params);
       // console.debug(params);
+      res.sendStatus(200);
     })
     .catch(err => {
       console.error("Erreur traitement fichier: " + fichier.originalname);
       console.error(err);
+      res.sendStatus(500);
     })
   });
 
-  res.sendStatus(200);
 });
 
 router.post('/local/*', function(req, res, next) {

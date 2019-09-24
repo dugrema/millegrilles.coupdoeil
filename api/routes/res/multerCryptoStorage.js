@@ -218,7 +218,7 @@ class MulterCryptoStorage {
       // console.debug("Hash calcule: " + hashResult);
 
       var file = params.file;
-      cb(null, {
+      cb(err, {
         size: hashPipe.fileSize,
         nomfichier: file.originalname,
         mimetype: file.mimetype,
