@@ -32,7 +32,8 @@ export function SectionContenu(props) {
     if(props.pageActive === 'listeDomaines') {
       pageContenu = (
         <ListeDomaines
-          {...props.configDocument}
+          domaines={props.documentDomaines.domaines}
+          menu={props.documentDomaines.menu}
           fonctionsNavigation={props.fonctionsNavigation}
           />
       )
@@ -48,7 +49,7 @@ export function SectionContenu(props) {
     <div className="w3-container w3-content divtop">
       <div className="w3-row">
         <MenuGauche
-          {...props.configDocument}
+          documentDomaines={props.documentDomaines}
           domaineActif={props.domaineActif}
           fonctionsNavigation={props.fonctionsNavigation}
         />
@@ -110,10 +111,11 @@ function ListeDomaines(props) {
 
   if(props.domaines) {
     for(var idx in props.domaines) {
-      const domaine = props.domaines[idx];
+      const nomDomaine = props.menu[idx];
 
       // Verifier si le domaine est charge
-      if(domainesConnus[domaine.description]) {
+      if(domainesConnus[nomDomaine]) {
+        let domaine = props.domaines[nomDomaine];
 
         listeDomaines.push((
           <li key={domaine.description}>
@@ -176,7 +178,7 @@ function MenuGauche(props) {
     <div className="w3-col m3">
       <MenuGaucheTop {...props}/>
       <MenuGaucheNavigation
-        domaines={props.domaines}
+        documentDomaines={props.documentDomaines}
         {...props.fonctionsNavigation}
         />
     </div>
@@ -214,9 +216,10 @@ function MenuGaucheNavigation(props) {
 
   const listeDomaines = []; //, listeDomainesInconnus = [];
 
-  if(props.domaines) {
-    for(var idx in props.domaines) {
-      const domaine = props.domaines[idx];
+  if(props.documentDomaines) {
+    for(var idx in props.documentDomaines.menu) {
+      const nomDomaine = props.documentDomaines.menu[idx];
+      const domaine = props.documentDomaines.domaines[nomDomaine];
 
       // Verifier si le domaine est charge
       if(domainesConnus[domaine.description]) {

@@ -112,7 +112,8 @@ class EcranApp extends React.Component {
       <div>
         <NavBar configDocument={this.state.configDocument}/>
         <SectionContenu
-          configDocument={this.state.configDocument}
+          documentIdMillegrille={this.state.documentIdMillegrille}
+          documentDomaines={this.state.documentDomaines}
           changerDomaine={this.changerDomaine}
           changerMenuGauche={this.changerMenuGauche}
           fonctionsNavigation={this.fonctionsNavigation}
