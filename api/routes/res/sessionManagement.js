@@ -89,7 +89,7 @@ class SessionManagement {
 
     return new Promise((resolve, reject) => {
       // Authentifier le socket
-      let filtre = {"_mg-libelle": "profil.usager"};
+      let filtre = {"_mg-libelle": "cles"};
       rabbitMQ.singleton.get_document(
         'millegrilles.domaines.Principale', filtre)
       .then( doc => {
@@ -125,7 +125,7 @@ class SessionManagement {
               return;
             }
 
-            let filtre = {"_mg-libelle": "profil.usager"};
+            let filtre = {"_mg-libelle": "cles"};
             rabbitMQ.singleton.get_document(
               'millegrilles.domaines.Principale', filtre)
             .then( doc => {

@@ -61,26 +61,46 @@ class EcranApp extends React.Component {
   }
 
   chargerDocumentPrincipale() {
-    // Transmettre requete pour recevoir le document du senseur
-    let requeteDocumentConfig =  {
+    // Transmettre requete pour recevoir le des domaines
+    let requeteDomaines =  {
       'requetes': [{
         'filtre': {
-          '_mg-libelle': 'configuration'
+          '_mg-libelle': 'domaines'
         }
       }]};
 
     webSocketManager.transmettreRequete(
-      'requete.millegrilles.domaines.Principale', requeteDocumentConfig)
+      'requete.millegrilles.domaines.Principale', requeteDomaines)
     .then( docInitial => {
       // console.debug("Recu doc");
       let resultats = docInitial[0][0];
       // console.debug(resultats);
-      this.setState({configDocument: resultats});
+      this.setState({documentDomaines: resultats});
     })
     .catch( err=>{
-      console.error("Erreur chargement document initial");
+      console.error("Erreur chargement document liste domaines");
       console.error(err);
     });
+
+    let requeteIdMillegrille =  {
+      'requetes': [{
+        'filtre': {
+          '_mg-libelle': 'millegrille.id'
+        }
+      }]};
+    webSocketManager.transmettreRequete(
+      'requete.millegrilles.domaines.Parametres', requeteIdMillegrille)
+    .then( docInitial => {
+      // console.debug("Recu doc");
+      let resultats = docInitial[0][0];
+      // console.debug(resultats);
+      this.setState({documentIdMillegrille: resultats});
+    })
+    .catch( err=>{
+      console.error("Erreur chargement document id millegrille");
+      console.error(err);
+    });
+
   }
 
   componentWillUnmount() {

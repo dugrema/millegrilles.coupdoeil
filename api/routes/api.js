@@ -34,7 +34,7 @@ router.post('/initialiser-empreinte', (req, res) => {
     console.debug("initialiser-empreinte: Id " + id + ", email " + email);
 
     // Verifier que la MilleGrille n'a pas deja d'empreinte usager
-    let filtre = {"_mg-libelle": "profil.usager"};
+    let filtre = {"_mg-libelle": "cles"};
     rabbitMQ.singleton.get_document(
       'millegrilles.domaines.Principale', filtre)
     .then( doc => {
