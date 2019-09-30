@@ -26,6 +26,7 @@ class RabbitMQWrapper {
     // this.setHostname();
 
     this.routingKeyManager = new RoutingKeyManager(this);
+    this.routingKeyCertificat = null;
 
     this.certificatMaitreDesCles = null;
   }
@@ -77,14 +78,14 @@ class RabbitMQWrapper {
         console.debug("Connexion et channel prets");
 
         // Transmettre le certificat
-        let messageCertificat = pki.preparerMessageCertificat();
-        let fingerprint = messageCertificat.fingerprint;
-        // console.debug("Transmission certificat " + fingerprint);
+        let fingerprint = this.transmettreCertificat();
 
-        let messageJSONStr = JSON.stringify(messageCertificat);
-        this._publish(
-          'pki.certificat.' + fingerprint, messageJSONStr
-        );
+        // Enregistrer routing key du certificat
+        // Permet de repondre si un autre composant demande notre certificat
+        this.routingKeyCertificat = 'pki.requete.' + fingerprint;
+        console.debug("Enregistrer routing key: " + fingerprint)
+        this.channel.bindQueue(this.reply_q.queue, 'millegrilles.noeuds', this.routingKeyCertificat);
+
         // console.debug("Certificat transmis");
       }).catch(err => {
         this.connection = null;
@@ -163,8 +164,11 @@ class RabbitMQWrapper {
                 callback(msg);
               }
             } else if(routingKey) {
-              console.error("Message avec routing key recu sur Q API global: " + routingKey + ". Message rejete");
-              // this.routingKeyManager.emitMessage(routingKey, messageContent);
+              if(routingKey === this.routingKeyCertificat) {
+                this.transmettreCertificat();
+              } else {
+                console.error("Message avec routing key recu sur Q API global: " + routingKey + ". Message rejete");
+              }
             } else {
               console.debug("Recu message sans correlation Id ou routing key");
               console.warn(msg);
@@ -183,6 +187,17 @@ class RabbitMQWrapper {
 
     return promise;
 
+  }
+
+  transmettreCertificat() {
+    let messageCertificat = pki.preparerMessageCertificat();
+    let fingerprint = messageCertificat.fingerprint;
+    let messageJSONStr = JSON.stringify(messageCertificat);
+    this._publish(
+      'pki.certificat.' + fingerprint, messageJSONStr
+    );
+
+    return fingerprint;
   }
 
   createChannel(socketResources) {
