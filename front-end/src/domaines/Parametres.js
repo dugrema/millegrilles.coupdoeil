@@ -307,6 +307,31 @@ class GestionDeployeurPublic extends React.Component {
   changerUrlMq = event => {this.setState({urlPublicMq: event.currentTarget.value})}
   changerMq = event => {this.setState({portMq: parseInt(event.currentTarget.value)})}
 
+  sauvegarder = event => {
+    let transaction = {
+      url_web: this.state.urlPublicWeb,
+      port_http: this.state.portHttp,
+      port_https: this.state.portHttps,
+      url_mq: this.state.urlPublicMq,
+      port_mq: this.state.portMq,
+    }
+
+    let domaine = 'millegrilles.domaines.Parametres.public.sauvegarder';
+    webSocketManager.transmettreTransaction(domaine, transaction)
+    .then(reponse=>{
+      if(reponse.err) {
+        console.error("Erreur transaction");
+      }
+
+      // Complet, on retourne a la page Parametres
+      this.props.retourParametres(event);
+    })
+    .catch(err=>{
+      console.error("Erreur sauvegarde");
+      console.error(err);
+    });
+  }
+
   chargerInformationCourante() {
     let routingKey = 'requete.' + domaine;
     let requete = {
@@ -322,7 +347,14 @@ class GestionDeployeurPublic extends React.Component {
       return docsRecu[0][0];  // Recuperer avec un then(resultats=>{})
    })
    .then(documentPubliqueConfiguration => {
-     this.setState({publiqueConfiguration: documentPubliqueConfiguration})
+     this.setState({
+       publiqueConfiguration: documentPubliqueConfiguration,
+       urlPublicWeb: documentPubliqueConfiguration.url_web || '',
+       portHttp: documentPubliqueConfiguration.port_http || 80,
+       portHttps: documentPubliqueConfiguration.port_https || 443,
+       urlPublicMq: documentPubliqueConfiguration.url_mq || '',
+       portMq: documentPubliqueConfiguration.port_mq || 5673,
+     })
    })
    .catch(err=>{
      console.error("Erreur requete documents publiqueConfiguration");
@@ -336,19 +368,17 @@ class GestionDeployeurPublic extends React.Component {
     this.chargerInformationCourante();
   }
 
+  componentWillUnmount() {
+    // Enregistrer les routingKeys de documents
+    webSocketManager.unsubscribe(this.config.subscriptions);
+  }
+
   processMessage = (routingKey, doc) => {
     if(routingKey === 'noeuds.source.millegrilles_domaines_Parametres.documents.publique.configuration') {
       console.debug("Configuration publique mise a jour/activite")
       console.debug(doc);
       this.setState({publiqueConfiguration: doc});
-    } else if(routingKey === 'noeuds.source.millegrilles_domaines_SenseursPassifs.documents.senseur.individuel') {
-      if(this.state.senseur_id && Number(this.state.senseur_id) === doc.senseur) {
-        // Update du document presentement affiche
-        // On met dans un array pour matcher la reponse initiale (find)
-        this.setState({documentSenseur: [doc]});
-      }
     }
-
   }
 
   renderActivite() {
@@ -414,6 +444,10 @@ class GestionDeployeurPublic extends React.Component {
             <div className="w3-col m8 champ">
               <input type="number" value={this.state.portMq} onChange={this.changerMq} size="5"/>
             </div>
+          </div>
+          <div className="w3-col m12 w3-center boutons">
+            <button onClick={this.sauvegarder} value="Soumettre">Sauvegarder</button>
+            <button onClick={this.props.retourParametres} value="Annuler">Annuler</button>
           </div>
         </div>
       </form>
