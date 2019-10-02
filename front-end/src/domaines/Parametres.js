@@ -139,8 +139,7 @@ class GestionEmailSmtp extends React.Component {
         motDePasse: this.state.motDePasse
       }
     }
-    console.debug("Soumettre formulaire: ");
-    console.debug(transaction);
+    console.debug("Soumettre formulaire");
 
     let idDocumentCrypte = {
       domaine: 'millegrilles.domaines.Parametres',
@@ -174,8 +173,8 @@ class GestionEmailSmtp extends React.Component {
     let requetes = {'requetes': [requete]};
     webSocketManager.transmettreRequete(routingKey, requetes)
     .then( docsRecu => {
-      console.log("Docs recus requete");
-      console.log(docsRecu);
+      console.debug("Docs recus requete");
+      console.debug(docsRecu);
       return docsRecu[0][0];  // Recuperer avec un then(resultats=>{})
    })
    .then(paramsEmailSmtp => {
@@ -342,8 +341,8 @@ class GestionDeployeurPublic extends React.Component {
     let requetes = {'requetes': [requete]};
     webSocketManager.transmettreRequete(routingKey, requetes)
     .then( docsRecu => {
-      console.log("Docs recus requete");
-      console.log(docsRecu);
+      console.debug("Docs recus requete");
+      console.debug(docsRecu);
       return docsRecu[0][0];  // Recuperer avec un then(resultats=>{})
    })
    .then(documentPubliqueConfiguration => {
