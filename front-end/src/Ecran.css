@@ -137,3 +137,21 @@ path {
 .formulaire div.boutons {
   padding-top: 1em;
 }
+
+.w3-card {
+  margin-bottom: 5px;
+}
+
+/* S'assurer de prendre la place pour les DIV vide dans un tableau */
+.row-donnees > DIV {
+  min-height: 1px;
+}
+
+.row-donnees.expiree DIV.date {
+  color: red;
+}
+
+SPAN.label {
+  width: 10em;
+  display: inline;
+}

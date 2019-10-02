@@ -1,17 +1,22 @@
 import React from 'react';
 import webSocketManager from '../WebSocketManager';
+import {dateformatter} from '../formatters'
+import './Parametres.css';
 
 const domaine = 'millegrilles.domaines.Parametres';
-const libelle_emailSmtp = 'email.stmp'
+const libelle_emailSmtp = 'email.stmp';
+const libelle_publique_configuration = 'publique.configuration';
 
 export class Parametres extends React.Component {
 
   state = {
     parametreCourant: null,
+    publiqueConfiguration: null,
   }
 
   sousPages = {
     'GestionEmailSmtp': GestionEmailSmtp,
+    'GestionDeployeurPublic': GestionDeployeurPublic,
   }
 
   fonctionsNavigation = {
@@ -34,6 +39,11 @@ export class Parametres extends React.Component {
             <li>
               <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="GestionEmailSmtp">
                 Gerer serveurs de notification par courriel (SMTP)
+              </button>
+            </li>
+            <li>
+              <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="GestionDeployeurPublic">
+                Deployeur public sur internet
               </button>
             </li>
           </ul>
@@ -265,6 +275,181 @@ class GestionEmailSmtp extends React.Component {
           <div className="w3-container w3-padding">
             <div>
               {this.renderFormulaire()}
+            </div>
+          </div>
+        </div>
+
+      </div>
+    );
+  }
+}
+
+class GestionDeployeurPublic extends React.Component {
+
+  state = {
+    urlPublicWeb: '',
+    portHttp: 80,
+    portHttps: 443,
+    urlPublicMq: '',
+    portMq: 5673,
+  }
+
+  config = {
+    subscriptions: [
+      'noeuds.source.millegrilles_domaines_Parametres.documents.publique.configuration',
+    ]
+  };
+
+  // Fonctions Formulaire
+  changerUrlWeb = event => {this.setState({urlPublicWeb: event.currentTarget.value})}
+  changerHttp = event => {this.setState({portHttp: parseInt(event.currentTarget.value)})}
+  changerHttps = event => {this.setState({portHttps: parseInt(event.currentTarget.value)})}
+  changerUrlMq = event => {this.setState({urlPublicMq: event.currentTarget.value})}
+  changerMq = event => {this.setState({portMq: parseInt(event.currentTarget.value)})}
+
+  chargerInformationCourante() {
+    let routingKey = 'requete.' + domaine;
+    let requete = {
+      'filtre': {
+          '_mg-libelle': libelle_publique_configuration,
+      },
+    };
+    let requetes = {'requetes': [requete]};
+    webSocketManager.transmettreRequete(routingKey, requetes)
+    .then( docsRecu => {
+      console.log("Docs recus requete");
+      console.log(docsRecu);
+      return docsRecu[0][0];  // Recuperer avec un then(resultats=>{})
+   })
+   .then(documentPubliqueConfiguration => {
+     this.setState({publiqueConfiguration: documentPubliqueConfiguration})
+   })
+   .catch(err=>{
+     console.error("Erreur requete documents publiqueConfiguration");
+     console.error(err);
+   });
+  }
+
+  componentDidMount() {
+    // Enregistrer les routingKeys de documents
+    webSocketManager.subscribe(this.config.subscriptions, this.processMessage);
+    this.chargerInformationCourante();
+  }
+
+  processMessage = (routingKey, doc) => {
+    if(routingKey === 'noeuds.source.millegrilles_domaines_Parametres.documents.publique.configuration') {
+      console.debug("Configuration publique mise a jour/activite")
+      console.debug(doc);
+      this.setState({publiqueConfiguration: doc});
+    } else if(routingKey === 'noeuds.source.millegrilles_domaines_SenseursPassifs.documents.senseur.individuel') {
+      if(this.state.senseur_id && Number(this.state.senseur_id) === doc.senseur) {
+        // Update du document presentement affiche
+        // On met dans un array pour matcher la reponse initiale (find)
+        this.setState({documentSenseur: [doc]});
+      }
+    }
+
+  }
+
+  renderActivite() {
+
+    let listeActivites = [];
+
+    if(this.state.publiqueConfiguration) {
+      let activites = this.state.publiqueConfiguration.activite;
+      for(let idx in activites) {
+        let activite = activites[idx];
+        listeActivites.push(
+          <div key={activite.date} className='w3-card w3-row-padding row-donnees'>
+            <div className="w3-col m2 w3-text-blue-grey">
+              {dateformatter.format_datetime(activite.date)}
+            </div>
+            <div className="w3-col m10 nowrap w3-small">
+              <span className="w3-hide w3-hide-large w3-hide-medium w3-show-inline-block label">Description </span>{activite.description}
+            </div>
+          </div>
+        );
+      }
+    }
+
+    return (
+      <div>
+        <ul>
+          {listeActivites}
+        </ul>
+      </div>
+    );
+  }
+
+  renderFormulaire() {
+    return (
+      <form onSubmit={event => event.preventDefault()}>
+        <div className="w3-container formulaire">
+          <div>
+            <div className="w3-col m4 label">URL public web</div>
+            <div className="w3-col m8 champ">
+              <input type="text" value={this.state.urlPublicWeb} onChange={this.changerUrlWeb} size="40" placeholder="www.millegrilles.com"/>
+            </div>
+          </div>
+          <div>
+            <div className="w3-col m4 label">Port http</div>
+            <div className="w3-col m8 champ">
+              <input type="number" value={this.state.portHttp} onChange={this.changerHttp} size="5"/>
+            </div>
+          </div>
+          <div>
+            <div className="w3-col m4 label">Port https</div>
+            <div className="w3-col m8 champ">
+              <input type="number" value={this.state.portHttps} onChange={this.changerHttps} size="5"/>
+            </div>
+          </div>
+          <div>
+            <div className="w3-col m4 label">URL public mq</div>
+            <div className="w3-col m8 champ">
+              <input type="text" value={this.state.urlPublicMq} onChange={this.changerUrlMq} size="40" placeholder="mq.millegrilles.com"/>
+            </div>
+          </div>
+          <div>
+            <div className="w3-col m4 label">Port RabbitMQ</div>
+            <div className="w3-col m8 champ">
+              <input type="number" value={this.state.portMq} onChange={this.changerMq} size="5"/>
+            </div>
+          </div>
+        </div>
+      </form>
+    )
+  }
+
+  render() {
+
+    return (
+      <div className="w3-col m12">
+
+        <div className="w3-card w3-round w3-white">
+          <div className="w3-container w3-padding">
+            <div>
+              <h2 className="w3-opacity">Gestion Deployeur Public</h2>
+              <p>
+                Cette page permet de configurer l&apos;exposition de la MilleGrille sur internet.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="w3-card w3-round w3-white">
+          <div className="w3-container w3-padding">
+            <h2 className="w3-text-blue-grey">Configuration publique</h2>
+            <div>
+              {this.renderFormulaire()}
+            </div>
+          </div>
+        </div>
+
+        <div className="w3-card w3-round w3-white">
+          <div className="w3-container w3-padding">
+            <h2 className="w3-text-blue-grey">Activité</h2>
+            <div>
+              {this.renderActivite()}
             </div>
           </div>
         </div>
