@@ -76,7 +76,7 @@ export class NavBar extends React.Component {
         </button>
         <button className="w3-bar-item w3-button w3-padding-large w3-theme-d4 Principal">
           <i className="fa fa-home w3-margin-right"></i>
-          Coup D'Oeil
+          Coup D&apos;Oeil
         </button>
         <button className="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" title="Mes tâches">
           <i className="fa fa-calendar-check-o"></i>
@@ -95,7 +95,7 @@ function Accueil(props) {
           <div className="w3-card w3-round w3-white">
             <div className="w3-container w3-padding">
               <h2 className="w3-opacity">
-                Bienvenue a Coup D'Oeil.
+                Bienvenue a Coup D&apos;Oeil.
               </h2>
               <p>Choisissez un domaine dans le menu de gauche pour poursuivre.</p>
             </div>

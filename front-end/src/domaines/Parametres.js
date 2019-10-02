@@ -28,7 +28,7 @@ export class Parametres extends React.Component {
     return (
       <div className="w3-card w3-round w3-white">
         <div className="w3-container w3-padding">
-          <h2 className="w3-opacity">Parametres d'administration de la MilleGrille</h2>
+          <h2 className="w3-opacity">Parametres d&apos;administration de la MilleGrille</h2>
 
           <ul>
             <li>
