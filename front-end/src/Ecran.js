@@ -46,7 +46,15 @@ class EcranApp extends React.Component {
       const domaine = event.currentTarget.dataset.domaine;
        console.debug('Domaine change vers: ' + domaine);
       if(domaine) {
-        this.setState({navigationState: {domaineActif: domaine}});
+        if(domaine !== this.state.navigationState.domaineActif) {
+          this.setState({navigationState: {domaineActif: domaine}});
+        } else {
+          // L'usager a clique sur le meme domaine que celui deja charge.
+          // On force un toggle du domaine, brut mais effectif.
+          this.setState({navigationState: {domaineActif: null}}, ()=>{
+            this.setState({navigationState: {domaineActif: domaine}});
+          });
+        }
       }
     },
 
