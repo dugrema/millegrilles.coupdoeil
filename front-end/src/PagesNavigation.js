@@ -183,6 +183,7 @@ function MenuGauche(props) {
       <MenuGaucheNavigation
         documentDomaines={props.documentDomaines}
         {...props.fonctionsNavigation}
+        domaineActif={props.domaineActif}
         />
     </div>
   );
@@ -225,6 +226,9 @@ function MenuGaucheNavigation(props) {
   const listeDomaines = []; //, listeDomainesInconnus = [];
 
   if(props.documentDomaines) {
+    let domaineActif = props.domaineActif;
+    console.log(props.navigationState);
+    console.log(props.domaineActif);
     for(var idx in props.documentDomaines.menu) {
       const nomDomaine = props.documentDomaines.menu[idx];
       const domaine = props.documentDomaines.domaines[nomDomaine];
@@ -232,7 +236,13 @@ function MenuGaucheNavigation(props) {
       // Verifier si le domaine est charge
       if(domainesConnus[domaine.description]) {
 
-        var className = 'w3-button w3-block w3-theme-l3 w3-left-align bouton-menu-gauche';
+        var className = 'w3-button w3-block w3-left-align bouton-menu-gauche';
+        if(nomDomaine === domaineActif) {
+          className = className + ' w3-theme-l4';
+        } else {
+          className = className + ' w3-theme-l3';
+        }
+
         listeDomaines.push((
           <button
             key={domaine.description}
