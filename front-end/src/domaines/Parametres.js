@@ -297,6 +297,7 @@ class GestionDeployeurPublic extends React.Component {
   config = {
     subscriptions: [
       'noeuds.source.millegrilles_domaines_Parametres.documents.publique.configuration',
+      'noeuds.monitor.docker.nodes',
     ]
   };
 
@@ -333,7 +334,40 @@ class GestionDeployeurPublic extends React.Component {
       });
 
     }
+  }
 
+  privatiserNoeudDocker = event => {
+    let noeudId = event.currentTarget.value;
+    console.debug("Privatiser le noeud " + noeudId);
+
+    var noeud = null;
+    for(let idx in this.state.noeudsDocker) {
+      noeud = this.state.noeudsDocker[idx];
+      if(noeud.ID === noeudId) {
+        break;  // On a trouve le noeud
+      }
+    }
+
+    if(noeud) {
+      let transaction = {
+        noeud_docker_hostname: noeud.Description.Hostname,
+        noeud_docker_id: noeudId,
+        ipv4_interne: noeud.Status.Addr,
+      }
+      let domaine = 'millegrilles.domaines.Parametres.public.privatiser';
+
+      webSocketManager.transmettreTransaction(domaine, transaction)
+      .then(reponse=>{
+        if(reponse.err) {
+          console.error("Erreur transaction");
+        }
+      })
+      .catch(err=>{
+        console.error("Erreur sauvegarde");
+        console.error(err);
+      });
+
+    }
   }
 
   // Fonctions Formulaire Configuration Publique
@@ -431,6 +465,8 @@ class GestionDeployeurPublic extends React.Component {
       console.debug("Configuration publique mise a jour/activite")
       console.debug(doc);
       this.setState({publiqueConfiguration: doc});
+    } else if(routingKey === 'noeuds.monitor.docker.nodes') {
+      this.setState({noeudsDocker: doc.noeuds});
     }
   }
 
