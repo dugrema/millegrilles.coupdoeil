@@ -1,6 +1,6 @@
 import React from 'react';
 // import logo from './logo.svg';
-// import './App.css';
+import './App.css';
 import Ecran from './Ecran';
 import { solveRegistrationChallenge, solveLoginChallenge } from '@webauthn/client';
 import openSocket from 'socket.io-client';
@@ -23,7 +23,11 @@ const fakeAuth = {
             'content-type': 'Application/Json'
         },
         body: JSON.stringify({ id: 'uuid', email: 'test@test' })
-    }).then(response => response.json());
+    })
+    .then(response => response.json())
+    .catch(err => {
+      cb(err);
+    });
 
     console.log("Challenge recu");
     console.log(challenge);
@@ -40,7 +44,12 @@ const fakeAuth = {
             },
             body: JSON.stringify(credentials)
         }
-    ).then(response => response.json());
+    )
+    .then(response => response.json())
+    .catch(err => {
+      console.error("Catcher erreur")
+      cb(err);
+    });
 
     if (loggedIn) {
         console.log('registration successful');
@@ -55,13 +64,27 @@ const fakeAuth = {
 
 class Login extends React.Component {
   state = {
-    redirectToReferrer: false
+    redirectToReferrer: false,
+    empreinte: false,
   };
 
   register = () => {
-    fakeAuth.register(() => {
+    fakeAuth.register(err => {
+      if(err) {
+        console.error("Erreur");
+        console.error(err);
+      }
+
       this.setState({ redirectToReferrer: true });
       // console.log("Callback register complete");
+    })
+    .catch(err => {
+      console.log("Erreur");
+      console.log(err);
+
+      let erreur = "L'empreinte a déjà été complétée avec succès. Si vous avez perdu votre clé, il faudra reinitialiser la MilleGrille."
+      this.setState({messageErreur: erreur});
+
     });
   };
 
@@ -113,30 +136,70 @@ class Login extends React.Component {
   render() {
     // if (redirectToReferrer) return <Redirect to={from} />;
 
-    return (
-      <div>
-        <h1>Bienvenue a Coup D'Oeil</h1>
+    let erreur = null;
+    if(this.state.messageErreur) {
+      erreur = (
+        <div className="w3-col m12 optionrow">
+          <div className="w3-col m1 w3-red">
+            Erreur
+          </div>
+          <div className="w3-col m9">
+            {this.state.messageErreur}
+          </div>
+        </div>
+      );
+    }
 
-        <p>Veuillez selectionner une action.</p>
+    let options = (
+      <form onSubmit={event => event.preventDefault()}>
+        <div className="w3-col m12 optionrow">
+          <div className="w3-col m2 bouton">
+            <button onClick={this.props.login_method}>Authentifier</button>
+          </div>
+          <div className="w3-col m10">
+            Accéder avec un token USB deja associé a votre MilleGrille.
+          </div>
+        </div>
 
-        <form onSubmit={event => event.preventDefault()}>
-          <p>
-            <button onClick={this.props.login_method}>Authentifier</button> avec
-            un token USB deja associe a votre MilleGrille.
-          </p>
+        <div className="w3-col m12 optionrow">
+          <div className="w3-col m2 bouton">
+            <button onClick={this.registerPin}>Activer</button>
+          </div>
+          <div className="w3-col m10">
+            Activer un nouveau token avec un pin:
+            <input type="number" name="pin" className="pin" />
+          </div>
+        </div>
 
-          <p>
-            Engistrer un nouveau token avec un pin:
-            <input type="text" name="pin" />
-            <button onClick={this.registerPin}>Cliquer pour enregistrer</button>
-          </p>
-
-          <p>
-            Effectuer une empreinte sur votre nouvelle MilleGrille:
+        <div className="w3-col m12 optionrow">
+          <div className="w3-col m2 bouton">
             <button onClick={this.register}>Empreinte</button>
-          </p>
+          </div>
+          <div className="w3-col m10">
+            Effectuer une empreinte sur votre nouvelle MilleGrille. Fonctionne
+            uniquement sur une nouvelle MilleGrille.
+          </div>
+        </div>
 
-        </form>
+      </form>
+    );
+
+    return (
+      <div className="w3-col m12">
+        <div className="w3-container">
+          <div className="w3-col m12">
+            <h1>Bienvenue à Coup D&apos;Oeil</h1>
+          </div>
+
+          {erreur}
+
+          {options}
+
+          <div className="w3-col m12">
+            <p>Veuillez sélectionner une action.</p>
+          </div>
+
+        </div>
       </div>
     );
   }
@@ -201,9 +264,10 @@ class App extends React.Component {
     // Login page
     return (
       <div className="App">
-        <header className="App-header">
-          <Login login_method={this.login}/>
-        </header>
+        <Login
+          login_method={this.login}
+          empreinte={this.state.empreinte}
+        />
       </div>
     );
   }

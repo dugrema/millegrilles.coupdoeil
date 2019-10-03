@@ -240,7 +240,7 @@ function MenuGaucheNavigation(props) {
         if(nomDomaine === domaineActif) {
           className = className + ' w3-theme-l4';
         } else {
-          className = className + ' w3-theme-l3';
+          className = className + ' w3-theme-l2';
         }
 
         listeDomaines.push((
@@ -256,30 +256,16 @@ function MenuGaucheNavigation(props) {
 
         ));
       }
-      else {
-      // console.debug("Domaine inconnu: " + domaine.description);
-      //   listeDomainesInconnus.push((
-      //     <span
-      //       key={domaine.description}
-      //       className={classe_rang}
-      //     >{domaine.description}</span>
-      //   ));
-      }
 
     }
   }
 
   const menu = (
     <div className="w3-white menu-domaine-gauche">
-      <button key='Accueil' className='w3-button w3-block w3-theme-l2 w3-left-align bouton-menu-gauche'
+      <button key='Accueil' className='w3-button w3-block w3-theme-l1 w3-left-align bouton-menu-gauche'
         onClick={props.afficherAccueil}>
         <i className="fa fa-home fa-fw w3-margin-right"></i>
         Accueil
-      </button>
-      <button key='Domaines' className='w3-button w3-block w3-theme-l2 w3-left-align bouton-menu-gauche'
-        onClick={props.afficherListeDomaines}>
-        <i className="fa fa-sliders fa-fw w3-margin-right"></i>
-        Domaines
       </button>
       {listeDomaines}
     </div>
