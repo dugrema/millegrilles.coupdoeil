@@ -410,6 +410,73 @@ class GestionDeployeurPublic extends React.Component {
     );
   }
 
+  renderEtatConfiguration() {
+
+    let configurationPublique = this.state.publiqueConfiguration;
+
+    let upnpDisponible = 'non disponible';
+    let deploiementMilleGrille = 'non déployée';
+    let listeMappings = [];
+
+    if(configurationPublique) {
+      if(configurationPublique.upnp_supporte) {
+        upnpDisponible = 'disponible';
+      }
+
+      if(configurationPublique.actif) {
+        deploiementMilleGrille = 'déployée';
+      }
+
+      for(let idx in configurationPublique.mappings_ipv4) {
+        let mapping = configurationPublique.mappings_ipv4[idx];
+        listeMappings.push(
+          <div key={mapping.port_ext}>
+            <div className="w3-col m4">{mapping.port_mapping_nom}</div>
+            <div className="w3-col m3">{mapping.port_ext}</div>
+            <div className="w3-col m5">{mapping.ipv4_interne}:{mapping.port_int}</div>
+          </div>
+        );
+      }
+    } else {
+      configurationPublique = {}
+    }
+
+    return (
+      <div className="w3-container formulaire">
+        <div>
+          <div className="w3-col m4 label">État public de la MilleGrille</div>
+          <div className="w3-col m8 champ">{deploiementMilleGrille}</div>
+        </div>
+
+        <div>
+          <div className="w3-col m4 label">URL web</div>
+          <div className="w3-col m8 champ">{configurationPublique.url_web}</div>
+        </div>
+
+        <div>
+          <div className="w3-col m4 label">URL RabbitMQ</div>
+          <div className="w3-col m8 champ">{configurationPublique.url_mq}</div>
+        </div>
+
+        <div>
+          <div className="w3-col m4 label">uPNP</div>
+          <div className="w3-col m8 champ">{upnpDisponible}</div>
+        </div>
+
+        <div className="w3-col m12"><br/></div>
+        <div className="w3-col m4">Nom du mapping</div>
+        <div className="w3-col m3">Port externe</div>
+        <div className="w3-col m5">URL:port interne</div>
+        {listeMappings}
+        <div className="w3-col m12"><br/></div>
+
+        <div className="w3-col m12 w3-center boutons buttonBar">
+          <button onClick={this.deployer} value="Deployer">Déployer</button>
+        </div>
+      </div>
+    );
+  }
+
   renderFormulaire() {
     return (
       <form onSubmit={event => event.preventDefault()}>
@@ -444,8 +511,9 @@ class GestionDeployeurPublic extends React.Component {
               <input type="number" value={this.state.portMq} onChange={this.changerMq} size="5"/>
             </div>
           </div>
-          <div className="w3-col m12 w3-center boutons">
+          <div className="w3-col m12 w3-center boutons buttonBar">
             <button onClick={this.sauvegarder} value="Soumettre">Sauvegarder</button>
+            <button onClick={this.appliquerMappings} value="AppliquerMappings">Appliquer mappings</button>
             <button onClick={this.props.retourParametres} value="Annuler">Annuler</button>
           </div>
         </div>
@@ -472,6 +540,15 @@ class GestionDeployeurPublic extends React.Component {
         <div className="w3-card w3-round w3-white">
           <div className="w3-container w3-padding">
             <h2 className="w3-text-blue-grey">Configuration publique</h2>
+            <div>
+              {this.renderEtatConfiguration()}
+            </div>
+          </div>
+        </div>
+
+        <div className="w3-card w3-round w3-white">
+          <div className="w3-container w3-padding">
+            <h2 className="w3-text-blue-grey">Modifier paramètres routeur</h2>
             <div>
               {this.renderFormulaire()}
             </div>

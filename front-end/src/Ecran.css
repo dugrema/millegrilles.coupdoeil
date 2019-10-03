@@ -155,3 +155,7 @@ SPAN.label {
   width: 10em;
   display: inline;
 }
+
+.buttonBar button {
+  margin-right: 0.5em;
+}
