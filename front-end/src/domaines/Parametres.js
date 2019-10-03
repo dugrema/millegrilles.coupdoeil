@@ -505,9 +505,6 @@ class GestionDeployeurPublic extends React.Component {
         {listeMappings}
         <div className="w3-col m12"><br/></div>
 
-        <div className="w3-col m12 w3-center boutons buttonBar">
-          <button onClick={this.deployer} value="Deployer">Déployer</button>
-        </div>
       </div>
     );
   }
@@ -523,6 +520,21 @@ class GestionDeployeurPublic extends React.Component {
         console.debug(noeud);
 
         let idNoeud = noeud.ID;
+
+        let estPublic = noeud.Spec.Labels['netzone.public'];
+        let boutonPublic = (
+          <button key={'public'+idNoeud} onClick={this.publierNoeud} value="Deployer">Publier</button>
+        )
+        let boutonPrivatiser = (
+          <button key={'public'+idNoeud} onClick={this.privatiserNoeud} value="Privatiser">Privatiser</button>
+        )
+        let boutons = [];
+        if(estPublic) {
+          boutons.push(boutonPrivatiser);
+        } else {
+          boutons.push(boutonPublic);
+        }
+
         let labels = [];
         for(let labelKey in noeud.Spec.Labels) {
           let labelValue = noeud.Spec.Labels[labelKey];
@@ -534,14 +546,16 @@ class GestionDeployeurPublic extends React.Component {
         }
 
         let noeud_rendered = (
-          <div key={noeud.ID} className="row-donnees">
-            <div className="w3-col m1">OX</div>
+          <div key={noeud.ID} className='w3-card w3-row-padding row-donnees'>
             <div className="w3-col m3">
               <span className='valeur'>{noeud.Description.Hostname}</span>
               <span className='valeur'>IP: {noeud.Status.Addr}</span>
             </div>
             <div className="w3-col m7 nodelabels"><ul>{labels}</ul></div>
-            <div className="w3-col m1">{noeud.Status.State}</div>
+            <div className="w3-col m2">
+              {noeud.Status.State}
+              {boutons}
+            </div>
           </div>
         )
         noeuds.push(noeud_rendered);
@@ -551,11 +565,10 @@ class GestionDeployeurPublic extends React.Component {
     return (
       <form onSubmit={event => event.preventDefault()}>
         <div className="w3-container formulaire">
-          <div className="row-donnees">
-            <div className="w3-col m1"></div>
+          <div className='w3-card w3-row-padding row-donnees'>
             <div className="w3-col m3">Noeud</div>
             <div className="w3-col m7">Labels</div>
-            <div className="w3-col m1">Status</div>
+            <div className="w3-col m2">Status</div>
           </div>
           {noeuds}
         </div>
