@@ -291,6 +291,7 @@ class GestionDeployeurPublic extends React.Component {
     portHttps: 443,
     urlPublicMq: '',
     portMq: 5673,
+    noeudsDocker: [],
   }
 
   config = {
@@ -359,6 +360,40 @@ class GestionDeployeurPublic extends React.Component {
      console.error("Erreur requete documents publiqueConfiguration");
      console.error(err);
    });
+
+
+   let routingKeyNoeudsDocker = 'requete.monitor.services.noeuds';
+   webSocketManager.transmettreRequete(routingKeyNoeudsDocker, {'requetes': []})
+   .then( docsRecu => {
+     console.debug("Doc noeuds");
+     console.debug(docsRecu);
+     this.setState({
+       noeudsDocker: docsRecu,
+     })
+     //
+     // let noeudsDocker = [];
+     // for(let idx in docsRecu) {
+     //   let noeud = docsRecu[idx];
+     //   let mapped_noeud = {
+     //     id: noeud.ID,
+     //     hostname: noeud.Description.Hostname,
+     //     ip: noeud.Status.Addr,
+     //     state: noeud.Status.State,
+     //     availability: noeud.Spec.Availability,
+     //   }
+     //   noeudsDocker.push(mapped_noeud)
+     //   console.log(mapped_noeud)
+     // }
+     //
+     // this.setState({
+     //   noeudsDocker,
+     // })
+    })
+    .catch(err=>{
+      console.error("Erreur requete noeuds docker");
+      console.error(err);
+    });
+
   }
 
   componentDidMount() {
@@ -477,6 +512,57 @@ class GestionDeployeurPublic extends React.Component {
     );
   }
 
+  renderNoeudsDocker() {
+
+    let noeuds = [];
+    if(this.state.noeudsDocker) {
+      let noeudsDocker = this.state.noeudsDocker;
+      for(let idx in noeudsDocker) {
+        let noeud = noeudsDocker[idx];
+        console.debug("Noeud");
+        console.debug(noeud);
+
+        let idNoeud = noeud.ID;
+        let labels = [];
+        for(let labelKey in noeud.Spec.Labels) {
+          let labelValue = noeud.Spec.Labels[labelKey];
+          labels.push(
+            <li key={idNoeud + labelKey}>
+              {labelKey + " = " + labelValue}
+            </li>
+          )
+        }
+
+        let noeud_rendered = (
+          <div key={noeud.ID} className="row-donnees">
+            <div className="w3-col m1">OX</div>
+            <div className="w3-col m3">
+              <span className='valeur'>{noeud.Description.Hostname}</span>
+              <span className='valeur'>IP: {noeud.Status.Addr}</span>
+            </div>
+            <div className="w3-col m7 nodelabels"><ul>{labels}</ul></div>
+            <div className="w3-col m1">{noeud.Status.State}</div>
+          </div>
+        )
+        noeuds.push(noeud_rendered);
+      }
+    }
+
+    return (
+      <form onSubmit={event => event.preventDefault()}>
+        <div className="w3-container formulaire">
+          <div className="row-donnees">
+            <div className="w3-col m1"></div>
+            <div className="w3-col m3">Noeud</div>
+            <div className="w3-col m7">Labels</div>
+            <div className="w3-col m1">Status</div>
+          </div>
+          {noeuds}
+        </div>
+      </form>
+    );
+  }
+
   renderFormulaire() {
     return (
       <form onSubmit={event => event.preventDefault()}>
@@ -542,6 +628,15 @@ class GestionDeployeurPublic extends React.Component {
             <h2 className="w3-text-blue-grey">Configuration publique</h2>
             <div>
               {this.renderEtatConfiguration()}
+            </div>
+          </div>
+        </div>
+
+        <div className="w3-card w3-round w3-white">
+          <div className="w3-container w3-padding">
+            <h2 className="w3-text-blue-grey">Noeuds docker</h2>
+            <div>
+              {this.renderNoeudsDocker()}
             </div>
           </div>
         </div>
