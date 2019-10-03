@@ -300,7 +300,43 @@ class GestionDeployeurPublic extends React.Component {
     ]
   };
 
-  // Fonctions Formulaire
+  // Fonctions publier sur noeud docker
+  publierSurNoeudDocker = event => {
+    let noeudId = event.currentTarget.value;
+    console.debug("Publier sur noeud " + noeudId);
+
+    var noeud = null;
+    for(let idx in this.state.noeudsDocker) {
+      noeud = this.state.noeudsDocker[idx];
+      if(noeud.ID === noeudId) {
+        break;  // On a trouve le noeud
+      }
+    }
+
+    if(noeud) {
+      let transaction = {
+        noeud_docker_hostname: noeud.Description.Hostname,
+        noeud_docker_id: noeudId,
+        ipv4_interne: noeud.Status.Addr,
+      }
+      let domaine = 'millegrilles.domaines.Parametres.public.deployer';
+
+      webSocketManager.transmettreTransaction(domaine, transaction)
+      .then(reponse=>{
+        if(reponse.err) {
+          console.error("Erreur transaction");
+        }
+      })
+      .catch(err=>{
+        console.error("Erreur sauvegarde");
+        console.error(err);
+      });
+
+    }
+
+  }
+
+  // Fonctions Formulaire Configuration Publique
   changerUrlWeb = event => {this.setState({urlPublicWeb: event.currentTarget.value})}
   changerHttp = event => {this.setState({portHttp: parseInt(event.currentTarget.value)})}
   changerHttps = event => {this.setState({portHttps: parseInt(event.currentTarget.value)})}
@@ -308,6 +344,11 @@ class GestionDeployeurPublic extends React.Component {
   changerMq = event => {this.setState({portMq: parseInt(event.currentTarget.value)})}
 
   sauvegarder = event => {
+    let domaine = 'millegrilles.domaines.Parametres.public.sauvegarder';
+    this.soumettreConfiguration(event, domaine);
+  }
+
+  soumettreConfiguration(event, domaine) {
     let transaction = {
       url_web: this.state.urlPublicWeb,
       port_http: this.state.portHttp,
@@ -316,15 +357,11 @@ class GestionDeployeurPublic extends React.Component {
       port_mq: this.state.portMq,
     }
 
-    let domaine = 'millegrilles.domaines.Parametres.public.sauvegarder';
     webSocketManager.transmettreTransaction(domaine, transaction)
     .then(reponse=>{
       if(reponse.err) {
         console.error("Erreur transaction");
       }
-
-      // Complet, on retourne a la page Parametres
-      this.props.retourParametres(event);
     })
     .catch(err=>{
       console.error("Erreur sauvegarde");
@@ -370,24 +407,6 @@ class GestionDeployeurPublic extends React.Component {
      this.setState({
        noeudsDocker: docsRecu,
      })
-     //
-     // let noeudsDocker = [];
-     // for(let idx in docsRecu) {
-     //   let noeud = docsRecu[idx];
-     //   let mapped_noeud = {
-     //     id: noeud.ID,
-     //     hostname: noeud.Description.Hostname,
-     //     ip: noeud.Status.Addr,
-     //     state: noeud.Status.State,
-     //     availability: noeud.Spec.Availability,
-     //   }
-     //   noeudsDocker.push(mapped_noeud)
-     //   console.log(mapped_noeud)
-     // }
-     //
-     // this.setState({
-     //   noeudsDocker,
-     // })
     })
     .catch(err=>{
       console.error("Erreur requete noeuds docker");
@@ -516,17 +535,15 @@ class GestionDeployeurPublic extends React.Component {
       let noeudsDocker = this.state.noeudsDocker;
       for(let idx in noeudsDocker) {
         let noeud = noeudsDocker[idx];
-        console.debug("Noeud");
-        console.debug(noeud);
 
         let idNoeud = noeud.ID;
 
         let estPublic = noeud.Spec.Labels['netzone.public'];
         let boutonPublic = (
-          <button key={'public'+idNoeud} onClick={this.publierNoeud} value="Deployer">Publier</button>
+          <button key={'public'+idNoeud} onClick={this.publierSurNoeudDocker} value={idNoeud}>Publier</button>
         )
         let boutonPrivatiser = (
-          <button key={'public'+idNoeud} onClick={this.privatiserNoeud} value="Privatiser">Privatiser</button>
+          <button key={'public'+idNoeud} onClick={this.privatiserNoeudDocker} value={idNoeud}>Privatiser</button>
         )
         let boutons = [];
         if(estPublic) {
@@ -612,7 +629,6 @@ class GestionDeployeurPublic extends React.Component {
           </div>
           <div className="w3-col m12 w3-center boutons buttonBar">
             <button onClick={this.sauvegarder} value="Soumettre">Sauvegarder</button>
-            <button onClick={this.appliquerMappings} value="AppliquerMappings">Appliquer mappings</button>
             <button onClick={this.props.retourParametres} value="Annuler">Annuler</button>
           </div>
         </div>
