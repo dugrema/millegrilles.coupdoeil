@@ -287,6 +287,7 @@ class GestionDeployeurPublic extends React.Component {
 
   state = {
     urlPublicWeb: '',
+    urlPublicCoupdoeil: '',
     portHttp: 80,
     portHttps: 443,
     urlPublicMq: '',
@@ -372,6 +373,7 @@ class GestionDeployeurPublic extends React.Component {
 
   // Fonctions Formulaire Configuration Publique
   changerUrlWeb = event => {this.setState({urlPublicWeb: event.currentTarget.value})}
+  changerUrlCoupdoeil = event => {this.setState({urlPublicCoupdoeil: event.currentTarget.value})}
   changerHttp = event => {this.setState({portHttp: parseInt(event.currentTarget.value)})}
   changerHttps = event => {this.setState({portHttps: parseInt(event.currentTarget.value)})}
   changerUrlMq = event => {this.setState({urlPublicMq: event.currentTarget.value})}
@@ -385,6 +387,7 @@ class GestionDeployeurPublic extends React.Component {
   soumettreConfiguration(event, domaine) {
     let transaction = {
       url_web: this.state.urlPublicWeb,
+      url_coupdoeil: this.state.urlPublicCoupdoeil,
       port_http: this.state.portHttp,
       port_https: this.state.portHttps,
       url_mq: this.state.urlPublicMq,
@@ -421,6 +424,7 @@ class GestionDeployeurPublic extends React.Component {
      this.setState({
        publiqueConfiguration: documentPubliqueConfiguration,
        urlPublicWeb: documentPubliqueConfiguration.url_web || '',
+       urlPublicCoupdoeil: documentPubliqueConfiguration.url_coupdoeil || '',
        portHttp: documentPubliqueConfiguration.port_http || 80,
        portHttps: documentPubliqueConfiguration.port_https || 443,
        urlPublicMq: documentPubliqueConfiguration.url_mq || '',
@@ -637,6 +641,12 @@ class GestionDeployeurPublic extends React.Component {
             <div className="w3-col m4 label">URL public web</div>
             <div className="w3-col m8 champ">
               <input type="text" value={this.state.urlPublicWeb} onChange={this.changerUrlWeb} size="40" placeholder="www.millegrilles.com"/>
+            </div>
+          </div>
+          <div>
+            <div className="w3-col m4 label">URL public Coup D&apos;Oeil</div>
+            <div className="w3-col m8 champ">
+              <input type="text" value={this.state.urlPublicCoupdoeil} onChange={this.changerUrlCoupdoeil} size="40" placeholder="coupdoeil.millegrilles.com"/>
             </div>
           </div>
           <div>
