@@ -7,6 +7,7 @@ import {GrosFichiers} from './domaines/GrosFichiers';
 import {InterfacePrincipale} from './domaines/Principale.js';
 import {Plume} from './domaines/Plume.js';
 import {Parametres} from './domaines/Parametres.js';
+import {Pki} from './domaines/Pki.js';
 
 const domainesConnus = {
   'SenseursPassifs': SenseursPassifs,
@@ -14,6 +15,7 @@ const domainesConnus = {
   'Principale': InterfacePrincipale,
   'Plume': Plume,
   'Parametres': Parametres,
+  'Pki': Pki,
 };
 
 export function SectionContenu(props) {
