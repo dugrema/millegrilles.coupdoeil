@@ -36,7 +36,7 @@ export class SignerNoeud extends React.Component {
 
       if(reponse.autorise) {
 
-        this.setState({certificat: reponse.cert});
+        this.setState({certificat: reponse.fullchain});
 
       } else {
         this.setState({
