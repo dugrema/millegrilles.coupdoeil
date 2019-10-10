@@ -8,11 +8,7 @@ export class SenseursPassifs extends React.Component {
 
   state = {
     listeNoeuds: [],
-    noeud_id: null,
-    // senseur_id: null,
     uuid_senseur: null,
-    documentNoeud: null,
-    documentSenseur: null
   };
 
   // Configuration statique du composant:
@@ -28,7 +24,13 @@ export class SenseursPassifs extends React.Component {
   fonctionsNavigation = {
     retourSenseurs: event => {
       this.setState({uuid_senseur: null});
-    }
+    },
+    versPageListeNoeuds: event => {
+      this.setState({uuid_senseur: null});
+    },
+    versPageSenseur: event => {
+      this.setState({uuid_senseur: event.currentTarget.value});
+    },
   }
 
   processMessage = (routingKey, doc) => {
@@ -89,33 +91,6 @@ export class SenseursPassifs extends React.Component {
       console.error(err);
     });
   }
-
-  versPageListeNoeuds = () => {
-    this.setState({
-      noeud_id: null,
-      uuid_senseur: null,
-      documentNoeud: null,
-      documentSenseur: null
-    });
-  }
-
-  versPageNoeud = (event) => {
-    const dataset = event.currentTarget.dataset;
-    this.setState({
-      noeud_id: dataset.noeud,
-      uuid_senseur: null,
-      documentSenseur: null
-    });
-  }
-
-  versPageSenseur = (event) => {
-    // const dataset = event.currentTarget.dataset;
-    this.setState({
-      uuid_senseur: event.currentTarget.value,
-      // noeud_id: dataset.noeud,
-      // senseur_id: dataset.nosenseur
-    });
-  };
 
   supprimerSenseur = (event) => {
     const dataset = event.currentTarget.dataset;
@@ -182,21 +157,13 @@ export class SenseursPassifs extends React.Component {
           {...this.fonctionsNavigation}
         />
       );
-    } else if(this.state.noeud_id) {
-      // Afficher la page du noeud
-      contenu = (
-        <div>
-          <p>Afficher noeud {this.state.noeud_id}</p>
-          <button className="aslink" onClick={this.versPageListeNoeuds}>Vers liste noeuds</button>
-        </div>
-      )
     } else {
       // Afficher la page par defaut, liste des noeuds
       contenu = (
         <AfficherNoeuds
           listeNoeuds={this.state.listeNoeuds}
           versPageNoeud={this.versPageNoeud}
-          versPageSenseur={this.versPageSenseur}
+          {...this.fonctionsNavigation}
           />
       );
     }
