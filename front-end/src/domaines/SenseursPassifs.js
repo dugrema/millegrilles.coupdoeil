@@ -622,7 +622,7 @@ function getBatterieIcon(documentSenseur) {
   var batterieIcon = null;
   if(documentSenseur.bat_reserve > 100) {
     batterieIcon = (<i className="fa fa-bug"/>);
-  } else if(documentSenseur.bat_reserve == 100) {
+  } else if(documentSenseur.bat_reserve === 100) {
     batterieIcon = (<i className="fa fa-bolt"/>);
   } else if(documentSenseur.bat_reserve < 100 && documentSenseur.millivolt > 75) {
     batterieIcon = (<i className="fa fa-battery-full"/>);

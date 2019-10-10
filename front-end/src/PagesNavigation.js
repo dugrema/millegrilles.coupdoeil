@@ -229,8 +229,8 @@ function MenuGaucheNavigation(props) {
 
   if(props.documentDomaines) {
     let domaineActif = props.domaineActif;
-    console.log(props.navigationState);
-    console.log(props.domaineActif);
+    // console.log(props.navigationState);
+    // console.log(props.domaineActif);
     for(var idx in props.documentDomaines.menu) {
       const nomDomaine = props.documentDomaines.menu[idx];
       const domaine = props.documentDomaines.domaines[nomDomaine];

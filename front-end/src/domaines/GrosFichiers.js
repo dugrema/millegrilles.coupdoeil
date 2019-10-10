@@ -304,6 +304,11 @@ export class GrosFichiers extends React.Component {
 
     supprimer: (selection) => {
       console.debug("Supprimer");
+
+      let feedbackFichier = msg => {
+        console.debug("Fichier supprime: " + uuid);
+      }
+
       for(var uuid in selection) {
         let infoitem = selection[uuid];
         let typeitem = infoitem.type;
@@ -316,9 +321,7 @@ export class GrosFichiers extends React.Component {
 
           webSocketManager.transmettreTransaction(
             'millegrilles.domaines.GrosFichiers.supprimerFichier', transaction)
-          .then(msg=>{
-            console.debug("Fichier supprime: " + uuid);
-          }).catch(err=>{
+          .then(msg=>feedbackFichier).catch(err=>{
             console.error("Erreur suppression fichier");
             console.error(err);
           });
