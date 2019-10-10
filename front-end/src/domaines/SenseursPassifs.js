@@ -182,14 +182,8 @@ function AfficherNoeuds(props) {
       const senseurs = [];
       for(var noSenseur in noeud.dict_senseurs) {
         let senseur = noeud.dict_senseurs[noSenseur];
-        let date_formattee = dateformatter.format_monthhour(senseur.timestamp);
 
-        var nomSenseur = senseur.location;
-        if(!nomSenseur || nomSenseur === '') {
-          nomSenseur = noSenseur;
-        }
-
-        var batterieIcon = getBatterieIcon(senseur);
+        let lecturesFormattees = formatterLecture(senseur);
 
         senseurs.push(
           <div key={noSenseur} className="senseur">
@@ -197,13 +191,13 @@ function AfficherNoeuds(props) {
               <button
                 className="aslink"
                 value={senseur.uuid_senseur}
-                onClick={props.versPageSenseur}>{nomSenseur}</button>
+                onClick={props.versPageSenseur}>{lecturesFormattees.nomSenseur}</button>
             </div>
-            <div className="numerique temperature">{numberformatter.format_numberdecimals(senseur.temperature, 1)}&deg;C</div>
-            <div className="numerique humidite">{senseur.humidite}%</div>
-            <div className="numerique pression">{senseur.pression} kPa</div>
-            <div className="numerique humidite">{batterieIcon}</div>
-            <div className="temps">{date_formattee}</div>
+            <div className="numerique temperature">{lecturesFormattees.temperature}</div>
+            <div className="numerique humidite">{lecturesFormattees.humidite}</div>
+            <div className="numerique pression">{lecturesFormattees.pression}</div>
+            <div className="numerique humidite">{lecturesFormattees.batterieIcon}</div>
+            <div className="temps">{lecturesFormattees.timestamp}</div>
           </div>
         );
       }
@@ -403,14 +397,50 @@ class SenseurPassifIndividuel extends React.Component {
     var detailSenseur = "Chargement en cours", modifierSenseur = null;
     var historiqueHoraire, historiqueQuotidien;
 
-    var batterieIcon = getBatterieIcon();
-
     if(listeSenseurs && listeSenseurs[0]) {
       const documentSenseur = listeSenseurs[0];
+      var lecturesFormattees = formatterLecture(documentSenseur);
+
+      var lignes = [];
+      if(lecturesFormattees.bat_mv) {
+        lignes.push(
+          <div key="bat_mv">
+            <div className="w3-col m4 label">Batterie</div>
+            <div className="w3-col m8">{lecturesFormattees.bat_mv} ({documentSenseur.bat_reserve} {lecturesFormattees.batterieIcon})</div>
+          </div>
+        )
+      }
+      if(lecturesFormattees.temperature) {
+        lignes.push(
+          <div key="temperature">
+            <div className="w3-col m4 label">Temperature</div>
+            <div className="w3-col m8">{lecturesFormattees.temperature}</div>
+          </div>
+        )
+      }
+      if(lecturesFormattees.humidite) {
+        lignes.push(
+          <div key="humidite">
+            <div className="w3-col m4 label">Humidite</div>
+            <div className="w3-col m8">{lecturesFormattees.humidite}</div>
+          </div>
+        )
+      }
+      if(lecturesFormattees.pression) {
+        lignes.push(
+          <div key="pression">
+            <div className="w3-col m4 label">Pression atmospherique</div>
+            <div className="w3-col m8">
+              {lecturesFormattees.pression} {documentSenseur.tendance_formattee}
+            </div>
+          </div>
+        )
+      }
+
       detailSenseur = (
         <div className="w3-container w3-padding formulaire">
           <h6 className="w3-col m12 w3-opacity">
-            Senseur { documentSenseur.location }
+            Senseur { lecturesFormattees.location }
           </h6>
           <div>
             <div className="w3-col m4 label">Numero senseur</div>
@@ -422,26 +452,11 @@ class SenseurPassifIndividuel extends React.Component {
           </div>
           <div>
             <div className="w3-col m4 label">Derniere lecture</div>
-            <div className="w3-col m8">{dateformatter.format_monthhour(documentSenseur.timestamp)}</div>
+            <div className="w3-col m8">{lecturesFormattees.timestamp}</div>
           </div>
-          <div>
-            <div className="w3-col m4 label">Batterie</div>
-            <div className="w3-col m8">{documentSenseur.bat_mv} mV ({documentSenseur.bat_reserve}% {getBatterieIcon(documentSenseur)})</div>
-          </div>
-          <div>
-            <div className="w3-col m4 label">Temperature</div>
-            <div className="w3-col m8">{numberformatter.format_numberdecimals(documentSenseur.temperature, 1)} &deg;C</div>
-          </div>
-          <div>
-            <div className="w3-col m4 label">Humidite</div>
-            <div className="w3-col m8">{documentSenseur.humidite}%</div>
-          </div>
-          <div>
-            <div className="w3-col m4 label">Pression atmospherique</div>
-            <div className="w3-col m8">
-              {numberformatter.format_numberdecimals(documentSenseur.pression, 1)} kPa {documentSenseur.tendance_formattee}
-            </div>
-          </div>
+
+          {lignes}
+
         </div>
       );
 
@@ -619,4 +634,30 @@ function getBatterieIcon(documentSenseur) {
   }
 
   return batterieIcon;
+}
+
+function formatterLecture(documentSenseur) {
+  let temperature = null, humidite = null, pression = null, timestamp = null;
+  if(documentSenseur.temperature) { temperature = (<span>{numberformatter.format_numberdecimals(documentSenseur.temperature, 1)}&deg;C</span>); }
+  if(documentSenseur.humidite) { humidite = (<span>{documentSenseur.humidite}%</span>); }
+  if(documentSenseur.pression) { pression = (<span>{documentSenseur.pression} kPa</span>); }
+  if(documentSenseur.timestamp) {
+    timestamp = dateformatter.format_monthhour(documentSenseur.timestamp);
+  }
+
+  var bat_mv, bat_reserve;
+  var batterieIcon = getBatterieIcon(documentSenseur);
+  if(documentSenseur.bat_mv) {
+    bat_mv = (<span>{documentSenseur.bat_mv} mV</span>);
+  }
+  if(documentSenseur.bat_reserve) {
+    bat_reserve = (<span>{documentSenseur.bat_reserve}%</span>);
+  }
+
+  var nomSenseur = documentSenseur.location;
+  if(!nomSenseur || nomSenseur === '') {
+    nomSenseur = documentSenseur.uuid_senseur;
+  }
+
+  return {nomSenseur, temperature, humidite, pression, timestamp, batterieIcon, bat_mv, bat_reserve};
 }
