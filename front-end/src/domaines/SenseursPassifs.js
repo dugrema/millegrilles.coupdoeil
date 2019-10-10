@@ -199,7 +199,7 @@ function AfficherNoeuds(props) {
                 value={senseur.uuid_senseur}
                 onClick={props.versPageSenseur}>{nomSenseur}</button>
             </div>
-            <div className="numerique temperature">{senseur.temperature}&deg;C</div>
+            <div className="numerique temperature">{numberformatter.format_numberdecimals(senseur.temperature, 1)}&deg;C</div>
             <div className="numerique humidite">{senseur.humidite}%</div>
             <div className="numerique pression">{senseur.pression} kPa</div>
             <div className="numerique humidite">{batterieIcon}</div>
@@ -212,9 +212,7 @@ function AfficherNoeuds(props) {
       liste.push(
         <div key={noeud.noeud} className="w3-card w3-round w3-white w3-card_BR">
           <div className="w3-container w3-padding">
-            <h6 className="w3-opacity">
-              <button className="aslink" data-noeud={noeud.noeud} onClick={props.versPageNoeud}>Noeud {noeud.noeud}</button>
-            </h6>
+            <h6 className="w3-opacity">Noeud {noeud.noeud}</h6>
             <div>
               Dernière modification: {date_derniere_modification}
             </div>
@@ -432,7 +430,7 @@ class SenseurPassifIndividuel extends React.Component {
           </div>
           <div>
             <div className="w3-col m4 label">Temperature</div>
-            <div className="w3-col m8">{documentSenseur.temperature} &deg;C</div>
+            <div className="w3-col m8">{numberformatter.format_numberdecimals(documentSenseur.temperature, 1)} &deg;C</div>
           </div>
           <div>
             <div className="w3-col m4 label">Humidite</div>
@@ -441,7 +439,7 @@ class SenseurPassifIndividuel extends React.Component {
           <div>
             <div className="w3-col m4 label">Pression atmospherique</div>
             <div className="w3-col m8">
-              {documentSenseur.pression} kPa {documentSenseur.tendance_formattee}
+              {numberformatter.format_numberdecimals(documentSenseur.pression, 1)} kPa {documentSenseur.tendance_formattee}
             </div>
           </div>
         </div>
