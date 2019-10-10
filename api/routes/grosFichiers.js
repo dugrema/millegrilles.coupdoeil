@@ -58,7 +58,7 @@ function authentication(req, res, next) {
   return;
 };
 
-const uploadNouveauFichier = multerHandler.fields([{name: 'grosfichier', maxCount: 10}]);
+const uploadNouveauFichier = multerHandler.single('grosfichier');
 
 // Configuration router
 
