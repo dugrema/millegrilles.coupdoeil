@@ -92,10 +92,10 @@ export class SenseursPassifs extends React.Component {
     });
   }
 
-  supprimerSenseur = (event) => {
-    const dataset = event.currentTarget.dataset;
-    var noSenseur = dataset.nosenseur;
-    var nomNoeud = dataset.noeud;
+  supprimerSenseur = event => {
+    const form = event.currentTarget.form;
+    var noSenseur = form.uuid_senseur.value;
+    var nomNoeud = form.noeud.value;
 
     var transaction = {
       noeud: nomNoeud,
@@ -440,7 +440,7 @@ class SenseurPassifIndividuel extends React.Component {
       detailSenseur = (
         <div className="w3-container w3-padding formulaire">
           <h6 className="w3-col m12 w3-opacity">
-            Senseur { lecturesFormattees.location }
+            Senseur { lecturesFormattees.nomSenseur }
           </h6>
           <div>
             <div className="w3-col m4 label">Numero senseur</div>
@@ -474,11 +474,14 @@ class SenseurPassifIndividuel extends React.Component {
             </form>
           </div>
           <div className="w3-col m12 w3-center boutons buttonBar">
-            <input type="hidden" name="uuid_senseur" value={documentSenseur.uuid_senseur} />
-            <button onClick={this.props.retourSenseurs}>Retour</button>
-            <button
-              onClick={this.props.supprimerSenseur}
-              value={documentSenseur.uuid_senseur}>Supprimer</button>
+            <form onSubmit={event => event.preventDefault()}>
+              <input type="hidden" name="uuid_senseur" value={documentSenseur.uuid_senseur} />
+              <input type="hidden" name="noeud" value={documentSenseur.noeud} />
+              <button onClick={this.props.retourSenseurs}>Retour</button>
+              <button
+                onClick={this.props.supprimerSenseur}
+                value={documentSenseur.uuid_senseur}>Supprimer</button>
+              </form>
           </div>
         </div>
       );
