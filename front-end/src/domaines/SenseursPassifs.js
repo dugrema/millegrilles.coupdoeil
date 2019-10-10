@@ -7,9 +7,10 @@ import { GraphiqueCharte2D } from '../chart.js';
 export class SenseursPassifs extends React.Component {
 
   state = {
-    listeNoeuds: null,
+    listeNoeuds: [],
     noeud_id: null,
-    senseur_id: null,
+    // senseur_id: null,
+    uuid_senseur: null,
     documentNoeud: null,
     documentSenseur: null
   };
@@ -22,6 +23,13 @@ export class SenseursPassifs extends React.Component {
       'noeuds.source.millegrilles_domaines_SenseursPassifs.documents.noeud.individuel',
     ]
   };
+
+  // Fonctions de navigation
+  fonctionsNavigation = {
+    retourSenseurs: event => {
+      this.setState({uuid_senseur: null});
+    }
+  }
 
   processMessage = (routingKey, doc) => {
     // console.log("Process message " + routingKey);
@@ -50,7 +58,7 @@ export class SenseursPassifs extends React.Component {
 
       this.setState({'listeNoeuds': copie_liste_noeuds});
     } else if(routingKey === 'noeuds.source.millegrilles_domaines_SenseursPassifs.documents.senseur.individuel') {
-      if(this.state.senseur_id && Number(this.state.senseur_id) === doc.senseur) {
+      if(this.state.uuid_senseur && this.state.uuid_senseur === doc.uuid_senseur) {
         // Update du document presentement affiche
         // On met dans un array pour matcher la reponse initiale (find)
         this.setState({documentSenseur: [doc]});
@@ -85,7 +93,7 @@ export class SenseursPassifs extends React.Component {
   versPageListeNoeuds = () => {
     this.setState({
       noeud_id: null,
-      senseur_id: null,
+      uuid_senseur: null,
       documentNoeud: null,
       documentSenseur: null
     });
@@ -95,16 +103,17 @@ export class SenseursPassifs extends React.Component {
     const dataset = event.currentTarget.dataset;
     this.setState({
       noeud_id: dataset.noeud,
-      senseur_id: null,
+      uuid_senseur: null,
       documentSenseur: null
     });
   }
 
   versPageSenseur = (event) => {
-    const dataset = event.currentTarget.dataset;
+    // const dataset = event.currentTarget.dataset;
     this.setState({
-      noeud_id: dataset.noeud,
-      senseur_id: dataset.nosenseur
+      uuid_senseur: event.currentTarget.value,
+      // noeud_id: dataset.noeud,
+      // senseur_id: dataset.nosenseur
     });
   };
 
@@ -121,20 +130,15 @@ export class SenseursPassifs extends React.Component {
 
     this.setState({
       documentSenseur: null,
-      senseur_id: null,
+      uuid_senseur: null,
     })
   }
 
   renommerSenseur = event => {
-    var form = event.currentTarget.form;
-    var nouveauNom = event.currentTarget.value;
-    var noSenseur = form.nosenseur.value;
-    var nomNoeud = form.noeud.value;
-
+    const form = event.currentTarget.form;
     var transaction = {
-      noeud: nomNoeud,
-      senseur: parseInt(noSenseur, 10),
-      location: nouveauNom,
+      uuid_senseur: form.uuid_senseur.value,
+      location: form.location.value,
     }
     webSocketManager.transmettreTransaction('millegrilles.domaines.SenseursPassifs.changementAttributSenseur', transaction);
   }
@@ -160,22 +164,22 @@ export class SenseursPassifs extends React.Component {
     var contenu;
 
     // Routing entre composants utilise this.state:
-    //  - Si on a un senseur_id, on l'affiche.
+    //  - Si on a un uuid_senseur, on l'affiche.
     //  - Sinon si on a un noeud, on l'affiche.
     //  - Sinon on affiche la liste des noeuds.
-    if(this.state.senseur_id) {
+    if(this.state.uuid_senseur) {
       // Afficher la page du senseur
       contenu = (
         <SenseurPassifIndividuel
           noeud={this.state.noeud_id}
-          nosenseur={this.state.senseur_id}
+          nosenseur={this.state.uuid_senseur}
           chargerDocument={this.chargerDocument}
           documentSenseur={this.state.documentSenseur}
           noeud_id={this.state.noeud_id}
-          senseur_id={this.state.senseur_id}
-          versPageListeNoeuds={this.versPageListeNoeuds}
+          uuid_senseur={this.state.uuid_senseur}
           supprimerSenseur={this.supprimerSenseur}
           renommerSenseur={this.renommerSenseur}
+          {...this.fonctionsNavigation}
         />
       );
     } else if(this.state.noeud_id) {
@@ -218,19 +222,20 @@ function AfficherNoeuds(props) {
           nomSenseur = noSenseur;
         }
 
+        var batterieIcon = getBatterieIcon(senseur);
+
         senseurs.push(
           <div key={noSenseur} className="senseur">
             <div className="location">
               <button
                 className="aslink"
-                data-noeud={noeud.noeud}
-                data-nosenseur={noSenseur}
+                value={senseur.uuid_senseur}
                 onClick={props.versPageSenseur}>{nomSenseur}</button>
             </div>
             <div className="numerique temperature">{senseur.temperature}&deg;C</div>
             <div className="numerique humidite">{senseur.humidite}%</div>
             <div className="numerique pression">{senseur.pression} kPa</div>
-            <div className="numerique humidite">{senseur.bat_reserve} %</div>
+            <div className="numerique humidite">{batterieIcon}</div>
             <div className="temps">{date_formattee}</div>
           </div>
         );
@@ -283,7 +288,9 @@ class SenseurPassifIndividuel extends React.Component {
 
   state = {
     afficherTableauHoraire: false,
-    afficherTableQuotidien: false
+    afficherTableQuotidien: false,
+    locationSenseur: '',
+    documentSenseur: null,
   };
 
   componentDidMount() {
@@ -292,14 +299,35 @@ class SenseurPassifIndividuel extends React.Component {
       'requetes': [{
         'filtre': {
           '_mg-libelle': 'senseur.individuel',
-          'noeud': this.props.noeud_id,
-          'senseur': Number(this.props.senseur_id)
+          // 'noeud': this.props.noeud_id,
+          'uuid_senseur': this.props.uuid_senseur
         }
       }]};
     // console.debug("Requete senseur:");
     // console.debug(requeteDocumentInitial);
 
+    let domaine = 'requete.millegrilles.domaines.SenseursPassifs.documentSenseur';
+    webSocketManager.transmettreRequete(domaine, requeteDocumentInitial)
+    .then( docInitial => {
+      // console.debug("Recu document senseur");
+      // console.debug(docInitial);
+
+      let documentSenseur = docInitial[0][0];
+
+      this.setState({
+        documentSenseur,
+        locationSenseur: documentSenseur.location,
+      })
+    })
+    .catch( err=>{
+      console.error("Erreur chargement document initial");
+      console.error(err);
+    });
     this.props.chargerDocument(requeteDocumentInitial, 'documentSenseur');
+  }
+
+  changerLocationSenseur = event => {
+    this.setState({locationSenseur: event.currentTarget.value});
   }
 
   afficherTableauHoraire = () => {
@@ -407,45 +435,70 @@ class SenseurPassifIndividuel extends React.Component {
 
     const listeSenseurs = this.props.documentSenseur;
 
-    var detailSenseur = "Chargement en cours";
+    var detailSenseur = "Chargement en cours", modifierSenseur = null;
     var historiqueHoraire, historiqueQuotidien;
 
-    if(listeSenseurs) {
+    var batterieIcon = getBatterieIcon();
+
+    if(listeSenseurs && listeSenseurs[0]) {
       const documentSenseur = listeSenseurs[0];
       detailSenseur = (
-        <div className="w3-container w3-padding">
-          <h6 className="w3-opacity">
+        <div className="w3-container w3-padding formulaire">
+          <h6 className="w3-col m12 w3-opacity">
             Senseur { documentSenseur.location }
           </h6>
+          <div>
+            <div className="w3-col m4 label">Numero senseur</div>
+            <div className="w3-col m8">{documentSenseur.uuid_senseur}</div>
+          </div>
+          <div>
+            <div className="w3-col m4 label">Noeud</div>
+            <div className="w3-col m8">{documentSenseur.noeud}</div>
+          </div>
+          <div>
+            <div className="w3-col m4 label">Derniere lecture</div>
+            <div className="w3-col m8">{dateformatter.format_monthhour(documentSenseur.timestamp)}</div>
+          </div>
+          <div>
+            <div className="w3-col m4 label">Batterie</div>
+            <div className="w3-col m8">{documentSenseur.bat_mv} mV ({documentSenseur.bat_reserve}% {getBatterieIcon(documentSenseur)})</div>
+          </div>
+          <div>
+            <div className="w3-col m4 label">Temperature</div>
+            <div className="w3-col m8">{documentSenseur.temperature} &deg;C</div>
+          </div>
+          <div>
+            <div className="w3-col m4 label">Humidite</div>
+            <div className="w3-col m8">{documentSenseur.humidite}%</div>
+          </div>
+          <div>
+            <div className="w3-col m4 label">Pression atmospherique</div>
+            <div className="w3-col m8">
+              {documentSenseur.pression} kPa {documentSenseur.tendance_formattee}
+            </div>
+          </div>
+        </div>
+      );
 
-          <div>Numero senseur: {documentSenseur.senseur}</div>
-          <div>
-            Noeud: {documentSenseur.noeud}
-          </div>
-          <div className="temps">Derniere lecture: {dateformatter.format_monthhour(documentSenseur.temps_lecture)}</div>
-          <div>Batterie: {documentSenseur.millivolt} mV</div>
-          <div className="numerique temperature">Temperature: {documentSenseur.temperature}&deg;C</div>
-          <div className="numerique humidite">Humidite: {documentSenseur.humidite}%</div>
-          <div className="numerique pression">Pression atmospherique: {documentSenseur.pression} kPa</div>
-          <div className="tendance">Tendance pression atmospherique: {documentSenseur.tendance_formattee}</div>
-          <div>
-            Liens:
-            <button className="aslink" onClick={this.props.versPageListeNoeuds}>Vers liste noeuds</button>
-          </div>
-          <div>
-            <p>Actions:</p>
+      modifierSenseur = (
+        <div className="w3-container w3-padding">
+          <h6 className="w3-opacity">Modifier</h6>
+          <div className="w3-col m12">
             <form onSubmit={event => event.preventDefault()}>
-              <input type="hidden" name="nosenseur" value={documentSenseur.senseur} />
-              <input type="hidden" name="noeud" value={documentSenseur.noeud} />
-              <button
-                onClick={this.props.supprimerSenseur}
-                data-nosenseur={documentSenseur.senseur}
-                data-noeud={documentSenseur.noeud}>Supprimer</button>
               <label>
                 Renommer:
-                <input type="text" defaultValue={documentSenseur.location} onBlur={this.props.renommerSenseur}/>
+                <input type="text" name="location" defaultValue={documentSenseur.location} onChange={this.changerLocationSenseur}/>
+                <input type="hidden" name="uuid_senseur" value={documentSenseur.uuid_senseur}/>
+                <button onClick={this.props.renommerSenseur}>Renommer</button>
               </label>
             </form>
+          </div>
+          <div className="w3-col m12 w3-center boutons buttonBar">
+            <input type="hidden" name="uuid_senseur" value={documentSenseur.uuid_senseur} />
+            <button onClick={this.props.retourSenseurs}>Retour</button>
+            <button
+              onClick={this.props.supprimerSenseur}
+              value={documentSenseur.uuid_senseur}>Supprimer</button>
           </div>
         </div>
       );
@@ -525,8 +578,14 @@ class SenseurPassifIndividuel extends React.Component {
             <div className="w3-card w3-round w3-white">
               { detailSenseur }
             </div>
+
+            <div className="w3-card w3-round w3-white">
+              { modifierSenseur }
+            </div>
+
           </div>
         </div>
+
 
         { historiqueHoraire }
 
@@ -572,4 +631,27 @@ class GraphiqueCharte2DReact extends React.Component {
     );
   }
 
+}
+
+function getBatterieIcon(documentSenseur) {
+  if(!documentSenseur) return null;
+
+  var batterieIcon = null;
+  if(documentSenseur.bat_reserve > 100) {
+    batterieIcon = (<i className="fa fa-bug"/>);
+  } else if(documentSenseur.bat_reserve == 100) {
+    batterieIcon = (<i className="fa fa-bolt"/>);
+  } else if(documentSenseur.bat_reserve < 100 && documentSenseur.millivolt > 75) {
+    batterieIcon = (<i className="fa fa-battery-full"/>);
+  } else if(documentSenseur.bat_reserve > 50) {
+    batterieIcon = (<i className="fa fa-battery-three-quarters"/>);
+  } else if(documentSenseur.bat_reserve > 20) {
+    batterieIcon = (<i className="fa fa-battery-quarter"/>);
+  } else if(documentSenseur.bat_reserve > 0) {
+    batterieIcon = (<i className="fa fa-battery-empty"/>);
+  } else {
+    batterieIcon = (<i className="fa fa-bug"/>);
+  }
+
+  return batterieIcon;
 }
