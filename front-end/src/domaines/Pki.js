@@ -1,78 +1,10 @@
 import React from 'react';
 import webSocketManager from '../WebSocketManager';
-import {dateformatter} from '../formatters'
+// import {dateformatter} from '../formatters'
 import './Pki.css';
 
-const domaine = 'millegrilles.domaines.Pki';
-const libelle_signerNoeud = 'signer.noeud';
-
-export class Pki extends React.Component {
-
-  state = {
-    ecranCourant: null,
-  }
-
-  sousPages = {
-    'SignerNoeud': SignerNoeud,
-  }
-
-  fonctionsNavigation = {
-    retourParametres: () => {
-      this.setState({ecranCourant: null});
-    },
-    afficherEcran: event => {
-      let sousPage = this.sousPages[event.currentTarget.value];
-      this.setState({ecranCourant: sousPage});
-    }
-  }
-
-  fonctionsGestion() {
-    return (
-      <div className="w3-card w3-round w3-white">
-        <div className="w3-container w3-padding">
-          <h2 className="w3-opacity">Gestion des certificats (Public Key Infrastructure)</h2>
-
-          <ul>
-            <li>
-              <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="SignerNoeud">
-                Signer un certificat de noeud
-              </button>
-            </li>
-          </ul>
-        </div>
-      </div>
-    );
-  }
-
-  render() {
-    let contenu;
-    if(this.state.ecranCourant) {
-      let ModuleGestion = this.state.ecranCourant;
-
-      contenu = (
-        <ModuleGestion
-          {...this.fonctionsNavigation} />
-      );
-    } else {
-      contenu = (
-        <div className="w3-col m12">
-          {this.fonctionsGestion()}
-        </div>
-      )
-    }
-
-    return (
-
-      <div className="w3-col m9">
-        <div className="w3-row-padding">
-            {contenu}
-        </div>
-      </div>
-    )
-  }
-
-}
-
+// const domaine = 'millegrilles.domaines.Pki';
+// const libelle_signerNoeud = 'signer.noeud';
 
 export class SignerNoeud extends React.Component {
 
@@ -80,6 +12,7 @@ export class SignerNoeud extends React.Component {
     requeteCsr: '',
     domaine: '',
     erreur: null,
+    certificat: null,
   }
 
   changementDomaine = event => {this.setState({domaine: event.currentTarget.value})}
@@ -101,7 +34,11 @@ export class SignerNoeud extends React.Component {
       console.debug("Reponse");
       console.debug(reponse);
 
-      if(!reponse.autorise) {
+      if(reponse.autorise) {
+
+        this.setState({certificat: reponse.cert});
+
+      } else {
         this.setState({
           erreur: {
             message: reponse.description,
@@ -180,6 +117,31 @@ export class SignerNoeud extends React.Component {
 
   render() {
 
+    let contenu;
+    if(this.state.certificat) {
+      contenu = (
+        <div className="w3-card w3-round w3-white">
+          <div className="w3-container w3-padding">
+            <p>
+              Copier le contenu de ce certificat dans un fichier .pem sur
+              le noeud.
+            </p>
+            <pre>
+              {this.state.certificat}
+            </pre>
+          </div>
+        </div>
+      )
+    } else {
+      contenu = (
+        <div className="w3-card w3-round w3-white">
+          <div className="w3-container w3-padding">
+            {this.renderFormulaire()}
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="w3-col m9">
         <div className="w3-row-padding">
@@ -198,15 +160,78 @@ export class SignerNoeud extends React.Component {
 
           {this.renderErreur()}
 
-          <div className="w3-card w3-round w3-white">
-            <div className="w3-container w3-padding">
-              {this.renderFormulaire()}
-            </div>
-          </div>
+          {contenu}
 
         </div>
       </div>
     );
+  }
+
+}
+
+export class Pki extends React.Component {
+
+  state = {
+    ecranCourant: null,
+  }
+
+  sousPages = {
+    'SignerNoeud': SignerNoeud,
+  }
+
+  fonctionsNavigation = {
+    retourPki: () => {
+      this.setState({ecranCourant: null});
+    },
+    afficherEcran: event => {
+      let sousPage = this.sousPages[event.currentTarget.value];
+      this.setState({ecranCourant: sousPage});
+    }
+  }
+
+  fonctionsGestion() {
+    return (
+      <div className="w3-card w3-round w3-white">
+        <div className="w3-container w3-padding">
+          <h2 className="w3-opacity">Gestion des certificats (Public Key Infrastructure)</h2>
+
+          <ul>
+            <li>
+              <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="SignerNoeud">
+                Signer un certificat de noeud
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    );
+  }
+
+  render() {
+    let contenu;
+    if(this.state.ecranCourant) {
+      let ModuleGestion = this.state.ecranCourant;
+
+      contenu = (
+        <ModuleGestion
+          {...this.fonctionsNavigation} />
+      );
+    } else {
+      contenu = (
+        <div className="w3-col m12">
+          {this.fonctionsGestion()}
+        </div>
+      )
+    }
+
+    return (
+
+      <div className="w3-col m9">
+        <div className="w3-row-padding">
+            {contenu}
+        </div>
+      </div>
+    )
   }
 
 }
