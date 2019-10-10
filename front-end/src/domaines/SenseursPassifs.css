@@ -11,3 +11,20 @@ TABLE.tableauDonnees tr:hover {
 TABLE.tableauDonnees tr:nth-child(even) {
   background-color: #f2f2f2;
 }
+
+.senseur div.location {
+  display: inline-block;
+  width: 8em;
+}
+
+.senseur div.numerique {
+  display: inline-block;
+  width: 6em;
+  text-align: right;
+}
+
+.senseur div.temps {
+  display: inline-block;
+  width: 10em;
+  text-align: right;
+}

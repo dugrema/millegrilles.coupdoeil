@@ -211,7 +211,7 @@ function AfficherNoeuds(props) {
       const senseurs = [];
       for(var noSenseur in noeud.dict_senseurs) {
         let senseur = noeud.dict_senseurs[noSenseur];
-        let date_formattee = dateformatter.format_monthhour(senseur.temps_lecture);
+        let date_formattee = dateformatter.format_monthhour(senseur.timestamp);
 
         var nomSenseur = senseur.location;
         if(!nomSenseur || nomSenseur === '') {
@@ -219,7 +219,7 @@ function AfficherNoeuds(props) {
         }
 
         senseurs.push(
-          <li key={noSenseur} className="senseur">
+          <div key={noSenseur} className="senseur">
             <div className="location">
               <button
                 className="aslink"
@@ -230,8 +230,9 @@ function AfficherNoeuds(props) {
             <div className="numerique temperature">{senseur.temperature}&deg;C</div>
             <div className="numerique humidite">{senseur.humidite}%</div>
             <div className="numerique pression">{senseur.pression} kPa</div>
+            <div className="numerique humidite">{senseur.bat_reserve} %</div>
             <div className="temps">{date_formattee}</div>
-          </li>
+          </div>
         );
       }
 
@@ -245,9 +246,19 @@ function AfficherNoeuds(props) {
             <div>
               Dernière modification: {date_derniere_modification}
             </div>
-            <ul className="listeSenseurs">
+
+            <div className="senseur">
+              <div className="location">Location</div>
+              <div className="numerique temperature">Temperature</div>
+              <div className="numerique humidite">Humidite</div>
+              <div className="numerique pression">Pression</div>
+              <div className="numerique humidite">Batterie</div>
+              <div className="temps">Date lecture</div>
+            </div>
+
+            <div className="listeSenseurs">
               {senseurs}
-            </ul>
+            </div>
           </div>
         </div>
       );

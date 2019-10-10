@@ -32,22 +32,6 @@ ul.senseurs {
   background: white;
 }
 
-.senseur div.location {
-  display: block;
-}
-
-.senseur div.numerique {
-  display: inline-block;
-  width: 6em;
-  text-align: right;
-}
-
-.senseur div.temps {
-  display: inline-block;
-  width: 10em;
-  text-align: right;
-}
-
 li.notification div.location {
   display: block;
 }
