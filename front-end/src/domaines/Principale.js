@@ -30,7 +30,7 @@ export class InterfacePrincipale extends React.Component {
 
           <ul>
             <li>
-              Version de Coup D&quote;Oeil: <span title={manifest.date}>{manifest.version}</span>
+              Version de Coup D&apos;Oeil: <span title={manifest.date}>{manifest.version}</span>
             </li>
           </ul>
         </div>
