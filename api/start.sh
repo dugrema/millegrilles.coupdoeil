@@ -16,6 +16,6 @@ export MG_MQ_URL=amqps://$HOST.local:5673/$MG_NOM_MILLEGRILLE
 export PORT=3001
 
 export MG_HTTPPROXY_SECURE=false
-export MG_CONSIGNATION_HTTP=https://$HOST.local:3003
+export MG_CONSIGNATION_HTTP=https://$HOST:3003
 
 npm start
