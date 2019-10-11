@@ -3,6 +3,6 @@ URL_SERVEUR_DEV=mathieu@mg-dev3.local
 NAME=coupdoeil_react
 ARCH_SUPPORTEES=( x86_64 armv7l aarch64 )
 BRANCH=`git name-rev --name-only HEAD`
-BUILD=13
+BUILD=14
 
 VERSION=$BRANCH.$BUILD

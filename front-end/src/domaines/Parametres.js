@@ -665,6 +665,55 @@ class GestionDeployeurPublic extends React.Component {
   }
 }
 
+export class ActionsInterdites extends React.Component {
+
+  fermerMilleGrille = event => {
+    let transaction = {
+    }
+    let domaine = 'millegrilles.domaines.Parametres.fermerMilleGrilles';
+
+    webSocketManager.transmettreTransaction(domaine, transaction)
+    .then(reponse=>{
+      if(reponse.err) {
+        console.error("Erreur transaction");
+      }
+    })
+    .catch(err=>{
+      console.error("Erreur sauvegarde");
+      console.error(err);
+    });
+
+  }
+
+
+  render() {
+
+    return (
+      <div className="w3-col m9">
+        <div className="w3-row-padding">
+
+          <div className="w3-card w3-round w3-white">
+            <div className="w3-container w3-padding">
+              <h2 className="w3-opacity">Actions interdites</h2>
+
+              <p>Dechire l&apos;étiquette de garantie de la MilleGrille</p>
+
+              <ul>
+                <li>
+                  <button className="w3-red" onClick={this.fermerMilleGrille}>
+                    Fermer la MilleGrille
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+}
+
 export class Parametres extends React.Component {
 
   state = {
@@ -675,6 +724,7 @@ export class Parametres extends React.Component {
   sousPages = {
     'GestionEmailSmtp': GestionEmailSmtp,
     'GestionDeployeurPublic': GestionDeployeurPublic,
+    'ActionsInterdites': ActionsInterdites,
   }
 
   fonctionsNavigation = {
@@ -702,6 +752,11 @@ export class Parametres extends React.Component {
             <li>
               <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="GestionDeployeurPublic">
                 Deployeur public sur internet
+              </button>
+            </li>
+            <li>
+              <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="ActionsInterdites">
+                Actions interdites
               </button>
             </li>
           </ul>
