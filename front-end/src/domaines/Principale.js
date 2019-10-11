@@ -50,11 +50,6 @@ export class InterfacePrincipale extends React.Component {
                 Gerer les tokens de securite
               </button>
             </li>
-            <li>
-              <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="gestionProprietesMilleGrille">
-                Gerer les proprietes de la MilleGrille
-              </button>
-            </li>
           </ul>
         </div>
       </div>
@@ -69,14 +64,6 @@ export class InterfacePrincipale extends React.Component {
         <GestionTokens
           {...this.fonctionsNavigation} />
       );
-    } else if(this.state.ecranCourant === 'gestionProprietesMilleGrille') {
-      if(this.props.documentIdMillegrille) {
-        contenu = (
-          <GestionProprietesMilleGrille
-            {...this.fonctionsNavigation}
-            nomMilleGrille={this.props.documentIdMillegrille.nom_millegrille}/>
-        )
-      }
     } else {
       contenu = (
         <div className="w3-col m12">
@@ -173,52 +160,4 @@ class GestionTokens extends React.Component {
     );
   }
 
-}
-
-class GestionProprietesMilleGrille extends React.Component {
-
-  changerNomMilleGrille = event => {
-    let form = event.currentTarget.form;
-    let nomMilleGrille = form.nomMilleGrille.value;
-    console.debug("Renommer la millegrille: " + nomMilleGrille);
-    //let requete = {
-    //};
-  }
-
-  render() {
-    return (
-      <div className="w3-col m12">
-
-        <div className="w3-card w3-round w3-white">
-          <div className="w3-container w3-padding">
-            <div>
-              <h1 className="w3-opacity">Gestion de la MilleGrille</h1>
-              <button className="aslink" onClick={this.props.retourPrincipale}>
-                Retour
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <br/>
-
-        <div className="w3-card w3-round w3-white">
-          <div className="w3-container w3-padding">
-            <div>
-              <h2 className="w3-opacity">Changer le nom de la MilleGrille</h2>
-
-              <form onSubmit={event => event.preventDefault()}>
-                <input type="text" name="nomMilleGrille" defaultValue={this.props.nomMilleGrille}/>
-                <input type="button" name="changerNomMilleGrille"
-                  value="Renommer"
-                  onClick={this.changerNomMilleGrille}
-                />
-              </form>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    );
-  }
 }
