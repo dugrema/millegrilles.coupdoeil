@@ -12,18 +12,33 @@ TABLE.tableauDonnees tr:nth-child(even) {
   background-color: #f2f2f2;
 }
 
-.senseur div.location {
-  display: inline-block;
-  width: 8em;
+DIV.appareil {
+  background-color: #f2f2f2;
 }
 
-.senseur div.numerique {
+.senseur div.location {
+  display: inline-block;
+  width: 22em;
+}
+
+.appareil div.location {
+  display: inline-block;
+  text-align: right;
+  width: 10em;
+}
+
+.entete div.location {
+  display: inline-block;
+  width: 10em;
+}
+
+.senseur div.numerique, .appareil div.numerique {
   display: inline-block;
   width: 6em;
   text-align: right;
 }
 
-.senseur div.temps {
+.senseur div.temps, .appareil div.temps {
   display: inline-block;
   width: 10em;
   text-align: right;

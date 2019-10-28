@@ -193,13 +193,32 @@ function AfficherNoeuds(props) {
                 value={senseur.uuid_senseur}
                 onClick={props.versPageSenseur}>{lecturesFormattees.nomSenseur}</button>
             </div>
-            <div className="numerique temperature">{lecturesFormattees.temperature}</div>
-            <div className="numerique humidite">{lecturesFormattees.humidite}</div>
-            <div className="numerique pression">{lecturesFormattees.pression}</div>
-            <div className="numerique humidite">{lecturesFormattees.batterieIcon}</div>
+            <div className="numerique humidite">
+              <span title={senseur.bat_reserve + "%"}>{lecturesFormattees.batterieIcon}</span>
+              </div>
             <div className="temps">{lecturesFormattees.timestamp}</div>
           </div>
         );
+
+        for(var cleAffichage in senseur.affichage) {
+          var appareil = senseur.affichage[cleAffichage];
+          let lecturesAppareilFormattees = formatterLecture(appareil);
+          if(!lecturesAppareilFormattees.nomSenseur) {
+            lecturesAppareilFormattees.nomSenseur = cleAffichage;
+          }
+
+          senseurs.push(
+            <div key={noSenseur+cleAffichage} className="senseur appareil">
+              <div className="location">
+                  {lecturesAppareilFormattees.nomSenseur}
+              </div>
+              <div className="numerique temperature">{lecturesAppareilFormattees.temperature}</div>
+              <div className="numerique humidite">{lecturesAppareilFormattees.humidite}</div>
+              <div className="numerique pression">{lecturesAppareilFormattees.pression}</div>
+              <div className="temps">{lecturesAppareilFormattees.timestamp}</div>
+            </div>
+          );
+        }
       }
 
       var date_derniere_modification = dateformatter.format_monthhour(noeud['_mg-derniere-modification']);
@@ -211,12 +230,11 @@ function AfficherNoeuds(props) {
               Dernière modification: {date_derniere_modification}
             </div>
 
-            <div className="senseur">
+            <div className="senseur entete">
               <div className="location">Location</div>
               <div className="numerique temperature">Temperature</div>
               <div className="numerique humidite">Humidite</div>
               <div className="numerique pression">Pression</div>
-              <div className="numerique humidite">Batterie</div>
               <div className="temps">Date lecture</div>
             </div>
 
@@ -624,11 +642,13 @@ function getBatterieIcon(documentSenseur) {
     batterieIcon = (<i className="fa fa-bug"/>);
   } else if(documentSenseur.bat_reserve === 100) {
     batterieIcon = (<i className="fa fa-bolt"/>);
-  } else if(documentSenseur.bat_reserve < 100 && documentSenseur.millivolt > 75) {
+  } else if(documentSenseur.bat_reserve < 100 && documentSenseur.bat_reserve > 80) {
     batterieIcon = (<i className="fa fa-battery-full"/>);
-  } else if(documentSenseur.bat_reserve > 50) {
+  } else if(documentSenseur.bat_reserve > 66) {
     batterieIcon = (<i className="fa fa-battery-three-quarters"/>);
-  } else if(documentSenseur.bat_reserve > 20) {
+  } else if(documentSenseur.bat_reserve > 33) {
+    batterieIcon = (<i className="fa fa-battery-half"/>);
+  } else if(documentSenseur.bat_reserve > 5) {
     batterieIcon = (<i className="fa fa-battery-quarter"/>);
   } else if(documentSenseur.bat_reserve > 0) {
     batterieIcon = (<i className="fa fa-battery-empty"/>);
@@ -659,7 +679,9 @@ function formatterLecture(documentSenseur) {
 
   var nomSenseur = documentSenseur.location;
   if(!nomSenseur || nomSenseur === '') {
-    nomSenseur = documentSenseur.uuid_senseur;
+    if(documentSenseur.uuid_senseur) {
+      nomSenseur = documentSenseur.uuid_senseur;
+    }
   }
 
   return {nomSenseur, temperature, humidite, pression, timestamp, batterieIcon, bat_mv, bat_reserve};
