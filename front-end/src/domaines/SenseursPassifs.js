@@ -268,6 +268,7 @@ class SenseurPassifIndividuel extends React.Component {
     afficherTableQuotidien: false,
     locationSenseur: '',
     documentSenseur: null,
+    appareils: null,
   };
 
   componentDidMount() {
@@ -413,12 +414,25 @@ class SenseurPassifIndividuel extends React.Component {
     const listeSenseurs = this.props.documentSenseur;
 
     var detailSenseur = "Chargement en cours", modifierSenseur = null;
-    var historiqueHoraire, historiqueQuotidien;
+    var historiqueHoraire, historiqueQuotidien, appareils;
 
     if(listeSenseurs && listeSenseurs[0]) {
       const documentSenseur = listeSenseurs[0];
-      var lecturesFormattees = formatterLecture(documentSenseur);
 
+      // Preparer la liste des appareils du modules de senseurs
+      appareils = [];
+      for(var cleAppareil in documentSenseur.affichage) {
+        var appareil = documentSenseur.affichage[cleAppareil];
+        appareils.push(
+          <SenseurPassifAppareil
+            key={cleAppareil}
+            documentAppareil={appareil}
+            cleAppareil={cleAppareil}
+            />
+        );
+      }
+
+      var lecturesFormattees = formatterLecture(documentSenseur);
       var lignes = [];
       if(lecturesFormattees.bat_mv) {
         lignes.push(
@@ -578,19 +592,89 @@ class SenseurPassifIndividuel extends React.Component {
           <div className="w3-col m12">
             <div className="w3-card w3-round w3-white">
               { detailSenseur }
-            </div>
-
-            <div className="w3-card w3-round w3-white">
               { modifierSenseur }
             </div>
+
+            { appareils }
 
           </div>
         </div>
 
-
         { historiqueHoraire }
 
         { historiqueQuotidien }
+      </div>
+    );
+  }
+
+}
+
+
+class SenseurPassifAppareil extends React.Component {
+
+  state = {
+    afficherTableauHoraire: false,
+    afficherTableQuotidien: false,
+    locationAppareil: '',
+  };
+
+
+  render() {
+    var detailAppareil = "Chargement en cours", modifierAppareil = null;
+    const documentAppareil = this.props.documentAppareil;
+
+    var lecturesFormattees = formatterLecture(documentAppareil);
+    var lignes = [];
+    if(lecturesFormattees.temperature) {
+      lignes.push(
+        <div key="temperature">
+          <div className="w3-col m4 label">Temperature</div>
+          <div className="w3-col m8">{lecturesFormattees.temperature}</div>
+        </div>
+      )
+    }
+    if(lecturesFormattees.humidite) {
+      lignes.push(
+        <div key="humidite">
+          <div className="w3-col m4 label">Humidite</div>
+          <div className="w3-col m8">{lecturesFormattees.humidite}</div>
+        </div>
+      )
+    }
+    if(lecturesFormattees.pression) {
+      lignes.push(
+        <div key="pression">
+          <div className="w3-col m4 label">Pression atmospherique</div>
+          <div className="w3-col m8">
+            {lecturesFormattees.pression} {documentAppareil.tendance_formattee}
+          </div>
+        </div>
+      )
+    }
+
+    detailAppareil = (
+      <div className="w3-container w3-padding formulaire">
+        <h6 className="w3-col m12 w3-opacity">
+          { this.props.documentAppareil.location || this.props.cleAppareil }
+        </h6>
+        <div>
+          <div className="w3-col m4 label">Adresse</div>
+          <div className="w3-col m8">{this.props.cleAppareil}</div>
+        </div>
+        <div>
+          <div className="w3-col m4 label">Derniere lecture</div>
+          <div className="w3-col m8">{lecturesFormattees.timestamp}</div>
+        </div>
+
+        {lignes}
+
+      </div>
+    );
+
+    return (
+      <div className="w3-card w3-round w3-white w3-card">
+        { detailAppareil }
+        { modifierAppareil }
       </div>
     );
   }
