@@ -438,7 +438,7 @@ class SenseurPassifIndividuel extends React.Component {
         lignes.push(
           <div key="bat_mv">
             <div className="w3-col m4 label">Batterie</div>
-            <div className="w3-col m8">{lecturesFormattees.bat_mv} ({documentSenseur.bat_reserve} {lecturesFormattees.batterieIcon})</div>
+            <div className="w3-col m8">{lecturesFormattees.bat_mv} ({documentSenseur.bat_reserve}% {lecturesFormattees.batterieIcon})</div>
           </div>
         )
       }
@@ -471,9 +471,9 @@ class SenseurPassifIndividuel extends React.Component {
 
       detailSenseur = (
         <div className="w3-container w3-padding formulaire">
-          <h6 className="w3-col m12 w3-opacity">
-            Senseur { lecturesFormattees.nomSenseur }
-          </h6>
+          <h3 className="w3-col m12 w3-opacity">
+            { lecturesFormattees.nomSenseur }
+          </h3>
           <div>
             <div className="w3-col m4 label">Numero senseur</div>
             <div className="w3-col m8">{documentSenseur.uuid_senseur}</div>
@@ -494,7 +494,6 @@ class SenseurPassifIndividuel extends React.Component {
 
       modifierSenseur = (
         <div className="w3-container w3-padding">
-          <h6 className="w3-opacity">Modifier</h6>
           <div className="w3-col m12">
             <form onSubmit={event => event.preventDefault()}>
               <label>
