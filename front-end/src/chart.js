@@ -36,7 +36,9 @@ export class GraphiqueCharte2D extends React.Component {
       donnees.push(datapoint[nomPoint]);
     }
 
-    return fonction(donnees);
+    var resultat = fonction.apply(Math, donnees);
+
+    return resultat;
   }
 
   appliquerDonnees() {
@@ -80,16 +82,6 @@ export class GraphiqueCharte2D extends React.Component {
     graphique.x_range = d3.scaleTime().range([0, graphique.width]);
     graphique.y_range = d3.scaleLinear().range([graphique.height, 0]);
 
-    // Define the line
-    graphique.valuelines = [];
-    for(var idx in ordonnees) {
-      var nomOrdonnee = ordonnees[idx];
-      var valueLine = d3.line()
-          .x(d => { return graphique.x_range(d[NOM_VARIABLE_TEMPORELLE]*1000); })
-          .y(d => { return graphique.y_range(d[nomOrdonnee]); });
-      graphique.valuelines.push(valueLine)
-    }
-
     if(this.elementSvg) {
       // Cleanup si graphique existe deja
       this.elementSvg.selectAll('*').remove();
@@ -108,7 +100,7 @@ export class GraphiqueCharte2D extends React.Component {
       d3.extent(donnees, function(d) { return d[NOM_VARIABLE_TEMPORELLE]*1000; })
     );
 
-    // Simuler des donnees pour introduire le range -20 a 10 celsius.
+    // Simuler des donnees pour introduire le range par defaut
     let val_base_min = {}; val_base_min[ordonnees[0]] = graphique.ordonnee_base_min;
     let val_base_max = {}; val_base_max[ordonnees[0]] = graphique.ordonnee_base_max;
     let range_y_extremes = [
@@ -117,17 +109,23 @@ export class GraphiqueCharte2D extends React.Component {
       .concat(donnees); // Ajouter donnees reeles pour allonger au besoin
 
     graphique.y_range.domain([
-      d3.min(range_y_extremes, d => {return this.trouverValeur(d, ordonnees, Math.min)}),
-      d3.max(range_y_extremes, d => {return this.trouverValeur(d, ordonnees, Math.max)}),
+      d3.min(range_y_extremes, d => {return this.trouverValeur(d, [this.props.serie], Math.min)}),
+      d3.max(range_y_extremes, d => {return this.trouverValeur(d, [this.props.serie], Math.max)}),
     ]);
 
     for(var idx in ordonnees) {
       var ordonnee = ordonnees[idx];
       console.log("Path, ordonnee " + ordonnee);
+
+      var valueLine = d3.line()
+          .x(d => { return graphique.x_range(d[NOM_VARIABLE_TEMPORELLE]*1000); })
+          .y(d => { return graphique.y_range(d[ordonnee]); });
+
       // Add the valueline path.
       this.elementSvg.append("path")
+         .datum(donnees)
          .attr("class", "line")
-         .attr("d", graphique.valuelines[idx](donnees));
+         .attr("d", valueLine);
 
       // Add the scatterplot
       this.elementSvg.selectAll("dot")
@@ -136,8 +134,8 @@ export class GraphiqueCharte2D extends React.Component {
           .append("circle")
           .attr("class", "maximum")
           .attr("r", 3.5)
-          .attr("cx", function(d) { return graphique.x_range(d[NOM_VARIABLE_TEMPORELLE]*1000); })
-          .attr("cy", function(d) { return graphique.y_range(d[ordonnee]); });
+          .attr("cx", d => { return graphique.x_range(d[NOM_VARIABLE_TEMPORELLE]*1000); })
+          .attr("cy", d => { return graphique.y_range(d[ordonnee]); });
     }
 
     // Add the X Axis

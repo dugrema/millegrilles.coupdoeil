@@ -711,7 +711,7 @@ class SenseurPassifAppareil extends React.Component {
             name={"charte_appareil_" + this.props.cleAppareil}
             donnees={ rapportHoraireAppareil }
             min={min} max={max} tick={tick}
-            serie={serieMax}
+            serie={serieMax} serie2={serieMin} serie3={serieAvg}
             containerId={containerId}
           />
         )
