@@ -17,6 +17,8 @@ export class SenseursPassifs extends React.Component {
     subscriptions: [
       'noeuds.source.millegrilles_domaines_SenseursPassifs.documents.senseur.individuel',
       'noeuds.source.millegrilles_domaines_SenseursPassifs.documents.noeud.individuel',
+      'noeuds.source.millegrilles_domaines_SenseursPassifs.documents.senseur.rapport.semaine',
+      'noeuds.source.millegrilles_domaines_SenseursPassifs.documents.senseur.rapport.annee',
     ]
   };
 
@@ -64,6 +66,14 @@ export class SenseursPassifs extends React.Component {
         // Update du document presentement affiche
         // On met dans un array pour matcher la reponse initiale (find)
         this.setState({documentSenseur: [doc]});
+      }
+    } else if(routingKey === 'noeuds.source.millegrilles_domaines_SenseursPassifs.documents.senseur.rapport.semaine') {
+      if(this.state.uuid_senseur && this.state.uuid_senseur === doc.uuid_senseur) {
+        this.setState({rapports: {...this.state.rapports, rapportHoraire: doc}});
+      }
+    } else if(routingKey === 'noeuds.source.millegrilles_domaines_SenseursPassifs.documents.senseur.rapport.annee') {
+      if(this.state.uuid_senseur && this.state.uuid_senseur === doc.uuid_senseur) {
+        this.setState({rapports: {...this.state.rapports, rapportQuotidien: doc}});
       }
     }
 
@@ -264,37 +274,64 @@ function AfficherNoeuds(props) {
 class SenseurPassifIndividuel extends React.Component {
 
   state = {
+    documentSenseur: null,
+    rapports: null,
     afficherTableauHoraire: false,
     afficherTableQuotidien: false,
     locationSenseur: '',
-    documentSenseur: null,
     appareils: null,
   };
 
   componentDidMount() {
     // Transmettre requete pour recevoir le document du senseur
     let requeteDocumentInitial =  {
-      'requetes': [{
-        'filtre': {
-          '_mg-libelle': 'senseur.individuel',
-          // 'noeud': this.props.noeud_id,
-          'uuid_senseur': this.props.uuid_senseur
-        }
-      }]};
+      'requetes': [
+        {
+          'filtre': {
+            '_mg-libelle': 'senseur.individuel',
+            // 'noeud': this.props.noeud_id,
+            'uuid_senseur': this.props.uuid_senseur
+          }
+        },
+        {
+          'filtre': {
+            '_mg-libelle': 'senseur.rapport.semaine',
+            // 'noeud': this.props.noeud_id,
+            'uuid_senseur': this.props.uuid_senseur
+          }
+        },
+        {
+          'filtre': {
+            '_mg-libelle': 'senseur.rapport.annee',
+            // 'noeud': this.props.noeud_id,
+            'uuid_senseur': this.props.uuid_senseur
+          }
+        },
+      ]
+    };
     // console.debug("Requete senseur:");
     // console.debug(requeteDocumentInitial);
 
     let domaine = 'requete.millegrilles.domaines.SenseursPassifs.documentSenseur';
     webSocketManager.transmettreRequete(domaine, requeteDocumentInitial)
     .then( docInitial => {
-      // console.debug("Recu document senseur");
+      console.debug("Recu document senseur");
       // console.debug(docInitial);
 
       let documentSenseur = docInitial[0][0];
+      let rapportHoraire = docInitial[1][0];
+      let rapportQuotidien = docInitial[2][0];
+
+      console.debug(rapportHoraire);
+      console.debug(rapportQuotidien);
 
       this.setState({
         documentSenseur,
         locationSenseur: documentSenseur.location,
+        rapports: {
+          rapportHoraire,
+          rapportQuotidien,
+        },
       })
     })
     .catch( err=>{
@@ -428,6 +465,7 @@ class SenseurPassifIndividuel extends React.Component {
             key={cleAppareil}
             documentAppareil={appareil}
             cleAppareil={cleAppareil}
+            rapports={this.state.rapports}
             />
         );
       }
@@ -517,72 +555,38 @@ class SenseurPassifIndividuel extends React.Component {
         </div>
       );
 
-      historiqueHoraire = (
-        <div className="w3-container w3-card w3-white w3-round w3-margin"><br/>
-          <h5 className="w3-opacity">
-            Historique 24 heures {documentSenseur.location}
-          </h5>
-          <h6>Temperature</h6>
-          <GraphiqueCharte2DReact
-            name="graphique_horaire_temperature"
-            donnees={documentSenseur.moyennes_dernier_jour}
-            serie="temperature-moyenne" min="-10" max="20" tick="5"
-          />
+      // historiqueHoraire = (
+      //   <div className="w3-container w3-card w3-white w3-round w3-margin"><br/>
+      //     <h5 className="w3-opacity">
+      //       Historique 24 heures {documentSenseur.location}
+      //     </h5>
+      //     <h6>Temperature</h6>
+      //     <GraphiqueCharte2DReact
+      //       name="graphique_horaire_temperature"
+      //       donnees={documentSenseur.moyennes_dernier_jour}
+      //       serie="temperature-moyenne" min="-10" max="20" tick="5"
+      //     />
+      //
+      //     <h6>Humidite</h6>
+      //     <GraphiqueCharte2DReact
+      //       name="graphique_horaire_humidite"
+      //       donnees={documentSenseur.moyennes_dernier_jour}
+      //       serie="humidite-moyenne" min="30" max="70" tick="5"
+      //     />
+      //
+      //     <h6>Pression</h6>
+      //     <GraphiqueCharte2DReact
+      //       name="graphique_horaire_pression"
+      //       donnees={documentSenseur.moyennes_dernier_jour}
+      //       serie="pression-moyenne" min="95" max="105" tick="2"
+      //     />
+      //
+      //     {this.renderTableauHoraire()}
+      //     <button onClick={this.afficherTableauHoraire}>Toggle tableau</button>
+      //     <br/>
+      //   </div>
+      // );
 
-          <h6>Humidite</h6>
-          <GraphiqueCharte2DReact
-            name="graphique_horaire_humidite"
-            donnees={documentSenseur.moyennes_dernier_jour}
-            serie="humidite-moyenne" min="30" max="70" tick="5"
-          />
-
-          <h6>Pression</h6>
-          <GraphiqueCharte2DReact
-            name="graphique_horaire_pression"
-            donnees={documentSenseur.moyennes_dernier_jour}
-            serie="pression-moyenne" min="95" max="105" tick="2"
-          />
-
-          {this.renderTableauHoraire()}
-          <button onClick={this.afficherTableauHoraire}>Toggle tableau</button>
-          <br/>
-        </div>
-      );
-
-      historiqueQuotidien = (
-        <div className="w3-container w3-card w3-white w3-round w3-margin"><br/>
-          <h5 className="w3-opacity">
-            Historique 31 jours {documentSenseur.location}
-          </h5>
-          <h6>Temperature</h6>
-          <GraphiqueCharte2DReact
-            name="graphique_quotidien_temperature"
-            donnees={documentSenseur.extremes_dernier_mois}
-            serie="temperature-maximum" serie2="temperature-minimum"
-            min="-10" max="20" tick="5"
-          />
-
-          <h6>Humidite</h6>
-          <GraphiqueCharte2DReact
-            name="graphique_quotidien_humidite"
-            donnees={documentSenseur.extremes_dernier_mois}
-            serie="humidite-maximum" serie2="humidite-minimum"
-            min="30" max="70" tick="5"
-          />
-
-          <h6>Pression</h6>
-          <GraphiqueCharte2DReact
-            name="graphique_quotidien_pression"
-            donnees={documentSenseur.extremes_dernier_mois}
-            serie="pression-maximum" serie2="pression-minimum"
-            min="95" max="105" tick="2"
-          />
-
-          {this.renderTableauQuotidien()}
-          <button onClick={this.afficherTableauQuotidien}>Toggle tableau</button>
-          <br/>
-        </div>
-      );
     }
 
     return (
@@ -599,9 +603,6 @@ class SenseurPassifIndividuel extends React.Component {
           </div>
         </div>
 
-        { historiqueHoraire }
-
-        { historiqueQuotidien }
       </div>
     );
   }
@@ -620,6 +621,7 @@ class SenseurPassifAppareil extends React.Component {
 
   render() {
     var detailAppareil = "Chargement en cours", modifierAppareil = null;
+    var charteAppareil = null;
     const documentAppareil = this.props.documentAppareil;
 
     var lecturesFormattees = formatterLecture(documentAppareil);
@@ -670,17 +672,35 @@ class SenseurPassifAppareil extends React.Component {
       </div>
     );
 
+    if( this.props.rapports ) {
+      let rapportHoraireAppareil = this.props.rapports.rapportHoraire.appareils[this.props.cleAppareil];
+      console.debug("Rapport horaire appareil " + this.props.cleAppareil);
+      console.debug(rapportHoraireAppareil);
+      charteAppareil = (
+        <div>
+          <h5 className="w3-opacity">Charte</h5>
+          <GraphiqueCharte2D
+            name={"charte_appareil_" + this.props.cleAppareil}
+            nomVariableOrdonnee1="Temperature"
+            donnees={ rapportHoraireAppareil }
+            serie="temperature_avg" min="-10" max="20" tick="5"
+          />
+        </div>
+      )
+    }
+
     return (
       <div className="w3-card w3-round w3-white w3-card">
         { detailAppareil }
         { modifierAppareil }
+        { charteAppareil }
       </div>
     );
   }
 
 }
 
-class GraphiqueCharte2DReact extends React.Component {
+/*class GraphiqueCharte2DReact extends React.Component {
 
   state = {
     graphique: null
@@ -715,7 +735,7 @@ class GraphiqueCharte2DReact extends React.Component {
     );
   }
 
-}
+}*/
 
 function getBatterieIcon(documentSenseur) {
   if(!documentSenseur) return null;
