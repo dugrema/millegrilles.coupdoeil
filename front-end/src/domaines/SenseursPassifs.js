@@ -616,8 +616,13 @@ class SenseurPassifAppareil extends React.Component {
     afficherTableauHoraire: false,
     afficherTableQuotidien: false,
     locationAppareil: '',
+    typeLecture: '',
   };
 
+  choisirTypeLecture = event => {
+    var typeLecture = event.currentTarget.value;
+    this.setState({typeLecture});
+  }
 
   render() {
     var detailAppareil = "Chargement en cours", modifierAppareil = null;
@@ -680,23 +685,58 @@ class SenseurPassifAppareil extends React.Component {
       // Permet de trouver container de la charte - donne la largeur du graph
       var containerId = "container_charte_" + this.props.cleAppareil;
 
+      var typeLecture = this.state.typeLecture;
+      var charte = null;
+      if(typeLecture && typeLecture !== '') {
+        var serieMax = typeLecture + "_max",
+            serieMin = typeLecture + "_min",
+            serieAvg = typeLecture + "_avg";
+
+        let min, max, tick;
+
+        if(typeLecture === 'temperature') {
+          min = -10; max = 20; tick = 5;
+        } else if(typeLecture === 'humidite') {
+          min = 30; max = 70; tick = 5;
+        } else if(typeLecture === 'pression') {
+          min = 97; max = 102; tick = 0.5;
+        } else if(typeLecture === 'millivolt') {
+          min = 2700; max = 4200; tick = 200;
+        } else if(typeLecture === 'reserve') {
+          min = 0; max = 100; tick = 10;
+        }
+
+        charte = (
+          <GraphiqueCharte2D
+            name={"charte_appareil_" + this.props.cleAppareil}
+            donnees={ rapportHoraireAppareil }
+            min={min} max={max} tick={tick}
+            serie={serieMax}
+            containerId={containerId}
+          />
+        )
+      }
+
       charteAppareil = (
-        <div className="w3-container w3-padding">
-          <div>
-            <div className="w3-col m12">
-              
-            </div>
-            <div id={containerId} className="w3-col m12">
-              <GraphiqueCharte2D
-                name={"charte_appareil_" + this.props.cleAppareil}
-                nomVariableOrdonnee1="Temperature"
-                donnees={ rapportHoraireAppareil }
-                serie="temperature_avg" min="-10" max="20" tick="5"
-                containerId={containerId}
-              />
+        <form>
+          <div className="w3-container w3-padding">
+            <div>
+              <div className="w3-col m12">
+                <select onChange={this.choisirTypeLecture}>
+                  <option value="">Choisir un type de lecture</option>
+                  <option value="temperature">Temperature</option>
+                  <option value="humidite">Humidite</option>
+                  <option value="pression">Pression</option>
+                  <option value="millivolt">Millivolt</option>
+                  <option value="reserve">Reserve batterie</option>
+                </select>
+              </div>
+              <div id={containerId} className="w3-col m12">
+                {charte}
+              </div>
             </div>
           </div>
-        </div>
+        </form>
       )
     }
 
