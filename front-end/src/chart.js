@@ -5,12 +5,22 @@ var d3 = require('d3');
 
 const NOM_VARIABLE_TEMPORELLE = 'timestamp';
 
+// Charte 2D
+// props:
+//  - name: nom unique du div id
+//  - nomVariableOrdonnee1
+//  - nomVariableOrdonnee2: deuxieme ordonnee (optionnel)
+//  - donnees: liste des donnees
+//  - serie: nom de la variable pour ordonnee1 dans donnees
+//  - serie2: nom de la variable pour ordonnee2 dans donnees
+//  - min: Minimum par defaut sur ordonnee - sera ajuste avec les donnees
+//  - max: Maximum par defaut sur ordonnee - sera ajuste avec les donnees
+//  - tick: Espace entre lignes sur l'ordonnee
 export class GraphiqueCharte2D extends React.Component {
 
   state = {
     graphique: null,
   }
-
 
   componentDidMount() {
     const graphique = {};
@@ -24,9 +34,20 @@ export class GraphiqueCharte2D extends React.Component {
     graphique.ordonnee_tick = this.props.tick || 1;
 
     // Set the dimensions of the canvas / graph
+    // Si le containerId existe, on l'utilise pour obtenir la largeur de l'ecran
     graphique.margin = {top: 30, right: 20, bottom: 30, left: 50};
-    graphique.width = 600 - graphique.margin.left - graphique.margin.right;
-    graphique.height = 270 - graphique.margin.top - graphique.margin.bottom;
+    if(this.props.containerId) {
+      var bounds = d3.select('div#'+this.props.containerId).node().getBoundingClientRect();
+      graphique.width = bounds.width - graphique.margin.left - graphique.margin.right;
+      graphique.height = Math.round(graphique.width * 0.45) - graphique.margin.top - graphique.margin.bottom;
+      // console.log("Bounds : " + graphique.width + " x " + graphique.height);
+      // console.log(bounds);
+
+    } else {
+      // On met des valeurs arbitraires pour le graphique
+      graphique.width = 600 - graphique.margin.left - graphique.margin.right;
+      graphique.height = 270 - graphique.margin.top - graphique.margin.bottom;
+    }
 
     // Set the ranges
     graphique.x_range = d3.scaleTime().range([0, graphique.width]);
@@ -59,6 +80,13 @@ export class GraphiqueCharte2D extends React.Component {
 
     // Cleanup si graphique existe deja
     d3.select(graphique.idDiv).select('svg').select('g').selectAll('*').remove();
+
+    // Reajuster la taille du graphique, au besoin
+    // if(this.props.containerId) {
+    //   var bounds = d3.select('div#'+this.props.containerId).node().getBoundingClientRect();
+    //   graphique.width = bounds.width;
+    //   graphique.height = Math.round(graphique.width * 0.45);
+    // }
 
     // console.debug("Donnees charte");
     // console.debug(donnees);
@@ -132,20 +160,6 @@ export class GraphiqueCharte2D extends React.Component {
       );
   }
 
-  // preparerGraphique() {
-  //   const graphiqueHoraireObj = new GraphiqueCharte2D();
-  //
-  //   graphiqueHoraireObj.idDiv = "#" + this.props.name;
-  //   graphiqueHoraireObj.nomVariableOrdonnee1 = this.props.serie;
-  //   graphiqueHoraireObj.nomVariableOrdonnee2 = this.props.serie2;
-  //   graphiqueHoraireObj.ordonnee_base_max = this.props.max || 100;
-  //   graphiqueHoraireObj.ordonnee_base_min = this.props.min || 0;
-  //   graphiqueHoraireObj.ordonnee_tick = this.props.tick || 1;
-  //   graphiqueHoraireObj.preparer_graphique();
-  //
-  //   return graphiqueHoraireObj
-  // }
-
   render() {
     if(this.state.graphique && this.props.donnees) {
       this.appliquerDonnees();
@@ -157,11 +171,7 @@ export class GraphiqueCharte2D extends React.Component {
     }
 
     return (
-      <div>
-        GraphiqueCharte2D
-        <div id={this.props.name}></div>
-        Fin
-      </div>
+      <div id={this.props.name}></div>
     );
   }
 

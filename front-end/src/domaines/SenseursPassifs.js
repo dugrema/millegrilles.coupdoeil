@@ -676,15 +676,26 @@ class SenseurPassifAppareil extends React.Component {
       let rapportHoraireAppareil = this.props.rapports.rapportHoraire.appareils[this.props.cleAppareil];
       console.debug("Rapport horaire appareil " + this.props.cleAppareil);
       console.debug(rapportHoraireAppareil);
+
+      // Permet de trouver container de la charte - donne la largeur du graph
+      var containerId = "container_charte_" + this.props.cleAppareil;
+
       charteAppareil = (
-        <div>
-          <h5 className="w3-opacity">Charte</h5>
-          <GraphiqueCharte2D
-            name={"charte_appareil_" + this.props.cleAppareil}
-            nomVariableOrdonnee1="Temperature"
-            donnees={ rapportHoraireAppareil }
-            serie="temperature_avg" min="-10" max="20" tick="5"
-          />
+        <div className="w3-container w3-padding">
+          <div>
+            <div className="w3-col m12">
+              
+            </div>
+            <div id={containerId} className="w3-col m12">
+              <GraphiqueCharte2D
+                name={"charte_appareil_" + this.props.cleAppareil}
+                nomVariableOrdonnee1="Temperature"
+                donnees={ rapportHoraireAppareil }
+                serie="temperature_avg" min="-10" max="20" tick="5"
+                containerId={containerId}
+              />
+            </div>
+          </div>
         </div>
       )
     }
