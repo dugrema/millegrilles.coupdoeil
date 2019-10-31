@@ -43,3 +43,34 @@ DIV.appareil {
   width: 10em;
   text-align: right;
 }
+
+/* Graphiques d'historique */
+circle.serie_0 {
+  fill: red;
+}
+
+path.line_0 {
+    stroke: crimson;
+    stroke-width: 2;
+    fill: none;
+}
+
+circle.serie_1 {
+  fill: blue;
+}
+
+path.line_1 {
+    stroke: steelblue;
+    stroke-width: 2;
+    fill: none;
+}
+
+circle.serie_2 {
+  fill: black;
+}
+
+path.line_2 {
+    stroke: gray;
+    stroke-width: 2;
+    fill: none;
+}

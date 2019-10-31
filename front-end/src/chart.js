@@ -54,7 +54,7 @@ export class GraphiqueCharte2D extends React.Component {
 
     // Cleanup donnees, on garde juste les points avec des donnees pour l'ordonnee
     const donnees = [];
-    for(var idx in this.props.donnees) {
+    for(let idx in this.props.donnees) {
       var donnee = this.props.donnees[idx];
       if(donnee[ordonnees[0]]) {
         donnees.push(donnee);
@@ -113,18 +113,19 @@ export class GraphiqueCharte2D extends React.Component {
       d3.max(range_y_extremes, d => {return this.trouverValeur(d, [this.props.serie], Math.max)}),
     ]);
 
-    for(var idx in ordonnees) {
+    var getXRange = d => { return graphique.x_range(d[NOM_VARIABLE_TEMPORELLE]*1000); };
+
+    for(let idx in ordonnees) {
       var ordonnee = ordonnees[idx];
-      console.log("Path, ordonnee " + ordonnee);
 
       var valueLine = d3.line()
-          .x(d => { return graphique.x_range(d[NOM_VARIABLE_TEMPORELLE]*1000); })
+          .x(getXRange)
           .y(d => { return graphique.y_range(d[ordonnee]); });
 
       // Add the valueline path.
       this.elementSvg.append("path")
          .datum(donnees)
-         .attr("class", "line")
+         .attr("class", "line_" + idx)
          .attr("d", valueLine);
 
       // Add the scatterplot
@@ -132,9 +133,9 @@ export class GraphiqueCharte2D extends React.Component {
           .data(donnees)
           .enter()
           .append("circle")
-          .attr("class", "maximum")
+          .attr("class", "serie_" + idx)
           .attr("r", 3.5)
-          .attr("cx", d => { return graphique.x_range(d[NOM_VARIABLE_TEMPORELLE]*1000); })
+          .attr("cx", getXRange)
           .attr("cy", d => { return graphique.y_range(d[ordonnee]); });
     }
 

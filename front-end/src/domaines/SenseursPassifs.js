@@ -315,15 +315,15 @@ class SenseurPassifIndividuel extends React.Component {
     let domaine = 'requete.millegrilles.domaines.SenseursPassifs.documentSenseur';
     webSocketManager.transmettreRequete(domaine, requeteDocumentInitial)
     .then( docInitial => {
-      console.debug("Recu document senseur");
+      // console.debug("Recu document senseur");
       // console.debug(docInitial);
 
       let documentSenseur = docInitial[0][0];
       let rapportHoraire = docInitial[1][0];
       let rapportQuotidien = docInitial[2][0];
 
-      console.debug(rapportHoraire);
-      console.debug(rapportQuotidien);
+      // console.debug(rapportHoraire);
+      // console.debug(rapportQuotidien);
 
       this.setState({
         documentSenseur,
@@ -451,7 +451,7 @@ class SenseurPassifIndividuel extends React.Component {
     const listeSenseurs = this.props.documentSenseur;
 
     var detailSenseur = "Chargement en cours", modifierSenseur = null;
-    var historiqueHoraire, historiqueQuotidien, appareils;
+    var appareils;
 
     if(listeSenseurs && listeSenseurs[0]) {
       const documentSenseur = listeSenseurs[0];
@@ -555,38 +555,6 @@ class SenseurPassifIndividuel extends React.Component {
         </div>
       );
 
-      // historiqueHoraire = (
-      //   <div className="w3-container w3-card w3-white w3-round w3-margin"><br/>
-      //     <h5 className="w3-opacity">
-      //       Historique 24 heures {documentSenseur.location}
-      //     </h5>
-      //     <h6>Temperature</h6>
-      //     <GraphiqueCharte2DReact
-      //       name="graphique_horaire_temperature"
-      //       donnees={documentSenseur.moyennes_dernier_jour}
-      //       serie="temperature-moyenne" min="-10" max="20" tick="5"
-      //     />
-      //
-      //     <h6>Humidite</h6>
-      //     <GraphiqueCharte2DReact
-      //       name="graphique_horaire_humidite"
-      //       donnees={documentSenseur.moyennes_dernier_jour}
-      //       serie="humidite-moyenne" min="30" max="70" tick="5"
-      //     />
-      //
-      //     <h6>Pression</h6>
-      //     <GraphiqueCharte2DReact
-      //       name="graphique_horaire_pression"
-      //       donnees={documentSenseur.moyennes_dernier_jour}
-      //       serie="pression-moyenne" min="95" max="105" tick="2"
-      //     />
-      //
-      //     {this.renderTableauHoraire()}
-      //     <button onClick={this.afficherTableauHoraire}>Toggle tableau</button>
-      //     <br/>
-      //   </div>
-      // );
-
     }
 
     return (
@@ -617,11 +585,17 @@ class SenseurPassifAppareil extends React.Component {
     afficherTableQuotidien: false,
     locationAppareil: '',
     typeLecture: '',
+    granularite: 'rapportHoraire',
   };
 
   choisirTypeLecture = event => {
     var typeLecture = event.currentTarget.value;
     this.setState({typeLecture});
+  }
+
+  choisirGranularite = event => {
+    var granularite = event.currentTarget.value;
+    this.setState({granularite});
   }
 
   render() {
@@ -678,14 +652,13 @@ class SenseurPassifAppareil extends React.Component {
     );
 
     if( this.props.rapports ) {
-      let rapportHoraireAppareil = this.props.rapports.rapportHoraire.appareils[this.props.cleAppareil];
-      console.debug("Rapport horaire appareil " + this.props.cleAppareil);
-      console.debug(rapportHoraireAppareil);
+      let rapport = this.props.rapports[this.state.granularite].appareils[this.props.cleAppareil];
 
       // Permet de trouver container de la charte - donne la largeur du graph
       var containerId = "container_charte_" + this.props.cleAppareil;
 
       var typeLecture = this.state.typeLecture;
+
       var charte = null;
       if(typeLecture && typeLecture !== '') {
         var serieMax = typeLecture + "_max",
@@ -709,7 +682,7 @@ class SenseurPassifAppareil extends React.Component {
         charte = (
           <GraphiqueCharte2D
             name={"charte_appareil_" + this.props.cleAppareil}
-            donnees={ rapportHoraireAppareil }
+            donnees={ rapport }
             min={min} max={max} tick={tick}
             serie={serieMax} serie2={serieMin} serie3={serieAvg}
             containerId={containerId}
@@ -721,7 +694,7 @@ class SenseurPassifAppareil extends React.Component {
         <form>
           <div className="w3-container w3-padding">
             <div>
-              <div className="w3-col m12">
+              <div className="w3-col m6">
                 <select onChange={this.choisirTypeLecture}>
                   <option value="">Choisir un type de lecture</option>
                   <option value="temperature">Temperature</option>
@@ -731,7 +704,16 @@ class SenseurPassifAppareil extends React.Component {
                   <option value="reserve">Reserve batterie</option>
                 </select>
               </div>
-              <div id={containerId} className="w3-col m12">
+              <div className="w3-col m6">
+                <select onChange={this.choisirGranularite} value={this.state.granularite}>
+                  <option value="">Choisir un type de granularite</option>
+                  <option value="rapportHoraire">Horaire</option>
+                  <option value="rapportQuotidien">Quotidien</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <div id={containerId} className="w3-col m12 charte-historique">
                 {charte}
               </div>
             </div>
@@ -750,43 +732,6 @@ class SenseurPassifAppareil extends React.Component {
   }
 
 }
-
-/*class GraphiqueCharte2DReact extends React.Component {
-
-  state = {
-    graphique: null
-  }
-
-  preparerGraphique() {
-    const graphiqueHoraireObj = new GraphiqueCharte2D();
-
-    graphiqueHoraireObj.idDiv = "#" + this.props.name;
-    graphiqueHoraireObj.nomVariableOrdonnee1 = this.props.serie;
-    graphiqueHoraireObj.nomVariableOrdonnee2 = this.props.serie2;
-    graphiqueHoraireObj.ordonnee_base_max = this.props.max || 100;
-    graphiqueHoraireObj.ordonnee_base_min = this.props.min || 0;
-    graphiqueHoraireObj.ordonnee_tick = this.props.tick || 1;
-    graphiqueHoraireObj.preparer_graphique();
-
-    return graphiqueHoraireObj
-  }
-
-  componentDidMount() {
-    const graphique = this.preparerGraphique();
-    graphique.attacher_svg();
-    this.setState({'graphique': graphique});
-  }
-
-  render() {
-    if(this.state.graphique && this.props.donnees) {
-      this.state.graphique.appliquerDonnees(this.props.donnees);
-    }
-    return (
-      <div id={this.props.name}></div>
-    );
-  }
-
-}*/
 
 function getBatterieIcon(documentSenseur) {
   if(!documentSenseur) return null;
