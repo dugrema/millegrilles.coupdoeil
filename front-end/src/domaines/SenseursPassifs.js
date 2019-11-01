@@ -9,6 +9,8 @@ export class SenseursPassifs extends React.Component {
   state = {
     listeNoeuds: [],
     uuid_senseur: null,
+    editionEnCours: {},
+    editionSoumise: false,
   };
 
   // Configuration statique du composant:
@@ -32,6 +34,17 @@ export class SenseursPassifs extends React.Component {
     },
     versPageSenseur: event => {
       this.setState({uuid_senseur: event.currentTarget.value});
+    },
+    setEditionEnCours: event => {
+      var editionEnCours = {...this.state.editionEnCours};
+      editionEnCours[event.currentTarget.name] = true;
+      this.setState({
+        editionEnCours: editionEnCours,
+        editionSoumise: false,
+      })
+    },
+    setEditionSoumise: event => {
+      this.setState({editionSoumise: true});
     },
   }
 
@@ -65,7 +78,14 @@ export class SenseursPassifs extends React.Component {
       if(this.state.uuid_senseur && this.state.uuid_senseur === doc.uuid_senseur) {
         // Update du document presentement affiche
         // On met dans un array pour matcher la reponse initiale (find)
-        this.setState({documentSenseur: [doc]});
+        var resetEdition = {};
+        if(this.state.editionSoumise) {
+          resetEdition = {
+            editionEnCours: [],
+            editionSoumise: false,
+          }
+        }
+        this.setState({documentSenseur: [doc], ...resetEdition});
       }
     } else if(routingKey === 'noeuds.source.millegrilles_domaines_SenseursPassifs.documents.senseur.rapport.semaine') {
       if(this.state.uuid_senseur && this.state.uuid_senseur === doc.uuid_senseur) {
@@ -125,6 +145,7 @@ export class SenseursPassifs extends React.Component {
       uuid_senseur: form.uuid_senseur.value,
       location: form.location.value,
     }
+    this.fonctionsNavigation.setEditionSoumise(event);
     webSocketManager.transmettreTransaction('millegrilles.domaines.SenseursPassifs.changementAttributSenseur', transaction);
   }
 
@@ -164,6 +185,7 @@ export class SenseursPassifs extends React.Component {
           uuid_senseur={this.state.uuid_senseur}
           supprimerSenseur={this.supprimerSenseur}
           renommerSenseur={this.renommerSenseur}
+          editionEnCours={this.state.editionEnCours}
           {...this.fonctionsNavigation}
         />
       );
@@ -342,7 +364,10 @@ class SenseurPassifIndividuel extends React.Component {
   }
 
   editerLocationSenseur = event => {
-    this.setState({locationSenseur: event.currentTarget.value});
+    this.props.setEditionEnCours(event);
+    this.setState({
+      locationSenseur: event.currentTarget.value,
+    });
   }
 
   afficherTableauHoraire = () => {
@@ -507,13 +532,18 @@ class SenseurPassifIndividuel extends React.Component {
         )
       }
 
+      var classNameEditionTitre = '';
+      if(this.props.editionEnCours.location) {
+        classNameEditionTitre = 'edition'
+      }
+
       detailSenseur = (
         <form>
           <input type="hidden" name="uuid_senseur" value={documentSenseur.uuid_senseur}/>
           <div className="w3-container w3-padding formulaire">
             <div>
               <div className="w3-col m12">
-                <input name="location" type="text" className="input-width-auto"
+                <input name="location" type="text" className={"input-width-auto editable " + classNameEditionTitre}
                   value={this.state.locationSenseur}
                   onChange={this.editerLocationSenseur}
                   onBlur={this.props.renommerSenseur} />
