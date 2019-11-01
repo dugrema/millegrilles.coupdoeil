@@ -43,6 +43,13 @@ export class SenseursPassifs extends React.Component {
         editionSoumise: false,
       })
     },
+    resetEditionEnCours: event => {
+      var editionEnCours = {...this.state.editionEnCours};
+      delete editionEnCours[event.currentTarget.name];
+      this.setState({
+        editionEnCours: editionEnCours,
+      })
+    },
     setEditionSoumise: event => {
       this.setState({editionSoumise: true});
     },
@@ -301,6 +308,7 @@ class SenseurPassifIndividuel extends React.Component {
     afficherTableauHoraire: false,
     afficherTableQuotidien: false,
     locationSenseur: '',
+    locationSenseurOriginale: '',
     appareils: null,
   };
 
@@ -364,10 +372,23 @@ class SenseurPassifIndividuel extends React.Component {
   }
 
   editerLocationSenseur = event => {
-    this.props.setEditionEnCours(event);
-    this.setState({
+    var valeurs = {
       locationSenseur: event.currentTarget.value,
-    });
+    }
+    if(!this.state.locationSenseurOriginale) {
+      valeurs.locationSenseurOriginale = this.state.locationSenseur;
+    }
+    this.props.setEditionEnCours(event);
+    this.setState(valeurs);
+  }
+
+  renommerSenseur = event => {
+    if(this.state.locationSenseurOriginale && this.state.locationSenseurOriginale !== event.currentTarget.value) {
+      this.props.renommerSenseur(event);
+    } else {
+      this.props.resetEditionEnCours(event);
+    }
+
   }
 
   afficherTableauHoraire = () => {
@@ -546,7 +567,7 @@ class SenseurPassifIndividuel extends React.Component {
                 <input name="location" type="text" className={"input-width-auto editable " + classNameEditionTitre}
                   value={this.state.locationSenseur}
                   onChange={this.editerLocationSenseur}
-                  onBlur={this.props.renommerSenseur} />
+                  onBlur={this.renommerSenseur} />
               </div>
             </div>
             <div>
