@@ -577,7 +577,7 @@ class SenseurPassifIndividuel extends React.Component {
       }
 
       detailSenseur = (
-        <form>
+        <form onSubmit={event => event.preventDefault()}>
           <input type="hidden" name="uuid_senseur" value={documentSenseur.uuid_senseur}/>
           <div className="w3-container w3-padding formulaire">
             <div>
@@ -723,7 +723,7 @@ class SenseurPassifAppareil extends React.Component {
     }
 
     detailAppareil = (
-      <form>
+      <form onSubmit={event => event.preventDefault()}>
         <input type="hidden" name="uuid_senseur" value={this.props.uuid_senseur}/>
         <input type="hidden" name="cleAppareil" value={this.props.cleAppareil}/>
 
