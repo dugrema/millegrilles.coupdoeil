@@ -341,7 +341,7 @@ class SenseurPassifIndividuel extends React.Component {
     this.props.chargerDocument(requeteDocumentInitial, 'documentSenseur');
   }
 
-  changerLocationSenseur = event => {
+  editerLocationSenseur = event => {
     this.setState({locationSenseur: event.currentTarget.value});
   }
 
@@ -508,40 +508,38 @@ class SenseurPassifIndividuel extends React.Component {
       }
 
       detailSenseur = (
-        <div className="w3-container w3-padding formulaire">
-          <h3 className="w3-col m12 w3-opacity">
-            { lecturesFormattees.nomSenseur }
-          </h3>
-          <div>
-            <div className="w3-col m4 label">Numero senseur</div>
-            <div className="w3-col m8">{documentSenseur.uuid_senseur}</div>
-          </div>
-          <div>
-            <div className="w3-col m4 label">Noeud</div>
-            <div className="w3-col m8">{documentSenseur.noeud}</div>
-          </div>
-          <div>
-            <div className="w3-col m4 label">Derniere lecture</div>
-            <div className="w3-col m8">{lecturesFormattees.timestamp}</div>
-          </div>
+        <form>
+          <input type="hidden" name="uuid_senseur" value={documentSenseur.uuid_senseur}/>
+          <div className="w3-container w3-padding formulaire">
+            <div>
+              <div className="w3-col m12">
+                <input name="location" type="text" className="input-width-auto"
+                  value={this.state.locationSenseur}
+                  onChange={this.editerLocationSenseur}
+                  onBlur={this.props.renommerSenseur} />
+              </div>
+            </div>
+            <div>
+              <div className="w3-col m4 label">Numero senseur</div>
+              <div className="w3-col m8">{documentSenseur.uuid_senseur}</div>
+            </div>
+            <div>
+              <div className="w3-col m4 label">Noeud</div>
+              <div className="w3-col m8">{documentSenseur.noeud}</div>
+            </div>
+            <div>
+              <div className="w3-col m4 label">Derniere lecture</div>
+              <div className="w3-col m8">{lecturesFormattees.timestamp}</div>
+            </div>
 
-          {lignes}
+            {lignes}
 
-        </div>
+          </div>
+        </form>
       );
 
       modifierSenseur = (
         <div className="w3-container w3-padding">
-          <div className="w3-col m12">
-            <form onSubmit={event => event.preventDefault()}>
-              <label>
-                Renommer:
-                <input type="text" name="location" defaultValue={documentSenseur.location} onChange={this.changerLocationSenseur}/>
-                <input type="hidden" name="uuid_senseur" value={documentSenseur.uuid_senseur}/>
-                <button onClick={this.props.renommerSenseur}>Renommer</button>
-              </label>
-            </form>
-          </div>
           <div className="w3-col m12 w3-center boutons buttonBar">
             <form onSubmit={event => event.preventDefault()}>
               <input type="hidden" name="uuid_senseur" value={documentSenseur.uuid_senseur} />

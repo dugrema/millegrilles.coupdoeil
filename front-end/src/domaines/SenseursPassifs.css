@@ -74,3 +74,11 @@ path.line_2 {
     stroke-width: 2;
     fill: none;
 }
+
+.input-width-auto {
+  width: 100%;
+  border: 0;
+  font-size: 140%;
+  opacity: 0.6;
+  margin-bottom: 1em;
+}
