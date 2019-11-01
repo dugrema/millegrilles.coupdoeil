@@ -156,6 +156,18 @@ export class SenseursPassifs extends React.Component {
     webSocketManager.transmettreTransaction('millegrilles.domaines.SenseursPassifs.changementAttributSenseur', transaction);
   }
 
+  renommerAppareil = event => {
+    const form = event.currentTarget.form;
+    var cleAppareil = 'affichage/'+ form.cleAppareil.value +'/location';
+    var transaction = {
+      uuid_senseur: form.uuid_senseur.value,
+    }
+    transaction[cleAppareil] = event.currentTarget.value;
+    console.log(transaction);
+    this.fonctionsNavigation.setEditionSoumise(event);
+    webSocketManager.transmettreTransaction('millegrilles.domaines.SenseursPassifs.changementAttributSenseur', transaction);
+  }
+
   componentDidMount() {
     // Enregistrer les routingKeys de documents
     webSocketManager.subscribe(this.config.subscriptions, this.processMessage);
@@ -192,6 +204,7 @@ export class SenseursPassifs extends React.Component {
           uuid_senseur={this.state.uuid_senseur}
           supprimerSenseur={this.supprimerSenseur}
           renommerSenseur={this.renommerSenseur}
+          renommerAppareil={this.renommerAppareil}
           editionEnCours={this.state.editionEnCours}
           {...this.fonctionsNavigation}
         />
@@ -512,6 +525,11 @@ class SenseurPassifIndividuel extends React.Component {
             documentAppareil={appareil}
             cleAppareil={cleAppareil}
             rapports={this.state.rapports}
+            uuid_senseur={this.props.uuid_senseur}
+            renommerAppareil={this.props.renommerAppareil}
+            editionEnCours={this.props.editionEnCours}
+            setEditionEnCours={this.props.setEditionEnCours}
+            resetEditionEnCours={this.props.resetEditionEnCours}
             />
         );
       }
@@ -630,6 +648,7 @@ class SenseurPassifIndividuel extends React.Component {
 class SenseurPassifAppareil extends React.Component {
 
   state = {
+    locationAppareil: null,
     afficherTableauHoraire: false,
     afficherTableQuotidien: false,
     locationAppareil: '',
@@ -645,6 +664,23 @@ class SenseurPassifAppareil extends React.Component {
   choisirGranularite = event => {
     var granularite = event.currentTarget.value;
     this.setState({granularite});
+  }
+
+  editerLocationAppareil = event => {
+    var valeurs = {
+      locationAppareil: event.currentTarget.value,
+    }
+    this.props.setEditionEnCours(event);
+    this.setState({...valeurs});
+  }
+
+  renommerAppareil = event => {
+    this.props.renommerAppareil(event);
+  }
+
+  componentDidMount() {
+    var locationAppareil = this.props.documentAppareil.location || this.props.cleAppareil;
+    this.setState({locationAppareil});
   }
 
   render() {
@@ -681,23 +717,39 @@ class SenseurPassifAppareil extends React.Component {
       )
     }
 
+    var classNameEditionTitre = '';
+    if(this.props.editionEnCours["location"+this.props.cleAppareil]) {
+      classNameEditionTitre = 'edition'
+    }
+
     detailAppareil = (
-      <div className="w3-container w3-padding formulaire">
-        <h6 className="w3-col m12 w3-opacity">
-          { this.props.documentAppareil.location || this.props.cleAppareil }
-        </h6>
-        <div>
-          <div className="w3-col m4 label">Adresse</div>
-          <div className="w3-col m8">{this.props.cleAppareil}</div>
-        </div>
-        <div>
-          <div className="w3-col m4 label">Derniere lecture</div>
-          <div className="w3-col m8">{lecturesFormattees.timestamp}</div>
-        </div>
+      <form>
+        <input type="hidden" name="uuid_senseur" value={this.props.uuid_senseur}/>
+        <input type="hidden" name="cleAppareil" value={this.props.cleAppareil}/>
 
-        {lignes}
+        <div className="w3-container w3-padding formulaire">
+          <div className="w3-col m12">
+            <input
+              name={"location"+this.props.cleAppareil}
+              type="text" className={"input-width-auto editable " + classNameEditionTitre}
+              value={this.state.locationAppareil}
+              onChange={this.editerLocationAppareil}
+              onBlur={this.renommerAppareil} />
+          </div>
 
-      </div>
+          <div>
+            <div className="w3-col m4 label">Adresse</div>
+            <div className="w3-col m8">{this.props.cleAppareil}</div>
+          </div>
+          <div>
+            <div className="w3-col m4 label">Derniere lecture</div>
+            <div className="w3-col m8">{lecturesFormattees.timestamp}</div>
+          </div>
+
+          {lignes}
+
+        </div>
+      </form>
     );
 
     if( this.props.rapports ) {
@@ -741,21 +793,25 @@ class SenseurPassifAppareil extends React.Component {
 
       charteAppareil = (
         <form>
-          <div className="w3-container w3-padding">
+          <div className="w3-container w3-padding formulaire">
             <div>
-              <div className="w3-col m6">
+              <div className="w3-col m4 label">Type de lecture</div>
+              <div className="w3-col m8">
                 <select onChange={this.choisirTypeLecture}>
                   <option value="">Choisir un type de lecture</option>
-                  <option value="temperature">Temperature</option>
-                  <option value="humidite">Humidite</option>
+                  <option value="temperature">Température</option>
+                  <option value="humidite">Humidité</option>
                   <option value="pression">Pression</option>
                   <option value="millivolt">Millivolt</option>
-                  <option value="reserve">Reserve batterie</option>
+                  <option value="reserve">Réserve batterie</option>
                 </select>
               </div>
-              <div className="w3-col m6">
+            </div>
+            <div>
+              <div className="w3-col m4 label">Granularité</div>
+              <div className="w3-col m8">
                 <select onChange={this.choisirGranularite} value={this.state.granularite}>
-                  <option value="">Choisir un type de granularite</option>
+                  <option value="">Choisir un type de granularité</option>
                   <option value="rapportHoraire">Horaire</option>
                   <option value="rapportQuotidien">Quotidien</option>
                 </select>
