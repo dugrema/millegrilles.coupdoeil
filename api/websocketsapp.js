@@ -179,6 +179,26 @@ class WebSocketApp {
       });
     });
 
+    socket.on('commande', (enveloppe, cb) => {
+      // console.debug("Enveloppe de commande recue");
+      // console.debug(enveloppe);
+      let routingKey = enveloppe.routingKey;
+      let commande = enveloppe.commande;
+
+      rabbitMQ.singleton
+        .transmettreCommande(routingKey, commande)
+        .then( reponse => {
+          let messageContent = reponse.content.toString('utf-8');
+          let json_message = JSON.parse(messageContent);
+          cb(json_message.resultats); // On transmet juste les resultats
+        })
+        .catch( err => {
+          console.error("Erreur requete");
+          console.error(err);
+          cb(); // Callback sans valeurs
+        });
+    });
+
     socket.on('creerTokenTransfert', (message, cb) => {
       let token = sessionManagement.createTokenTransfert();
       cb(token); // Renvoit le token pour amorcer le transfert via PUT

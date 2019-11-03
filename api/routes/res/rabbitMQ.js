@@ -403,6 +403,21 @@ class RabbitMQWrapper {
     return promise;
   }
 
+  transmettreCommande(routingKey, message) {
+
+    const infoTransaction = this._formatterInfoTransaction(routingKey);
+
+    message['en-tete'] = infoTransaction;
+    this._signerMessage(message);
+
+    const correlation = infoTransaction['uuid-transaction'];
+    const jsonMessage = JSON.stringify(message);
+
+    // Transmettre requete - la promise permet de traiter la reponse
+    const promise = this._transmettre(routingKey, jsonMessage, correlation);
+    return promise;
+  }
+
   _transmettre(routingKey, jsonMessage, correlationId) {
     // Setup variables pour timeout, callback
     let timeout, fonction_callback;

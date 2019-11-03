@@ -1,4 +1,6 @@
 import React from 'react';
+import Checkbox from "../mgcomponents/Checkbox";
+
 import webSocketManager from '../WebSocketManager';
 // import {dateformatter} from '../formatters'
 import './Pki.css';
@@ -169,6 +171,172 @@ export class SignerNoeud extends React.Component {
 
 }
 
+export class RenouvellerCertificats extends React.Component {
+
+  LISTE_MIDDLEWARE = ["mq", "nginx", "coupdoeil"];
+
+  state = {
+    renouvellementMiddlewareTransmis: '',
+    renouvellementMiddlewareRoles: {},
+    checkboxes: this.LISTE_MIDDLEWARE.reduce(
+      (options, option) => ({
+        ...options,
+        [option]: false
+      }),
+      {}
+    ),
+  }
+
+  componentWillMount = () => {
+    this.renouvellementMiddlewareRoles = new Set();
+  }
+
+  handleCheckboxChange = changeEvent => {
+    const { name } = changeEvent.target;
+
+    this.setState(prevState => ({
+      checkboxes: {
+        ...prevState.checkboxes,
+        [name]: !prevState.checkboxes[name]
+      }
+    }));
+  };
+
+  setRenouvellerRoleMiddleware = event => {
+    let valeur = event.currentTarget.value;
+
+    // Copier valeurs
+    let valeurs = Object.assign({}, this.setState.renouvellementMiddlewareRoles);
+    valeurs[valeur] = 1;
+
+    this.setState({renouvellementMiddlewareRoles: valeurs});
+  }
+
+  createCheckbox = option => (
+      <div key={option} className="w3-col m12">
+        <Checkbox
+          label={option}
+          isSelected={this.state.checkboxes[option]}
+          onCheckboxChange={this.handleCheckboxChange}
+        />
+      </div>
+    );
+
+  createCheckboxes = () => this.LISTE_MIDDLEWARE.map(this.createCheckbox);
+
+  renouvellerMiddleware = event => {
+    let roles = [];
+
+    Object.keys(this.state.checkboxes)
+      .filter(checkbox => this.state.checkboxes[checkbox])
+      .forEach(checkbox => {
+        roles.push(checkbox);
+      });
+
+    let commande = {
+      roles,
+    }
+    console.debug("Commande de renouvellement");
+    console.debug(commande);
+
+    this.setState({renouvellementMiddlewareTransmis: 'Demande transmise'});
+
+    let domaine = 'commande.monitor.maj.certificatsParRole';
+    webSocketManager.transmettreCommande(domaine, commande)
+    .then(reponse=>{
+      if(reponse.err) {
+        this.setState({renouvellementMiddlewareTransmis: 'Erreur dans la demande, reessayer plus tard'});
+        console.error("Erreur commande");
+        console.error(reponse.err);
+      }
+      console.debug("Reponse");
+      console.debug(reponse);
+
+      if(reponse.autorise) {
+
+        this.setState({
+          renouvellementMiddlewareTransmis: "Renouvellement en cours",
+        });
+
+      } else {
+        this.setState({
+          renouvellementMiddlewareTransmis: "Renouvellement non autorise ou erreur",
+        });
+      }
+    })
+    .catch(err=>{
+      this.setState({
+        renouvellementMiddlewareTransmis: "Erreur dans la demande - voir un administrateur",
+      });
+      console.error("Erreur demande renouvellement certificats");
+      console.error(err);
+    });
+  }
+
+  feuilleEntete() {
+    return (
+      <div className="w3-card w3-round w3-white">
+        <div className="w3-container w3-padding">
+          <h2 className="w3-col m12 w3-opacity">Renouveller des certificats</h2>
+        </div>
+      </div>
+    );
+  }
+
+  middleware() {
+
+    let message = null;
+    if(this.state.renouvellementMiddlewareTransmis !== '') {
+      message = (
+        <div>
+          <div className="w3-col m12">
+            {this.state.renouvellementMiddlewareTransmis}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="w3-card w3-round w3-white">
+        <div className="w3-container w3-padding formulaire">
+          <div>
+            <h3 className="w3-col m12 w3-opacity">Middleware</h3>
+          </div>
+          <div>
+            {this.createCheckboxes()}
+          </div>
+          {message}
+          <div>
+            <div className="w3-col m12 w3-center boutons buttonBar">
+              <button onClick={this.renouvellerMiddleware} value="Soumettre">Sauvegarder</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+
+  render() {
+
+    let contenu = (
+      <div className="w3-col m12">
+        {this.feuilleEntete()}
+        {this.middleware()}
+      </div>
+    );
+
+    return (
+      <div className="w3-col m9">
+        <div className="w3-row-padding">
+            {contenu}
+        </div>
+      </div>
+    );
+  }
+
+}
+
 export class Pki extends React.Component {
 
   state = {
@@ -177,6 +345,7 @@ export class Pki extends React.Component {
 
   sousPages = {
     'SignerNoeud': SignerNoeud,
+    'RenouvellerCertificats': RenouvellerCertificats,
   }
 
   fonctionsNavigation = {
@@ -199,6 +368,11 @@ export class Pki extends React.Component {
             <li>
               <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="SignerNoeud">
                 Signer un certificat de noeud
+              </button>
+            </li>
+            <li>
+              <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="RenouvellerCertificats">
+                Renouveller des certificats
               </button>
             </li>
           </ul>
