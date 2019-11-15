@@ -1,9 +1,9 @@
-REPO=registry.maple.mdugre.info:5000
-GITHUB_REPO=dugremat
-URL_SERVEUR_DEV=mathieu@mg-dev3.local
+REPO=docker.maceroc.com
+DOCKERHUB_REPO=dugremat
+URL_SERVEUR_DEV=mathieu@mg-dev3.maple.maceroc.com
 NAME=coupdoeil_react
 ARCH_SUPPORTEES=( x86_64 armv7l aarch64 )
 BRANCH=`git name-rev --name-only HEAD`
-BUILD=1
+BUILD=2
 
 VERSION=$BRANCH.$BUILD
