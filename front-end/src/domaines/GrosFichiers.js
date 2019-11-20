@@ -7,7 +7,7 @@ import webSocketManager from '../WebSocketManager';
 // Composants React GrosFichiers
 import {PanneauFichiersIcones} from '../mgcomponents/FichiersUI.js';
 import {GrosFichierAfficherPopup} from './GrosFichiersPopups';
-import {NavigationRepertoire, AffichageFichier,
+import {AffichageCollection, AffichageFichier,
   GrosFichiersRenderDownloadForm, FileUploadMonitor} from './GrosFichiersNavigation.js'
 
 export class GrosFichiers extends React.Component {
@@ -22,17 +22,7 @@ export class GrosFichiers extends React.Component {
 
     this.state = {
 
-      // Variables pour navigation des repertoires/fichiers
-      repertoiresZones: {
-        repertoirePrive: null,     // Repertoire des documents prives et proteges
-        repertoireSecure: null,    // Repertoire des documents secures
-        repertoireCorbeille: null, // Repertoire des documents supprimes
-        repertoireOrphelins: null, // Repertoire des documents orphelins
-
-        zoneCourante: null,  // 1.public, 2.prive, 4.secure, corbeille, orphelins
-      },
-
-      repertoireCourant: null,  // Repertoire a afficher (si pas null et fichier null)
+      collectionCourante: null,  // Collection a afficher (si pas null et fichier null)
       fichierCourant: null,     // Fichier a afficher (si pas null)
 
       // Liste d'elements selectionnes pour operation
@@ -42,11 +32,8 @@ export class GrosFichiers extends React.Component {
       // Popups a afficher
       popupProps: {
         popupRenommerFichierValeurs: null,
-        popupDeplacerFichierValeurs: null,
-
-        popupCreerRepertoireValeurs: null,
-        popupRenommerRepertoireValeurs: null,
-        popupDeplacerRepertoireValeurs: null,
+        popupCreerCollectionValeurs: null,
+        popupRenommerCollectionValeurs: null,
       },
 
       // Variables pour ecrans specifiques
@@ -64,57 +51,63 @@ export class GrosFichiers extends React.Component {
   // Actions utiliees uniquement dans les pop-ups
   popupActions = {
 
-    // Creer un repertoire
-    soumettreCreerRepertoire: (event) => {
-      let uuidRepertoireParent = this.state.popupProps.popupCreerRepertoireValeurs.uuidRepertoireParent;
+    // Creer une collection
+    soumettreCreerCollection: (event) => {
       let formulaire = event.currentTarget.form;
-      let nomRepertoire = formulaire.nomrepertoire.value;
+      let nomCollection = formulaire.nomcollection.value;
 
-      console.debug("Creer repertoire " + nomRepertoire + " sous " + uuidRepertoireParent);
-      // Transmettre message a MQ pour renommer le fichier
+      // Il est possible d'ajouter a une collection a la creation
+      let uuidSuperCollection = formulaire.uuidsupercoll.value;
+
+      console.debug("Creer collection " + nomCollection + ". Ajouter a collection? " + uuidSuperCollection);
+
+      // Transmettre message a MQ pour creer la collection
       let transaction = {
-        "parent_id": uuidRepertoireParent,
-        "nom": nomRepertoire,
+        "nom": nomCollection,
       }
+      if(uuidSuperCollection) {
+        transaction['ajouter_a_collection'] = uuidSuperCollection;
+      }
+
       webSocketManager.transmettreTransaction(
-        'millegrilles.domaines.GrosFichiers.creerRepertoire', transaction)
+        'millegrilles.domaines.GrosFichiers.creerCollection', transaction)
       .then(msg=>{
-        // Mettre en evidence le nouveau repertoire lorsqu'il arrivera a l'ecran.
-        console.debug("Nouveau repertoire cree: " + nomRepertoire);
+        // Mettre en evidence la nouvelle collection lorsqu'elle arrivera a l'ecran.
+        console.debug("Nouvelle collection cree: " + nomCollection);
       }).catch(err=>{
-        console.error("Erreur creation repertoire");
+        console.error("Erreur creation collection");
         console.error(err);
       });
 
-      this.setState({popupProps: {popupCreerRepertoireValeurs: null}});
+      this.setState({popupProps: {popupCreerCollectionValeurs: null}});
     },
     annulerCreerRepertoire: (event) => {
-      this.setState({popupProps: {popupCreerRepertoireValeurs: null}});
+      this.setState({popupProps: {popupCreerCollectionValeurs: null}});
     },
 
-    // Changer nom d'un repertoire
-    soumettreChangerNomRepertoire: (event) => {
+    // Changer nom d'une collection
+    soumettreChangerNomCollection: (event) => {
       let formulaire = event.currentTarget.form;
       let nouveauNom = formulaire.nouveauNom.value;
-      let ancienNom = this.state.popupProps.popupRenommerRepertoireValeurs.nom;
-      let uuidRepertoire = this.state.popupProps.popupRenommerRepertoireValeurs.uuidRepertoire;
+      let ancienNom = this.state.popupProps.popupRenommerCollectionValeurs.nom;
+      let uuidCollection = this.state.popupProps.popupRenommerCollectionValeurs.uuidCollection;
 
-      console.debug("Renommer repertoire " + ancienNom + " a " + nouveauNom + ", uuid=" + uuidRepertoire);
+      console.debug("Renommer collection " + ancienNom + " a " + nouveauNom + ", uuid=" + uuidCollection);
 
       if(nouveauNom !== ancienNom) {
-        // Transmettre message a MQ pour renommer le fichier
+        // Transmettre message a MQ pour renommer la collection
         let transaction = {
-          "repertoire_uuid": uuidRepertoire,
+          "uuid": uuidCollection,
           "nom": nouveauNom,
         }
         webSocketManager.transmettreTransaction(
-          'millegrilles.domaines.GrosFichiers.renommerRepertoire', transaction);
+          'millegrilles.domaines.GrosFichiers.renommerCollection', transaction);
       }
 
-      this.setState({popupRenommerRepertoireValeurs: null})
+      this.setState({popupRenommerCollectionValeurs: null})
     },
-    annulerChangerNomRepertoire: (event) => {
-      this.setState({popupRenommerRepertoireValeurs: null})
+    annulerChangerNomCollection: (event) => {
+      this.setState({popupRenommerCollectionValeurs: null})
     },
 
     // Changer le nom d'un fichier
@@ -148,24 +141,24 @@ export class GrosFichiers extends React.Component {
       });
     },
 
-    supprimerRepertoire: (event) => {
-      let uuidRepertoire = event.currentTarget.value;
+    supprimerCollection: (event) => {
+      let uuidCollection = event.currentTarget.value;
 
       let transaction = {
-        "repertoire_uuid": uuidRepertoire,
+        "uuid": uuidCollection,
       }
       webSocketManager.transmettreTransaction(
-        'millegrilles.domaines.GrosFichiers.supprimerRepertoire', transaction)
+        'millegrilles.domaines.GrosFichiers.supprimerCollection', transaction)
       .then(msg=>{
-        console.debug("Repertoire supprime " + uuidRepertoire);
-        let repertoireCourant = this.state.repertoireCourant;
-        if(repertoireCourant.repertoire_uuid === uuidRepertoire) {
-          // On va popper vers le repertoire parent
-          this.changerRepertoire(repertoireCourant.parent_id);
+        console.debug("Collection supprime " + uuidCollection);
+        let collectionCourante = this.state.collectionCourante;
+        if(collectionCourante.uuid === uuidCollection) {
+          // On va popper vers la liste globale
+          this.setState({collectionCourante: null});
         }
       })
       .catch(err=>{
-        console.error("Erreur suppression repertoire " + uuidRepertoire);
+        console.error("Erreur suppression collection " + uuidCollection);
       });
     },
 
@@ -190,8 +183,8 @@ export class GrosFichiers extends React.Component {
 
   // Actions utiliees dans le panneau des fichiers
   fichierActions = {
-    upload: repertoireDestination => {
-      console.debug("Upload vers " + repertoireDestination);
+    upload: collectionDestination => {
+      console.debug("Upload vers " + collectionDestination);
     },
 
     telechargerEvent: event => {
@@ -237,6 +230,7 @@ export class GrosFichiers extends React.Component {
       let downloadUrl = this.state.downloadUrl;
 
       console.debug("2. fuuide: " + fuuid);
+      // Demander un OTP pour telecharger le fichier
       webSocketManager.demanderTokenTransfert()
       .then(token=>{
         form.action = downloadUrl + "/" + nomFichier;
@@ -308,25 +302,32 @@ export class GrosFichiers extends React.Component {
       let feedbackFichier = msg => {
         console.debug("Fichier supprime: " + uuid);
       }
+      let feedbackCollection = msg => {
+        console.debug("Collection supprimee: " + uuid);
+      }
 
       for(var uuid in selection) {
         let infoitem = selection[uuid];
         let typeitem = infoitem.type;
         console.debug(typeitem + " " + uuid);
+        let transaction = {
+          "uuid": uuid,
+        }
 
         if(typeitem === 'fichier') {
-          let transaction = {
-            "uuid": uuid,
-          }
-
           webSocketManager.transmettreTransaction(
             'millegrilles.domaines.GrosFichiers.supprimerFichier', transaction)
           .then(msg=>feedbackFichier).catch(err=>{
             console.error("Erreur suppression fichier");
             console.error(err);
           });
-        } else if(typeitem === 'repertoire') {
-          console.warn("Suppression repertoire pas encore supportee");
+        } else if(typeitem === 'collection') {
+          webSocketManager.transmettreTransaction(
+            'millegrilles.domaines.GrosFichiers.supprimerCollection', transaction)
+          .then(msg=>feedbackCollection).catch(err=>{
+            console.error("Erreur suppression collection");
+            console.error(err);
+          });
         }
       }
     },
@@ -338,29 +339,22 @@ export class GrosFichiers extends React.Component {
       });
     },
 
-    activerDeplacer: selection => {
-      this.setState({
-        elementsCopierDeplacer: selection,
-        operationCopierDeplacer: 'deplacer',
-      });
-    },
-
-    doubleclickRepertoire: (event) => {
-      let uuidRepertoire = event.currentTarget.dataset.repertoireuuid;
-      console.debug("Double click repertoire " + uuidRepertoire);
-      this.changerRepertoire(uuidRepertoire);
+    doubleclickCollection: (event) => {
+      let collectionuuid = event.currentTarget.dataset.collectionuuid;
+      console.debug("Double click collection " + collectionuuid);
+      this.afficherCollection(collectionuuid);
     },
 
     doubleclickFichier: (event) => {
-      let uuidFichier = event.currentTarget.dataset.fichieruuid;
-      console.debug("Double click fichier " + uuidFichier);
-      this.afficherProprietesFichier(uuidFichier);
+      let fichieruuid = event.currentTarget.dataset.fichieruuid;
+      console.debug("Double click fichier " + fichieruuid);
+      this.afficherProprietesFichier(fichieruuid);
     },
 
     ouvrir: (uuid, type) => {
       console.debug("Ouvrir " + type + " " + uuid);
-      if(type === 'repertoire') {
-        this.changerRepertoire(uuid);
+      if(type === 'collection') {
+        this.afficherCollection(uuid);
       } else if(type === 'fichier') {
         this.afficherProprietesFichier(uuid);
       }
@@ -368,58 +362,12 @@ export class GrosFichiers extends React.Component {
 
   }
 
-  repertoireActions = {
-    afficherRepertoire: event => {
+  collectionActions = {
+    afficherCollection: event => {
       let bouton = event.currentTarget;
-      let uuidRepertoire = bouton.value;
-      this.changerRepertoire(uuidRepertoire);
+      let collectionuuid = bouton.value;
+      this.afficherCollection(collectionuuid);
     },
-
-    deplacerSelection: (event) => {
-      let selection = this.state.selection;
-      let uuidRepertoireDestination = event.currentTarget.value;
-      console.debug("Deplacer selection vers " + uuidRepertoireDestination);
-      console.debug(selection);
-
-      for(var uuid in selection) {
-        let info = selection[uuid];
-        let type = info.type;
-        if(type === 'fichier') {
-          var transaction = {
-            "uuid": uuid,
-            "repertoire_uuid": uuidRepertoireDestination,
-          }
-          webSocketManager.transmettreTransaction(
-            'millegrilles.domaines.GrosFichiers.deplacerFichier', transaction);
-        } else if(type === 'repertoire') {
-
-        }
-      }
-
-      this.setState({'selection': {}}); // Clear
-    },
-    changerRepertoireSpecial: event => {
-      let repertoireLabel = event.currentTarget.value;
-      console.debug("Switch repertoire base: " + repertoireLabel);
-      let repertoire;
-      if(repertoireLabel === 'Prive') {
-        repertoire = this.state.repertoiresZones.repertoirePrive;
-      } else if(repertoireLabel === 'Corbeille') {
-        repertoire = this.state.repertoiresZones.repertoireCorbeille;
-      } else if(repertoireLabel === 'Orphelins') {
-        repertoire = this.state.repertoiresZones.repertoireOrphelins;
-      }
-
-      if(repertoire) {
-        this.setState({
-          repertoireZoneCourante: repertoire,
-          repertoireCourant: repertoire,
-        });
-      } else {
-        console.log("Aucun repertoire special trouve");
-        console.log(this.state.repertoiresZones);
-      }
-    }
   }
 
   uploadActions = {
@@ -491,16 +439,13 @@ export class GrosFichiers extends React.Component {
   config = {
     subscriptions: [
       'noeuds.source.millegrilles_domaines_GrosFichiers.fichier',
-      'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire',
-      'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.racine',
-      'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.corbeille',
-      'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.orphelins',
+      'noeuds.source.millegrilles_domaines_GrosFichiers.collection',
     ]
   };
 
   chargerDocument = (requete, domaine) => {
     if(!domaine) {
-      // Domaine par defaut est une requete vers SenseursPassifs
+      // Domaine par defaut est une requete vers GrosFichiers
       domaine = 'requete.millegrilles.domaines.GrosFichiers';
     }
 
@@ -585,28 +530,13 @@ export class GrosFichiers extends React.Component {
     })
   }
 
-  repertoireZoneCourante() {
-    let zoneCourante = this.state.repertoiresZones.zoneCourante;
-    console.debug("Zone courante: " + zoneCourante);
-    console.debug(this.state.repertoiresZones);
-    let repertoireZone = null;
-    if(!zoneCourante) {
-      console.error("Erreur, zone courante pas settee. On met prive par defaut");
-      repertoireZone = this.state.repertoiresZones.repertoirePrive;
-    } else {
-      repertoireZone = this.state.repertoiresZones.zoneCourante;
-    }
-
-    return repertoireZone;
-  }
-
-  changerRepertoire(uuidRepertoire) {
-    let repertoireZoneCourante = this.repertoireZoneCourante();
+  afficherCollection(collectionuuid) {
+    let collectionCourante = this.state['collectionCourante'];
     // console.debug("Repertoire zone courante: ");
     // console.debug(repertoireZoneCourante);
-    if(uuidRepertoire && uuidRepertoire !== repertoireZoneCourante.repertoire_uuid) {
+    if(collectionuuid && collectionuuid !== collectionCourante.uuid) {
       this.chargerDocument({
-        requetes: [{'filtre': {'repertoire_uuid': uuidRepertoire, '_mg-libelle': 'repertoire'}}]
+        requetes: [{'filtre': {'uuid': collectionuuid, '_mg-libelle': 'collection'}}]
       })
       .then(resultats=>{
         // console.debug("Resultats afficherRepertoire");
@@ -615,23 +545,21 @@ export class GrosFichiers extends React.Component {
         this.setState({repertoireCourant: repertoire});
       })
       .catch(err=>{
-        console.error("Erreur chargement repertoire " + uuidRepertoire);
+        console.error("Erreur chargement collection " + collectionuuid);
         console.error(err);
       })
     } else {
-      // Retour au repertoire racine
-      this.setState({repertoireCourant: repertoireZoneCourante})
+      // Retour a l'affichage de base
+      this.setState({collectionCourante: null})
     }
   }
 
-  retourRepertoireFichier = (event) => {
+  retourFichier = (event) => {
     this.setState({'fichierCourant': null});
   }
 
-  afficherPopupCreerRepertoire = repertoireDestination => {
-    this.setState({popupProps: {popupCreerRepertoireValeurs: {
-      uuidRepertoireParent: repertoireDestination
-    }}});
+  afficherPopupCreerCollection = ()) => {
+    this.setState({popupProps: {popupCreerCollectionValeurs: {}}});
   }
 
   afficherPopupRenommer = (uuid, type) => {
@@ -654,50 +582,14 @@ export class GrosFichiers extends React.Component {
 
   }
 
-
-  deplacerRepertoire = (event) => {
-
-  }
-
   processMessage = (routingKey, doc) => {
     console.debug("Message de MQ: " + routingKey);
 
-    if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.racine' ||
-       routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.corbeille' ||
-       routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.orphelins') {
+    if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.collection') {
 
-      // console.debug("Update repertoire racine");
-      // console.debug(doc);
-      let update = {};
-      if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.racine') {
-        update['repertoirePrive'] = doc;
-      } else if (routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.corbeille') {
-        update['repertoireCorbeille'] = doc;
-      } else if (routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire.orphelins') {
-        update['repertoireOrphelins'] = doc;
-      }
+      console.warning("Evenement collection, pas encore gere");
+      console.warning(doc);
 
-      var newState = {
-        repertoiresZones: {
-          ...this.state.repertoiresZones,
-          ...update,
-        }
-      }
-
-      // Verifier si le repertoire courant est ce meme repertoire qu'on vient de recevoir
-      if(this.state.repertoireCourant && doc.repertoire_uuid === this.state.repertoireCourant.repertoire_uuid) {
-        newState.repertoireCourant = doc;
-      }
-
-      this.setState(newState);
-    } else if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.repertoire') {
-      // Verifier si repertoire courant correspond
-      let repertoireCourant = this.state.repertoireCourant;
-      if(repertoireCourant && repertoireCourant.repertoire_uuid === doc.repertoire_uuid) {
-        console.debug("Update repertoire courant");
-        console.debug(doc);
-        this.setState({repertoireCourant: doc});
-      }
     } else if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.fichier') {
       // Verifier si repertoire courant correspond
       let fichierCourant = this.state.fichierCourant;
@@ -725,32 +617,7 @@ export class GrosFichiers extends React.Component {
       console.debug("Documents speciaux");
       console.debug(docs);
       // On recoit une liste de resultats, avec une liste de documents.
-      // On veut juste conserver le 1er resultat de la 1ere (seule) requete.
-      // Mettre le repertoire racine comme repertoire courant.
-      const repertoiresSpeciaux = docs[0];
-      let repertoirePrive;
-      let zones = {};
-      for(let idx in repertoiresSpeciaux) {
-        let repertoire = repertoiresSpeciaux[idx];
-        let mg_libelle = repertoire['_mg-libelle'];
-        if(mg_libelle === 'repertoire.racine') {
-          repertoirePrive = repertoire;
-          zones['repertoirePrive'] = repertoire;
-        } else if(mg_libelle === 'repertoire.corbeille') {
-          zones['repertoireCorbeille'] = repertoire;
-        } else if(mg_libelle === 'repertoire.orphelins') {
-          zones['repertoireOrphelins'] = repertoire;
-        }
-      }
 
-      this.setState({
-        repertoiresZones: {
-          ...this.state.repertoiresZones,
-          ...zones,
-          zoneCourante: repertoirePrive,
-        },
-        repertoireCourant: repertoirePrive,
-      })
     })
     .catch(err=>{
       console.error("Erreur chargement document racine");
@@ -786,16 +653,16 @@ export class GrosFichiers extends React.Component {
           <AffichageFichier
             fichierCourant={this.state.fichierCourant}
             downloadUrl={this.state.downloadUrl}
-            retourRepertoireFichier={this.retourRepertoireFichier}
+            retourFichier={this.retourFichier}
             {...this.fichierActions}
             />
         </div>
       )
-    } else if(this.state.repertoireCourant){
+    } else if(this.state.collectionCourante){
       affichagePrincipal = (
         <div>
-          <NavigationRepertoire
-            repertoireCourant={this.state.repertoireCourant}
+          <NavigationCollection
+            collectionCourante={this.state.collectionCourante}
             uploadActions={this.uploadActions}
 
             {...this.state.repertoiresZones}
@@ -809,10 +676,24 @@ export class GrosFichiers extends React.Component {
           {uploadProgress}
 
           <PanneauFichiersIcones
+            operationCopierDeplacer={this.state.operationCopierDeplacer}
+
+            creerCollection={this.afficherPopupCreerCollection}
+            renommer={this.afficherPopupRenommer}
+            {...this.fichierActions}
+            />
+        </div>
+      )
+    } else {
+      affichagePrincipal = (
+        <div>
+          {uploadProgress}
+
+          <PanneauFichiersIcones
             repertoire={this.state.repertoireCourant}
             operationCopierDeplacer={this.state.operationCopierDeplacer}
 
-            creerRepertoire={this.afficherPopupCreerRepertoire}
+            creerCollection={this.afficherPopupCreerCollection}
             renommer={this.afficherPopupRenommer}
             {...this.fichierActions}
             />
