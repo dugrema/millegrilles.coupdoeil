@@ -38,103 +38,16 @@ export class Accueil extends React.Component {
 
 }
 
-export class NavigationRepertoire extends React.Component {
+export class NavigationCollection extends React.Component {
   // Affiche la liste des sous-repertoires et une breadcrumb pour remonter
 
-  pathRepertoire() {
-    var pathRepertoire;
-    let nomRepertoireBase = 'Prive';  // Par defaut
-    let repertoireZoneCourante = this.props.zoneCourante;
-
-    if(repertoireZoneCourante) {
-      let mg_libelle_zone = repertoireZoneCourante['_mg-libelle'];
-      if(mg_libelle_zone === 'repertoire.corbeille') {
-        nomRepertoireBase = 'Corbeille';
-      } else if(mg_libelle_zone === 'repertoire.orphelins') {
-        nomRepertoireBase = 'Orphelins';
-      }
-
-      if(repertoireZoneCourante !== this.props.repertoireCourant){
-
-        let chemin = [];
-        chemin.push(
-          <span key={repertoireZoneCourante.repertoire_uuid}>
-            <button
-              className="aslink"
-              value={repertoireZoneCourante.repertoire_uuid}
-              onClick={this.props.afficherRepertoire}>
-                {nomRepertoireBase}
-            </button>
-            /
-          </span>
-        );
-
-        // Couper le chemin intermediaire, on garde le parent
-        // console.debug(this.props.repertoireCourant);
-        let cheminsRepertoires = this.props.repertoireCourant.chemin_repertoires;
-        cheminsRepertoires = cheminsRepertoires.substring(1);  // Enlever leading '/'
-        let chemins = cheminsRepertoires.split('/');
-        if(chemins[0] !== '') for(var idx in chemins) {
-          let nomRepertoire = chemins[idx];
-          let dernier = ''+(chemins.length-1);  // String pour comparer a idx
-          if(idx === dernier) {
-            chemin.push(
-              <span key={this.props.repertoireCourant.parent_id}>
-                <button
-                  className="aslink"
-                  value={this.props.repertoireCourant.parent_id}
-                  onClick={this.props.afficherRepertoire}>
-                    {nomRepertoire}
-                </button>
-                /
-              </span>
-            )
-          } else {
-            chemin.push(
-              <span key={nomRepertoire+idx}>{nomRepertoire}/</span>
-            )
-          }
-        }
-
-        chemin.push(
-          <span key={this.props.repertoireCourant.repertoire_uuid}>
-            {this.props.repertoireCourant.nom}
-          </span>
-        )
-
-        // Retourner le chemin complet
-        pathRepertoire = (
-          <span>
-            {chemin}
-          </span>
-        )
-      }
-    }
-
-    if(!pathRepertoire) {
-      pathRepertoire = (<span>{nomRepertoireBase}</span>);
-    }
-
-    return pathRepertoire;
-  }
-
   informationRepertoire() {
-    console.debug(this.props.repertoireCourant);
+    console.debug(this.props.collectionCourante);
     return (
       <div>
         <div>
-          {this.props.repertoireCourant.commentaires}
+          {this.props.collectionCourante.commentaires}
         </div>
-      </div>
-    );
-  }
-
-  boutonsRepertoiresSpeciaux() {
-    return (
-      <div>
-        <button onClick={this.props.changerRepertoireSpecial} value="Prive">Prive</button>
-        <button onClick={this.props.changerRepertoireSpecial} value="Corbeille">Corbeille</button>
-        <button onClick={this.props.changerRepertoireSpecial} value="Orphelins">Orphelins</button>
       </div>
     );
   }
@@ -144,13 +57,11 @@ export class NavigationRepertoire extends React.Component {
     return (
       <div className="w3-card w3-round w3-white priveHeader">
         <div className="w3-container w3-padding">
-          {this.pathRepertoire()}
           <FileUploadSection
-            repertoireCourant={this.props.repertoireCourant}
+            collectionCourante={this.props.collectionCourante}
             {...this.props.uploadActions}
             />
-          {this.boutonsRepertoiresSpeciaux()}
-          {this.informationRepertoire()}
+          {this.informationCollection()}
         </div>
       </div>
     );
@@ -172,7 +83,7 @@ export class AffichageFichier extends React.Component {
             <h2 className="w3-opacity">{fichierCourant.nom}</h2>
             <button
               className="aslink"
-              onClick={this.props.retourRepertoireFichier}>{fichierCourant.chemin_repertoires}</button>
+              onClick={this.props.retourFichier}>Retour</button>
 
             <div className="proprietes">
               <div>Date: {dateFichierCourant.toString()}</div>
@@ -264,7 +175,7 @@ export class FileUploadMonitor extends React.Component {
       }
 
       liste.push(
-        <div key={valeur.repertoire_uuid + '/' + valeur.path}>
+        <div key={valeur.path}>
           <div className="w3-col m1">
             <i className={classeIcone}/>
           </div>
@@ -293,7 +204,7 @@ export class FileUploadMonitor extends React.Component {
       //}
 
       liste.push(
-        <div key={valeur.repertoire_uuid + '/' + valeur.path}>
+        <div key={valeur.path}>
           <div className="w3-col m1">
             <i className={classeIcone}/>
           </div>
@@ -343,58 +254,11 @@ export class FileUploadSection extends React.Component {
 
     console.debug("Upload fichier avec securite: " + securite);
 
-    // console.debug("Utilisation token " + token);
-    // let promiseUploadQueue = null;
-
     acceptedFiles.forEach( file=> {
       // Ajouter le fichier a l'upload queue
       this.props.ajouterUpload(file, {repertoire_uuid, securite});
-
-      // Demander un token (OTP) via websockets
-      // Permet de se connecter au serveur pour transmetter le fichier.
-      // let promise =
-      //   webSocketManager.demanderTokenTransfert()
-      //   .then(token=>{
-      //     let data = new FormData();
-      //     data.append('repertoire_uuid', repertoire_uuid);
-      //     data.append('securite', securite);
-      //     data.append('grosfichier', file);
-      //     let config = {
-      //       headers: {
-      //         'authtoken': token,
-      //       },
-      //       onUploadProgress: this.props.uploadProgress,
-      //       //cancelToken: new CancelToken(function (cancel) {
-      //       // }),
-      //     }
-      //
-      //     return axios.put('/grosFichiers/nouveauFichier', data, config);
-      //   })
-      //
-      // if(!promiseUploadQueue) {
-      //   promiseUploadQueue = promise;
-      // } else {
-      //   promiseUploadQueue = promiseUploadQueue.then(promise);
-      // }
-
     });
 
-  }
-
-  changerSecuriteRepertoire = event => {
-    let securite = event.currentTarget.value;
-    let repertoireUuid = this.props.repertoireCourant.repertoire_uuid;
-    console.debug("changerSecuriteRepertoire: " + securite + " repertoire uuid: " + repertoireUuid);
-    let transaction = {
-      "repertoire_uuid": repertoireUuid,
-      "securite": securite,
-    }
-
-    let routingKey = 'millegrilles.domaines.GrosFichiers.changerSecuriteRepertoire';
-    webSocketManager.transmettreTransaction(routingKey, transaction)
-    .then(msg=>{
-      console.debug("Securite changee a " + securite + " pour repertoire " + repertoireUuid);
-    })
   }
 
   uploadSuccess(response) {
@@ -415,12 +279,6 @@ export class FileUploadSection extends React.Component {
               <input {...getInputProps()} />
               <span className="fa fa-upload fa-2x"/>
             </div>
-            <select
-                value={this.props.repertoireCourant.securite}
-                onChange={this.changerSecuriteRepertoire}>
-              <option value="2.prive">Prive</option>
-              <option value="3.protege">Protege</option>
-            </select>
           </section>
         )}
       </Dropzone>
