@@ -82,9 +82,9 @@ section.uploadIcon DIV SPAN {
   opacity: 0.6;
 }
 
-.bouton-home i {
-  margin: 4px;
-  padding: 6px;
+.bouton-home > span, .bouton-home > i {
+  margin: 5px;
+  padding: 2px;
   border: 1px solid grey;
 }
 

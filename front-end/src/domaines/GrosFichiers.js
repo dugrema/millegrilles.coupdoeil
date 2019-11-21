@@ -3,12 +3,12 @@ import axios from 'axios';
 
 import './GrosFichiers.css';
 import webSocketManager from '../WebSocketManager';
-import {dateformatter, numberformatter} from '../formatters'
 
 // Composants React GrosFichiers
 // import {GrosFichierAfficherPopup} from './GrosFichiersPopups';
-import {AffichageFichier, NavigationCollection, FileUploadSection,
-  GrosFichiersRenderDownloadForm, FileUploadMonitor} from './GrosFichiersNavigation.js'
+import {AffichageFichier,
+  GrosFichiersRenderDownloadForm, FileUploadMonitor,
+  Accueil, Entete} from './GrosFichiersNavigation.js'
 
 export class GrosFichiers extends React.Component {
 
@@ -550,36 +550,6 @@ export class GrosFichiers extends React.Component {
     }
   }
 
-  renderEntete() {
-    return(
-      <div className="w3-card w3-round w3-white w3-card">
-        <div className="w3-container w3-padding">
-
-          <div className="w3-row-padding">
-            <div className="w3-col m2 bouton-home">
-              <i className="fa fa-home fa-2x"/>
-            </div>
-            <div className="w3-col m8 entete-titre">
-              <h1>GrosFichiers</h1>
-            </div>
-            <div className="w3-col m1 bouton-home">
-              <i className="fa fa-search fa-2x"/>
-            </div>
-            <div className="w3-col m1">
-              <FileUploadSection />
-              <select>
-                <option>Sécure</option>
-                <option>Protégé</option>
-                <option>Privé</option>
-              </select>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    );
-  }
-
   renderUploadProgress() {
     let uploadProgress = null;
     if(this.state.uploadsCourants.length > 0 || this.state.uploadsCompletes.length > 0) {
@@ -609,196 +579,29 @@ export class GrosFichiers extends React.Component {
     );
   }
 
-  renderDetailCollection() {
-    return (
-      <div>
-        <NavigationCollection
-          collectionCourante={this.state.collectionCourante}
-          uploadActions={this.uploadActions}
-
-          {...this.state.repertoiresZones}
-          downloadUrl={this.state.downloadUrl}
-
-          afficherPopupCreerRepertoire={this.afficherPopupCreerRepertoire}
-          {...this.repertoireActions}
-
-          />
-      </div>
-    );
-  }
-
-  renderDetailListe() {
-    return (
-      <div>
-        <p>Une liste</p>
-      </div>
-    );
-  }
-
-  renderAccueil() {
-    let fichiers = [
-      {'nom': 'fichier1.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368457, 'uuid': 'a', '_mg-libelle': 'fichier'},
-      {'nom': 'fichier2.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368456, 'uuid': 't', '_mg-libelle': 'fichier'},
-      {'nom': 'fichier3.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574142382, 'uuid': 's', '_mg-libelle': 'fichier'},
-      {'nom': 'fichier4.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368454, 'uuid': 'r', '_mg-libelle': 'fichier'},
-      {'nom': 'fichier5.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368453, 'uuid': 'w', '_mg-libelle': 'fichier'},
-      {'nom': 'fichier6.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368452, 'uuid': 'v', '_mg-libelle': 'fichier'},
-      {'nom': 'fichier7.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1560803662, 'uuid': 'x', '_mg-libelle': 'fichier'},
-      {'nom': 'fichier8.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368450, 'uuid': 'y', '_mg-libelle': 'fichier'},
-      {'nom': 'Collection 9', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368449, 'uuid': 'z', '_mg-libelle': 'collection'},
-      {'nom': 'fichier10.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368448, 'uuid': 'd', '_mg-libelle': 'fichier'},
-      {'nom': 'fichier11.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368447, 'uuid': 'c', '_mg-libelle': 'fichier'},
-    ];
-    let activiteRecente = {
-      'nom': 'Activité récente',
-      'fichiers': fichiers,
-    }
-    return (
-      <div>
-        {this.renderFavoris()}
-        {this.renderSectionRecherche()}
-        {this.renderListeFichiers(activiteRecente)}
-      </div>
-    );
-  }
-
-  renderSectionRecherche() {
-
-    let etiquettes = ['etiquette1', 'etiquette2', 'etiquette3', 'etiquette4'];
-
-    let etiquettesRendered = [];
-    for(let idx in etiquettes) {
-      let etiquette = etiquettes[idx];
-      etiquettesRendered.push(
-        <button key={etiquette}><i className="fa fa-tag"/>{etiquette}</button>
-      );
-    }
-
-    return (
-      <div className="w3-card w3-round w3-white w3-card">
-        <div className="w3-container w3-padding formulaire">
-          <div className="w3-row-padding">
-            <h2 className="w3-col m12">Recherche de fichiers</h2>
-          </div>
-          <div className="w3-row-padding">
-            <div className="w3-col m12 liste-etiquettes">
-              {etiquettesRendered}
-            </div>
-          </div>
-          <div className="w3-row-padding recherche">
-            <div className="w3-col m12">
-              <input type="text" name="recherche_avancee" />
-            </div>
-          </div>
-          <div className="w3-row-padding recherche">
-            <div className="w3-col m12 buttonBar">
-              <button type="button" name="chercher">Chercher</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Affiche une liste paginee de fichiers
-  renderFavoris() {
-
-    let listeFavoris = ['favoris 1', 'favoris 2', 'favoris 3', 'favoris 4', 'favoris 5'];
-
-    let favorisRendered = [];
-    for(let idx in listeFavoris) {
-      let favoris = listeFavoris[idx];
-      favorisRendered.push(
-        <button key={favoris}><i className='fa fa-star'/>{favoris}</button>
-      );
-    }
-
-    return (
-      <div className="w3-card w3-round w3-white w3-card">
-        <div className="w3-container w3-padding">
-          <div className="w3-row-padding">
-            <h2 className="w3-col m12">Favoris</h2>
-          </div>
-          <div className="w3-row-padding">
-            <div className="w3-col m12 liste-favoris">
-              {favorisRendered}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  renderListeFichiers(liste) {
-
-    let fichiersRendered = [];
-
-    for(let idx in liste.fichiers) {
-      let fichier = liste.fichiers[idx];
-
-      let icone = (<i className="fa fa-file-o"/>);
-      if(fichier['_mg-libelle'] === 'collection') {
-        icone = (<i className="fa fa-folder-o"/>);
-      }
-
-      let dernierChangementRendered = renderDernierChangement(fichier['_mg-derniere-modification']);
-
-      fichiersRendered.push(
-        <div key={fichier.uuid} className="w3-row-padding">
-
-          <div className="w3-col m4">
-            {icone} {fichier.nom}
-          </div>
-
-          <div className="w3-col m6">
-            {fichier.commentaires}
-          </div>
-
-          <div className="w3-col m2">
-            {dernierChangementRendered}
-          </div>
-
-        </div>
-      );
-    }
-
-    return (
-      <div className="w3-card w3-round w3-white w3-card">
-        <div className="w3-container w3-padding">
-          <div className="w3-row-padding">
-            <h2>{liste.nom}</h2>
-          </div>
-          <div className="liste-fichiers">
-            {fichiersRendered}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Affichage global pour GrosFichiers
   render() {
 
     let affichagePrincipal;
     if (this.state.fichierCourant) {
       // AFficher un fichier
-      affichagePrincipal = this.renderDetailFichier();
+      // affichagePrincipal = (<DetailFichier />);
     } else if(this.state.collectionCourante){
       // Afficher une collection
-      affichagePrincipal = this.renderDetailCollection();
+      // affichagePrincipal = (<DetailCollection />);
     } else if(this.state.listeCourante){
       // Afficher une liste
-      affichagePrincipal = this.renderListe();
+      // affichagePrincipal = (<Liste />);
     } else {
       // Page d'acueil par defaut
-      affichagePrincipal = this.renderAccueil();
+      affichagePrincipal = (<Accueil />);
     }
 
     return (
       <div className="w3-col m9">
         <div className="w3-row-padding">
           <div className="w3-col m12">
-            {this.renderEntete()}
+            <Entete/>
             {affichagePrincipal}
           </div>
         </div>
@@ -808,34 +611,4 @@ export class GrosFichiers extends React.Component {
     );
   }
 
-}
-
-function renderDernierChangement(date) {
-  var maintenant = Math.floor(Date.now()/1000);
-  let dateChangement = dateformatter.format_datetime(date);
-  let dernierChangementDepuis = maintenant - date;
-  dernierChangementDepuis = Math.floor(dernierChangementDepuis / 60);
-
-  let dernierChangementRendered;
-  var s;  // Ajouter s (pluriels) au besoin
-  if(dernierChangementDepuis < 60) {
-    dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} minutes</span>);
-  } else if (dernierChangementDepuis < 1440) {
-    dernierChangementDepuis = Math.floor(dernierChangementDepuis / 60);
-    if(dernierChangementDepuis > 1) s = 's';
-    dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} heure{s}</span>);
-  } else if (dernierChangementDepuis < 43200) {
-    dernierChangementDepuis = Math.floor(dernierChangementDepuis / 1440);
-    if(dernierChangementDepuis > 1) s = 's';
-    dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} jour{s}</span>);
-  } else if (dernierChangementDepuis < 525600) {
-    dernierChangementDepuis = Math.floor(dernierChangementDepuis / 43200);
-    dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} mois</span>);
-  } else {
-    dernierChangementDepuis = Math.floor(dernierChangementDepuis / 525600);
-    if(dernierChangementDepuis > 1) s = 's';
-    dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} annee{s}</span>);
-  }
-
-  return dernierChangementRendered;
 }
