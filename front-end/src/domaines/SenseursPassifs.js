@@ -648,7 +648,6 @@ class SenseurPassifIndividuel extends React.Component {
 class SenseurPassifAppareil extends React.Component {
 
   state = {
-    locationAppareil: null,
     afficherTableauHoraire: false,
     afficherTableQuotidien: false,
     locationAppareil: '',

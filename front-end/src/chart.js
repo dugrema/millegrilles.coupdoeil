@@ -114,13 +114,15 @@ export class GraphiqueCharte2D extends React.Component {
     ]);
 
     var getXRange = d => { return graphique.x_range(d[NOM_VARIABLE_TEMPORELLE]*1000); };
+    var ordonnee = null;
+    var getYRange = d => { return graphique.y_range(d[ordonnee]); };
 
     for(let idx in ordonnees) {
-      var ordonnee = ordonnees[idx];
+      ordonnee = ordonnees[idx];
 
       var valueLine = d3.line()
           .x(getXRange)
-          .y(d => { return graphique.y_range(d[ordonnee]); });
+          .y(getYRange);
 
       // Add the valueline path.
       this.elementSvg.append("path")
@@ -136,7 +138,7 @@ export class GraphiqueCharte2D extends React.Component {
           .attr("class", "serie_" + idx)
           .attr("r", 3.5)
           .attr("cx", getXRange)
-          .attr("cy", d => { return graphique.y_range(d[ordonnee]); });
+          .attr("cy", getYRange);
     }
 
     // Add the X Axis

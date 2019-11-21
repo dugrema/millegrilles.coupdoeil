@@ -1,6 +1,6 @@
 import React from 'react';
 import Dropzone from 'react-dropzone';
-import webSocketManager from '../WebSocketManager';
+// import webSocketManager from '../WebSocketManager';
 
 export class GrosFichiersRenderDownloadForm extends React.Component {
 

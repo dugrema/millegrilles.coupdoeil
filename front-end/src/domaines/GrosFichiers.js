@@ -5,9 +5,8 @@ import './GrosFichiers.css';
 import webSocketManager from '../WebSocketManager';
 
 // Composants React GrosFichiers
-import {PanneauFichiersIcones} from '../mgcomponents/FichiersUI.js';
 import {GrosFichierAfficherPopup} from './GrosFichiersPopups';
-import {AffichageCollection, AffichageFichier,
+import {AffichageFichier, NavigationCollection,
   GrosFichiersRenderDownloadForm, FileUploadMonitor} from './GrosFichiersNavigation.js'
 
 export class GrosFichiers extends React.Component {
@@ -15,26 +14,15 @@ export class GrosFichiers extends React.Component {
   constructor(props) {
     super(props);
     this.refFormulaireDownload = React.createRef();
-    // this.download = this.download.bind(this);
 
     this.uploadEnCours = false;  // True quand un upload est en marche
     this.uploadRetryTimer = null;  // Timer avant prochain essaie d'upload
 
     this.state = {
 
+      listeCourante: null,       // Liste a afficher (si pas null et fichier null)
       collectionCourante: null,  // Collection a afficher (si pas null et fichier null)
-      fichierCourant: null,     // Fichier a afficher (si pas null)
-
-      // Liste d'elements selectionnes pour operation
-      elementsCopierDeplacer: null,
-      operationCopierDeplacer: null,
-
-      // Popups a afficher
-      popupProps: {
-        popupRenommerFichierValeurs: null,
-        popupCreerCollectionValeurs: null,
-        popupRenommerCollectionValeurs: null,
-      },
+      fichierCourant: null,      // Fichier a afficher (si pas null)
 
       // Variables pour ecrans specifiques
       preparerUpload: null,
@@ -207,92 +195,53 @@ export class GrosFichiers extends React.Component {
       });
     },
 
-    telecharger: ({uuidfichier, fuuid, securite, opts}) => {
+    telecharger: ({uuidfichier, fuuid, opts}) => {
       // Trouver fichier dans information repertoire
-      let infoRepertoire = this.state.repertoireCourant || this.state.repertoireRacine;
-      console.debug(infoRepertoire);
-      var fichier = infoRepertoire.fichiers[uuidfichier];
-      console.debug("Telecharger fichier uuid: " + uuidfichier + ": " + fichier);
-      if(!fichier) {
-        throw new Error("Erreur fichier inconnu: " + uuidfichier)
-      }
-      if(!fuuid) {
-        fuuid = fichier.fuuid_v_courante;
-      }
-      if(!securite) {
-        securite = fichier.securite;
-      }
-      let nomFichier = fichier.nom;
-      let contentType = fichier.mimetype;
+      // let infoRepertoire = this.state.repertoireCourant || this.state.repertoireRacine;
 
-      console.debug("1. Bouton clique pour fichier " + nomFichier);
-      let form = this.refFormulaireDownload.current;
-      let downloadUrl = this.state.downloadUrl;
-
-      console.debug("2. fuuide: " + fuuid);
-      // Demander un OTP pour telecharger le fichier
-      webSocketManager.demanderTokenTransfert()
-      .then(token=>{
-        form.action = downloadUrl + "/" + nomFichier;
-        form.fuuid.value = fuuid;
-        form.nomfichier.value = nomFichier;
-        form.contenttype.value = contentType;
-        form.authtoken.value = token;
-        form.securite.value = securite;
-
-        if(opts) {
-          if(opts.target || opts.target === 'none') {
-            console.log("Form Target null");
-            form.target = '_self';
-          }
-        }
-
-        console.debug("2. Submit preparation, download " + form.action + ", recu token " + form.authtoken.value);
-        form.submit(); // Token pret, submit.
-
-      })
-      .catch(err=>{
-        console.error("Erreur preparation download");
-        console.error(err);
-      })
-
-    },
-
-    copier: (repertoireDestination) => {
-      console.debug("Copier vers " + repertoireDestination);
-      let selection = this.state.elementsCopierDeplacer;
-      for(var uuid in selection) {
-        let infoitem = selection[uuid];
-        let typeitem = infoitem.type;
-        console.debug(typeitem + " " + uuid);
-      }
-    },
-
-    deplacer: (repertoireDestination) => {
-      console.debug("Deplacer vers " + repertoireDestination);
-      let selection = this.state.elementsCopierDeplacer;
-      for(var uuid in selection) {
-        let infoitem = selection[uuid];
-        let typeitem = infoitem.type;
-
-        if(typeitem === 'fichier') {
-          var transaction = {
-            "uuid": uuid,
-            "repertoire_uuid": repertoireDestination,
-          }
-          webSocketManager.transmettreTransaction(
-            'millegrilles.domaines.GrosFichiers.deplacerFichier', transaction);
-        } else if(typeitem === 'repertoire') {
-
-        }
-
-      }
-
-      // L'operation deplacement ne peut pas etre repetee.
-      this.setState({
-        elementsCopierDeplacer: null,
-        operationCopierDeplacer: null,
-      })
+      // var fichier = infoRepertoire.fichiers[uuidfichier];
+      // console.debug("Telecharger fichier uuid: " + uuidfichier + ": " + fichier);
+      // if(!fichier) {
+      //   throw new Error("Erreur fichier inconnu: " + uuidfichier)
+      // }
+      // if(!fuuid) {
+      //   fuuid = fichier.fuuid_v_courante;
+      // }
+      //
+      // let securite = fichier.securite;
+      // let nomFichier = fichier.nom;
+      // let contentType = fichier.mimetype;
+      //
+      // console.debug("1. Bouton clique pour fichier " + nomFichier);
+      // let form = this.refFormulaireDownload.current;
+      // let downloadUrl = this.state.downloadUrl;
+      //
+      // console.debug("2. fuuide: " + fuuid);
+      // // Demander un OTP pour telecharger le fichier
+      // webSocketManager.demanderTokenTransfert()
+      // .then(token=>{
+      //   form.action = downloadUrl + "/" + nomFichier;
+      //   form.fuuid.value = fuuid;
+      //   form.nomfichier.value = nomFichier;
+      //   form.contenttype.value = contentType;
+      //   form.authtoken.value = token;
+      //   form.securite.value = securite;
+      //
+      //   if(opts) {
+      //     if(opts.target || opts.target === 'none') {
+      //       console.log("Form Target null");
+      //       form.target = '_self';
+      //     }
+      //   }
+      //
+      //   console.debug("2. Submit preparation, download " + form.action + ", recu token " + form.authtoken.value);
+      //   form.submit(); // Token pret, submit.
+      //
+      // })
+      // .catch(err=>{
+      //   console.error("Erreur preparation download");
+      //   console.error(err);
+      // })
 
     },
 
@@ -329,34 +278,6 @@ export class GrosFichiers extends React.Component {
             console.error(err);
           });
         }
-      }
-    },
-
-    activerCopier: selection => {
-      this.setState({
-        elementsCopierDeplacer: selection,
-        operationCopierDeplacer: 'copier',
-      });
-    },
-
-    doubleclickCollection: (event) => {
-      let collectionuuid = event.currentTarget.dataset.collectionuuid;
-      console.debug("Double click collection " + collectionuuid);
-      this.afficherCollection(collectionuuid);
-    },
-
-    doubleclickFichier: (event) => {
-      let fichieruuid = event.currentTarget.dataset.fichieruuid;
-      console.debug("Double click fichier " + fichieruuid);
-      this.afficherProprietesFichier(fichieruuid);
-    },
-
-    ouvrir: (uuid, type) => {
-      console.debug("Ouvrir " + type + " " + uuid);
-      if(type === 'collection') {
-        this.afficherCollection(uuid);
-      } else if(type === 'fichier') {
-        this.afficherProprietesFichier(uuid);
       }
     },
 
@@ -558,7 +479,7 @@ export class GrosFichiers extends React.Component {
     this.setState({'fichierCourant': null});
   }
 
-  afficherPopupCreerCollection = ()) => {
+  afficherPopupCreerCollection = () => {
     this.setState({popupProps: {popupCreerCollectionValeurs: {}}});
   }
 
@@ -659,6 +580,8 @@ export class GrosFichiers extends React.Component {
         </div>
       )
     } else if(this.state.collectionCourante){
+      // Afficher une collection
+
       affichagePrincipal = (
         <div>
           <NavigationCollection
@@ -675,28 +598,15 @@ export class GrosFichiers extends React.Component {
 
           {uploadProgress}
 
-          <PanneauFichiersIcones
-            operationCopierDeplacer={this.state.operationCopierDeplacer}
-
-            creerCollection={this.afficherPopupCreerCollection}
-            renommer={this.afficherPopupRenommer}
-            {...this.fichierActions}
-            />
         </div>
       )
     } else {
+      // Page par defaut
+
       affichagePrincipal = (
         <div>
           {uploadProgress}
 
-          <PanneauFichiersIcones
-            repertoire={this.state.repertoireCourant}
-            operationCopierDeplacer={this.state.operationCopierDeplacer}
-
-            creerCollection={this.afficherPopupCreerCollection}
-            renommer={this.afficherPopupRenommer}
-            {...this.fichierActions}
-            />
         </div>
       )
     }
