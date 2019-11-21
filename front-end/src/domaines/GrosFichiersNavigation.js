@@ -61,7 +61,6 @@ export class NavigationCollection extends React.Component {
             collectionCourante={this.props.collectionCourante}
             {...this.props.uploadActions}
             />
-          {this.informationCollection()}
         </div>
       </div>
     );

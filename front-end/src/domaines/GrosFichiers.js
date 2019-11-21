@@ -567,6 +567,11 @@ export class GrosFichiers extends React.Component {
             </div>
             <div className="w3-col m1">
               <FileUploadSection />
+              <select>
+                <option>Sécure</option>
+                <option>Protégé</option>
+                <option>Privé</option>
+              </select>
             </div>
           </div>
 
@@ -645,7 +650,7 @@ export class GrosFichiers extends React.Component {
       {'nom': 'fichier11.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368447, 'uuid': 'c', '_mg-libelle': 'fichier'},
     ];
     let activiteRecente = {
-      'nom': 'Activite recente',
+      'nom': 'Activité récente',
       'fichiers': fichiers,
     }
     return (
@@ -659,13 +664,13 @@ export class GrosFichiers extends React.Component {
 
   renderSectionRecherche() {
 
-    let libelles = ['libelle1', 'libelle2', 'libelle3', 'libelle4'];
+    let etiquettes = ['etiquette1', 'etiquette2', 'etiquette3', 'etiquette4'];
 
-    let libellesRendered = [];
-    for(let idx in libelles) {
-      let libelle = libelles[idx];
-      libellesRendered.push(
-        <button key={libelle}>{libelle}</button>
+    let etiquettesRendered = [];
+    for(let idx in etiquettes) {
+      let etiquette = etiquettes[idx];
+      etiquettesRendered.push(
+        <button key={etiquette}><i className="fa fa-tag"/>{etiquette}</button>
       );
     }
 
@@ -676,8 +681,8 @@ export class GrosFichiers extends React.Component {
             <h2 className="w3-col m12">Recherche de fichiers</h2>
           </div>
           <div className="w3-row-padding">
-            <div className="w3-col m12 liste-libelles">
-              {libellesRendered}
+            <div className="w3-col m12 liste-etiquettes">
+              {etiquettesRendered}
             </div>
           </div>
           <div className="w3-row-padding recherche">
@@ -704,7 +709,7 @@ export class GrosFichiers extends React.Component {
     for(let idx in listeFavoris) {
       let favoris = listeFavoris[idx];
       favorisRendered.push(
-        <button key={favoris}>{favoris}</button>
+        <button key={favoris}><i className='fa fa-star'/>{favoris}</button>
       );
     }
 
@@ -715,7 +720,7 @@ export class GrosFichiers extends React.Component {
             <h2 className="w3-col m12">Favoris</h2>
           </div>
           <div className="w3-row-padding">
-            <div className="w3-col m12 liste-libelles">
+            <div className="w3-col m12 liste-favoris">
               {favorisRendered}
             </div>
           </div>
@@ -728,36 +733,15 @@ export class GrosFichiers extends React.Component {
 
     let fichiersRendered = [];
 
-    var maintenant = Math.floor(Date.now()/1000);
-
     for(let idx in liste.fichiers) {
       let fichier = liste.fichiers[idx];
 
       let icone = (<i className="fa fa-file-o"/>);
-      if(fichier['_mg-libelle'] == 'collection') {
+      if(fichier['_mg-libelle'] === 'collection') {
         icone = (<i className="fa fa-folder-o"/>);
       }
 
-      let dateChangement = dateformatter.format_datetime(fichier['_mg-derniere-modification']);
-      let dernierChangementDepuis = maintenant - fichier['_mg-derniere-modification'];
-      dernierChangementDepuis = Math.floor(dernierChangementDepuis / 60);
-
-      let dernierChangementRendered;
-      if(dernierChangementDepuis < 60) {
-        dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} minutes</span>);
-      } else if (dernierChangementDepuis < 1440) {
-        dernierChangementDepuis = Math.floor(dernierChangementDepuis / 60);
-        dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} heures</span>);
-      } else if (dernierChangementDepuis < 43200) {
-        dernierChangementDepuis = Math.floor(dernierChangementDepuis / 1440);
-        dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} jours</span>);
-      } else if (dernierChangementDepuis < 525600) {
-        dernierChangementDepuis = Math.floor(dernierChangementDepuis / 43200);
-        dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} mois</span>);
-      } else {
-        dernierChangementDepuis = Math.floor(dernierChangementDepuis / 525600);
-        dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} annee(s)</span>);
-      }
+      let dernierChangementRendered = renderDernierChangement(fichier['_mg-derniere-modification']);
 
       fichiersRendered.push(
         <div key={fichier.uuid} className="w3-row-padding">
@@ -824,4 +808,34 @@ export class GrosFichiers extends React.Component {
     );
   }
 
+}
+
+function renderDernierChangement(date) {
+  var maintenant = Math.floor(Date.now()/1000);
+  let dateChangement = dateformatter.format_datetime(date);
+  let dernierChangementDepuis = maintenant - date;
+  dernierChangementDepuis = Math.floor(dernierChangementDepuis / 60);
+
+  let dernierChangementRendered;
+  var s;  // Ajouter s (pluriels) au besoin
+  if(dernierChangementDepuis < 60) {
+    dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} minutes</span>);
+  } else if (dernierChangementDepuis < 1440) {
+    dernierChangementDepuis = Math.floor(dernierChangementDepuis / 60);
+    if(dernierChangementDepuis > 1) s = 's';
+    dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} heure{s}</span>);
+  } else if (dernierChangementDepuis < 43200) {
+    dernierChangementDepuis = Math.floor(dernierChangementDepuis / 1440);
+    if(dernierChangementDepuis > 1) s = 's';
+    dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} jour{s}</span>);
+  } else if (dernierChangementDepuis < 525600) {
+    dernierChangementDepuis = Math.floor(dernierChangementDepuis / 43200);
+    dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} mois</span>);
+  } else {
+    dernierChangementDepuis = Math.floor(dernierChangementDepuis / 525600);
+    if(dernierChangementDepuis > 1) s = 's';
+    dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} annee{s}</span>);
+  }
+
+  return dernierChangementRendered;
 }

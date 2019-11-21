@@ -34,8 +34,8 @@
 section.uploadIcon {
   /* position: absolute; */
   text-align: center;
-  padding: 3px;
-  margin: 3px;
+  padding: 0px;
+  margin: 0px;
   /* top: 8px;
   right: 16px; */
 }
@@ -48,8 +48,10 @@ section.uploadIcon DIV {
 }
 
 section.uploadIcon DIV SPAN {
-  margin: 1px;
-  padding: 3px;
+  margin: 0px;
+  padding: 0px;
+  padding-left: 7px;
+  padding-right: 7px;
   border: 1px solid grey;
 }
 
@@ -96,7 +98,15 @@ section.uploadIcon DIV SPAN {
   width: 100%;
 }
 
-.liste-libelles button {
+.liste-etiquettes button {
+  background: none!important;
+  border: solid 1px grey;
+  padding: 0.1em;
+
+  margin-right: 0.3em;
+}
+
+.liste-favoris button {
   background: none!important;
   border: solid 1px grey;
   padding: 0.1em;
