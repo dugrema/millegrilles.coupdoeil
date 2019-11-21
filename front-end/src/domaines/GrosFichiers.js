@@ -556,21 +556,17 @@ export class GrosFichiers extends React.Component {
         <div className="w3-container w3-padding">
 
           <div className="w3-row-padding">
-            <div className="w3-col m1 bouton-home"><i className="fa fa-home fa-2x"/></div>
-            <div className="w3-col m10 entete-titre">
+            <div className="w3-col m2 bouton-home">
+              <i className="fa fa-home fa-2x"/>
+            </div>
+            <div className="w3-col m8 entete-titre">
               <h1>GrosFichiers</h1>
+            </div>
+            <div className="w3-col m1 bouton-home">
+              <i className="fa fa-search fa-2x"/>
             </div>
             <div className="w3-col m1">
               <FileUploadSection />
-            </div>
-          </div>
-
-          <div className="w3-row-padding">
-            <div className="w3-col m11 recherche">
-              <input type="text" name="recherche"/>
-            </div>
-            <div className="w3-col m1 recherche">
-              <i className="fa fa-search"/>
             </div>
           </div>
 
@@ -654,8 +650,8 @@ export class GrosFichiers extends React.Component {
     }
     return (
       <div>
+        {this.renderFavoris()}
         {this.renderSectionRecherche()}
-        {this.renderListeListes()}
         {this.renderListeFichiers(activiteRecente)}
       </div>
     );
@@ -700,15 +696,15 @@ export class GrosFichiers extends React.Component {
   }
 
   // Affiche une liste paginee de fichiers
-  renderListeListes() {
+  renderFavoris() {
 
-    let listes = ['liste1', 'liste2', 'liste3', 'liste4'];
+    let listeFavoris = ['favoris 1', 'favoris 2', 'favoris 3', 'favoris 4', 'favoris 5'];
 
-    let listesRendered = [];
-    for(let idx in listes) {
-      let liste = listes[idx];
-      listesRendered.push(
-        <button key={liste}>{liste}</button>
+    let favorisRendered = [];
+    for(let idx in listeFavoris) {
+      let favoris = listeFavoris[idx];
+      favorisRendered.push(
+        <button key={favoris}>{favoris}</button>
       );
     }
 
@@ -716,11 +712,11 @@ export class GrosFichiers extends React.Component {
       <div className="w3-card w3-round w3-white w3-card">
         <div className="w3-container w3-padding">
           <div className="w3-row-padding">
-            <h2 className="w3-col m12">Liste de listes de fichiers</h2>
+            <h2 className="w3-col m12">Favoris</h2>
           </div>
           <div className="w3-row-padding">
             <div className="w3-col m12 liste-libelles">
-              {listesRendered}
+              {favorisRendered}
             </div>
           </div>
         </div>
@@ -808,7 +804,7 @@ export class GrosFichiers extends React.Component {
       affichagePrincipal = this.renderDetailCollection();
     } else if(this.state.listeCourante){
       // Afficher une liste
-      affichagePrincipal = this.renderDetailListe();
+      affichagePrincipal = this.renderListe();
     } else {
       // Page d'acueil par defaut
       affichagePrincipal = this.renderAccueil();
