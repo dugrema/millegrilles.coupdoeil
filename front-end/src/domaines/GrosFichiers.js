@@ -3,10 +3,11 @@ import axios from 'axios';
 
 import './GrosFichiers.css';
 import webSocketManager from '../WebSocketManager';
+import {dateformatter, numberformatter} from '../formatters'
 
 // Composants React GrosFichiers
-import {GrosFichierAfficherPopup} from './GrosFichiersPopups';
-import {AffichageFichier, NavigationCollection,
+// import {GrosFichierAfficherPopup} from './GrosFichiersPopups';
+import {AffichageFichier, NavigationCollection, FileUploadSection,
   GrosFichiersRenderDownloadForm, FileUploadMonitor} from './GrosFichiersNavigation.js'
 
 export class GrosFichiers extends React.Component {
@@ -34,6 +35,42 @@ export class GrosFichiers extends React.Component {
 
     };
 
+  }
+
+  // Configuration statique du composant:
+  //   subscriptions: Le nom des routing keys qui vont etre ecoutees
+  config = {
+    subscriptions: [
+    ]
+  };
+
+  componentDidMount() {
+    // Enregistrer les routingKeys de documents
+    webSocketManager.subscribe(this.config.subscriptions, this.processMessage);
+
+    // Charger les documents pour les repertoires speciaux.
+    this.chargerDocument({
+      requetes: [{'filtre': {'_mg-libelle': {'$in': [
+        'repertoire.racine',
+        'repertoire.corbeille',
+        'repertoire.orphelins',
+      ]}}}]
+    })
+    .then(docs=>{
+      console.debug("Documents speciaux");
+      console.debug(docs);
+      // On recoit une liste de resultats, avec une liste de documents.
+
+    })
+    .catch(err=>{
+      console.error("Erreur chargement document racine");
+      console.error(err);
+    });
+  }
+
+  componentWillUnmount() {
+    // console.debug("Unsubscribe GrosFichiers");
+    webSocketManager.unsubscribe(this.config.subscriptions);
   }
 
   // Actions utiliees uniquement dans les pop-ups
@@ -355,15 +392,6 @@ export class GrosFichiers extends React.Component {
     }
   }
 
-  // Configuration statique du composant:
-  //   subscriptions: Le nom des routing keys qui vont etre ecoutees
-  config = {
-    subscriptions: [
-      'noeuds.source.millegrilles_domaines_GrosFichiers.fichier',
-      'noeuds.source.millegrilles_domaines_GrosFichiers.collection',
-    ]
-  };
-
   chargerDocument = (requete, domaine) => {
     if(!domaine) {
       // Domaine par defaut est une requete vers GrosFichiers
@@ -475,7 +503,7 @@ export class GrosFichiers extends React.Component {
     }
   }
 
-  retourFichier = (event) => {
+  retourFichier = event => {
     this.setState({'fichierCourant': null});
   }
 
@@ -522,38 +550,36 @@ export class GrosFichiers extends React.Component {
     }
   }
 
-  componentDidMount() {
-    // Enregistrer les routingKeys de documents
-    webSocketManager.subscribe(this.config.subscriptions, this.processMessage);
+  renderEntete() {
+    return(
+      <div className="w3-card w3-round w3-white w3-card">
+        <div className="w3-container w3-padding">
 
-    // Charger les documents pour les repertoires speciaux.
-    this.chargerDocument({
-      requetes: [{'filtre': {'_mg-libelle': {'$in': [
-        'repertoire.racine',
-        'repertoire.corbeille',
-        'repertoire.orphelins',
-      ]}}}]
-    })
-    .then(docs=>{
-      console.debug("Documents speciaux");
-      console.debug(docs);
-      // On recoit une liste de resultats, avec une liste de documents.
+          <div className="w3-row-padding">
+            <div className="w3-col m1 bouton-home"><i className="fa fa-home fa-2x"/></div>
+            <div className="w3-col m10 entete-titre">
+              <h1>GrosFichiers</h1>
+            </div>
+            <div className="w3-col m1">
+              <FileUploadSection />
+            </div>
+          </div>
 
-    })
-    .catch(err=>{
-      console.error("Erreur chargement document racine");
-      console.error(err);
-    });
+          <div className="w3-row-padding">
+            <div className="w3-col m11 recherche">
+              <input type="text" name="recherche"/>
+            </div>
+            <div className="w3-col m1 recherche">
+              <i className="fa fa-search"/>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    );
   }
 
-  componentWillUnmount() {
-    // console.debug("Unsubscribe GrosFichiers");
-    webSocketManager.unsubscribe(this.config.subscriptions);
-  }
-
-  render() {
-    // Determiner le contenu de l'ecran en fonction de l'etat
-    // Affichage: 1.fichier, ou 2.repertoire, ou 3.repertoire racine
+  renderUploadProgress() {
     let uploadProgress = null;
     if(this.state.uploadsCourants.length > 0 || this.state.uploadsCompletes.length > 0) {
       uploadProgress = (
@@ -566,62 +592,236 @@ export class GrosFichiers extends React.Component {
         </div>
       )
     }
+    return uploadProgress;
+  }
+
+  renderDetailFichier() {
+    return (
+      <div>
+        <AffichageFichier
+          fichierCourant={this.state.fichierCourant}
+          downloadUrl={this.state.downloadUrl}
+          retourFichier={this.retourFichier}
+          {...this.fichierActions}
+          />
+      </div>
+    );
+  }
+
+  renderDetailCollection() {
+    return (
+      <div>
+        <NavigationCollection
+          collectionCourante={this.state.collectionCourante}
+          uploadActions={this.uploadActions}
+
+          {...this.state.repertoiresZones}
+          downloadUrl={this.state.downloadUrl}
+
+          afficherPopupCreerRepertoire={this.afficherPopupCreerRepertoire}
+          {...this.repertoireActions}
+
+          />
+      </div>
+    );
+  }
+
+  renderDetailListe() {
+    return (
+      <div>
+        <p>Une liste</p>
+      </div>
+    );
+  }
+
+  renderAccueil() {
+    let fichiers = [
+      {'nom': 'fichier1.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368457, 'uuid': 'a', '_mg-libelle': 'fichier'},
+      {'nom': 'fichier2.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368456, 'uuid': 't', '_mg-libelle': 'fichier'},
+      {'nom': 'fichier3.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574142382, 'uuid': 's', '_mg-libelle': 'fichier'},
+      {'nom': 'fichier4.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368454, 'uuid': 'r', '_mg-libelle': 'fichier'},
+      {'nom': 'fichier5.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368453, 'uuid': 'w', '_mg-libelle': 'fichier'},
+      {'nom': 'fichier6.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368452, 'uuid': 'v', '_mg-libelle': 'fichier'},
+      {'nom': 'fichier7.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1560803662, 'uuid': 'x', '_mg-libelle': 'fichier'},
+      {'nom': 'fichier8.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368450, 'uuid': 'y', '_mg-libelle': 'fichier'},
+      {'nom': 'Collection 9', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368449, 'uuid': 'z', '_mg-libelle': 'collection'},
+      {'nom': 'fichier10.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368448, 'uuid': 'd', '_mg-libelle': 'fichier'},
+      {'nom': 'fichier11.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368447, 'uuid': 'c', '_mg-libelle': 'fichier'},
+    ];
+    let activiteRecente = {
+      'nom': 'Activite recente',
+      'fichiers': fichiers,
+    }
+    return (
+      <div>
+        {this.renderSectionRecherche()}
+        {this.renderListeListes()}
+        {this.renderListeFichiers(activiteRecente)}
+      </div>
+    );
+  }
+
+  renderSectionRecherche() {
+
+    let libelles = ['libelle1', 'libelle2', 'libelle3', 'libelle4'];
+
+    let libellesRendered = [];
+    for(let idx in libelles) {
+      let libelle = libelles[idx];
+      libellesRendered.push(
+        <button key={libelle}>{libelle}</button>
+      );
+    }
+
+    return (
+      <div className="w3-card w3-round w3-white w3-card">
+        <div className="w3-container w3-padding formulaire">
+          <div className="w3-row-padding">
+            <h2 className="w3-col m12">Recherche de fichiers</h2>
+          </div>
+          <div className="w3-row-padding">
+            <div className="w3-col m12 liste-libelles">
+              {libellesRendered}
+            </div>
+          </div>
+          <div className="w3-row-padding recherche">
+            <div className="w3-col m12">
+              <input type="text" name="recherche_avancee" />
+            </div>
+          </div>
+          <div className="w3-row-padding recherche">
+            <div className="w3-col m12 buttonBar">
+              <button type="button" name="chercher">Chercher</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Affiche une liste paginee de fichiers
+  renderListeListes() {
+
+    let listes = ['liste1', 'liste2', 'liste3', 'liste4'];
+
+    let listesRendered = [];
+    for(let idx in listes) {
+      let liste = listes[idx];
+      listesRendered.push(
+        <button key={liste}>{liste}</button>
+      );
+    }
+
+    return (
+      <div className="w3-card w3-round w3-white w3-card">
+        <div className="w3-container w3-padding">
+          <div className="w3-row-padding">
+            <h2 className="w3-col m12">Liste de listes de fichiers</h2>
+          </div>
+          <div className="w3-row-padding">
+            <div className="w3-col m12 liste-libelles">
+              {listesRendered}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  renderListeFichiers(liste) {
+
+    let fichiersRendered = [];
+
+    var maintenant = Math.floor(Date.now()/1000);
+
+    for(let idx in liste.fichiers) {
+      let fichier = liste.fichiers[idx];
+
+      let icone = (<i className="fa fa-file-o"/>);
+      if(fichier['_mg-libelle'] == 'collection') {
+        icone = (<i className="fa fa-folder-o"/>);
+      }
+
+      let dateChangement = dateformatter.format_datetime(fichier['_mg-derniere-modification']);
+      let dernierChangementDepuis = maintenant - fichier['_mg-derniere-modification'];
+      dernierChangementDepuis = Math.floor(dernierChangementDepuis / 60);
+
+      let dernierChangementRendered;
+      if(dernierChangementDepuis < 60) {
+        dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} minutes</span>);
+      } else if (dernierChangementDepuis < 1440) {
+        dernierChangementDepuis = Math.floor(dernierChangementDepuis / 60);
+        dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} heures</span>);
+      } else if (dernierChangementDepuis < 43200) {
+        dernierChangementDepuis = Math.floor(dernierChangementDepuis / 1440);
+        dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} jours</span>);
+      } else if (dernierChangementDepuis < 525600) {
+        dernierChangementDepuis = Math.floor(dernierChangementDepuis / 43200);
+        dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} mois</span>);
+      } else {
+        dernierChangementDepuis = Math.floor(dernierChangementDepuis / 525600);
+        dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} annee(s)</span>);
+      }
+
+      fichiersRendered.push(
+        <div key={fichier.uuid} className="w3-row-padding">
+
+          <div className="w3-col m4">
+            {icone} {fichier.nom}
+          </div>
+
+          <div className="w3-col m6">
+            {fichier.commentaires}
+          </div>
+
+          <div className="w3-col m2">
+            {dernierChangementRendered}
+          </div>
+
+        </div>
+      );
+    }
+
+    return (
+      <div className="w3-card w3-round w3-white w3-card">
+        <div className="w3-container w3-padding">
+          <div className="w3-row-padding">
+            <h2>{liste.nom}</h2>
+          </div>
+          <div className="liste-fichiers">
+            {fichiersRendered}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Affichage global pour GrosFichiers
+  render() {
 
     let affichagePrincipal;
     if (this.state.fichierCourant) {
-      affichagePrincipal = (
-        <div>
-          <AffichageFichier
-            fichierCourant={this.state.fichierCourant}
-            downloadUrl={this.state.downloadUrl}
-            retourFichier={this.retourFichier}
-            {...this.fichierActions}
-            />
-        </div>
-      )
+      // AFficher un fichier
+      affichagePrincipal = this.renderDetailFichier();
     } else if(this.state.collectionCourante){
       // Afficher une collection
-
-      affichagePrincipal = (
-        <div>
-          <NavigationCollection
-            collectionCourante={this.state.collectionCourante}
-            uploadActions={this.uploadActions}
-
-            {...this.state.repertoiresZones}
-            downloadUrl={this.state.downloadUrl}
-
-            afficherPopupCreerRepertoire={this.afficherPopupCreerRepertoire}
-            {...this.repertoireActions}
-
-            />
-
-          {uploadProgress}
-
-        </div>
-      )
+      affichagePrincipal = this.renderDetailCollection();
+    } else if(this.state.listeCourante){
+      // Afficher une liste
+      affichagePrincipal = this.renderDetailListe();
     } else {
-      // Page par defaut
-
-      affichagePrincipal = (
-        <div>
-          {uploadProgress}
-
-        </div>
-      )
+      // Page d'acueil par defaut
+      affichagePrincipal = this.renderAccueil();
     }
 
     return (
       <div className="w3-col m9">
         <div className="w3-row-padding">
           <div className="w3-col m12">
+            {this.renderEntete()}
             {affichagePrincipal}
           </div>
         </div>
-        <GrosFichierAfficherPopup
-          {...this.state.popupProps}
-          {...this.popupActions}
-          />
         <GrosFichiersRenderDownloadForm
           refFormulaireDownload={this.refFormulaireDownload}/>
       </div>

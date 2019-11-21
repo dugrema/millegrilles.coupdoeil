@@ -32,17 +32,25 @@
 }
 
 section.uploadIcon {
-  position: absolute;
+  /* position: absolute; */
   text-align: center;
-  border: 1px solid black;
-  top: 8px;
-  right: 16px;
+  padding: 3px;
+  margin: 3px;
+  /* top: 8px;
+  right: 16px; */
 }
 
 section.uploadIcon DIV {
   cursor: pointer;
   background: white;
   opacity: 0.4;
+
+}
+
+section.uploadIcon DIV SPAN {
+  margin: 1px;
+  padding: 3px;
+  border: 1px solid grey;
 }
 
 .securite-prive {
@@ -51,4 +59,51 @@ section.uploadIcon DIV {
 
 .securite-protege {
   color: green;
+}
+
+.entete-titre,.w3-bar,h1,button {font-family: "Verdana", sans-serif}
+
+.entete-titre H1 {
+  font-size: 150%;
+  text-align: center;
+  opacity: 0.6;
+}
+
+/* Classe editable permet de modifier un element texte inline */
+.editable {
+
+}
+
+.bouton-home {
+  cursor: pointer;
+  background: white;
+  opacity: 0.6;
+}
+
+.bouton-home i {
+  margin: 3px;
+  padding: 3px;
+  border: 1px solid grey;
+}
+
+.recherche i {
+  margin: 2px;
+  padding: 1px;
+  cursor: pointer;
+}
+
+.recherche input {
+  width: 100%;
+}
+
+.liste-libelles button {
+  background: none!important;
+  border: solid 1px grey;
+  padding: 0.1em;
+
+  margin-right: 0.3em;
+}
+
+.liste-fichiers div {
+  min-height: 1px;
 }

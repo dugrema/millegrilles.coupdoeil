@@ -113,6 +113,10 @@ path {
   margin-bottom: 2em;
 }
 
+.formulaire div {
+  padding-bottom: 0.5em;
+}
+
 .formulaire div div.label {
   text-align: right;
   padding-right: 1em;
@@ -138,6 +142,10 @@ path {
 SPAN.label {
   width: 10em;
   display: inline;
+}
+
+.buttonBar {
+  text-align: center;
 }
 
 .buttonBar button {
