@@ -44,6 +44,7 @@ export class Accueil extends React.Component {
           />
         <ListeFichiers
           rapportActivite={this.props.rapportActivite}
+          favorisParUuid={this.props.favorisParUuid}
           />
       </div>
     );
@@ -103,7 +104,13 @@ export class Favoris extends React.Component {
         let nomFavori = favoris['nom'];
         let uuidFavori = favoris['uuid'];
         favorisRendered.push(
-          <button key={uuidFavori}><i className='fa fa-star'/>{nomFavori}</button>
+          <button key={uuidFavori}>
+            <span className="fa-stack favori-actif">
+              <i className='fa fa-star fa-stack-1x fond'/>
+              <i className='fa fa-star-o fa-stack-1x'/>
+            </span>
+            {nomFavori}
+          </button>
         );
       }
 
@@ -143,6 +150,10 @@ export class ListeFichiers extends React.Component {
         }
 
         let dernierChangementRendered = renderDernierChangement(fichier['_mg-derniere-modification']);
+        let cssFavori = 'favori-inactif';
+        if(this.props.favorisParUuid[fichier.uuid]) {
+          cssFavori = 'favori-actif';
+        }
 
         fichiersRendered.push(
           <div key={fichier['_mg-derniere-modification']+fichier.uuid} className="w3-row-padding tableau-fichiers">
@@ -156,6 +167,10 @@ export class ListeFichiers extends React.Component {
             </div>
 
             <div className="w3-col m1">
+              <span className={"fa-stack " + cssFavori}>
+                <i className='fa fa-star fa-stack-1x fond'/>
+                <i className='fa fa-star-o fa-stack-1x'/>
+              </span>
               <i className="fa fa-download"/>
             </div>
             <div className="w3-col m2">

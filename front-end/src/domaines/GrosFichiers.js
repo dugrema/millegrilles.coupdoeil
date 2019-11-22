@@ -25,6 +25,10 @@ export class GrosFichiers extends React.Component {
       collectionCourante: null,  // Collection a afficher (si pas null et fichier null)
       fichierCourant: null,      // Fichier a afficher (si pas null)
 
+      favoris: null,              // Document de favoris
+      rapportActivite: null,      // Liste d'activite
+      favorisParUuid: null,       // Dict de favoris, indexe par UUID
+
       // Variables pour ecrans specifiques
       preparerUpload: null,
 
@@ -73,6 +77,8 @@ export class GrosFichiers extends React.Component {
         let typeDoc = un_doc['_mg-libelle'];
         if(typeDoc === 'rapport.activite') {
           typeDoc = 'rapportActivite';
+        } else if(typeDoc === 'favoris') {
+          documentsParInfodoc['favorisParUuid'] = this.indexerFavoris(un_doc);
         }
 
         documentsParInfodoc[typeDoc] = un_doc;
@@ -557,8 +563,10 @@ export class GrosFichiers extends React.Component {
         rapportActivite: doc
       })
     } else if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.favoris') {
+      let favorisParUuid = this.indexerFavoris(doc);
       this.setState({
-        favoris: doc
+        favoris: doc,
+        favorisParUuid,
       })
     } else if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.fichier') {
       // Verifier si repertoire courant correspond
@@ -600,6 +608,18 @@ export class GrosFichiers extends React.Component {
     );
   }
 
+  // Fabrique un index des favoris par UUID.
+  indexerFavoris(favoris) {
+    var favorisParUuid = {};
+    if(favoris) {
+      for(let idx in favoris.favoris) {
+        let favori = favoris.favoris[idx];
+        favorisParUuid[favori.uuid] = favori;
+      }
+    }
+    return favorisParUuid;
+  }
+
   // Affichage global pour GrosFichiers
   render() {
 
@@ -619,6 +639,7 @@ export class GrosFichiers extends React.Component {
         <Accueil
           rapportActivite={this.state.rapportActivite}
           favoris={this.state.favoris}
+          favorisParUuid={this.state.favorisParUuid}
           />);
     }
 

@@ -108,10 +108,11 @@ section.uploadIcon DIV SPAN {
 
 .liste-favoris button {
   background: none!important;
-  border: solid 1px grey;
+  border: 0px;
   padding: 0.1em;
 
   margin-right: 0.3em;
+  cursor: pointer;
 }
 
 .liste-fichiers div {
@@ -122,4 +123,19 @@ section.uploadIcon DIV SPAN {
   display: inline-block;
   white-space: nowrap;
   overflow: hidden;
+}
+
+.favori-actif, .favori-inactif {
+  width: 1em;
+  height: 1em;
+  margin-right: 0.3em;
+  line-height: 1em;
+}
+
+.favori-actif > i.fond {
+  color: yellow;
+}
+
+.favori-inactif > i.fond {
+  color: white;
 }
