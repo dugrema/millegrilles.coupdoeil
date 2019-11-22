@@ -25,11 +25,6 @@ export class Entete extends React.Component {
             </div>
             <div className="w3-col m1">
               <FileUploadSection />
-              <select>
-                <option>Sécure</option>
-                <option>Protégé</option>
-                <option>Privé</option>
-              </select>
             </div>
           </div>
 

@@ -43,13 +43,13 @@ section.uploadIcon {
 section.uploadIcon DIV {
   cursor: pointer;
   background: white;
-  opacity: 0.4;
+  opacity: 0.6;
 
 }
 
 section.uploadIcon DIV SPAN {
-  margin: 0px;
-  padding: 0px;
+  margin: 4px;
+  padding: 4px;
   padding-left: 7px;
   padding-right: 7px;
   border: 1px solid grey;

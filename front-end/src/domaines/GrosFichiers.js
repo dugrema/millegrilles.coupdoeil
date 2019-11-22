@@ -42,6 +42,7 @@ export class GrosFichiers extends React.Component {
   config = {
     subscriptions: [
       'noeuds.source.millegrilles_domaines_GrosFichiers.rapport.activite',
+      'noeuds.source.millegrilles_domaines_GrosFichiers.favoris',
     ]
   };
 
@@ -51,19 +52,33 @@ export class GrosFichiers extends React.Component {
 
     // Charger les documents pour les repertoires speciaux.
     this.chargerDocument({
-      requetes: [{'filtre': {'_mg-libelle': {'$in': [
-        'rapport.activite',
-      ]}}}]
+      requetes: [
+        {'filtre': {'_mg-libelle': {'$in': [
+          'rapport.activite', 'favoris',
+        ]}}},
+    ]
     })
     .then(docs=>{
       console.debug("Documents speciaux");
       console.debug(docs);
-      // On recoit une liste de resultats, avec une liste de documents.
-      let rapportActivite = docs[0][0];
 
-      this.setState({
-        rapportActivite,
-      })
+      // On recoit une liste de resultats, avec une liste de documents.
+      let resultatDocs = docs[0];
+
+      var documentsParInfodoc = {};
+      for(let idx in resultatDocs) {
+        let un_doc = resultatDocs[idx];
+
+        // Filtrer les libelles au besoin
+        let typeDoc = un_doc['_mg-libelle'];
+        if(typeDoc === 'rapport.activite') {
+          typeDoc = 'rapportActivite';
+        }
+        
+        documentsParInfodoc[typeDoc] = un_doc;
+      }
+
+      this.setState(documentsParInfodoc);
     })
     .catch(err=>{
       console.error("Erreur chargement document racine");
@@ -540,6 +555,10 @@ export class GrosFichiers extends React.Component {
     if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.rapport.activite') {
       this.setState({
         rapportActivite: doc
+      })
+    } else if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.favoris') {
+      this.setState({
+        favoris: doc
       })
     } else if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.fichier') {
       // Verifier si repertoire courant correspond
