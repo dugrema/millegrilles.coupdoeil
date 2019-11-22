@@ -74,6 +74,65 @@ export class ActionsRecherche {
 
 }
 
+export class ActionsDownload {
+  constructor(reactModule, webSocketManager) {
+    this.reactModule = reactModule;
+    this.webSocketManager = webSocketManager;
+  }
+
+  telecharger = ({uuidfichier, fuuid, opts}) => {
+    // Trouver fichier dans information repertoire
+    // let infoRepertoire = this.state.repertoireCourant || this.state.repertoireRacine;
+
+    // var fichier = infoRepertoire.fichiers[uuidfichier];
+    // console.debug("Telecharger fichier uuid: " + uuidfichier + ": " + fichier);
+    // if(!fichier) {
+    //   throw new Error("Erreur fichier inconnu: " + uuidfichier)
+    // }
+    // if(!fuuid) {
+    //   fuuid = fichier.fuuid_v_courante;
+    // }
+    //
+    // let securite = fichier.securite;
+    // let nomFichier = fichier.nom;
+    // let contentType = fichier.mimetype;
+    //
+    // console.debug("1. Bouton clique pour fichier " + nomFichier);
+    // let form = this.refFormulaireDownload.current;
+    // let downloadUrl = this.state.downloadUrl;
+    //
+    // console.debug("2. fuuide: " + fuuid);
+    // // Demander un OTP pour telecharger le fichier
+    // webSocketManager.demanderTokenTransfert()
+    // .then(token=>{
+    //   form.action = downloadUrl + "/" + nomFichier;
+    //   form.fuuid.value = fuuid;
+    //   form.nomfichier.value = nomFichier;
+    //   form.contenttype.value = contentType;
+    //   form.authtoken.value = token;
+    //   form.securite.value = securite;
+    //
+    //   if(opts) {
+    //     if(opts.target || opts.target === 'none') {
+    //       console.log("Form Target null");
+    //       form.target = '_self';
+    //     }
+    //   }
+    //
+    //   console.debug("2. Submit preparation, download " + form.action + ", recu token " + form.authtoken.value);
+    //   form.submit(); // Token pret, submit.
+    //
+    // })
+    // .catch(err=>{
+    //   console.error("Erreur preparation download");
+    //   console.error(err);
+    // })
+
+  }
+
+
+}
+
 export class ActionsUpload {
 
   constructor(reactModule, webSocketManager) {

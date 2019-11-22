@@ -67,12 +67,27 @@ export class Entete extends React.Component {
 
 export class Accueil extends React.Component {
 
+  renderUploadProgress() {
+    let uploadProgress = null;
+    if(this.props.uploadsCourants.length > 0 || this.props.uploadsCompletes.length > 0) {
+      uploadProgress = (
+        <FileUploadMonitor
+          uploadsCourants={this.props.uploadsCourants}
+          uploadsCompletes={this.props.uploadsCompletes}
+          actionsUpload={this.props.actionsUpload}
+          />
+      )
+    }
+    return uploadProgress;
+  }
+
   render() {
     return (
       <div className="w3-card_liste_BR">
         <Favoris
           favoris={this.props.favoris}
           />
+        {this.renderUploadProgress()}
         <ListeFichiers
           rapportActivite={this.props.rapportActivite}
           favorisParUuid={this.props.favorisParUuid}
@@ -194,12 +209,8 @@ export class ListeFichiers extends React.Component {
         fichiersRendered.push(
           <div key={fichier['_mg-derniere-modification']+fichier.uuid} className="w3-row-padding tableau-fichiers">
 
-            <div className="w3-col m4">
+            <div className="w3-col m9">
               <input type="checkbox"/> {icone} {fichier.nom}
-            </div>
-
-            <div className="w3-col m5">
-              {fichier.commentaires}
             </div>
 
             <div className="w3-col m1">
@@ -373,7 +384,7 @@ export class FileUploadMonitor extends React.Component {
       }
 
       liste.push(
-        <div key={valeur.path}>
+        <div key={valeur.path} className="w3-row-padding">
           <div className="w3-col m1">
             <i className={classeIcone}/>
           </div>
@@ -402,7 +413,7 @@ export class FileUploadMonitor extends React.Component {
       //}
 
       liste.push(
-        <div key={valeur.path}>
+        <div key={valeur.path} className="w3-row-padding">
           <div className="w3-col m1">
             <i className={classeIcone}/>
           </div>
@@ -419,7 +430,7 @@ export class FileUploadMonitor extends React.Component {
     return (
       <div>
         <div>
-          <button onClick={this.props.clearUploadsCompletes}>Clear</button>
+          <button onClick={this.props.actionsUpload.clearUploadsCompletes}>Clear</button>
           </div>
         {liste}
       </div>

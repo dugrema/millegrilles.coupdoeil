@@ -2,7 +2,7 @@ import React from 'react';
 
 import './GrosFichiers.css';
 import webSocketManager from '../WebSocketManager';
-import {ActionsFavoris, ActionsUpload} from './GrosFichiersActions';
+import {ActionsFavoris, ActionsUpload, ActionsDownload} from './GrosFichiersActions';
 
 // Composants React GrosFichiers
 // import {GrosFichierAfficherPopup} from './GrosFichiersPopups';
@@ -40,8 +40,10 @@ export class GrosFichiers extends React.Component {
 
     };
 
+    // Classe d'actions web
     this.actionsNavigation = new ActionsNavigation(this);
     this.actionsUpload = new ActionsUpload(this, webSocketManager);
+    this.actionsDownload = new ActionsDownload(this, webSocketManager);
     this.actionsFavoris = new ActionsFavoris(this, webSocketManager);
 
     // Configuration statique du composant:
@@ -261,56 +263,6 @@ export class GrosFichiers extends React.Component {
       });
     },
 
-    telecharger: ({uuidfichier, fuuid, opts}) => {
-      // Trouver fichier dans information repertoire
-      // let infoRepertoire = this.state.repertoireCourant || this.state.repertoireRacine;
-
-      // var fichier = infoRepertoire.fichiers[uuidfichier];
-      // console.debug("Telecharger fichier uuid: " + uuidfichier + ": " + fichier);
-      // if(!fichier) {
-      //   throw new Error("Erreur fichier inconnu: " + uuidfichier)
-      // }
-      // if(!fuuid) {
-      //   fuuid = fichier.fuuid_v_courante;
-      // }
-      //
-      // let securite = fichier.securite;
-      // let nomFichier = fichier.nom;
-      // let contentType = fichier.mimetype;
-      //
-      // console.debug("1. Bouton clique pour fichier " + nomFichier);
-      // let form = this.refFormulaireDownload.current;
-      // let downloadUrl = this.state.downloadUrl;
-      //
-      // console.debug("2. fuuide: " + fuuid);
-      // // Demander un OTP pour telecharger le fichier
-      // webSocketManager.demanderTokenTransfert()
-      // .then(token=>{
-      //   form.action = downloadUrl + "/" + nomFichier;
-      //   form.fuuid.value = fuuid;
-      //   form.nomfichier.value = nomFichier;
-      //   form.contenttype.value = contentType;
-      //   form.authtoken.value = token;
-      //   form.securite.value = securite;
-      //
-      //   if(opts) {
-      //     if(opts.target || opts.target === 'none') {
-      //       console.log("Form Target null");
-      //       form.target = '_self';
-      //     }
-      //   }
-      //
-      //   console.debug("2. Submit preparation, download " + form.action + ", recu token " + form.authtoken.value);
-      //   form.submit(); // Token pret, submit.
-      //
-      // })
-      // .catch(err=>{
-      //   console.error("Erreur preparation download");
-      //   console.error(err);
-      // })
-
-    },
-
     supprimer: (selection) => {
       console.debug("Supprimer");
 
@@ -424,26 +376,6 @@ export class GrosFichiers extends React.Component {
     this.setState({popupProps: {popupCreerCollectionValeurs: {}}});
   }
 
-  afficherPopupRenommer = (uuid, type) => {
-    console.debug("Renommer " + type + ", uuid " + uuid);
-    let repertoireCourant = this.state.repertoireCourant || this.state.repertoireRacine;
-
-    if(type === 'fichier') {
-      let nomFichier = repertoireCourant.fichiers[uuid].nom;
-      this.setState({popupProps: {popupRenommerFichierValeurs: {
-        nom: nomFichier,
-        uuidFichier: uuid,
-      }}});
-    } else if(type === 'repertoire') {
-      let nomRepertoire = repertoireCourant.repertoires[uuid].nom;
-      this.setState({popupRenommerRepertoireValeurs: {
-        nom: nomRepertoire,
-        uuidRepertoire: uuid,
-      }});
-    }
-
-  }
-
   processMessage = (routingKey, doc) => {
     console.debug("Message de MQ: " + routingKey);
 
@@ -466,22 +398,6 @@ export class GrosFichiers extends React.Component {
         this.setState({fichierCourant: doc});
       }
     }
-  }
-
-  renderUploadProgress() {
-    let uploadProgress = null;
-    if(this.state.uploadsCourants.length > 0 || this.state.uploadsCompletes.length > 0) {
-      uploadProgress = (
-        <div>
-          <FileUploadMonitor
-            uploadsCourants={this.state.uploadsCourants}
-            uploadsCompletes={this.state.uploadsCompletes}
-            {...this.uploadActions}
-            />
-        </div>
-      )
-    }
-    return uploadProgress;
   }
 
   renderDetailFichier() {
@@ -528,8 +444,11 @@ export class GrosFichiers extends React.Component {
         <Accueil
           rapportActivite={this.state.rapportActivite}
           favoris={this.state.favoris}
+          uploadsCourants={this.state.uploadsCourants}
+          uploadsCompletes={this.state.uploadsCompletes}
           favorisParUuid={this.state.favorisParUuid}
           actionsFavoris={this.actionsFavoris}
+          actionsUpload={this.actionsUpload}
           />);
     }
 
