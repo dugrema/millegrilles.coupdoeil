@@ -184,12 +184,47 @@ export class Favoris extends React.Component {
 
 export class ListeFichiers extends React.Component {
 
+  state = {
+    pageCourante: '1',
+    elementsParPage: 10,
+  }
+
+  changerPage = event => {
+    let page = event.currentTarget.value;
+    this.setState({pageCourante: page});
+  }
+
+  renderBoutonsPages() {
+    let boutonsPages = [];
+    if(this.props.rapportActivite) {
+      let fichiers = this.props.rapportActivite.fichiers;
+      let nbPages = Math.ceil(fichiers.length / this.state.elementsParPage);
+
+      for(let page=1; page<=nbPages; page++) {
+        let cssCourante = '';
+        if(this.state.pageCourante === ''+page) {
+          cssCourante = 'courante';
+        }
+        boutonsPages.push(
+          <button key={page} onClick={this.changerPage} value={page} className={cssCourante}>
+            {page}
+          </button>
+        );
+      }
+    }
+    return boutonsPages;
+  }
+
   renderFichiers() {
     let fichiersRendered = [];
 
     if( this.props.rapportActivite ) {
+      let premierElem = (this.state.pageCourante-1) * this.state.elementsParPage;
+      let dernierElem = premierElem + this.state.elementsParPage; // (+1)
+
       let fichiers = this.props.rapportActivite.fichiers;
-      for(let idx in fichiers) {
+
+      for(let idx = premierElem; idx < dernierElem && idx < fichiers.length; idx++) {
         let fichier = fichiers[idx];
 
         let icone = (<i className="fa fa-file-o"/>);
@@ -210,11 +245,11 @@ export class ListeFichiers extends React.Component {
         fichiersRendered.push(
           <div key={fichier['_mg-derniere-modification']+fichier.uuid} className="w3-row-padding tableau-fichiers">
 
-            <div className="w3-col m9">
+            <div className="w3-col m8">
               <input type="checkbox"/> {icone} {fichier.nom}
             </div>
 
-            <div className="w3-col m1">
+            <div className="w3-col m2 colonne-boutons">
               <button value={fichier.uuid} onClick={actionFavori}>
                 <span className={"fa-stack " + cssFavori}>
                   <i className='fa fa-star fa-stack-1x fond'/>
@@ -251,6 +286,9 @@ export class ListeFichiers extends React.Component {
           </div>
           <div className="liste-fichiers">
             {this.renderFichiers()}
+          </div>
+          <div className="boutons-pages">
+            {this.renderBoutonsPages()}
           </div>
         </div>
       </div>

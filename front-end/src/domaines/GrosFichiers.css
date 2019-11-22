@@ -120,6 +120,14 @@ section.uploadIcon DIV SPAN {
   min-height: 1px;
 }
 
+.colonne-boutons {
+  text-align: right;
+}
+
+.colonne-boutons > button {
+  margin-left: 0.25em;
+}
+
 .tableau-fichiers > div {
   display: inline-block;
   white-space: nowrap;
@@ -139,4 +147,19 @@ section.uploadIcon DIV SPAN {
 
 .favori-inactif > i.fond {
   color: white;
+}
+
+.boutons-pages {
+  padding-top: 2em;
+  padding-bottom: 1em;
+  text-align: center;
+}
+
+.boutons-pages > button {
+  margin-left: 0.25em;
+  margin-right: 0.25em;
+}
+
+.boutons-pages > button.courante {
+  background-color: white;
 }
