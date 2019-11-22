@@ -74,7 +74,7 @@ export class GrosFichiers extends React.Component {
         if(typeDoc === 'rapport.activite') {
           typeDoc = 'rapportActivite';
         }
-        
+
         documentsParInfodoc[typeDoc] = un_doc;
       }
 
@@ -618,6 +618,7 @@ export class GrosFichiers extends React.Component {
       affichagePrincipal = (
         <Accueil
           rapportActivite={this.state.rapportActivite}
+          favoris={this.state.favoris}
           />);
     }
 

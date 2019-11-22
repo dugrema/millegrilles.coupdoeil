@@ -39,9 +39,12 @@ export class Accueil extends React.Component {
   render() {
     return (
       <div className="w3-card_liste_BR">
-        <Favoris/>
+        <Favoris
+          favoris={this.props.favoris}
+          />
         <ListeFichiers
-          rapportActivite={this.props.rapportActivite}/>
+          rapportActivite={this.props.rapportActivite}
+          />
       </div>
     );
   }
@@ -92,14 +95,18 @@ export class SectionRecherche extends React.Component {
 export class Favoris extends React.Component {
 
   render() {
-    let listeFavoris = ['favoris 1', 'favoris 2', 'favoris 3', 'favoris 4', 'favoris 5'];
-
     let favorisRendered = [];
-    for(let idx in listeFavoris) {
-      let favoris = listeFavoris[idx];
-      favorisRendered.push(
-        <button key={favoris}><i className='fa fa-star'/>{favoris}</button>
-      );
+    if(this.props.favoris) {
+      let listeFavoris = this.props.favoris.favoris;
+      for(let idx in listeFavoris) {
+        let favoris = listeFavoris[idx];
+        let nomFavori = favoris['nom'];
+        let uuidFavori = favoris['uuid'];
+        favorisRendered.push(
+          <button key={uuidFavori}><i className='fa fa-star'/>{nomFavori}</button>
+        );
+      }
+
     }
 
     return (
