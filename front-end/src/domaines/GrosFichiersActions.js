@@ -75,58 +75,97 @@ export class ActionsRecherche {
 }
 
 export class ActionsDownload {
-  constructor(reactModule, webSocketManager) {
+  constructor(reactModule, webSocketManager, refFormulaireDownload) {
     this.reactModule = reactModule;
     this.webSocketManager = webSocketManager;
+    this.refFormulaireDownload = refFormulaireDownload;
   }
 
-  telecharger = ({uuidfichier, fuuid, opts}) => {
-    // Trouver fichier dans information repertoire
-    // let infoRepertoire = this.state.repertoireCourant || this.state.repertoireRacine;
+  telechargerEvent = event => {
+    let uuidfichier = event.currentTarget.value;
+    let dataset = event.currentTarget.dataset;
 
-    // var fichier = infoRepertoire.fichiers[uuidfichier];
-    // console.debug("Telecharger fichier uuid: " + uuidfichier + ": " + fichier);
-    // if(!fichier) {
-    //   throw new Error("Erreur fichier inconnu: " + uuidfichier)
-    // }
-    // if(!fuuid) {
-    //   fuuid = fichier.fuuid_v_courante;
-    // }
-    //
-    // let securite = fichier.securite;
-    // let nomFichier = fichier.nom;
-    // let contentType = fichier.mimetype;
-    //
-    // console.debug("1. Bouton clique pour fichier " + nomFichier);
-    // let form = this.refFormulaireDownload.current;
-    // let downloadUrl = this.state.downloadUrl;
-    //
-    // console.debug("2. fuuide: " + fuuid);
-    // // Demander un OTP pour telecharger le fichier
-    // webSocketManager.demanderTokenTransfert()
-    // .then(token=>{
-    //   form.action = downloadUrl + "/" + nomFichier;
-    //   form.fuuid.value = fuuid;
-    //   form.nomfichier.value = nomFichier;
-    //   form.contenttype.value = contentType;
-    //   form.authtoken.value = token;
-    //   form.securite.value = securite;
-    //
-    //   if(opts) {
-    //     if(opts.target || opts.target === 'none') {
-    //       console.log("Form Target null");
-    //       form.target = '_self';
-    //     }
-    //   }
-    //
-    //   console.debug("2. Submit preparation, download " + form.action + ", recu token " + form.authtoken.value);
-    //   form.submit(); // Token pret, submit.
-    //
-    // })
-    // .catch(err=>{
-    //   console.error("Erreur preparation download");
-    //   console.error(err);
-    // })
+    let opts = {};
+    if(dataset.notarget) {
+      console.debug("DOWNLOAD NO TARGET");
+      opts.target = 'none';
+    }
+    if(dataset.fuuid) {
+      opts.fuuid_version = dataset.fuuid;
+    }
+
+    // Aller chercher l'information sur le fichier
+    // L'information est peut-etre deja en memoire
+    this.reactModule.chargerDocument({
+      requetes: [{'filtre': {'_mg-libelle': 'fichier', 'uuid': uuidfichier}}]
+    })
+    .then(resultats=>{
+      console.debug("Resultats requete fichier " + uuidfichier);
+      console.debug(resultats);
+      let fichier = resultats[0][0];
+
+      this.telecharger({
+        fichier,
+        opts,
+      });
+
+    })
+    .catch(err=>{
+      console.error("Erreur initialisation telechargement fichier " + uuidfichier);
+      console.error(err);
+    })
+
+  }
+
+  telecharger = ({fichier, opts}) => {
+    let uuidfichier = fichier.uuid;
+    console.debug("Telecharger fichier uuid: " + uuidfichier + ": " + fichier);
+    if(!fichier) {
+      throw new Error("Erreur fichier inconnu: " + uuidfichier)
+    }
+
+    // Verifier si on a une version particuliere a telecharger
+    let fuuid;
+    if(opts && opts.fuuid) {
+      fuuid = opts.fuuid;
+    } else {
+      fuuid = fichier.fuuid_v_courante;
+    }
+
+    let securite = fichier.securite;
+    let nomFichier = fichier.nom;
+    let contentType = fichier.mimetype;
+
+    console.debug("1. Bouton clique pour fichier " + nomFichier);
+    let form = this.refFormulaireDownload.current;
+    let downloadUrl = this.reactModule.state.downloadUrl;
+
+    console.debug("2. fuuide: " + fuuid);
+    // Demander un OTP pour telecharger le fichier
+    this.webSocketManager.demanderTokenTransfert()
+    .then(token=>{
+      form.action = downloadUrl + "/" + nomFichier;
+      form.fuuid.value = fuuid;
+      form.nomfichier.value = nomFichier;
+      form.contenttype.value = contentType;
+      form.authtoken.value = token;
+      form.securite.value = securite;
+
+      if(opts) {
+        if(opts.target || opts.target === 'none') {
+          console.log("Form Target null");
+          form.target = '_self';
+        }
+      }
+
+      console.debug("2. Submit preparation, download " + form.action + ", recu token " + form.authtoken.value);
+      form.submit(); // Token pret, submit.
+
+    })
+    .catch(err=>{
+      console.error("Erreur preparation download");
+      console.error(err);
+    })
 
   }
 

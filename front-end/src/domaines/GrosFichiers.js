@@ -43,7 +43,7 @@ export class GrosFichiers extends React.Component {
     // Classe d'actions web
     this.actionsNavigation = new ActionsNavigation(this);
     this.actionsUpload = new ActionsUpload(this, webSocketManager);
-    this.actionsDownload = new ActionsDownload(this, webSocketManager);
+    this.actionsDownload = new ActionsDownload(this, webSocketManager, this.refFormulaireDownload);
     this.actionsFavoris = new ActionsFavoris(this, webSocketManager);
 
     // Configuration statique du composant:
@@ -239,30 +239,6 @@ export class GrosFichiers extends React.Component {
 
   // Actions utiliees dans le panneau des fichiers
   fichierActions = {
-    upload: collectionDestination => {
-      console.debug("Upload vers " + collectionDestination);
-    },
-
-    telechargerEvent: event => {
-      let uuidfichier = event.currentTarget.value;
-      let dataset = event.currentTarget.dataset;
-      let fuuid_version = dataset.fuuid;
-      let securite = dataset.securite;
-
-      let opts = {};
-      if(dataset.notarget) {
-        console.log("DOWNLOAD NO TARGET");
-        opts.target = 'none';
-      }
-
-      this.fichierActions.telecharger({
-        uuidfichier,
-        fuuid: fuuid_version,
-        securite,
-        opts,
-      });
-    },
-
     supprimer: (selection) => {
       console.debug("Supprimer");
 
@@ -449,6 +425,7 @@ export class GrosFichiers extends React.Component {
           favorisParUuid={this.state.favorisParUuid}
           actionsFavoris={this.actionsFavoris}
           actionsUpload={this.actionsUpload}
+          actionsDownload={this.actionsDownload}
           />);
     }
 

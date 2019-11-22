@@ -92,6 +92,7 @@ export class Accueil extends React.Component {
           rapportActivite={this.props.rapportActivite}
           favorisParUuid={this.props.favorisParUuid}
           actionsFavoris={this.props.actionsFavoris}
+          actionsDownload={this.props.actionsDownload}
           />
       </div>
     );
@@ -220,7 +221,9 @@ export class ListeFichiers extends React.Component {
                   <i className='fa fa-star-o fa-stack-1x'/>
                 </span>
               </button>
-              <i className="fa fa-download"/>
+              <button value={fichier.uuid} onClick={this.props.actionsDownload.telechargerEvent}>
+                <i className="fa fa-download"/>
+              </button>
             </div>
             <div className="w3-col m2">
               {dernierChangementRendered}

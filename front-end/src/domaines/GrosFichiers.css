@@ -107,10 +107,11 @@ section.uploadIcon DIV SPAN {
 }
 
 .liste-favoris button {
-  background: none!important;
+  background: light-grey;
   border: 0px;
   padding: 0.1em;
 
+  margin: 1px;
   margin-right: 0.3em;
   cursor: pointer;
 }
