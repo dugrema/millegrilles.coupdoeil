@@ -1,13 +1,13 @@
 import React from 'react';
-import axios from 'axios';
 
 import './GrosFichiers.css';
 import webSocketManager from '../WebSocketManager';
-import {ActionsFavoris} from './GrosFichiersActions';
+import {ActionsFavoris, ActionsUpload} from './GrosFichiersActions';
 
 // Composants React GrosFichiers
 // import {GrosFichierAfficherPopup} from './GrosFichiersPopups';
-import {AffichageFichier,
+import {ActionsNavigation,
+  AffichageFichier,
   GrosFichiersRenderDownloadForm, FileUploadMonitor,
   Accueil, Entete} from './GrosFichiersNavigation.js'
 
@@ -40,6 +40,8 @@ export class GrosFichiers extends React.Component {
 
     };
 
+    this.actionsNavigation = new ActionsNavigation(this);
+    this.actionsUpload = new ActionsUpload(this, webSocketManager);
     this.actionsFavoris = new ActionsFavoris(this, webSocketManager);
 
     // Configuration statique du composant:
@@ -355,69 +357,6 @@ export class GrosFichiers extends React.Component {
     },
   }
 
-  uploadActions = {
-    ajouterUpload: (acceptedFile, fileInfo) => {
-      console.debug("Commencer upload");
-      console.debug(fileInfo);
-
-      // Copier array d'uploads courants, ajouter copie d'info fichiers
-      let uploadsCourants = [...this.state.uploadsCourants];
-      uploadsCourants.push({acceptedFile, ...fileInfo, progres: 0, path: acceptedFile.path});
-
-      // Mettre a jour la liste des uploads;
-      this.setState({uploadsCourants});
-
-      if(!this.uploadEnCours) {
-        // Lance l'upload du fichier
-        this.uploaderProchainFichier();
-      }
-    },
-    annulerUpload: (event) => {
-      console.debug("Annuler upload");
-      console.debug(event);
-
-    },
-    uploadProgress: (event) => {
-      let loaded = event.loaded, total = event.total;
-      let pourcent = (Math.ceil(loaded/total*100));
-      console.debug("Progres upload: " + pourcent + '%');
-
-      let uploadCourant = {...this.state.uploadsCourants[0]};
-      uploadCourant.loaded = event.loaded;
-      uploadCourant.total = event.total;
-      uploadCourant.progres = pourcent;
-
-      let uploadsCourants = [uploadCourant, ...this.state.uploadsCourants.slice(1)];
-      this.setState({uploadsCourants});
-    },
-    uploadTermine: (msg) => {
-      // L'upload est termine sur le navigateur, mais on attend toujours la
-      // confirmation via un update MQ (document fichier).
-      console.debug("Upload termine");
-      console.debug(msg);
-
-      // Mettre timer pour donner 30 secondes au backend pour finir le traitement,
-      // sans quoi on considere le fichier incomplet avec erreur au back-end.
-      let uploadComplete = {...this.state.uploadsCourants[0]};
-      uploadComplete.state = msg.status;
-
-      let uploadsCompletes = [...this.state.uploadsCompletes];
-      uploadsCompletes.push(uploadComplete);
-
-      let uploadsCourants = this.state.uploadsCourants.slice(1); // Enlever premier item
-      this.setState({uploadsCompletes, uploadsCourants}, ()=>{
-        // Enchainer le prochain upload (si applicable)
-        if(uploadsCourants.length > 0) {
-          console.debug("Prochain upload: " + uploadsCourants[0].path);
-          this.uploaderProchainFichier();
-        }
-      });
-
-    },
-    clearUploadsCompletes: (event) => {
-      this.setState({uploadsCompletes: []});  // Nouvelle liste
-    }
-  }
 
   chargerDocument = (requete, domaine) => {
     if(!domaine) {
@@ -435,59 +374,6 @@ export class GrosFichiers extends React.Component {
       // console.debug(docsRecu);
       return docsRecu;  // Recuperer avec un then(resultats=>{})
     });
-  }
-
-  uploaderProchainFichier() {
-    // Utilise l'upload Q pour initialiser le prochain upload
-    if(this.uploadEnCours) {
-      console.error("Upload deja en cours");
-      return;
-    }
-
-    if(this.state.uploadsCourants.length > 0){
-      this.uploadEnCours = true;
-
-      // Demander un token (OTP) via websockets
-      webSocketManager.demanderTokenTransfert()
-      .then(token=>{
-        let uploadInfo = this.state.uploadsCourants[0];
-        console.debug("Token obtenu, debut de l'upload de " + uploadInfo.path);
-
-        let data = new FormData();
-        data.append('repertoire_uuid', uploadInfo.repertoire_uuid);
-        data.append('securite', uploadInfo.securite);
-        data.append('grosfichier', uploadInfo.acceptedFile);
-        let config = {
-          headers: {
-            'authtoken': token,
-          },
-          onUploadProgress: this.uploadActions.uploadProgress,
-          //cancelToken: new CancelToken(function (cancel) {
-          // }),
-        }
-
-        return axios.put('/grosFichiers/nouveauFichier', data, config);
-      })
-      .then(msg=>{
-        this.uploadEnCours = false;  // Permet d'enchainer les uploads
-        this.uploadActions.uploadTermine(msg);
-      })
-      .catch(err=>{
-        console.error("Erreur upload, on va reessayer plus tard");
-        console.debug(err);
-        this.uploadRetryTimer = setTimeout(()=>{
-          this.uploadEnCours = false;   // Reset flag pour permettre l'upload
-          this.uploaderProchainFichier();
-        }, 10000);
-      })
-      .finally(()=>{
-        this.uploadEnCours = false;
-      });
-    } else {
-      this.uploadEnCours = false;
-      console.debug("Il n'y a rien a uploader.");
-    }
-
   }
 
   afficherProprietesFichier(uuidFichier) {
@@ -651,7 +537,10 @@ export class GrosFichiers extends React.Component {
       <div className="w3-col m9">
         <div className="w3-row-padding">
           <div className="w3-col m12">
-            <Entete/>
+            <Entete
+              actionsNavigation={this.actionsNavigation}
+              actionsUpload={this.actionsUpload}
+              />
             {affichagePrincipal}
           </div>
         </div>

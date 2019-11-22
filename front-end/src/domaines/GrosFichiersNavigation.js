@@ -3,6 +3,31 @@ import Dropzone from 'react-dropzone';
 // import webSocketManager from '../WebSocketManager';
 import {dateformatter} from '../formatters'
 
+export class ActionsNavigation {
+
+  constructor(reactModule) {
+    this.reactModule = reactModule;
+  }
+
+  retourAccueil = () => {
+    console.debug("Afficher Accueil");
+    this.reactModule.setState({
+      listeCourante: null,
+      collectionCourante: null,
+      fichierCourant: null,
+      afficherRecherche: false,
+    })
+  }
+
+  afficherRecherche = () => {
+    console.debug("Afficher Recherche");
+    this.reactModule.setState({
+      afficherRecherche: true,
+    })
+  }
+
+}
+
 export class Entete extends React.Component {
   render() {
     return(
@@ -11,8 +36,12 @@ export class Entete extends React.Component {
 
           <div className="w3-row-padding">
             <div className="w3-col m2 bouton-home">
-              <i title="Retour" className="fa fa-home fa-2x"/>
-              <i title="Recherche" className="fa fa-search fa-2x"/>
+              <button onClick={this.props.actionsNavigation.retourAccueil}>
+                <i title="Retour" className="fa fa-home fa-2x"/>
+              </button>
+              <button onClick={this.props.actionsNavigation.afficherRecherche}>
+                <i title="Recherche" className="fa fa-search fa-2x"/>
+              </button>
             </div>
             <div className="w3-col m8 entete-titre">
               <h1>GrosFichiers</h1>
@@ -24,7 +53,9 @@ export class Entete extends React.Component {
               </span>
             </div>
             <div className="w3-col m1">
-              <FileUploadSection />
+              <FileUploadSection
+                actionsUpload={this.props.actionsUpload}
+                />
             </div>
           </div>
 
@@ -416,14 +447,17 @@ export class FileUploadSection extends React.Component {
     // Traitement d'un fichier a uploader.
     console.debug(acceptedFiles);
 
-    let repertoire_uuid = this.props.repertoireCourant.repertoire_uuid;
-    let securite = this.props.repertoireCourant.securite;
+    let securite = '3.protege';  // Par defaut, augmenter a 4.secure lorsque pret
+    let uuidcollection = null;
+
+    // let repertoire_uuid = this.props.repertoireCourant.repertoire_uuid;
+    // let securite = this.props.repertoireCourant.securite;
 
     console.debug("Upload fichier avec securite: " + securite);
 
     acceptedFiles.forEach( file=> {
       // Ajouter le fichier a l'upload queue
-      this.props.ajouterUpload(file, {repertoire_uuid, securite});
+      this.props.actionsUpload.ajouterUpload(file, {uuidcollection, securite});
     });
 
   }
