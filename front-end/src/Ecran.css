@@ -19,6 +19,10 @@ div.w3-card_BR {
   margin-bottom: 10px;
 }
 
+.w3-card_liste_BR > div {
+  margin-bottom: 10px;
+}
+
 li.senseurs {
   position: relative;
   list-style: none;
@@ -150,4 +154,23 @@ SPAN.label {
 
 .buttonBar button {
   margin-right: 0.5em;
+}
+
+/* Champs editable sans boutons */
+
+.input-width-auto {
+  width: 100%;
+  border: 0;
+  font-size: 140%;
+  opacity: 0.6;
+  margin-bottom: 1em;
+}
+
+input.editable {
+  border-bottom: 1px dotted;
+}
+
+input.edition {
+  color: #f5f7f8;
+  background-color:#303e45;
 }

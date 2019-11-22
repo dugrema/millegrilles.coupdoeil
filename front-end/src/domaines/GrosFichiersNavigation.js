@@ -6,7 +6,7 @@ import {dateformatter} from '../formatters'
 export class Entete extends React.Component {
   render() {
     return(
-      <div className="w3-card w3-round w3-white w3-card">
+      <div className="w3-card w3-round w3-white w3-card w3-card_BR">
         <div className="w3-container w3-padding">
 
           <div className="w3-row-padding">
@@ -43,9 +43,8 @@ export class Accueil extends React.Component {
 
   render() {
     return (
-      <div>
+      <div className="w3-card_liste_BR">
         <Favoris/>
-        <SectionRecherche/>
         <ListeFichiers
           rapportActivite={this.props.rapportActivite}/>
       </div>
@@ -144,7 +143,7 @@ export class ListeFichiers extends React.Component {
         let dernierChangementRendered = renderDernierChangement(fichier['_mg-derniere-modification']);
 
         fichiersRendered.push(
-          <div key={fichier['_mg-derniere-modification']+fichier.uuid} className="w3-row-padding">
+          <div key={fichier['_mg-derniere-modification']+fichier.uuid} className="w3-row-padding tableau-fichiers">
 
             <div className="w3-col m4">
               <input type="checkbox"/> {icone} {fichier.nom}
