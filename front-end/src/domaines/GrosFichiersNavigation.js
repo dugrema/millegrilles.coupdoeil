@@ -42,29 +42,12 @@ export class Entete extends React.Component {
 export class Accueil extends React.Component {
 
   render() {
-    let fichiers = [
-      {'nom': 'fichier1.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368457, 'uuid': 'a', '_mg-libelle': 'fichier'},
-      {'nom': 'fichier2.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368456, 'uuid': 't', '_mg-libelle': 'fichier'},
-      {'nom': 'fichier3.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574142382, 'uuid': 's', '_mg-libelle': 'fichier'},
-      {'nom': 'fichier4.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368454, 'uuid': 'r', '_mg-libelle': 'fichier'},
-      {'nom': 'fichier5.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368453, 'uuid': 'w', '_mg-libelle': 'fichier'},
-      {'nom': 'fichier6.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368452, 'uuid': 'v', '_mg-libelle': 'fichier'},
-      {'nom': 'fichier7.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1560803662, 'uuid': 'x', '_mg-libelle': 'fichier'},
-      {'nom': 'fichier8.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368450, 'uuid': 'y', '_mg-libelle': 'fichier'},
-      {'nom': 'Collection 9', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368449, 'uuid': 'z', '_mg-libelle': 'collection'},
-      {'nom': 'fichier10.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368448, 'uuid': 'd', '_mg-libelle': 'fichier'},
-      {'nom': 'fichier11.txt', 'commentaires': "une commentaration", '_mg-derniere-modification': 1574368447, 'uuid': 'c', '_mg-libelle': 'fichier'},
-    ];
-    let activiteRecente = {
-      'nom': 'Activité récente',
-      'fichiers': fichiers,
-    }
     return (
       <div>
         <Favoris/>
         <SectionRecherche/>
         <ListeFichiers
-          liste={activiteRecente}/>
+          rapportActivite={this.props.rapportActivite}/>
       </div>
     );
   }
@@ -148,47 +131,55 @@ export class ListeFichiers extends React.Component {
   renderFichiers() {
     let fichiersRendered = [];
 
-    let fichiers = this.props.liste.fichiers;
-    for(let idx in fichiers) {
-      let fichier = fichiers[idx];
+    if( this.props.rapportActivite ) {
+      let fichiers = this.props.rapportActivite.fichiers;
+      for(let idx in fichiers) {
+        let fichier = fichiers[idx];
 
-      let icone = (<i className="fa fa-file-o"/>);
-      if(fichier['_mg-libelle'] === 'collection') {
-        icone = (<i className="fa fa-folder-o"/>);
+        let icone = (<i className="fa fa-file-o"/>);
+        if(fichier['_mg-libelle'] === 'collection') {
+          icone = (<i className="fa fa-folder-o"/>);
+        }
+
+        let dernierChangementRendered = renderDernierChangement(fichier['_mg-derniere-modification']);
+
+        fichiersRendered.push(
+          <div key={fichier['_mg-derniere-modification']+fichier.uuid} className="w3-row-padding">
+
+            <div className="w3-col m4">
+              <input type="checkbox"/> {icone} {fichier.nom}
+            </div>
+
+            <div className="w3-col m5">
+              {fichier.commentaires}
+            </div>
+
+            <div className="w3-col m1">
+              <i className="fa fa-download"/>
+            </div>
+            <div className="w3-col m2">
+              {dernierChangementRendered}
+            </div>
+          </div>
+        );
       }
-
-      let dernierChangementRendered = renderDernierChangement(fichier['_mg-derniere-modification']);
-
-      fichiersRendered.push(
-        <div key={fichier.uuid} className="w3-row-padding">
-
-          <div className="w3-col m4">
-            <input type="checkbox"/> {icone} {fichier.nom}
-          </div>
-
-          <div className="w3-col m5">
-            {fichier.commentaires}
-          </div>
-
-          <div className="w3-col m1">
-            <i className="fa fa-download"/>
-          </div>
-          <div className="w3-col m2">
-            {dernierChangementRendered}
-          </div>
-        </div>
-      );
     }
 
     return fichiersRendered;
   }
 
   render() {
+
+    var descriptionRapport = '';
+    if(this.props.rapportActivite) {
+      descriptionRapport = this.props.rapportActivite.description;
+    }
+
     return (
       <div className="w3-card w3-round w3-white w3-card">
         <div className="w3-container w3-padding">
           <div className="w3-row-padding">
-            <h2>{this.props.liste.nom}</h2>
+            <h2>{descriptionRapport}</h2>
           </div>
           <div className="liste-fichiers">
             {this.renderFichiers()}
@@ -448,6 +439,7 @@ function renderDernierChangement(date) {
   let dernierChangementRendered;
   var s;  // Ajouter s (pluriels) au besoin
   if(dernierChangementDepuis < 60) {
+    dernierChangementDepuis = Math.max(0, dernierChangementDepuis);
     dernierChangementRendered = (<span title={dateChangement}>{dernierChangementDepuis} minutes</span>);
   } else if (dernierChangementDepuis < 1440) {
     dernierChangementDepuis = Math.floor(dernierChangementDepuis / 60);

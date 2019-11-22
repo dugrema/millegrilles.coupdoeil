@@ -41,6 +41,7 @@ export class GrosFichiers extends React.Component {
   //   subscriptions: Le nom des routing keys qui vont etre ecoutees
   config = {
     subscriptions: [
+      'noeuds.source.millegrilles_domaines_GrosFichiers.rapport.activite',
     ]
   };
 
@@ -51,16 +52,18 @@ export class GrosFichiers extends React.Component {
     // Charger les documents pour les repertoires speciaux.
     this.chargerDocument({
       requetes: [{'filtre': {'_mg-libelle': {'$in': [
-        'repertoire.racine',
-        'repertoire.corbeille',
-        'repertoire.orphelins',
+        'rapport.activite',
       ]}}}]
     })
     .then(docs=>{
       console.debug("Documents speciaux");
       console.debug(docs);
       // On recoit une liste de resultats, avec une liste de documents.
+      let rapportActivite = docs[0][0];
 
+      this.setState({
+        rapportActivite,
+      })
     })
     .catch(err=>{
       console.error("Erreur chargement document racine");
@@ -534,11 +537,10 @@ export class GrosFichiers extends React.Component {
   processMessage = (routingKey, doc) => {
     console.debug("Message de MQ: " + routingKey);
 
-    if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.collection') {
-
-      console.warning("Evenement collection, pas encore gere");
-      console.warning(doc);
-
+    if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.rapport.activite') {
+      this.setState({
+        rapportActivite: doc
+      })
     } else if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.fichier') {
       // Verifier si repertoire courant correspond
       let fichierCourant = this.state.fichierCourant;
@@ -594,7 +596,10 @@ export class GrosFichiers extends React.Component {
       // affichagePrincipal = (<Liste />);
     } else {
       // Page d'acueil par defaut
-      affichagePrincipal = (<Accueil />);
+      affichagePrincipal = (
+        <Accueil
+          rapportActivite={this.state.rapportActivite}
+          />);
     }
 
     return (
