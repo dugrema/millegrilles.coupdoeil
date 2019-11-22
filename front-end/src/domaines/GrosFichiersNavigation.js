@@ -45,6 +45,7 @@ export class Accueil extends React.Component {
         <ListeFichiers
           rapportActivite={this.props.rapportActivite}
           favorisParUuid={this.props.favorisParUuid}
+          actionsFavoris={this.props.actionsFavoris}
           />
       </div>
     );
@@ -150,9 +151,13 @@ export class ListeFichiers extends React.Component {
         }
 
         let dernierChangementRendered = renderDernierChangement(fichier['_mg-derniere-modification']);
-        let cssFavori = 'favori-inactif';
+        let cssFavori, actionFavori;
         if(this.props.favorisParUuid[fichier.uuid]) {
           cssFavori = 'favori-actif';
+          actionFavori = this.props.actionsFavoris.supprimerFavori;
+        } else {
+          cssFavori = 'favori-inactif';
+          actionFavori = this.props.actionsFavoris.ajouterFavori;
         }
 
         fichiersRendered.push(
@@ -167,10 +172,12 @@ export class ListeFichiers extends React.Component {
             </div>
 
             <div className="w3-col m1">
-              <span className={"fa-stack " + cssFavori}>
-                <i className='fa fa-star fa-stack-1x fond'/>
-                <i className='fa fa-star-o fa-stack-1x'/>
-              </span>
+              <button value={fichier.uuid} onClick={actionFavori}>
+                <span className={"fa-stack " + cssFavori}>
+                  <i className='fa fa-star fa-stack-1x fond'/>
+                  <i className='fa fa-star-o fa-stack-1x'/>
+                </span>
+              </button>
               <i className="fa fa-download"/>
             </div>
             <div className="w3-col m2">

@@ -3,6 +3,7 @@ import axios from 'axios';
 
 import './GrosFichiers.css';
 import webSocketManager from '../WebSocketManager';
+import {ActionsFavoris} from './GrosFichiersActions';
 
 // Composants React GrosFichiers
 // import {GrosFichierAfficherPopup} from './GrosFichiersPopups';
@@ -39,16 +40,18 @@ export class GrosFichiers extends React.Component {
 
     };
 
-  }
+    this.actionsFavoris = new ActionsFavoris(this, webSocketManager);
 
-  // Configuration statique du composant:
-  //   subscriptions: Le nom des routing keys qui vont etre ecoutees
-  config = {
-    subscriptions: [
-      'noeuds.source.millegrilles_domaines_GrosFichiers.rapport.activite',
-      'noeuds.source.millegrilles_domaines_GrosFichiers.favoris',
-    ]
-  };
+    // Configuration statique du composant:
+    //   subscriptions: Le nom des routing keys qui vont etre ecoutees
+    this.config = {
+      subscriptions: [
+        'noeuds.source.millegrilles_domaines_GrosFichiers.rapport.activite',
+        'noeuds.source.millegrilles_domaines_GrosFichiers.favoris',
+      ]
+    };
+
+  }
 
   componentDidMount() {
     // Enregistrer les routingKeys de documents
@@ -640,6 +643,7 @@ export class GrosFichiers extends React.Component {
           rapportActivite={this.state.rapportActivite}
           favoris={this.state.favoris}
           favorisParUuid={this.state.favorisParUuid}
+          actionsFavoris={this.actionsFavoris}
           />);
     }
 
