@@ -145,11 +145,10 @@ export class Favoris extends React.Component {
 
 export class ListeFichiers extends React.Component {
 
-  render() {
+  renderFichiers() {
     let fichiersRendered = [];
-    let fichiers = this.props.liste.fichiers;
-    let nomListe = this.props.liste.nom;
 
+    let fichiers = this.props.liste.fichiers;
     for(let idx in fichiers) {
       let fichier = fichiers[idx];
 
@@ -164,29 +163,35 @@ export class ListeFichiers extends React.Component {
         <div key={fichier.uuid} className="w3-row-padding">
 
           <div className="w3-col m4">
-            {icone} {fichier.nom}
+            <input type="checkbox"/> {icone} {fichier.nom}
           </div>
 
-          <div className="w3-col m6">
+          <div className="w3-col m5">
             {fichier.commentaires}
           </div>
 
+          <div className="w3-col m1">
+            <i className="fa fa-download"/>
+          </div>
           <div className="w3-col m2">
             {dernierChangementRendered}
           </div>
-
         </div>
       );
     }
 
+    return fichiersRendered;
+  }
+
+  render() {
     return (
       <div className="w3-card w3-round w3-white w3-card">
         <div className="w3-container w3-padding">
           <div className="w3-row-padding">
-            <h2>{nomListe}</h2>
+            <h2>{this.props.liste.nom}</h2>
           </div>
           <div className="liste-fichiers">
-            {fichiersRendered}
+            {this.renderFichiers()}
           </div>
         </div>
       </div>
