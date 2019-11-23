@@ -408,44 +408,93 @@ export class GrosFichiersRenderDownloadForm extends React.Component {
 // Affichage d'un fichier avec toutes ses versions
 export class AffichageFichier extends React.Component {
 
-  render() {
-    // Affiche l'information d'un fichier et la liste des versions
+  renderInformationFichier() {
+
     let fichierCourant = this.props.fichierCourant;
     let dateFichierCourant = new Date(0);
     dateFichierCourant.setUTCSeconds(fichierCourant.date_v_courante);
 
     let informationFichier = (
+      <div className="w3-card w3-round w3-white">
+        <div className="w3-container w3-padding">
+          <div className="m3-col m12 formulaire">
 
-        <div className="w3-card w3-round w3-white">
-          <div className="w3-container w3-padding">
-            <h2 className="w3-opacity">{fichierCourant.nom}</h2>
-            <button
-              className="aslink"
-              onClick={this.props.retourFichier}>Retour</button>
-
-            <div className="proprietes">
-              <div>Date: {dateFichierCourant.toString()}</div>
-              <div>Taille: { (fichierCourant.taille / (1024*1024)).toFixed(2) } MB ({fichierCourant.taille} octets)</div>
-              <div>Securite: {fichierCourant.securite}</div>
-              <div>FUUID: {fichierCourant.fuuid_v_courante}</div>
-              <div>{fichierCourant.commentaires}</div>
+            <div className="row-donnees">
+              <div className="w3-col m10">
+                <h2>Information</h2>
+              </div>
+              <div className="w3-col m1 boutons-actions-droite">
+                <button
+                  title="Telecharger"
+                  value={fichierCourant.uuid}
+                  onClick={this.props.downloadFichier}>
+                    <i className="fa fa-download"/>
+                </button>
+              </div>
+              <div className="w3-col m1 boutons-actions-droite">
+                <button
+                  title="Supprimer"
+                  value={fichierCourant.uuid}
+                  data-uuidfichier={fichierCourant.uuid}
+                  onClick={this.props.supprimerFichier}>
+                    <i className="fa fa-trash-o"/>
+                </button>
+              </div>
             </div>
 
-            <div className="buttonBar">
-              <button
-                value={fichierCourant.nom}
-                data-uuidfichier={fichierCourant.uuid}
-                onClick={this.props.afficherChangerNomFichier}>Renommer</button>
-              <button
-                value={fichierCourant.nom}
-                data-uuidfichier={fichierCourant.uuid}
-                onClick={this.props.supprimerFichier}>Supprimer</button>
+            <div className="w3-row-padding">
+              <div className="w3-col m3 label">Date :</div>
+              <div className="w3-col m9 champ">{dateFichierCourant.toString()}</div>
             </div>
+            <div className="w3-row-padding">
+              <div className="w3-col m3 label">Taille : </div>
+              <div className="w3-col m9 champ">{ (fichierCourant.taille / (1024*1024)).toFixed(2) } MB ({fichierCourant.taille} octets)</div>
+            </div>
+            <div className="w3-row-padding">
+              <div className="w3-col m3 label">Securite :</div>
+              <div className="w3-col m9 champ">{fichierCourant.securite}</div>
+            </div>
+            <div className="w3-row-padding">
+              <div className="w3-col m3 label">UUID permanent :</div>
+              <div className="w3-col m9 champ">{fichierCourant.uuid}</div>
+            </div>
+            <div className="w3-row-padding">
+              <div className="w3-col m3 label">FUUID courant :</div>
+              <div className="w3-col m9 champ">{fichierCourant.fuuid_v_courante}</div>
+            </div>
+
           </div>
         </div>
+      </div>
     );
 
-    let versions = []
+    return informationFichier;
+  }
+
+  renderCommentaire() {
+    let fichierCourant = this.props.fichierCourant;
+
+    let commentaires = (
+      <div className="w3-card w3-round w3-white">
+        <div className="w3-container w3-padding">
+          <div className="m3-col m12 formulaire">
+
+            <div className="w3-col m12 commentaires-full">
+              <textarea value={fichierCourant.commentaires} rows="2"/>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    );
+
+    return commentaires;
+  }
+
+  renderVersions() {
+    let fichierCourant = this.props.fichierCourant;
+
+    let versions = [];
     for(var fuuid in fichierCourant.versions) {
       let version = fichierCourant.versions[fuuid];
       versions.push(version);
@@ -483,14 +532,20 @@ export class AffichageFichier extends React.Component {
       );
     })
 
+    return affichageVersions;
+  }
+
+  render() {
+    // Affiche l'information d'un fichier et la liste des versions
     return (
-      <div className="w3-col m12">
-        {informationFichier}
+      <div className="w3-col m12 w3-card_liste_BR">
+        {this.renderInformationFichier()}
+        {this.renderCommentaire()}
 
         <div className="w3-card w3-round w3-white">
           <div className="w3-container w3-padding">
             <h2 className="w3-opacity">Versions</h2>
-            <ul>{affichageVersions}</ul>
+            <ul>{this.renderVersions()}</ul>
           </div>
         </div>
 

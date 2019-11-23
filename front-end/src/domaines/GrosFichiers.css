@@ -194,3 +194,7 @@ button.nobutton {
   margin-right: 0.3em;
   cursor: pointer;
 }
+
+.commentaires-full > textarea {
+  
+}
