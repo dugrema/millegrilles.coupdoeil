@@ -542,7 +542,7 @@ export class AffichageFichier extends React.Component {
                 <button
                   title="Telecharger"
                   value={fichierCourant.uuid}
-                  onClick={this.props.downloadFichier}>
+                  onClick={this.props.actionsDownload.telechargerEvent}>
                     <i className="fa fa-download"/>
                 </button>
               </div>

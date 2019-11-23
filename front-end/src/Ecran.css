@@ -173,13 +173,13 @@ SPAN.label {
 textarea.autota-width-max, textarea.titre-autota-width-max {
   width: 100%;
   border: 0;
+  padding-bottom: 1px;
+  border-bottom: 1px dotted;
   font-family: sans-serif;
   max-height: 20em;
 }
 
 textarea.titre-autota-width-max {
-  padding-bottom: 1px;
-  border-bottom: 1px dotted;
   font-size: 140%;
   font-family: sans-serif;
   opacity: 0.6;
