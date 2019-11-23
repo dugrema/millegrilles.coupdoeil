@@ -9,7 +9,7 @@ import {ActionsFavoris, ActionsUpload, ActionsDownload, ActionsCarnet,
 // import {GrosFichierAfficherPopup} from './GrosFichiersPopups';
 import {ActionsNavigation,
   AffichageFichier,
-  GrosFichiersRenderDownloadForm, FileUploadMonitor,
+  GrosFichiersRenderDownloadForm, 
   Accueil, Entete} from './GrosFichiersNavigation.js'
 
 export class GrosFichiers extends React.Component {

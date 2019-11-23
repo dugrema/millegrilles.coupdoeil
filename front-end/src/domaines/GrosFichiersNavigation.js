@@ -4,7 +4,6 @@ import TextareaAutosize from 'react-textarea-autosize';
 
 // import webSocketManager from '../WebSocketManager';
 import {dateformatter} from '../formatters'
-import CheckBox from '../mgcomponents/Checkbox.js';
 
 export class ActionsNavigation {
 
@@ -118,7 +117,7 @@ export class Entete extends React.Component {
   componentDidUpdate(prevProps) {
     var resetEtats = {};
 
-    if(this.props.titre != prevProps.titre) {
+    if(this.props.titre !== prevProps.titre) {
       // Edition du titre en cours
       if(this.state.titre === this.props.titre) {
         // Les modifications sont deja faites, on annule l'edition du titre
@@ -409,13 +408,6 @@ export class ListeFichiers extends React.Component {
     }
 
     return fichiersRendered;
-  }
-
-  checkEntree = event => {
-    let uuid = event.currentTarget.value;
-    let etat = !this.state.selection[uuid];
-    console.debug("Selection " + uuid);
-    this.props.actionsCarnet.toggle(uuid, {});
   }
 
   renderBoutonsAction() {
