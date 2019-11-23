@@ -69,28 +69,22 @@ router.put(
   '/nouveauFichier',
   uploadNouveauFichier,
   function(req, res, next) {
-  // console.log('Fichiers recus');
-  // console.log(req.files);
-
-  // console.debug("*** BODY ***");
-  // console.debug(req.body);
-  var repertoire_uuid = req.body.repertoire_uuid;
-  console.debug('*****FICHIERS******');
-  console.debug(req.file);
-  let fichier = req.file;
-  fichierProcesseurUpload.ajouterFichier(req, fichier, serveurConsignation)
-  .then(params => {
-    // console.debug("Traitement fichier termine: " + params);
-    // console.debug(params);
-    res.sendStatus(200);
-  })
-  .catch(err => {
-    console.error("Erreur traitement fichier: " + fichier.originalname);
-    console.error(err);
-    res.sendStatus(500);
-  })
-
-});
+    console.debug('*****FICHIERS******');
+    console.debug(req.file);
+    let fichier = req.file;
+    fichierProcesseurUpload.ajouterFichier(req, fichier, serveurConsignation)
+    .then(params => {
+      // console.debug("Traitement fichier termine: " + params);
+      // console.debug(params);
+      res.sendStatus(200);
+    })
+    .catch(err => {
+      console.error("Erreur traitement fichier: " + fichier.originalname);
+      console.error(err);
+      res.sendStatus(500);
+    })
+  }
+);
 
 router.post('/local/*', function(req, res, next) {
   console.debug("local POST " + req.url);

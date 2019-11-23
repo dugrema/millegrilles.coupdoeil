@@ -176,6 +176,7 @@ export class Entete extends React.Component {
             <div className="w3-col m1">
               <FileUploadSection
                 actionsUpload={this.props.actionsUpload}
+                documentuuid={this.props.documentuuid}
                 />
             </div>
           </div>
@@ -806,7 +807,7 @@ export class FileUploadSection extends React.Component {
     console.debug(acceptedFiles);
 
     let securite = '3.protege';  // Par defaut, augmenter a 4.secure lorsque pret
-    let uuidcollection = null;
+    let documentuuid = this.props.documentuuid;
 
     // let repertoire_uuid = this.props.repertoireCourant.repertoire_uuid;
     // let securite = this.props.repertoireCourant.securite;
@@ -815,7 +816,7 @@ export class FileUploadSection extends React.Component {
 
     acceptedFiles.forEach( file=> {
       // Ajouter le fichier a l'upload queue
-      this.props.actionsUpload.ajouterUpload(file, {uuidcollection, securite});
+      this.props.actionsUpload.ajouterUpload(file, {documentuuid, securite});
     });
 
   }

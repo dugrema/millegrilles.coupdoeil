@@ -316,6 +316,9 @@ export class ActionsUpload {
         let data = new FormData();
         data.append('securite', uploadInfo.securite);
         data.append('grosfichier', uploadInfo.acceptedFile);
+        if(uploadInfo.documentuuid) {
+          data.append('documentuuid', uploadInfo.documentuuid);
+        }
         let config = {
           headers: {
             'authtoken': token,

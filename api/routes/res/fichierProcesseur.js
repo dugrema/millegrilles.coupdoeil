@@ -13,10 +13,12 @@ class ProcesseurUpload {
     var promise = new Promise((resolve, reject)=>{
       // console.debug('Traitement fichier');
       // console.debug(fichier);
+      // console.debug(req.body);
 
       // Creer le uuid de fichier, pour cette version.
       let fileUuid = fichier.fileuuid;
-      var repertoire_uuid = req.body.repertoire_uuid;
+      // UUID du document (optionnel - e.g. collection ou fichier)
+      var documentuuid = req.body.documentuuid;
       var securite = req.body.securite;
       let pathServeur = serveurConsignation + '/' + path.join('grosfichiers', 'local', 'nouveauFichier', fileUuid);
       // let fuuide = this.formatterPath(fileUuid, 'dat');
@@ -36,7 +38,6 @@ class ProcesseurUpload {
         let transactionNouvelleVersion = {
           fuuid: fileUuid,
           securite: securite,
-          repertoire_uuid: repertoire_uuid,
           nom: fichier.originalname,
           taille: fichier.size,
           mimetype: fichier.mimetype,
@@ -46,13 +47,16 @@ class ProcesseurUpload {
             "noeud": "public1.maple.mdugre.info"
           }
         }
+        if(documentuuid) {
+          transactionNouvelleVersion.documentuuid = documentuuid;
+        }
 
         // console.debug("Transaction pour MQ");
         // console.debug(transactionNouvelleVersion);
 
         // Transmettre information au serveur via MQ
         if(crypte) {
-          // Le ficheir est crypte, on transmet la cle en premier
+          // Le fichier est crypte, on transmet la cle en premier
           // (condition blocking pour le processus de traitement du fichier)
           let transactionInformationCryptee = {
             domaine: 'millegrilles.domaines.GrosFichiers',
