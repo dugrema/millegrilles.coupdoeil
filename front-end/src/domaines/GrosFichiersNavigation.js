@@ -563,30 +563,6 @@ export class AffichageFichier extends React.Component {
       )
     }
 
-    let boutonFavori;
-    if(this.props.favorisParUuid[fichierCourant.uuid]) {
-      boutonFavori = (
-        <button
-          title="Favori"
-          value={fichierCourant.uuid}
-          onClick={this.props.actionsFavoris.supprimerFavori}>
-            <span className="fa-stack favori-actif">
-              <i className='fa fa-star fa-stack-1x fond'/>
-              <i className='fa fa-star-o fa-stack-1x'/>
-            </span>
-        </button>
-      );
-    } else {
-      boutonFavori = (
-        <button
-          title="Favori"
-          value={fichierCourant.uuid}
-          onClick={this.props.actionsFavoris.ajouterFavori}>
-            <i className="fa fa-star-o favori-inactif"/>
-        </button>
-      );
-    }
-
     let informationFichier = (
       <div className="w3-card w3-round w3-white">
         <div className="w3-container w3-padding">
@@ -597,7 +573,6 @@ export class AffichageFichier extends React.Component {
                 <h2>Information</h2>
               </div>
               <div className="w3-col m1 boutons-actions-droite">
-                {boutonFavori}
                 <button
                   title="Telecharger"
                   value={fichierCourant.uuid}
@@ -619,7 +594,7 @@ export class AffichageFichier extends React.Component {
               <div className="w3-col m9 champ">{ (fichierCourant.taille / (1024*1024)).toFixed(2) } MB ({fichierCourant.taille} octets)</div>
             </div>
             <div className="w3-row-padding">
-              <div className="w3-col m3 label">Securite :</div>
+              <div className="w3-col m3 label">Sécurité :</div>
               <div className="w3-col m9 champ">{fichierCourant.securite}</div>
             </div>
             <div className="w3-row-padding">
@@ -648,20 +623,55 @@ export class AffichageFichier extends React.Component {
       cssEdition = 'edition-en-cours'
     }
 
+    let boutonFavori;
+    if(this.props.favorisParUuid[fichierCourant.uuid]) {
+      boutonFavori = (
+        <button
+          title="Favori"
+          value={fichierCourant.uuid}
+          onClick={this.props.actionsFavoris.supprimerFavori}>
+            <span className="fa-stack favori-actif">
+              <i className='fa fa-star fa-stack-1x fond'/>
+              <i className='fa fa-star-o fa-stack-1x'/>
+            </span>
+        </button>
+      );
+    } else {
+      boutonFavori = (
+        <button
+          title="Favori"
+          value={fichierCourant.uuid}
+          onClick={this.props.actionsFavoris.ajouterFavori}>
+            <i className="fa fa-star-o favori-inactif"/>
+        </button>
+      );
+    }
+
     let commentaires = (
       <div className="w3-card w3-round w3-white">
         <div className="w3-container w3-padding">
-          <div className="m3-col m12 formulaire">
+          <div className="formulaire">
 
-            <div className="w3-col m12">
-              <TextareaAutosize
-                name="commentaires"
-                className={"autota-width-max editable " + cssEdition}
-                onChange={this.editerCommentaire}
-                onBlur={this.appliquerCommentaire}
-                value={this.state.commentaires || fichierCourant.commentaires || ''}
-                placeholder="Ajouter un commentaire ici..."
-                />
+            <div className="w3-rowpadding">
+              <div className="w3-col m11">
+                <h2><i className="fa fa-tags"/> Étiquettes</h2>
+              </div>
+              <div className="w3-col m1">
+                {boutonFavori}
+              </div>
+            </div>
+
+            <div className="w3-rowpadding">
+              <div className="w3-col m12">
+                <TextareaAutosize
+                  name="commentaires"
+                  className={"autota-width-max editable " + cssEdition}
+                  onChange={this.editerCommentaire}
+                  onBlur={this.appliquerCommentaire}
+                  value={this.state.commentaires || fichierCourant.commentaires || ''}
+                  placeholder="Ajouter un commentaire ici..."
+                  />
+              </div>
             </div>
 
           </div>
@@ -731,12 +741,13 @@ export class AffichageFichier extends React.Component {
     // Affiche l'information d'un fichier et la liste des versions
     return (
       <div className="w3-col m12 w3-card_liste_BR">
-        {this.renderInformationFichier()}
         {this.renderCommentaire()}
+
+        {this.renderInformationFichier()}
 
         <div className="w3-card w3-round w3-white">
           <div className="w3-container w3-padding">
-            <h2 className="w3-opacity">Versions</h2>
+            <h2 className="w3-opacity">Historique</h2>
             <ul>{this.renderVersions()}</ul>
           </div>
         </div>
