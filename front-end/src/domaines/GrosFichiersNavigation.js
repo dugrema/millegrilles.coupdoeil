@@ -47,10 +47,9 @@ export class Entete extends React.Component {
               <h1>GrosFichiers</h1>
             </div>
             <div className="w3-col m1 bouton-home">
-              <span title="Ajout collection" className="fa-stack fa-lg">
-                <i className="fa fa-plus fa-stack-1x"/>
-                <i className="fa fa-folder-o fa-stack-2x"/>
-              </span>
+              <i className="fa fa-clipboard fa-2x">
+                <span className="w3-badge w3-medium w3-green badge">6</span>
+              </i>
             </div>
             <div className="w3-col m1">
               <FileUploadSection
@@ -249,7 +248,7 @@ export class ListeFichiers extends React.Component {
               <input type="checkbox"/> {icone} {fichier.nom}
             </div>
 
-            <div className="w3-col m2 colonne-boutons">
+            <div className="w3-col m2 boutons-actions-droite">
               <button value={fichier.uuid} onClick={actionFavori}>
                 <span className={"fa-stack " + cssFavori}>
                   <i className='fa fa-star fa-stack-1x fond'/>
@@ -271,6 +270,14 @@ export class ListeFichiers extends React.Component {
     return fichiersRendered;
   }
 
+  renderBoutounsAction() {
+    return (
+      <div className="boutons-actions-gauche">
+        <button><i className="fa fa-trash"/></button>
+      </div>
+    )
+  }
+
   render() {
 
     var descriptionRapport = '';
@@ -287,8 +294,15 @@ export class ListeFichiers extends React.Component {
           <div className="liste-fichiers">
             {this.renderFichiers()}
           </div>
-          <div className="boutons-pages">
-            {this.renderBoutonsPages()}
+          <div className="bas-page">
+            <div className="w3-col m3">
+              {this.renderBoutounsAction()}
+            </div>
+            <div className="w3-col m6 boutons-pages">
+              {this.renderBoutonsPages()}
+            </div>
+            <div className="w3-col m3">
+            </div>
           </div>
         </div>
       </div>
