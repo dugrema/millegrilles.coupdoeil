@@ -483,6 +483,16 @@ export class AffichageFichier extends React.Component {
     commentaires: null,
   }
 
+  supprimer = event => {
+    let uuid = event.currentTarget.value;
+    this.props.actionsFichiers.supprimer(uuid);
+  }
+
+  recuperer = event => {
+    let uuid = event.currentTarget.value;
+    this.props.actionsFichiers.recuperer(uuid);
+  }
+
   editerCommentaire = event => {
     let commentaires = event.currentTarget.value;
     this.setState({commentaires});
@@ -526,8 +536,39 @@ export class AffichageFichier extends React.Component {
   renderInformationFichier() {
 
     let fichierCourant = this.props.fichierCourant;
-    let dateFichierCourant = new Date(0);
-    dateFichierCourant.setUTCSeconds(fichierCourant.date_v_courante);
+    let dateFichierCourant = dateformatter.format_datetime(fichierCourant.date_v_courante);
+    // dateFichierCourant.setUTCSeconds(fichierCourant.date_v_courante);
+
+    let fichierSupprime = fichierCourant.supprime;
+    let boutonSupprimerRecuperer;
+    let informationSuppression = null;
+    if(fichierSupprime) {
+      informationSuppression = (
+        <div className="w3-row-padding">
+          <div className="w3-col m3 label">Supression :</div>
+          <div className="w3-col m9 champ">{dateformatter.format_datetime(fichierCourant.date_suppression)}</div>
+        </div>
+
+      )
+
+      boutonSupprimerRecuperer = (
+        <button
+          title="Récupérer"
+          value={fichierCourant.uuid}
+          onClick={this.recuperer}>
+            <i className="fa fa-recycle"/>
+        </button>
+      )
+    } else {
+      boutonSupprimerRecuperer = (
+        <button
+          title="Supprimer"
+          value={fichierCourant.uuid}
+          onClick={this.supprimer}>
+            <i className="fa fa-trash-o"/>
+        </button>
+      )
+    }
 
     let informationFichier = (
       <div className="w3-card w3-round w3-white">
@@ -547,13 +588,7 @@ export class AffichageFichier extends React.Component {
                 </button>
               </div>
               <div className="w3-col m1 boutons-actions-droite">
-                <button
-                  title="Supprimer"
-                  value={fichierCourant.uuid}
-                  data-uuidfichier={fichierCourant.uuid}
-                  onClick={this.props.supprimerFichier}>
-                    <i className="fa fa-trash-o"/>
-                </button>
+                {boutonSupprimerRecuperer}
               </div>
             </div>
 
@@ -577,6 +612,8 @@ export class AffichageFichier extends React.Component {
               <div className="w3-col m3 label">FUUID courant :</div>
               <div className="w3-col m9 champ">{fichierCourant.fuuid_v_courante}</div>
             </div>
+
+            {informationSuppression}
 
           </div>
         </div>

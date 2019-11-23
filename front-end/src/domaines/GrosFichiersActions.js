@@ -80,6 +80,22 @@ export class ActionsFichiers {
     return this.webSocketManager.transmettreTransaction(domaine, transaction);
   }
 
+  supprimer = (uuid) => {
+    let domaine = 'millegrilles.domaines.GrosFichiers.supprimerFichier';
+    let transaction = {
+        uuid: uuid,
+    }
+    return this.webSocketManager.transmettreTransaction(domaine, transaction);
+  }
+
+  recuperer = (uuid) => {
+    let domaine = 'millegrilles.domaines.GrosFichiers.recupererFichier';
+    let transaction = {
+        uuid: uuid,
+    }
+    return this.webSocketManager.transmettreTransaction(domaine, transaction);
+  }
+
   modifierCommentaire = (uuid, commentaires) => {
     let domaine = 'millegrilles.domaines.GrosFichiers.commenterFichier';
     let transaction = {
