@@ -121,8 +121,17 @@ section.uploadIcon DIV SPAN {
   min-height: 1px;
 }
 
+.liste-fichiers div.form-check {
+  display: inline-block;
+  padding-right: 0.5em;
+}
+
 .boutons-actions-gauche {
   text-align: left;
+}
+
+.boutons-actions-gauche button{
+  margin-right: 0.25em;
 }
 
 .boutons-actions-droite {
@@ -172,4 +181,16 @@ section.uploadIcon DIV SPAN {
 .badge {
   position: absolute;
   left: 2em;
+}
+
+button.nobutton {
+  background: none;
+  border: 0px;
+  padding: 0.1em;
+  padding-right: 0.5em;
+  width: 1em;
+
+  margin: 1px;
+  margin-right: 0.3em;
+  cursor: pointer;
 }

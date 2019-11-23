@@ -2,6 +2,7 @@ import React from 'react';
 import Dropzone from 'react-dropzone';
 // import webSocketManager from '../WebSocketManager';
 import {dateformatter} from '../formatters'
+import CheckBox from '../mgcomponents/Checkbox.js';
 
 export class ActionsNavigation {
 
@@ -29,6 +30,17 @@ export class ActionsNavigation {
 }
 
 export class Entete extends React.Component {
+
+  renderBadgeCarnet() {
+    let badgeCarnet = '';
+    if(this.props.carnet.taille > 0) {
+      badgeCarnet = (
+        <span className="w3-badge w3-medium w3-green badge">{this.props.carnet.taille}</span>
+      )
+    }
+    return badgeCarnet;
+  }
+
   render() {
     return(
       <div className="w3-card w3-round w3-white w3-card w3-card_BR">
@@ -46,9 +58,9 @@ export class Entete extends React.Component {
             <div className="w3-col m8 entete-titre">
               <h1>GrosFichiers</h1>
             </div>
-            <div className="w3-col m1 bouton-home">
+            <div className="w3-col m1 bouton-home" title="Carnet">
               <i className="fa fa-clipboard fa-2x">
-                <span className="w3-badge w3-medium w3-green badge">6</span>
+                {this.renderBadgeCarnet()}
               </i>
             </div>
             <div className="w3-col m1">
@@ -92,6 +104,8 @@ export class Accueil extends React.Component {
           favorisParUuid={this.props.favorisParUuid}
           actionsFavoris={this.props.actionsFavoris}
           actionsDownload={this.props.actionsDownload}
+          carnet={this.props.carnet}
+          actionsCarnet={this.props.actionsCarnet}
           />
       </div>
     );
@@ -186,6 +200,7 @@ export class ListeFichiers extends React.Component {
   state = {
     pageCourante: '1',
     elementsParPage: 10,
+    selection: {},
   }
 
   changerPage = event => {
@@ -226,6 +241,13 @@ export class ListeFichiers extends React.Component {
       for(let idx = premierElem; idx < dernierElem && idx < fichiers.length; idx++) {
         let fichier = fichiers[idx];
 
+        let check;
+        if(this.props.carnet.selection[fichier.uuid]) {
+          check = ((<i className="fa fa-check-square-o"/>));
+        } else {
+          check = ((<i className="fa fa-square-o"/>));
+        }
+
         let icone = (<i className="fa fa-file-o"/>);
         if(fichier['_mg-libelle'] === 'collection') {
           icone = (<i className="fa fa-folder-o"/>);
@@ -245,7 +267,10 @@ export class ListeFichiers extends React.Component {
           <div key={fichier['_mg-derniere-modification']+fichier.uuid} className="w3-row-padding tableau-fichiers">
 
             <div className="w3-col m8">
-              <input type="checkbox"/> {icone} {fichier.nom}
+              <button className="nobutton" onClick={this.checkEntree} value={fichier.uuid}>
+                {check}
+              </button>
+              {icone} {fichier.nom}
             </div>
 
             <div className="w3-col m2 boutons-actions-droite">
@@ -270,10 +295,19 @@ export class ListeFichiers extends React.Component {
     return fichiersRendered;
   }
 
-  renderBoutounsAction() {
+  checkEntree = event => {
+    let uuid = event.currentTarget.value;
+    let etat = !this.state.selection[uuid];
+    console.debug("Selection " + uuid);
+    this.props.actionsCarnet.toggle(uuid, {});
+  }
+
+  renderBoutonsAction() {
     return (
       <div className="boutons-actions-gauche">
-        <button><i className="fa fa-trash"/></button>
+        <button>
+          <i className="fa fa-trash"/>
+        </button>
       </div>
     )
   }
@@ -295,13 +329,8 @@ export class ListeFichiers extends React.Component {
             {this.renderFichiers()}
           </div>
           <div className="bas-page">
-            <div className="w3-col m3">
-              {this.renderBoutounsAction()}
-            </div>
-            <div className="w3-col m6 boutons-pages">
+            <div className="w3-col m12 boutons-pages">
               {this.renderBoutonsPages()}
-            </div>
-            <div className="w3-col m3">
             </div>
           </div>
         </div>

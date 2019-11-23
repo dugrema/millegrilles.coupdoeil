@@ -2,7 +2,7 @@ import React from 'react';
 
 import './GrosFichiers.css';
 import webSocketManager from '../WebSocketManager';
-import {ActionsFavoris, ActionsUpload, ActionsDownload} from './GrosFichiersActions';
+import {ActionsFavoris, ActionsUpload, ActionsDownload, ActionsCarnet} from './GrosFichiersActions';
 
 // Composants React GrosFichiers
 // import {GrosFichierAfficherPopup} from './GrosFichiersPopups';
@@ -30,6 +30,8 @@ export class GrosFichiers extends React.Component {
       rapportActivite: null,      // Liste d'activite
       favorisParUuid: null,       // Dict de favoris, indexe par UUID
 
+      carnet: new Carnet(),      // Carnet (clipboard)
+
       // Variables pour ecrans specifiques
       preparerUpload: null,
 
@@ -45,6 +47,7 @@ export class GrosFichiers extends React.Component {
     this.actionsUpload = new ActionsUpload(this, webSocketManager);
     this.actionsDownload = new ActionsDownload(this, webSocketManager, this.refFormulaireDownload);
     this.actionsFavoris = new ActionsFavoris(this, webSocketManager);
+    this.actionsCarnet = new ActionsCarnet(this);
 
     // Configuration statique du composant:
     //   subscriptions: Le nom des routing keys qui vont etre ecoutees
@@ -423,9 +426,11 @@ export class GrosFichiers extends React.Component {
           uploadsCourants={this.state.uploadsCourants}
           uploadsCompletes={this.state.uploadsCompletes}
           favorisParUuid={this.state.favorisParUuid}
+          carnet={this.state.carnet}
           actionsFavoris={this.actionsFavoris}
           actionsUpload={this.actionsUpload}
           actionsDownload={this.actionsDownload}
+          actionsCarnet={this.actionsCarnet}
           />);
     }
 
@@ -434,6 +439,7 @@ export class GrosFichiers extends React.Component {
         <div className="w3-row-padding">
           <div className="w3-col m12">
             <Entete
+              carnet={this.state.carnet}
               actionsNavigation={this.actionsNavigation}
               actionsUpload={this.actionsUpload}
               />
@@ -446,4 +452,62 @@ export class GrosFichiers extends React.Component {
     );
   }
 
+}
+
+class Carnet {
+
+  selection = {};
+  taille = 0;
+
+  ajouter(uuidelement, opts) {
+    if(!opts) {
+      opts = {};
+    }
+    // Cloner carnet et dict de fichiers
+    let carnet = new Carnet();
+    carnet = Object.assign(carnet, this);
+    let selection = Object.assign({}, carnet.selection);
+    carnet.selection = selection;
+
+    // Ajouter fichier
+    carnet.selection[uuidelement] = opts;
+
+    console.debug("Selection actuelle carnet, ajout de " + uuidelement);
+    console.debug(carnet.selection);
+
+    carnet.taille = this.calculerTaille(carnet);
+
+    return carnet;
+  }
+
+  toggle(uuidelement, opts) {
+    if(!opts) {
+      opts = {};
+    }
+    // Cloner carnet et dict de fichiers
+    let carnet = new Carnet();
+    carnet = Object.assign(carnet, this);
+    let selection = Object.assign({}, carnet.selection);
+    carnet.selection = selection;
+
+    if(!carnet.selection[uuidelement]) {
+      // Ajouter fichier/collection
+      carnet.selection[uuidelement] = opts;
+      console.debug("Selection actuelle carnet, ajout de " + uuidelement);
+    } else {
+      // Enlever fichier/collection
+      delete carnet.selection[uuidelement];
+      console.debug("Selection actuelle carnet, retrait de " + uuidelement);
+    }
+
+    console.debug(carnet.selection);
+
+    carnet.taille = this.calculerTaille(carnet);
+
+    return carnet;
+  }
+
+  calculerTaille(carnet) {
+    return Object.keys(carnet.selection).length;
+  }
 }
