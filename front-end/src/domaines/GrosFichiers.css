@@ -149,7 +149,7 @@ section.uploadIcon DIV SPAN {
 }
 
 .favori-actif, .favori-inactif {
-  width: 1em;
+  width: 0.5em;
   height: 1em;
   margin-right: 0.3em;
   line-height: 1em;

@@ -563,6 +563,30 @@ export class AffichageFichier extends React.Component {
       )
     }
 
+    let boutonFavori;
+    if(this.props.favorisParUuid[fichierCourant.uuid]) {
+      boutonFavori = (
+        <button
+          title="Favori"
+          value={fichierCourant.uuid}
+          onClick={this.props.actionsFavoris.supprimerFavori}>
+            <span className="fa-stack favori-actif">
+              <i className='fa fa-star fa-stack-1x fond'/>
+              <i className='fa fa-star-o fa-stack-1x'/>
+            </span>
+        </button>
+      );
+    } else {
+      boutonFavori = (
+        <button
+          title="Favori"
+          value={fichierCourant.uuid}
+          onClick={this.props.actionsFavoris.ajouterFavori}>
+            <i className="fa fa-star-o favori-inactif"/>
+        </button>
+      );
+    }
+
     let informationFichier = (
       <div className="w3-card w3-round w3-white">
         <div className="w3-container w3-padding">
@@ -573,6 +597,7 @@ export class AffichageFichier extends React.Component {
                 <h2>Information</h2>
               </div>
               <div className="w3-col m1 boutons-actions-droite">
+                {boutonFavori}
                 <button
                   title="Telecharger"
                   value={fichierCourant.uuid}

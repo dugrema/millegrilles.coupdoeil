@@ -9,7 +9,7 @@ import {ActionsFavoris, ActionsUpload, ActionsDownload, ActionsCarnet,
 // import {GrosFichierAfficherPopup} from './GrosFichiersPopups';
 import {ActionsNavigation,
   AffichageFichier,
-  GrosFichiersRenderDownloadForm, 
+  GrosFichiersRenderDownloadForm,
   Accueil, Entete} from './GrosFichiersNavigation.js'
 
 export class GrosFichiers extends React.Component {
@@ -308,8 +308,10 @@ export class GrosFichiers extends React.Component {
         <div>
           <AffichageFichier
             fichierCourant={this.state.fichierCourant}
+            favorisParUuid={this.state.favorisParUuid}
             actionsFichiers={this.actionsFichiers}
             actionsDownload={this.actionsDownload}
+            actionsFavoris={this.actionsFavoris}
             />
         </div>
       );
