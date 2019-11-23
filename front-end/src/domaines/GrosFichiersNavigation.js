@@ -700,17 +700,15 @@ export class AffichageFichier extends React.Component {
             </div>
             <div className="w3-col m2">
               <button
-                onClick={this.props.telechargerEvent}
+                onClick={this.props.actionsDownload.telechargerEvent}
                 value={fichierCourant.uuid}
-                data-fuuid={version.fuuid}
-                data-securite={version.securite}>
+                data-fuuid={version.fuuid}>
                   <i className="fa fa-download" />
               </button>
               <button
-                onClick={this.props.telechargerEvent}
+                onClick={this.props.actionsDownload.telechargerEvent}
                 value={fichierCourant.uuid}
                 data-fuuid={version.fuuid}
-                data-securite={version.securite}
                 data-notarget='true'>
                   <i className="fa fa-download" />
               </button>

@@ -141,7 +141,7 @@ export class ActionsDownload {
       opts.target = 'none';
     }
     if(dataset.fuuid) {
-      opts.fuuid_version = dataset.fuuid;
+      opts.fuuid = dataset.fuuid;
     }
 
     // Aller chercher l'information sur le fichier
