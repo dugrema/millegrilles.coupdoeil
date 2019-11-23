@@ -659,7 +659,7 @@ export class AffichageFichier extends React.Component {
                 className={"autota-width-max editable " + cssEdition}
                 onChange={this.editerCommentaire}
                 onBlur={this.appliquerCommentaire}
-                value={this.state.commentaires || fichierCourant.commentaires}
+                value={this.state.commentaires || fichierCourant.commentaires || ''}
                 placeholder="Ajouter un commentaire ici..."
                 />
             </div>
@@ -690,7 +690,7 @@ export class AffichageFichier extends React.Component {
       let dateVersion = dateformatter.format_datetime(version.date_version);
       let taille = (version.taille/(1024*1024)).toFixed(2);
       affichageVersions.push(
-        <div className="ligne-version-fichier">
+        <div key={version.fuuid} className="ligne-version-fichier">
           <div key={'1'+version.fuuid} className="w3-row-padding row-donnees">
             <div className="w3-col m2">
               {dateVersion.toString()}
@@ -715,10 +715,7 @@ export class AffichageFichier extends React.Component {
             </div>
           </div>
           <div key={'2'+version.fuuid} className="w3-row-padding row-donnees">
-            <div className="w3-col m2"></div>
-            <div className="w3-col m8">
-              Commentaire
-            </div>
+            <div className="w3-col m10"></div>
             <div className="w3-col m2">
               {taille} MB
             </div>
