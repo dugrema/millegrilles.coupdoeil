@@ -71,6 +71,15 @@ export class ActionsFichiers {
     this.webSocketManager = webSocketManager;
   }
 
+  renommer = (uuid, nouveauNom) => {
+    let domaine = 'millegrilles.domaines.GrosFichiers.renommerFichier';
+    let transaction = {
+        uuid: uuid,
+        nom: nouveauNom,
+    }
+    return this.webSocketManager.transmettreTransaction(domaine, transaction);
+  }
+
 }
 
 export class ActionsCollections {

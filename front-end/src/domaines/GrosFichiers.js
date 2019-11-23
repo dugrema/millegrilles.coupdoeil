@@ -2,7 +2,8 @@ import React from 'react';
 
 import './GrosFichiers.css';
 import webSocketManager from '../WebSocketManager';
-import {ActionsFavoris, ActionsUpload, ActionsDownload, ActionsCarnet} from './GrosFichiersActions';
+import {ActionsFavoris, ActionsUpload, ActionsDownload, ActionsCarnet,
+        ActionsFichiers} from './GrosFichiersActions';
 
 // Composants React GrosFichiers
 // import {GrosFichierAfficherPopup} from './GrosFichiersPopups';
@@ -21,8 +22,6 @@ export class GrosFichiers extends React.Component {
     this.uploadRetryTimer = null;  // Timer avant prochain essaie d'upload
 
     this.state = {
-
-      titreEntete: 'GrosFichiers',
 
       listeCourante: null,       // Liste a afficher (si pas null et fichier null)
       collectionCourante: null,  // Collection a afficher (si pas null et fichier null)
@@ -50,6 +49,7 @@ export class GrosFichiers extends React.Component {
     this.actionsDownload = new ActionsDownload(this, webSocketManager, this.refFormulaireDownload);
     this.actionsFavoris = new ActionsFavoris(this, webSocketManager);
     this.actionsCarnet = new ActionsCarnet(this);
+    this.actionsFichiers = new ActionsFichiers(this, webSocketManager);
 
     // Configuration statique du composant:
     //   subscriptions: Le nom des routing keys qui vont etre ecoutees
@@ -57,6 +57,7 @@ export class GrosFichiers extends React.Component {
       subscriptions: [
         'noeuds.source.millegrilles_domaines_GrosFichiers.rapport.activite',
         'noeuds.source.millegrilles_domaines_GrosFichiers.favoris',
+        'noeuds.source.millegrilles_domaines_GrosFichiers.fichier',
       ]
     };
 
@@ -294,10 +295,15 @@ export class GrosFichiers extends React.Component {
   // Affichage global pour GrosFichiers
   render() {
 
-    let affichagePrincipal;
+    let affichagePrincipal, titreEntete;
+    var actionRenommer, documentuuid;
 
     if (this.state.fichierCourant) {
       // AFficher un fichier
+      actionRenommer = this.actionsFichiers.renommer;
+      documentuuid = this.state.fichierCourant.uuid;
+      titreEntete = this.state.fichierCourant.nom;
+
       affichagePrincipal = (
         <div>
           <AffichageFichier
@@ -316,6 +322,8 @@ export class GrosFichiers extends React.Component {
       // affichagePrincipal = (<Liste />);
     } else {
       // Page d'acueil par defaut
+      titreEntete = 'GrosFichiers';
+
       affichagePrincipal = (
         <Accueil
           rapportActivite={this.state.rapportActivite}
@@ -341,10 +349,11 @@ export class GrosFichiers extends React.Component {
         <div className="w3-row-padding">
           <div className="w3-col m12">
             <Entete
-              titre={this.state.titreEntete}
+              titre={titreEntete}
               carnet={this.state.carnet}
               actionsNavigation={this.actionsNavigation}
               actionsUpload={this.actionsUpload}
+              actionRenommer={actionRenommer} documentuuid={documentuuid}
               />
             {affichagePrincipal}
           </div>

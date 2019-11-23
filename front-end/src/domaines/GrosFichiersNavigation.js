@@ -1,5 +1,7 @@
 import React from 'react';
 import Dropzone from 'react-dropzone';
+import TextareaAutosize from 'react-textarea-autosize';
+
 // import webSocketManager from '../WebSocketManager';
 import {dateformatter} from '../formatters'
 import CheckBox from '../mgcomponents/Checkbox.js';
@@ -48,10 +50,8 @@ export class ActionsNavigation {
       let etat = {};
       if(documentCharge && documentCharge['_mg-libelle'] === 'fichier') {
         etat['fichierCourant'] = documentCharge;
-        etat['titreEntete'] = documentCharge.nom;
       } else if(documentCharge && documentCharge['_mg-libelle'] === 'collection') {
         etat['collectionCourante'] = documentCharge;
-        etat['titreEntete'] = documentCharge.nom;
       } else {
         console.error("Erreur chargement: fichier non trouve");
       }
@@ -70,6 +70,41 @@ export class ActionsNavigation {
 
 export class Entete extends React.Component {
 
+  state = {
+    titre: null,
+  }
+
+  editerTitre = event => {
+    let titre = event.currentTarget.value;
+    this.setState({titre});
+  }
+
+  actionRenommer = event => {
+    let titre = event.currentTarget.value;
+
+    if(titre !== this.props.titre) {
+
+      this.props.actionRenommer(this.props.documentuuid, titre)
+      .then(msg=>{
+        // console.debug("Reponse renommer fichier");
+        // console.debug(msg);
+        // Le titre sera resette a null a la reception du message de maj du fichier
+      })
+      .catch(err=>{
+        console.error("Erreur changement de titre");
+        console.error(err);
+        // Remet le pour qu'il vienne du parent
+        this.setState({titre: null});
+      });
+
+    } else {
+      // Rien a faire, le titre n'a pas change
+      // Reset l'etat d'edition
+      this.setState({titre: null});
+    }
+
+  }
+
   renderBadgeCarnet() {
     let badgeCarnet = '';
     if(this.props.carnet.taille > 0) {
@@ -80,7 +115,42 @@ export class Entete extends React.Component {
     return badgeCarnet;
   }
 
+  componentDidUpdate(prevProps) {
+    var resetEtats = {};
+
+    if(this.props.titre != prevProps.titre) {
+      // Edition du titre en cours
+      if(this.state.titre === this.props.titre) {
+        // Les modifications sont deja faites, on annule l'edition du titre
+        resetEtats.titre = null;
+      }
+    }
+
+    if(Object.keys(resetEtats).length > 0) {
+      this.setState(resetEtats);
+    }
+  }
+
   render() {
+
+    let elementTitre;
+    var cssEdition = '';
+    if(this.state.titre) {
+      cssEdition = ' edition-en-cours';
+    }
+    if(this.props.actionRenommer && this.props.documentuuid) {
+      elementTitre = (
+        <TextareaAutosize name="location" type="text" className={"titre-autota-width-max editable " + cssEdition}
+          value={this.state.titre || this.props.titre}
+          onChange={this.editerTitre}
+          onBlur={this.actionRenommer} />
+      );
+    } else {
+      elementTitre = (
+        <h1>{this.props.titre}</h1>
+      );
+    }
+
     return(
       <div className="w3-card w3-round w3-white w3-card w3-card_BR">
         <div className="w3-container w3-padding">
@@ -95,7 +165,7 @@ export class Entete extends React.Component {
               </button>
             </div>
             <div className="w3-col m8 entete-titre">
-              <h1>{this.props.titre}</h1>
+              {elementTitre}
             </div>
             <div className="w3-col m1 bouton-home" title="Carnet">
               <i className="fa fa-clipboard fa-2x">

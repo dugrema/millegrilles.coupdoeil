@@ -170,6 +170,21 @@ SPAN.label {
   margin-bottom: 1em;
 }
 
+textarea.titre-autota-width-max {
+  width: 100%;
+  height: 1.5em;
+  border: 0;
+  font-size: 180%;
+  font-family: sans-serif;
+  opacity: 0.6;
+  max-height: 6em;
+}
+
+textarea.edition-en-cours {
+  color: #f5f7f8;
+  background-color:#303e45;
+}
+
 input.editable {
   border-bottom: 1px dotted;
 }
