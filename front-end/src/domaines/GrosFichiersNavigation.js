@@ -13,6 +13,8 @@ export class ActionsNavigation {
   retourAccueil = () => {
     console.debug("Afficher Accueil");
     this.reactModule.setState({
+      titreEntete: 'GrosFichiers',
+
       listeCourante: null,
       collectionCourante: null,
       fichierCourant: null,
@@ -25,6 +27,43 @@ export class ActionsNavigation {
     this.reactModule.setState({
       afficherRecherche: true,
     })
+  }
+
+  chargeruuid = event => {
+    let uuid = event.currentTarget.value;
+    let requete = {requetes: [
+      {'filtre': {
+        '_mg-libelle': {'$in': ['fichier', 'collection']},
+        'uuid': uuid,
+      }},
+    ]}
+
+    this.reactModule.chargerDocument(requete)
+    .then(docs=>{
+      console.debug("chargeruuid: Recu document ");
+      console.debug(docs);
+
+      let documentCharge = docs[0][0];
+
+      let etat = {};
+      if(documentCharge && documentCharge['_mg-libelle'] === 'fichier') {
+        etat['fichierCourant'] = documentCharge;
+        etat['titreEntete'] = documentCharge.nom;
+      } else if(documentCharge && documentCharge['_mg-libelle'] === 'collection') {
+        etat['collectionCourante'] = documentCharge;
+        etat['titreEntete'] = documentCharge.nom;
+      } else {
+        console.error("Erreur chargement: fichier non trouve");
+      }
+
+      this.reactModule.setState(etat);
+
+    })
+    .catch(err=>{
+      console.error("Erreur chargement fichier");
+      console.error(err);
+    })
+
   }
 
 }
@@ -56,7 +95,7 @@ export class Entete extends React.Component {
               </button>
             </div>
             <div className="w3-col m8 entete-titre">
-              <h1>GrosFichiers</h1>
+              <h1>{this.props.titre}</h1>
             </div>
             <div className="w3-col m1 bouton-home" title="Carnet">
               <i className="fa fa-clipboard fa-2x">
@@ -97,14 +136,16 @@ export class Accueil extends React.Component {
       <div className="w3-card_liste_BR">
         <Favoris
           favoris={this.props.favoris}
+          actionsNavigation={this.props.actionsNavigation}
           />
         {this.renderUploadProgress()}
         <ListeFichiers
           rapportActivite={this.props.rapportActivite}
           favorisParUuid={this.props.favorisParUuid}
+          carnet={this.props.carnet}
+          actionsNavigation={this.props.actionsNavigation}
           actionsFavoris={this.props.actionsFavoris}
           actionsDownload={this.props.actionsDownload}
-          carnet={this.props.carnet}
           actionsCarnet={this.props.actionsCarnet}
           />
       </div>
@@ -165,7 +206,7 @@ export class Favoris extends React.Component {
         let nomFavori = favoris['nom'];
         let uuidFavori = favoris['uuid'];
         favorisRendered.push(
-          <button key={uuidFavori}>
+          <button key={uuidFavori} onClick={this.props.actionsNavigation.chargeruuid} value={uuidFavori}>
             <span className="fa-stack favori-actif">
               <i className='fa fa-star fa-stack-1x fond'/>
               <i className='fa fa-star-o fa-stack-1x'/>
@@ -270,7 +311,10 @@ export class ListeFichiers extends React.Component {
               <button className="nobutton" onClick={this.checkEntree} value={fichier.uuid}>
                 {check}
               </button>
-              {icone} {fichier.nom}
+              {icone}
+              <button className="aslink" onClick={this.props.actionsNavigation.chargeruuid} value={fichier.uuid}>
+                {fichier.nom}
+              </button>
             </div>
 
             <div className="w3-col m2 boutons-actions-droite">
@@ -361,6 +405,7 @@ export class GrosFichiersRenderDownloadForm extends React.Component {
 
 }
 
+// Affichage d'un fichier avec toutes ses versions
 export class AffichageFichier extends React.Component {
 
   render() {

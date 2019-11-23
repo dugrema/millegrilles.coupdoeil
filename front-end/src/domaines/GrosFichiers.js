@@ -22,6 +22,8 @@ export class GrosFichiers extends React.Component {
 
     this.state = {
 
+      titreEntete: 'GrosFichiers',
+
       listeCourante: null,       // Liste a afficher (si pas null et fichier null)
       collectionCourante: null,  // Collection a afficher (si pas null et fichier null)
       fichierCourant: null,      // Fichier a afficher (si pas null)
@@ -240,119 +242,17 @@ export class GrosFichiers extends React.Component {
 
   }
 
-  // Actions utiliees dans le panneau des fichiers
-  fichierActions = {
-    supprimer: (selection) => {
-      console.debug("Supprimer");
-
-      let feedbackFichier = msg => {
-        console.debug("Fichier supprime: " + uuid);
-      }
-      let feedbackCollection = msg => {
-        console.debug("Collection supprimee: " + uuid);
-      }
-
-      for(var uuid in selection) {
-        let infoitem = selection[uuid];
-        let typeitem = infoitem.type;
-        console.debug(typeitem + " " + uuid);
-        let transaction = {
-          "uuid": uuid,
-        }
-
-        if(typeitem === 'fichier') {
-          webSocketManager.transmettreTransaction(
-            'millegrilles.domaines.GrosFichiers.supprimerFichier', transaction)
-          .then(msg=>feedbackFichier).catch(err=>{
-            console.error("Erreur suppression fichier");
-            console.error(err);
-          });
-        } else if(typeitem === 'collection') {
-          webSocketManager.transmettreTransaction(
-            'millegrilles.domaines.GrosFichiers.supprimerCollection', transaction)
-          .then(msg=>feedbackCollection).catch(err=>{
-            console.error("Erreur suppression collection");
-            console.error(err);
-          });
-        }
-      }
-    },
-
-  }
-
-  collectionActions = {
-    afficherCollection: event => {
-      let bouton = event.currentTarget;
-      let collectionuuid = bouton.value;
-      this.afficherCollection(collectionuuid);
-    },
-  }
-
-
   chargerDocument = (requete, domaine) => {
     if(!domaine) {
       // Domaine par defaut est une requete vers GrosFichiers
       domaine = 'requete.millegrilles.domaines.GrosFichiers';
     }
 
-    // console.debug("Transmettre requete");
-    // console.debug(requete);
-
     // Retourne la promise pour chaining then/catch
     return webSocketManager.transmettreRequete(domaine, requete)
     .then( docsRecu => {
-      // console.debug("Reponse requete, documents recu");
-      // console.debug(docsRecu);
       return docsRecu;  // Recuperer avec un then(resultats=>{})
     });
-  }
-
-  afficherProprietesFichier(uuidFichier) {
-    this.chargerDocument({
-      requetes: [{'filtre': {'uuid': uuidFichier}}]
-    })
-    .then(resultats=>{
-      console.debug("Resultats afficherProprietesFichier");
-      console.debug(resultats);
-      let fichier = resultats[0][0];
-      this.setState({fichierCourant: fichier});
-    })
-    .catch(err=>{
-      console.error("Erreur chargement fichier " + uuidFichier);
-      console.error(err);
-    })
-  }
-
-  afficherCollection(collectionuuid) {
-    let collectionCourante = this.state['collectionCourante'];
-    // console.debug("Repertoire zone courante: ");
-    // console.debug(repertoireZoneCourante);
-    if(collectionuuid && collectionuuid !== collectionCourante.uuid) {
-      this.chargerDocument({
-        requetes: [{'filtre': {'uuid': collectionuuid, '_mg-libelle': 'collection'}}]
-      })
-      .then(resultats=>{
-        // console.debug("Resultats afficherRepertoire");
-        // console.debug(resultats);
-        let repertoire = resultats[0][0];
-        this.setState({repertoireCourant: repertoire});
-      })
-      .catch(err=>{
-        console.error("Erreur chargement collection " + collectionuuid);
-        console.error(err);
-      })
-    } else {
-      // Retour a l'affichage de base
-      this.setState({collectionCourante: null})
-    }
-  }
-
-  retourFichier = event => {
-    this.setState({'fichierCourant': null});
-  }
-
-  afficherPopupCreerCollection = () => {
-    this.setState({popupProps: {popupCreerCollectionValeurs: {}}});
   }
 
   processMessage = (routingKey, doc) => {
@@ -379,19 +279,6 @@ export class GrosFichiers extends React.Component {
     }
   }
 
-  renderDetailFichier() {
-    return (
-      <div>
-        <AffichageFichier
-          fichierCourant={this.state.fichierCourant}
-          downloadUrl={this.state.downloadUrl}
-          retourFichier={this.retourFichier}
-          {...this.fichierActions}
-          />
-      </div>
-    );
-  }
-
   // Fabrique un index des favoris par UUID.
   indexerFavoris(favoris) {
     var favorisParUuid = {};
@@ -408,9 +295,19 @@ export class GrosFichiers extends React.Component {
   render() {
 
     let affichagePrincipal;
+
     if (this.state.fichierCourant) {
       // AFficher un fichier
-      // affichagePrincipal = (<DetailFichier />);
+      affichagePrincipal = (
+        <div>
+          <AffichageFichier
+            fichierCourant={this.state.fichierCourant}
+            downloadUrl={this.state.downloadUrl}
+            retourFichier={this.retourFichier}
+            {...this.fichierActions}
+            />
+        </div>
+      );
     } else if(this.state.collectionCourante){
       // Afficher une collection
       // affichagePrincipal = (<DetailCollection />);
@@ -427,6 +324,7 @@ export class GrosFichiers extends React.Component {
           uploadsCompletes={this.state.uploadsCompletes}
           favorisParUuid={this.state.favorisParUuid}
           carnet={this.state.carnet}
+          actionsNavigation={this.actionsNavigation}
           actionsFavoris={this.actionsFavoris}
           actionsUpload={this.actionsUpload}
           actionsDownload={this.actionsDownload}
@@ -434,11 +332,16 @@ export class GrosFichiers extends React.Component {
           />);
     }
 
+    // Structure de l'ecran:
+    // ENTETE (toujours presente)
+    // Affichage Principal
+    // (DOWNLOAD FORM) -- cachee, toujours presente
     return (
       <div className="w3-col m9">
         <div className="w3-row-padding">
           <div className="w3-col m12">
             <Entete
+              titre={this.state.titreEntete}
               carnet={this.state.carnet}
               actionsNavigation={this.actionsNavigation}
               actionsUpload={this.actionsUpload}
