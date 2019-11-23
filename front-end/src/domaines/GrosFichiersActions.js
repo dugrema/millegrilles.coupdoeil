@@ -80,6 +80,14 @@ export class ActionsFichiers {
     return this.webSocketManager.transmettreTransaction(domaine, transaction);
   }
 
+  modifierCommentaire = (uuid, commentaires) => {
+    let domaine = 'millegrilles.domaines.GrosFichiers.commenterFichier';
+    let transaction = {
+        uuid: uuid,
+        commentaires: commentaires,
+    }
+    return this.webSocketManager.transmettreTransaction(domaine, transaction);  }
+
 }
 
 export class ActionsCollections {

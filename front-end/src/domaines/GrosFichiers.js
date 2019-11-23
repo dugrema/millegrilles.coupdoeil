@@ -308,9 +308,7 @@ export class GrosFichiers extends React.Component {
         <div>
           <AffichageFichier
             fichierCourant={this.state.fichierCourant}
-            downloadUrl={this.state.downloadUrl}
-            retourFichier={this.retourFichier}
-            {...this.fichierActions}
+            actionsFichiers={this.actionsFichiers}
             />
         </div>
       );

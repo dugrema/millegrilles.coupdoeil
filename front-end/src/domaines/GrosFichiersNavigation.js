@@ -140,7 +140,8 @@ export class Entete extends React.Component {
     }
     if(this.props.actionRenommer && this.props.documentuuid) {
       elementTitre = (
-        <TextareaAutosize name="location" type="text" className={"titre-autota-width-max editable " + cssEdition}
+        <TextareaAutosize name="titre"
+          className={"titre-autota-width-max editable " + cssEdition}
           value={this.state.titre || this.props.titre}
           onChange={this.editerTitre}
           onBlur={this.actionRenommer} />
@@ -478,6 +479,50 @@ export class GrosFichiersRenderDownloadForm extends React.Component {
 // Affichage d'un fichier avec toutes ses versions
 export class AffichageFichier extends React.Component {
 
+  state = {
+    commentaires: null,
+  }
+
+  editerCommentaire = event => {
+    let commentaires = event.currentTarget.value;
+    this.setState({commentaires});
+  }
+
+  appliquerCommentaire = event => {
+    let commentaires = event.currentTarget.value;
+    if(commentaires !== this.props.fichierCourant.commentaires) {
+      this.props.actionsFichiers.modifierCommentaire(
+        this.props.fichierCourant.uuid, commentaires)
+      .then(msg=>{
+        // Rien a faire.
+      })
+      .catch(err=>{
+        console.error("Erreur ajout commentaire");
+        console.err(err);
+        // Reset commentaire.
+        this.setState({commentaires: null});
+      })
+    } else {
+      // Rien a faire. Reset commentaire.
+      this.setState({commentaires: null});
+    }
+  }
+
+  // Verifier si on peut resetter les versions locales des proprietes editees.
+  componentDidUpdate(prevProps) {
+
+    let resetState = {};
+    if(this.state.commentaires) {
+      if(this.state.commentaires === this.props.fichierCourant.commentaires) {
+        resetState.commentaires = null;
+      }
+    }
+
+    if(Object.keys(resetState).length > 0) {
+      this.setState(resetState);
+    }
+  }
+
   renderInformationFichier() {
 
     let fichierCourant = this.props.fichierCourant;
@@ -543,14 +588,25 @@ export class AffichageFichier extends React.Component {
 
   renderCommentaire() {
     let fichierCourant = this.props.fichierCourant;
+    let cssEdition = '';
+    if(this.state.commentaires) {
+      cssEdition = 'edition-en-cours'
+    }
 
     let commentaires = (
       <div className="w3-card w3-round w3-white">
         <div className="w3-container w3-padding">
           <div className="m3-col m12 formulaire">
 
-            <div className="w3-col m12 commentaires-full">
-              <textarea value={fichierCourant.commentaires} rows="2"/>
+            <div className="w3-col m12">
+              <TextareaAutosize
+                name="commentaires"
+                className={"autota-width-max editable " + cssEdition}
+                onChange={this.editerCommentaire}
+                onBlur={this.appliquerCommentaire}
+                value={this.state.commentaires || fichierCourant.commentaires}
+                placeholder="Ajouter un commentaire ici..."
+                />
             </div>
 
           </div>
