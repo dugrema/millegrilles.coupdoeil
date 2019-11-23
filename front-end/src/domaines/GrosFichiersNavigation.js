@@ -690,19 +690,13 @@ export class AffichageFichier extends React.Component {
       let dateVersion = dateformatter.format_datetime(version.date_version);
       let taille = (version.taille/(1024*1024)).toFixed(2);
       affichageVersions.push(
-        <div>
+        <div className="ligne-version-fichier">
           <div key={'1'+version.fuuid} className="w3-row-padding row-donnees">
-            <div className="w3-col m3">
+            <div className="w3-col m2">
               {dateVersion.toString()}
             </div>
-            <div className="w3-col m3">
+            <div className="w3-col m8">
               {version.nom}
-            </div>
-            <div className="w3-col m2">
-              {version.securite}
-            </div>
-            <div className="w3-col m2">
-              {taille} MB
             </div>
             <div className="w3-col m2">
               <button
@@ -723,9 +717,12 @@ export class AffichageFichier extends React.Component {
             </div>
           </div>
           <div key={'2'+version.fuuid} className="w3-row-padding row-donnees">
-            <div className="w3-col m3"></div>
-            <div className="w3-col m9">
+            <div className="w3-col m2"></div>
+            <div className="w3-col m8">
               Commentaire
+            </div>
+            <div className="w3-col m2">
+              {taille} MB
             </div>
           </div>
         </div>

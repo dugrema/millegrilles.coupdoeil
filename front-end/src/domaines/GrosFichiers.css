@@ -194,3 +194,7 @@ button.nobutton {
   margin-right: 0.3em;
   cursor: pointer;
 }
+
+.ligne-version-fichier {
+  padding-bottom: 2em;
+}
