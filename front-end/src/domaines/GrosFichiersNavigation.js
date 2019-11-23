@@ -687,29 +687,48 @@ export class AffichageFichier extends React.Component {
 
     let affichageVersions = [];
     versions.forEach(version=>{
-      let dateVersion = new Date(0);
-      dateVersion.setUTCSeconds(version.date_version);
+      let dateVersion = dateformatter.format_datetime(version.date_version);
       let taille = (version.taille/(1024*1024)).toFixed(2);
       affichageVersions.push(
-        <li key={version.fuuid}>
-          {dateVersion.toString()}<br/>
-          {taille} MB / {version.nom} / Securite: {version.securite}
-          <button
-            onClick={this.props.telechargerEvent}
-            value={fichierCourant.uuid}
-            data-fuuid={version.fuuid}
-            data-securite={version.securite}>
-            Download
-          </button>
-          <button
-            onClick={this.props.telechargerEvent}
-            value={fichierCourant.uuid}
-            data-fuuid={version.fuuid}
-            data-securite={version.securite}
-            data-notarget='true'>
-            Download no-tab
-          </button>
-        </li>
+        <div>
+          <div key={'1'+version.fuuid} className="w3-row-padding row-donnees">
+            <div className="w3-col m3">
+              {dateVersion.toString()}
+            </div>
+            <div className="w3-col m3">
+              {version.nom}
+            </div>
+            <div className="w3-col m2">
+              {version.securite}
+            </div>
+            <div className="w3-col m2">
+              {taille} MB
+            </div>
+            <div className="w3-col m2">
+              <button
+                onClick={this.props.telechargerEvent}
+                value={fichierCourant.uuid}
+                data-fuuid={version.fuuid}
+                data-securite={version.securite}>
+                  <i className="fa fa-download" />
+              </button>
+              <button
+                onClick={this.props.telechargerEvent}
+                value={fichierCourant.uuid}
+                data-fuuid={version.fuuid}
+                data-securite={version.securite}
+                data-notarget='true'>
+                  <i className="fa fa-download" />
+              </button>
+            </div>
+          </div>
+          <div key={'2'+version.fuuid} className="w3-row-padding row-donnees">
+            <div className="w3-col m3"></div>
+            <div className="w3-col m9">
+              Commentaire
+            </div>
+          </div>
+        </div>
       );
     })
 
