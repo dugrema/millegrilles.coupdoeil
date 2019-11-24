@@ -76,6 +76,10 @@ section.uploadIcon DIV SPAN {
 
 }
 
+.bouton-fa {
+  position: relative;
+}
+
 .bouton-home {
   cursor: pointer;
   background: white;

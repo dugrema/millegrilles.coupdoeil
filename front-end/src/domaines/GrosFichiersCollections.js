@@ -96,8 +96,20 @@ export class ActionsCollections {
     return this.webSocketManager.transmettreTransaction(domaine, transaction);
   }
 
-  ajouterDocuments(listeDocuments) {
+  ajouterDocuments(collectionuuid, listeDocuments) {
+    console.debug("Ajouter documents du carnet a collection " + collectionuuid);
+    console.debug(listeDocuments);
 
+    let listeUuid = Object.keys(listeDocuments);
+
+    if(listeUuid.length > 0) {
+      let domaine = 'millegrilles.domaines.GrosFichiers.ajouterFichiersCollection';
+      let transaction = {
+          uuid: collectionuuid,
+          documents: listeUuid,
+      }
+      return this.webSocketManager.transmettreTransaction(domaine, transaction);
+    }
   }
 
   supprimerDocuments(listeDocuments) {
@@ -112,6 +124,11 @@ export class AffichageCollections extends React.Component {
     pageCourante: 1,
     elementsParPage: 10,
     commentaires: null,
+  }
+
+  ajouterCarnet = event => {
+    this.props.actionsCollections.ajouterDocuments(
+      this.props.collectionCourante.uuid, this.props.carnet.selection);
   }
 
   editerCommentaire = event => {
@@ -156,20 +173,68 @@ export class AffichageCollections extends React.Component {
 
   renderListeDocuments() {
     let listeDocuments = [];
+    let uuid = this.props.collectionCourante.uuid;
+
+    let boutonFavori;
+    if(this.props.favorisParUuid[uuid]) {
+      boutonFavori = (
+        <button
+          title="Favori"
+          value={uuid}
+          onClick={this.props.actionsFavoris.supprimerFavori}>
+            <span className="fa-stack favori-actif">
+              <i className='fa fa-star fa-stack-1x fond'/>
+              <i className='fa fa-star-o fa-stack-1x'/>
+            </span>
+        </button>
+      );
+    } else {
+      boutonFavori = (
+        <button
+          title="Favori"
+          value={uuid}
+          onClick={this.props.actionsFavoris.ajouterFavori}>
+            <i className="fa fa-star-o favori-inactif"/>
+        </button>
+      );
+    }
 
     return(
       <div className="w3-card w3-round w3-white w3-card">
         <div className="w3-container w3-padding">
 
-          <div>
-            <h2>Contenu</h2>
+          <div className="w3-rowpadding">
 
-            {this.genererListeFichiers()}
+            <h2 className="w3-col m8">Contenu</h2>
+
+            <div className="w3-col m4 boutons-actions-droite">
+              {boutonFavori}
+              <span className="bouton-fa">
+                <button title="Coller carnet" onClick={this.ajouterCarnet}>
+                  <i className="fa fa-clipboard">
+                    {this.renderBadgeCarnet()}
+                  </i>
+                </button>
+              </span>
+
+            </div>
           </div>
+
+          {this.genererListeFichiers()}
 
         </div>
       </div>
     );
+  }
+
+  renderBadgeCarnet() {
+    let badgeCarnet = '';
+    if(this.props.carnet.taille > 0) {
+      badgeCarnet = (
+        <span className="w3-badge w3-medium w3-green badge">{this.props.carnet.taille}</span>
+      )
+    }
+    return badgeCarnet;
   }
 
   renderCommentaire() {
