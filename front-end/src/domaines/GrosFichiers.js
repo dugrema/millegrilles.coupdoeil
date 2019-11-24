@@ -2,15 +2,14 @@ import React from 'react';
 
 import './GrosFichiers.css';
 import webSocketManager from '../WebSocketManager';
-import {ActionsFavoris, ActionsUpload, ActionsDownload,
-        ActionsFichiers} from './GrosFichiersActions';
+import {ActionsFavoris, ActionsUpload, ActionsDownload} from './GrosFichiersActions';
 import {Carnet, ActionsCarnet, AffichageCarnet} from './GrosFichiersCarnet';
+import {ActionsFichiers, AffichageFichier, ListeFichiers} from './GrosFichiersFichiers';
 import {ActionsCollections, AffichageCollections} from './GrosFichiersCollections';
 
 // Composants React GrosFichiers
 // import {GrosFichierAfficherPopup} from './GrosFichiersPopups';
 import {ActionsNavigation,
-  AffichageFichier,
   GrosFichiersRenderDownloadForm,
   Accueil, Entete} from './GrosFichiersNavigation.js'
 

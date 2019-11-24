@@ -47,48 +47,6 @@ export class ActionsFavoris {
 
 }
 
-export class ActionsFichiers {
-
-  constructor(reactModule, webSocketManager) {
-    this.reactModule = reactModule;
-    this.webSocketManager = webSocketManager;
-  }
-
-  renommer = (uuid, nouveauNom) => {
-    let domaine = 'millegrilles.domaines.GrosFichiers.renommerFichier';
-    let transaction = {
-        uuid: uuid,
-        nom: nouveauNom,
-    }
-    return this.webSocketManager.transmettreTransaction(domaine, transaction);
-  }
-
-  supprimer = (uuid) => {
-    let domaine = 'millegrilles.domaines.GrosFichiers.supprimerFichier';
-    let transaction = {
-        uuid: uuid,
-    }
-    return this.webSocketManager.transmettreTransaction(domaine, transaction);
-  }
-
-  recuperer = (uuid) => {
-    let domaine = 'millegrilles.domaines.GrosFichiers.recupererFichier';
-    let transaction = {
-        uuid: uuid,
-    }
-    return this.webSocketManager.transmettreTransaction(domaine, transaction);
-  }
-
-  modifierCommentaire = (uuid, commentaires) => {
-    let domaine = 'millegrilles.domaines.GrosFichiers.commenterFichier';
-    let transaction = {
-        uuid: uuid,
-        commentaires: commentaires,
-    }
-    return this.webSocketManager.transmettreTransaction(domaine, transaction);  }
-
-}
-
 export class ActionsRecherche {
 
   constructor(reactModule, webSocketManager) {
