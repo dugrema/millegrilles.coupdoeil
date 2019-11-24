@@ -47,23 +47,6 @@ export class ActionsFavoris {
 
 }
 
-export class ActionsCarnet {
-
-  constructor(reactModule) {
-    this.reactModule = reactModule;
-  }
-
-  toggle(uuid, opt) {
-    let carnet = this.reactModule.state.carnet;
-
-    // Le carnet genere une nouvelle instance a chaque operation
-    carnet = carnet.toggle(uuid, opt);
-
-    this.reactModule.setState({carnet});
-  }
-
-}
-
 export class ActionsFichiers {
 
   constructor(reactModule, webSocketManager) {

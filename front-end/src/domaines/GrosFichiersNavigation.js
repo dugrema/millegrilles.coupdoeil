@@ -320,6 +320,13 @@ export class ListeFichiers extends React.Component {
     this.setState({pageCourante: page});
   }
 
+  checkEntree = event => {
+    let uuid = event.currentTarget.value;
+    let etat = !this.state.selection[uuid];
+    console.debug("Selection " + uuid);
+    this.props.actionsCarnet.toggle(uuid, {});
+  }
+  
   renderBoutonsPages() {
     let boutonsPages = [];
     if(this.props.rapportActivite) {
