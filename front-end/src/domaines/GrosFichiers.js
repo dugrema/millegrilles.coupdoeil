@@ -319,10 +319,12 @@ export class GrosFichiers extends React.Component {
         <AffichageCollections
           collectionCourante={this.state.collectionCourante}
           favorisParUuid={this.state.favorisParUuid}
+          carnet={this.state.carnet}
           actionsCollections={this.actionsCollections}
           actionsFichiers={this.actionsFichiers}
           actionsDownload={this.actionsDownload}
           actionsFavoris={this.actionsFavoris}
+          actionsNavigation={this.actionsNavigation}
          />
       );
     } else if(this.state.listeCourante){

@@ -414,6 +414,24 @@ export class ListeFichiers extends React.Component {
           actionFavori = this.props.actionsFavoris.ajouterFavori;
         }
 
+        let lienFichier;
+        if(fichier.nom) {
+          lienFichier = (
+            <span>
+              {icone}
+              <button className="aslink" onClick={this.props.actionsNavigation.chargeruuid} value={fichier.uuid}>
+                {fichier.nom}
+              </button>
+            </span>
+          )
+        } else {
+          lienFichier = (
+            <button className="aslink" onClick={this.props.actionsNavigation.chargeruuid} value={fichier.uuid}>
+              {icone}
+            </button>
+          )
+        }
+
         fichiersRendered.push(
           <div key={fichier['_mg-derniere-modification']+fichier.uuid} className="w3-row-padding tableau-fichiers">
 
@@ -424,10 +442,9 @@ export class ListeFichiers extends React.Component {
                 data-datemodification={fichier['_mg-derniere-modification']}>
                 {check}
               </button>
-              {icone}
-              <button className="aslink" onClick={this.props.actionsNavigation.chargeruuid} value={fichier.uuid}>
-                {fichier.nom}
-              </button>
+
+              {lienFichier}
+
             </div>
 
             <div className="w3-col m2 boutons-actions-droite">

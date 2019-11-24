@@ -18,7 +18,8 @@ export class ActionsCollections {
     let listeDocumentsPlate = [];
     for(let uuid in listeDocuments) {
       let doc = listeDocuments[uuid];
-      stub_liste_documents[doc.uuid] = {
+      stub_liste_documents[uuid] = {
+        '_mg-libelle': 'collection',
         uuid: uuid,
         nom: doc.nom,
       };
@@ -90,6 +91,8 @@ export class AffichageCollections extends React.Component {
 
   state = {
     nom: null,
+    pageCourante: 1,
+    elementsParPage: 10,
   }
 
   componentDidUpdate(prevProps) {
@@ -99,6 +102,82 @@ export class AffichageCollections extends React.Component {
         this.setState({nom: null});
       }
     }
+  }
+
+  renderListeDocuments() {
+    let listeDocuments = [];
+
+    return(
+      <div className="w3-card w3-round w3-white w3-card">
+        <div className="w3-container w3-padding">
+
+          <div>
+            <h2>Contenu</h2>
+
+            {this.genererListeFichiers()}
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  genererListeFichiers() {
+    let fichiersRendered = [];
+    console.debug("Documents de la collection");
+    console.debug(this.props.collectionCourante);
+
+    if( this.props.collectionCourante.documents ) {
+
+      let premierElem = (this.state.pageCourante-1) * this.state.elementsParPage;
+      let dernierElem = premierElem + this.state.elementsParPage; // (+1)
+
+      let selection = this.props.collectionCourante.documents;
+
+      // Creer une liste de fichiers/collections et la trier
+      let fichiers = [];
+      for(let uuid in selection) {
+        let contenu = selection[uuid];
+        fichiers.push({...contenu, uuid});
+      }
+      fichiers.sort((a,b)=>{
+        let nom_a = a['nom'];
+        let nom_b = b['nom'];
+        if(nom_a === nom_b) return 0;
+        if(!nom_a) return 1;
+        return nom_a.localeCompare(nom_b);
+      })
+
+      for(let idx = premierElem; idx < dernierElem && idx < fichiers.length; idx++) {
+        let fichier = fichiers[idx];
+
+        let icone = (<i className="fa fa-file-o icone-gauche"/>);
+        if(fichier['_mg-libelle'] === 'collection') {
+          icone = (<i className="fa fa-folder-o"/>);
+        }
+
+        fichiersRendered.push(
+          <div key={fichier.uuid} className="w3-row-padding tableau-fichiers">
+
+            <div className="w3-col m11">
+              {icone}
+              <button className="aslink" onClick={this.props.actionsNavigation.chargeruuid} value={fichier.uuid}>
+                {fichier.nom}
+              </button>
+            </div>
+
+            <div className="w3-col m1">
+              <button value={fichier.uuid} onClick={this.supprimerDocument}>
+                <i className="fa fa-remove" />
+              </button>
+            </div>
+
+          </div>
+        );
+      }
+    }
+
+    return fichiersRendered;
   }
 
   render() {
@@ -117,11 +196,7 @@ export class AffichageCollections extends React.Component {
           </div>
         </div>
 
-        <div className="w3-card w3-round w3-white w3-card">
-          <div className="w3-container w3-padding">
-            <h2>Contenu</h2>
-          </div>
-        </div>
+        {this.renderListeDocuments()}
 
       </section>
     );
