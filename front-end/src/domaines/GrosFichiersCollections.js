@@ -7,7 +7,16 @@ export class ActionsCollections {
     this.webSocketManager = webSocketManager;
   }
 
-  creerCollection(listeDocuments) {
+  renommer = (uuid, nouveauNom) => {
+    let domaine = 'millegrilles.domaines.GrosFichiers.renommerCollection';
+    let transaction = {
+        uuid: uuid,
+        nom: nouveauNom,
+    }
+    return this.webSocketManager.transmettreTransaction(domaine, transaction);
+  }
+
+  creerCollection = listeDocuments => {
     console.debug("Creer nouvelle collection avec documents: ");
     console.debug(listeDocuments);
 
@@ -90,18 +99,11 @@ export class ActionsCollections {
 export class AffichageCollections extends React.Component {
 
   state = {
-    nom: null,
     pageCourante: 1,
     elementsParPage: 10,
   }
 
   componentDidUpdate(prevProps) {
-    if(this.state.nom) {
-      if(this.props.collectionCourante && this.props.collectionCourante.nom === this.state.nom) {
-        // Reset nom, il a ete applique dans les props
-        this.setState({nom: null});
-      }
-    }
   }
 
   renderListeDocuments() {

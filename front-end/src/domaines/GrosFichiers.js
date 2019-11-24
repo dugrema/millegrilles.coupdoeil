@@ -260,6 +260,14 @@ export class GrosFichiers extends React.Component {
         console.debug(doc);
         this.setState({fichierCourant: doc});
       }
+    } else if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.collection') {
+      // Verifier si repertoire courant correspond
+      let collectionCourante = this.state.collectionCourante;
+      if(collectionCourante && collectionCourante.uuid === doc.uuid) {
+        console.debug("Update collection courante");
+        console.debug(doc);
+        this.setState({collectionCourante: doc});
+      }
     }
   }
 
@@ -315,6 +323,11 @@ export class GrosFichiers extends React.Component {
       );
     } else if(this.state.collectionCourante){
       // Afficher une collection
+      actionRenommer = this.actionsCollections.renommer;
+      documentuuid = this.state.collectionCourante.uuid;
+      titreEntete = this.state.collectionCourante.nom;
+      if(!titreEntete) titreEntete = '';
+
       affichagePrincipal = (
         <AffichageCollections
           collectionCourante={this.state.collectionCourante}
