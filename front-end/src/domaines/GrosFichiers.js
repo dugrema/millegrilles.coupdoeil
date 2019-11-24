@@ -255,16 +255,16 @@ export class GrosFichiers extends React.Component {
       // Verifier si repertoire courant correspond
       let fichierCourant = this.state.fichierCourant;
       if(fichierCourant && fichierCourant.uuid === doc.uuid) {
-        console.debug("Update fichier courant");
-        console.debug(doc);
+        // console.debug("Update fichier courant");
+        // console.debug(doc);
         this.setState({fichierCourant: doc});
       }
     } else if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.collection') {
       // Verifier si repertoire courant correspond
       let collectionCourante = this.state.collectionCourante;
       if(collectionCourante && collectionCourante.uuid === doc.uuid) {
-        console.debug("Update collection courante");
-        console.debug(doc);
+        // console.debug("Update collection courante");
+        // console.debug(doc);
         this.setState({collectionCourante: doc});
       }
     }

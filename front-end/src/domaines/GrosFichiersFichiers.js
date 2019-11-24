@@ -41,7 +41,8 @@ export class ActionsFichiers {
         uuid: uuid,
         commentaires: commentaires,
     }
-    return this.webSocketManager.transmettreTransaction(domaine, transaction);  }
+    return this.webSocketManager.transmettreTransaction(domaine, transaction);
+  }
 
 }
 

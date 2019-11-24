@@ -1,4 +1,5 @@
 import React from 'react';
+import TextareaAutosize from 'react-textarea-autosize';
 
 export class ActionsCollections {
 
@@ -86,6 +87,15 @@ export class ActionsCollections {
     });
   }
 
+  modifierCommentaire = (uuid, commentaires) => {
+    let domaine = 'millegrilles.domaines.GrosFichiers.commenterCollection';
+    let transaction = {
+        uuid: uuid,
+        commentaires: commentaires,
+    }
+    return this.webSocketManager.transmettreTransaction(domaine, transaction);
+  }
+
   ajouterDocuments(listeDocuments) {
 
   }
@@ -101,9 +111,47 @@ export class AffichageCollections extends React.Component {
   state = {
     pageCourante: 1,
     elementsParPage: 10,
+    commentaires: null,
   }
 
+  editerCommentaire = event => {
+    let commentaires = event.currentTarget.value;
+    this.setState({commentaires});
+  }
+
+  appliquerCommentaire = event => {
+    let commentaires = event.currentTarget.value;
+    if(commentaires !== this.props.collectionCourante.commentaires) {
+      this.props.actionsCollections.modifierCommentaire(
+        this.props.collectionCourante.uuid, commentaires)
+      .then(msg=>{
+        // Rien a faire.
+      })
+      .catch(err=>{
+        console.error("Erreur ajout commentaire");
+        console.err(err);
+        // Reset commentaire.
+        this.setState({commentaires: null});
+      })
+    } else {
+      // Rien a faire. Reset commentaire.
+      this.setState({commentaires: null});
+    }
+  }
+
+  // Verifier si on peut resetter les versions locales des proprietes editees.
   componentDidUpdate(prevProps) {
+
+    let resetState = {};
+    if(this.state.commentaires) {
+      if(this.state.commentaires === this.props.collectionCourante.commentaires) {
+        resetState.commentaires = null;
+      }
+    }
+
+    if(Object.keys(resetState).length > 0) {
+      this.setState(resetState);
+    }
   }
 
   renderListeDocuments() {
@@ -124,10 +172,39 @@ export class AffichageCollections extends React.Component {
     );
   }
 
+  renderCommentaire() {
+    let collectionCourante = this.props.collectionCourante;
+    let cssEdition = '';
+    if(this.state.commentaires) {
+      cssEdition = 'edition-en-cours'
+    }
+
+    let commentaires = (
+      <div className="w3-card w3-round w3-white">
+        <div className="w3-container w3-padding">
+          <div className="formulaire">
+
+            <div className="w3-col m12">
+              <TextareaAutosize
+                name="commentaires"
+                className={"autota-width-max editable " + cssEdition}
+                onChange={this.editerCommentaire}
+                onBlur={this.appliquerCommentaire}
+                value={this.state.commentaires || collectionCourante.commentaires || ''}
+                placeholder="Ajouter un commentaire ici..."
+                />
+            </div>
+
+          </div>
+        </div>
+      </div>
+    );
+
+    return commentaires;
+  }
+
   genererListeFichiers() {
     let fichiersRendered = [];
-    console.debug("Documents de la collection");
-    console.debug(this.props.collectionCourante);
 
     if( this.props.collectionCourante.documents ) {
 
@@ -192,11 +269,7 @@ export class AffichageCollections extends React.Component {
           </div>
         </div>
 
-        <div className="w3-card w3-round w3-white w3-card">
-          <div className="w3-container w3-padding">
-            <h2>Commentaire</h2>
-          </div>
-        </div>
+        {this.renderCommentaire()}
 
         {this.renderListeDocuments()}
 
