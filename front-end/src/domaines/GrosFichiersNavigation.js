@@ -15,6 +15,10 @@ export class ActionsNavigation {
 
   retourAccueil = () => {
     console.debug("Afficher Accueil");
+
+    let stackNavigation = this.reactModule.state.stackNavigation.slice(-50);
+    stackNavigation.push('Accueil');
+
     this.reactModule.setState({
       titreEntete: 'GrosFichiers',
 
@@ -23,31 +27,47 @@ export class ActionsNavigation {
       fichierCourant: null,
       afficherRecherche: false,
       afficherCarnet: false,
+      stackNavigation: stackNavigation,
     })
   }
 
   afficherRecherche = () => {
     console.debug("Afficher Recherche");
+
+    let stackNavigation = this.reactModule.state.stackNavigation.slice(-50);
+    stackNavigation.push('Recherche');
+
     this.reactModule.setState({
       afficherRecherche: true,
       afficherCarnet: false,
+      stackNavigation: stackNavigation,
     })
   }
 
   afficherCarnet = () => {
     console.debug("Afficher Carnet");
+
+    let stackNavigation = this.reactModule.state.stackNavigation.slice(-50);
+    stackNavigation.push('Carnet');
+
     this.reactModule.setState({
       afficherCarnet: true,
       afficherRecherche: false,
+      stackNavigation: stackNavigation,
     })
   }
 
   afficherCollection = event => {
     let uuid = event.currentTarget.value;
     console.debug("Afficher Collection " + uuid);
+
+    let stackNavigation = this.reactModule.state.stackNavigation.slice(-50);
+    stackNavigation.push(uuid);
+
     this.reactModule.setState({
       afficherCarnet: false,
       afficherRecherche: false,
+      stackNavigation: stackNavigation,
     })
   }
 
@@ -77,23 +97,57 @@ export class ActionsNavigation {
   }
 
   afficherDocument(documentCharge) {
+    let stackNavigation = this.reactModule.state.stackNavigation.slice(-50);
+
     let etat = {
       afficherRecherche: false,
       afficherCarnet: false,
       collectionCourante: null,
       fichierCourant: null,
+      stackNavigation: stackNavigation,
     };
 
     if(documentCharge && documentCharge['_mg-libelle'] === 'fichier') {
       etat['fichierCourant'] = documentCharge;
+      stackNavigation.push(documentCharge.uuid);
     } else if(documentCharge && documentCharge['_mg-libelle'] === 'collection') {
       etat['collectionCourante'] = documentCharge;
+      stackNavigation.push(documentCharge.uuid);
     } else {
       console.error("Erreur chargement: fichier non trouve");
       etat = {}; // On ne change rien
     }
 
     this.reactModule.setState(etat);
+  }
+
+  navigationArriere = () => {
+    let stackNavigation = this.reactModule.state.stackNavigation.slice();
+    // console.debug("Stack navigation");
+    // console.debug(stackNavigation);
+
+    let courant = stackNavigation.pop();  // Enlever page courante
+    let revenirA = stackNavigation.pop(); // Celui qu'on veut
+    if(revenirA) {
+      // Mettre a jour la stack, la page va etre remise au chargement
+      this.reactModule.setState({stackNavigation}, ()=>{
+
+        console.debug("Revenir a " + revenirA);
+
+        if(revenirA === 'Accueil') {
+          this.retourAccueil();
+        } else if(revenirA === 'Recherche') {
+          this.afficherRecherche();
+        } else if(revenirA === 'Carnet') {
+          this.afficherCarnet();
+        } else {
+          // Fichier ou collection
+          this.chargeruuid({'currentTarget': {'value': revenirA}});
+        }
+
+      });
+
+    }
   }
 
 }
@@ -188,8 +242,11 @@ export class Entete extends React.Component {
 
           <div className="w3-row-padding">
             <div className="w3-col m2 bouton-home">
+              <button onClick={this.props.actionsNavigation.navigationArriere}>
+                <i title="Retour" className="fa fa-arrow-left fa-2x"/>
+              </button>
               <button onClick={this.props.actionsNavigation.retourAccueil}>
-                <i title="Retour" className="fa fa-home fa-2x"/>
+                <i title="Accueil" className="fa fa-home fa-2x"/>
               </button>
               <button onClick={this.props.actionsNavigation.afficherRecherche}>
                 <i title="Recherche" className="fa fa-search fa-2x"/>

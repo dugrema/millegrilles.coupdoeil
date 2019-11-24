@@ -34,6 +34,8 @@ export class GrosFichiers extends React.Component {
 
       carnet: new Carnet(),      // Carnet (clipboard)
 
+      stackNavigation: ['Accueil'],        // Parcours pour bouton back
+
       // Variables pour ecrans specifiques
       preparerUpload: null,
 
