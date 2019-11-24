@@ -100,20 +100,30 @@ export class ActionsCollections {
     console.debug("Ajouter documents du carnet a collection " + collectionuuid);
     console.debug(listeDocuments);
 
-    let listeUuid = Object.keys(listeDocuments);
+    let listeUuids = Object.keys(listeDocuments);
 
-    if(listeUuid.length > 0) {
+    if(listeUuids.length > 0) {
       let domaine = 'millegrilles.domaines.GrosFichiers.ajouterFichiersCollection';
       let transaction = {
           uuid: collectionuuid,
-          documents: listeUuid,
+          documents: listeUuids,
       }
       return this.webSocketManager.transmettreTransaction(domaine, transaction);
     }
   }
 
-  supprimerDocuments(listeDocuments) {
+  retirerFichiersCollection(collectionUuid, listeUuids) {
+    console.debug("Ajouter documents du carnet a collection " + collectionUuid);
+    console.debug(listeUuids);
 
+    if(listeUuids.length > 0) {
+      let domaine = 'millegrilles.domaines.GrosFichiers.retirerFichiersCollection';
+      let transaction = {
+          uuid: collectionUuid,
+          documents: listeUuids,
+      }
+      return this.webSocketManager.transmettreTransaction(domaine, transaction);
+    }
   }
 
 }
@@ -129,6 +139,13 @@ export class AffichageCollections extends React.Component {
   ajouterCarnet = event => {
     this.props.actionsCollections.ajouterDocuments(
       this.props.collectionCourante.uuid, this.props.carnet.selection);
+  }
+
+  supprimerDuCarnet = event => {
+    let uuid = event.currentTarget.value;
+    this.props.actionsCollections.retirerFichiersCollection(
+      this.props.collectionCourante.uuid, [uuid]
+    )
   }
 
   editerCommentaire = event => {
@@ -311,7 +328,7 @@ export class AffichageCollections extends React.Component {
             </div>
 
             <div className="w3-col m1">
-              <button value={fichier.uuid} onClick={this.supprimerDocument}>
+              <button value={fichier.uuid} onClick={this.supprimerDuCarnet}>
                 <i className="fa fa-remove" />
               </button>
             </div>
