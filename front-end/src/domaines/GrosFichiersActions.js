@@ -89,15 +89,6 @@ export class ActionsFichiers {
 
 }
 
-export class ActionsCollections {
-
-  constructor(reactModule, webSocketManager) {
-    this.reactModule = reactModule;
-    this.webSocketManager = webSocketManager;
-  }
-
-}
-
 export class ActionsRecherche {
 
   constructor(reactModule, webSocketManager) {

@@ -26,6 +26,10 @@ export class AffichageCarnet extends React.Component {
     elementsParPage: 10,
   }
 
+  creerCollection = event => {
+    this.props.actionsCollections.creerCollection(this.props.carnet.selection);
+  }
+
   supprimerDocument = event => {
     let uuid = event.currentTarget.value;
     this.props.actionsCarnet.toggle(uuid);
@@ -66,8 +70,8 @@ export class AffichageCarnet extends React.Component {
               <h2>Contenu du carnet</h2>
             </div>
             <div className="w3-col m1">
-              <button>
-                <span className="fa-stack fa-1g">
+              <button onClick={this.creerCollection}>
+                <span className="fa-stack fa-1g" title="Creer collection">
                   <i className="fa fa-folder-o fa-stack-2x" />
                   <i className="fa fa-plus fa-stack-1x" />
                 </span>

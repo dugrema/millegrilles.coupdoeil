@@ -40,6 +40,15 @@ export class ActionsNavigation {
     })
   }
 
+  afficherCollection = event => {
+    let uuid = event.currentTarget.value;
+    console.debug("Afficher Collection " + uuid);
+    this.reactModule.setState({
+      afficherCarnet: false,
+      afficherRecherche: false,
+    })
+  }
+
   chargeruuid = event => {
     let uuid = event.currentTarget.value;
     let requete = {requetes: [
@@ -55,22 +64,7 @@ export class ActionsNavigation {
       console.debug(docs);
 
       let documentCharge = docs[0][0];
-
-      let etat = {
-        afficherRecherche: false,
-        afficherCarnet: false,
-      };
-
-      if(documentCharge && documentCharge['_mg-libelle'] === 'fichier') {
-        etat['fichierCourant'] = documentCharge;
-      } else if(documentCharge && documentCharge['_mg-libelle'] === 'collection') {
-        etat['collectionCourante'] = documentCharge;
-      } else {
-        console.error("Erreur chargement: fichier non trouve");
-        etat = {}; // On ne change rien
-      }
-
-      this.reactModule.setState(etat);
+      this.afficherDocument(documentCharge);
 
     })
     .catch(err=>{
@@ -78,6 +72,26 @@ export class ActionsNavigation {
       console.error(err);
     })
 
+  }
+
+  afficherDocument(documentCharge) {
+    let etat = {
+      afficherRecherche: false,
+      afficherCarnet: false,
+      collectionCourante: null,
+      fichierCourant: null,
+    };
+
+    if(documentCharge && documentCharge['_mg-libelle'] === 'fichier') {
+      etat['fichierCourant'] = documentCharge;
+    } else if(documentCharge && documentCharge['_mg-libelle'] === 'collection') {
+      etat['collectionCourante'] = documentCharge;
+    } else {
+      console.error("Erreur chargement: fichier non trouve");
+      etat = {}; // On ne change rien
+    }
+
+    this.reactModule.setState(etat);
   }
 
 }

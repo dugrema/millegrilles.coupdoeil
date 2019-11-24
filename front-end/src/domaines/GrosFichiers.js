@@ -5,6 +5,7 @@ import webSocketManager from '../WebSocketManager';
 import {ActionsFavoris, ActionsUpload, ActionsDownload,
         ActionsFichiers} from './GrosFichiersActions';
 import {Carnet, ActionsCarnet, AffichageCarnet} from './GrosFichiersCarnet';
+import {ActionsCollections, AffichageCollections} from './GrosFichiersCollections';
 
 // Composants React GrosFichiers
 // import {GrosFichierAfficherPopup} from './GrosFichiersPopups';
@@ -51,6 +52,7 @@ export class GrosFichiers extends React.Component {
     this.actionsFavoris = new ActionsFavoris(this, webSocketManager);
     this.actionsCarnet = new ActionsCarnet(this);
     this.actionsFichiers = new ActionsFichiers(this, webSocketManager);
+    this.actionsCollections = new ActionsCollections(this, webSocketManager);
 
     // Configuration statique du composant:
     //   subscriptions: Le nom des routing keys qui vont etre ecoutees
@@ -59,6 +61,7 @@ export class GrosFichiers extends React.Component {
         'noeuds.source.millegrilles_domaines_GrosFichiers.rapport.activite',
         'noeuds.source.millegrilles_domaines_GrosFichiers.favoris',
         'noeuds.source.millegrilles_domaines_GrosFichiers.fichier',
+        'noeuds.source.millegrilles_domaines_GrosFichiers.collection',
       ]
     };
 
@@ -204,27 +207,6 @@ export class GrosFichiers extends React.Component {
       });
     },
 
-    supprimerCollection: (event) => {
-      let uuidCollection = event.currentTarget.value;
-
-      let transaction = {
-        "uuid": uuidCollection,
-      }
-      webSocketManager.transmettreTransaction(
-        'millegrilles.domaines.GrosFichiers.supprimerCollection', transaction)
-      .then(msg=>{
-        console.debug("Collection supprime " + uuidCollection);
-        let collectionCourante = this.state.collectionCourante;
-        if(collectionCourante.uuid === uuidCollection) {
-          // On va popper vers la liste globale
-          this.setState({collectionCourante: null});
-        }
-      })
-      .catch(err=>{
-        console.error("Erreur suppression collection " + uuidCollection);
-      });
-    },
-
     supprimerFichier: (event) => {
       let uuidFichier = event.currentTarget.value;
 
@@ -306,6 +288,7 @@ export class GrosFichiers extends React.Component {
           carnet={this.state.carnet}
           actionsCarnet={this.actionsCarnet}
           actionsNavigation={this.actionsNavigation}
+          actionsCollections={this.actionsCollections}
           />
       );
     } else if(this.state.afficherRecherche) {
@@ -332,7 +315,16 @@ export class GrosFichiers extends React.Component {
       );
     } else if(this.state.collectionCourante){
       // Afficher une collection
-      // affichagePrincipal = (<DetailCollection />);
+      affichagePrincipal = (
+        <AffichageCollections
+          collectionCourante={this.state.collectionCourante}
+          favorisParUuid={this.state.favorisParUuid}
+          actionsCollections={this.actionsCollections}
+          actionsFichiers={this.actionsFichiers}
+          actionsDownload={this.actionsDownload}
+          actionsFavoris={this.actionsFavoris}
+         />
+      );
     } else if(this.state.listeCourante){
       // Afficher une liste
       // affichagePrincipal = (<Liste />);
