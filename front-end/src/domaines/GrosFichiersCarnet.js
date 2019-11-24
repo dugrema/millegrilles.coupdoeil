@@ -31,11 +31,16 @@ export class AffichageCarnet extends React.Component {
     this.props.actionsCarnet.toggle(uuid);
   }
 
+  changerPage = event => {
+    let pageCourante = event.currentTarget.value;
+    this.setState({pageCourante});
+  }
+
   renderBoutonsPages() {
     let boutonsPages = [];
     if(this.props.carnet.selection) {
       let selection = this.props.carnet.selection;
-      let nbPages = Math.ceil(selection.length / this.state.elementsParPage);
+      let nbPages = Math.ceil(Object.keys(selection).length / this.state.elementsParPage);
 
       for(let page=1; page<=nbPages; page++) {
         let cssCourante = '';
@@ -107,7 +112,6 @@ export class AffichageCarnet extends React.Component {
         if(!nom_a) return 1;
         return nom_a.localeCompare(nom_b);
       })
-
 
       for(let idx = premierElem; idx < dernierElem && idx < fichiers.length; idx++) {
         let fichier = fichiers[idx];
