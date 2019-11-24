@@ -20,6 +20,7 @@ export class ActionsNavigation {
       collectionCourante: null,
       fichierCourant: null,
       afficherRecherche: false,
+      afficherCarnet: false,
     })
   }
 
@@ -27,6 +28,15 @@ export class ActionsNavigation {
     console.debug("Afficher Recherche");
     this.reactModule.setState({
       afficherRecherche: true,
+      afficherCarnet: false,
+    })
+  }
+
+  afficherCarnet = () => {
+    console.debug("Afficher Carnet");
+    this.reactModule.setState({
+      afficherCarnet: true,
+      afficherRecherche: false,
     })
   }
 
@@ -46,13 +56,18 @@ export class ActionsNavigation {
 
       let documentCharge = docs[0][0];
 
-      let etat = {};
+      let etat = {
+        afficherRecherche: false,
+        afficherCarnet: false,
+      };
+
       if(documentCharge && documentCharge['_mg-libelle'] === 'fichier') {
         etat['fichierCourant'] = documentCharge;
       } else if(documentCharge && documentCharge['_mg-libelle'] === 'collection') {
         etat['collectionCourante'] = documentCharge;
       } else {
         console.error("Erreur chargement: fichier non trouve");
+        etat = {}; // On ne change rien
       }
 
       this.reactModule.setState(etat);
@@ -168,9 +183,11 @@ export class Entete extends React.Component {
               {elementTitre}
             </div>
             <div className="w3-col m1 bouton-home" title="Carnet">
-              <i className="fa fa-clipboard fa-2x">
-                {this.renderBadgeCarnet()}
-              </i>
+              <button onClick={this.props.actionsNavigation.afficherCarnet}>
+                <i className="fa fa-clipboard fa-2x">
+                  {this.renderBadgeCarnet()}
+                </i>
+              </button>
             </div>
             <div className="w3-col m1">
               <FileUploadSection
@@ -322,11 +339,12 @@ export class ListeFichiers extends React.Component {
 
   checkEntree = event => {
     let uuid = event.currentTarget.value;
+    let dataset = event.currentTarget.dataset;
     let etat = !this.state.selection[uuid];
     console.debug("Selection " + uuid);
-    this.props.actionsCarnet.toggle(uuid, {});
+    this.props.actionsCarnet.toggle(uuid, {...dataset});
   }
-  
+
   renderBoutonsPages() {
     let boutonsPages = [];
     if(this.props.rapportActivite) {
@@ -386,7 +404,10 @@ export class ListeFichiers extends React.Component {
           <div key={fichier['_mg-derniere-modification']+fichier.uuid} className="w3-row-padding tableau-fichiers">
 
             <div className="w3-col m8">
-              <button className="nobutton" onClick={this.checkEntree} value={fichier.uuid}>
+              <button className="nobutton" onClick={this.checkEntree}
+                value={fichier.uuid}
+                data-nom={fichier.nom}
+                data-datemodification={fichier['_mg-derniere-modification']}>
                 {check}
               </button>
               {icone}

@@ -299,7 +299,21 @@ export class GrosFichiers extends React.Component {
     let affichagePrincipal, titreEntete;
     var actionRenommer, documentuuid;
 
-    if (this.state.fichierCourant) {
+    if (this.state.afficherCarnet) {
+      titreEntete = 'Carnet';
+      affichagePrincipal = (
+        <AffichageCarnet
+          carnet={this.state.carnet}
+          actionsCarnet={this.actionsCarnet}
+          actionsNavigation={this.actionsNavigation}
+          />
+      );
+    } else if(this.state.afficherRecherche) {
+      titreEntete = 'Recherche';
+      affichagePrincipal = (
+        <p>Recherche ... a faire ...</p>
+      );
+    } else if (this.state.fichierCourant) {
       // AFficher un fichier
       actionRenommer = this.actionsFichiers.renommer;
       documentuuid = this.state.fichierCourant.uuid;
