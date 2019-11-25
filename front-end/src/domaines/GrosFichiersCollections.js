@@ -131,7 +131,7 @@ export class ActionsCollections {
 export class AffichageCollections extends React.Component {
 
   state = {
-    pageCourante: 1,
+    pageCourante: '1',
     elementsParPage: 10,
     commentaires: null,
   }
@@ -151,6 +151,11 @@ export class AffichageCollections extends React.Component {
   editerCommentaire = event => {
     let commentaires = event.currentTarget.value;
     this.setState({commentaires});
+  }
+
+  changerPage = event => {
+    let page = event.currentTarget.value;
+    this.setState({pageCourante: page});
   }
 
   appliquerCommentaire = event => {
@@ -237,7 +242,15 @@ export class AffichageCollections extends React.Component {
             </div>
           </div>
 
-          {this.genererListeFichiers()}
+          <div className="liste-fichiers">
+            {this.genererListeFichiers()}
+          </div>
+
+          <div className="bas-page">
+            <div className="w3-col m12 boutons-pages">
+              {this.renderBoutonsPages()}
+            </div>
+          </div>
 
         </div>
       </div>
@@ -345,6 +358,27 @@ export class AffichageCollections extends React.Component {
     }
 
     return fichiersRendered;
+  }
+
+  renderBoutonsPages() {
+    let boutonsPages = [];
+    if(this.props.collectionCourante.documents) {
+      let fichiers = this.props.collectionCourante.documents;
+      let nbPages = Math.ceil(Object.keys(fichiers).length / this.state.elementsParPage);
+
+      for(let page=1; page<=nbPages; page++) {
+        let cssCourante = '';
+        if(this.state.pageCourante === ''+page) {
+          cssCourante = 'courante';
+        }
+        boutonsPages.push(
+          <button key={page} onClick={this.changerPage} value={page} className={cssCourante}>
+            {page}
+          </button>
+        );
+      }
+    }
+    return boutonsPages;
   }
 
   render() {
