@@ -316,9 +316,11 @@ export class GrosFichiers extends React.Component {
           <AffichageFichier
             fichierCourant={this.state.fichierCourant}
             favorisParUuid={this.state.favorisParUuid}
+            carnet={this.state.carnet}
             actionsFichiers={this.actionsFichiers}
             actionsDownload={this.actionsDownload}
             actionsFavoris={this.actionsFavoris}
+            actionsCarnet={this.actionsCarnet}
             />
         </div>
       );

@@ -88,6 +88,13 @@ export class AffichageFichier extends React.Component {
     }
   }
 
+  checkEntree = event => {
+    let uuid = event.currentTarget.value;
+    let dataset = event.currentTarget.dataset;
+    console.debug("Toggle selection " + uuid);
+    this.props.actionsCarnet.toggle(uuid, {...dataset});
+  }
+
   // Verifier si on peut resetter les versions locales des proprietes editees.
   componentDidUpdate(prevProps) {
 
@@ -101,6 +108,16 @@ export class AffichageFichier extends React.Component {
     if(Object.keys(resetState).length > 0) {
       this.setState(resetState);
     }
+  }
+
+  renderSelectionCarnet() {
+    let check;
+    if(this.props.carnet.selection[this.props.fichierCourant.uuid]) {
+      check = ((<i className="fa fa-check-square-o fa-2x"/>));
+    } else {
+      check = ((<i className="fa fa-square-o fa-2x"/>));
+    }
+    return check;
   }
 
   renderInformationFichier() {
@@ -146,10 +163,16 @@ export class AffichageFichier extends React.Component {
           <div className="m3-col m12 formulaire">
 
             <div className="row-donnees">
-              <div className="w3-col m10">
+              <div className="w3-col m9">
                 <h2>Information</h2>
               </div>
-              <div className="w3-col m1 boutons-actions-droite">
+              <div className="w3-col m2 boutons-actions-droite">
+                <button className="nobutton button-2x" onClick={this.checkEntree}
+                  value={fichierCourant.uuid}
+                  data-nom={fichierCourant.nom}
+                  data-datemodification={fichierCourant['_mg-derniere-modification']}>
+                  {this.renderSelectionCarnet()}
+                </button>
                 <button
                   title="Telecharger"
                   value={fichierCourant.uuid}

@@ -199,6 +199,10 @@ button.nobutton {
   cursor: pointer;
 }
 
+button.button-2x {
+  width: 2em;
+}
+
 .ligne-version-fichier {
   padding-bottom: 2em;
 }
