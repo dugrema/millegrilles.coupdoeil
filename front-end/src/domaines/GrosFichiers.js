@@ -377,7 +377,8 @@ export class GrosFichiers extends React.Component {
               carnet={this.state.carnet}
               actionsNavigation={this.actionsNavigation}
               actionsUpload={this.actionsUpload}
-              actionRenommer={actionRenommer} documentuuid={documentuuid}
+              actionRenommer={actionRenommer}
+              documentuuid={documentuuid}
               />
             {affichagePrincipal}
           </div>
