@@ -328,6 +328,12 @@ export class AffichageCollections extends React.Component {
             </div>
 
             <div className="w3-col m1">
+              <button
+                title="Telecharger"
+                value={fichier.uuid}
+                onClick={this.props.actionsDownload.telechargerEvent}>
+                  <i className="fa fa-download"/>
+              </button>
               <button value={fichier.uuid} onClick={this.supprimerDuCarnet}>
                 <i className="fa fa-remove" />
               </button>
