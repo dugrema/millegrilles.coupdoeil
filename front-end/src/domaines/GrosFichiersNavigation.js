@@ -5,7 +5,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 // import webSocketManager from '../WebSocketManager';
 import {dateformatter} from '../formatters'
 
-import {ListeFichiers} from './GrosFichiersFichiers';
+import {ActiviteFichiers} from './GrosFichiersFichiers';
 
 export class ActionsNavigation {
 
@@ -300,7 +300,7 @@ export class Accueil extends React.Component {
           actionsNavigation={this.props.actionsNavigation}
           />
         {this.renderUploadProgress()}
-        <ListeFichiers
+        <ActiviteFichiers
           rapportActivite={this.props.rapportActivite}
           favorisParUuid={this.props.favorisParUuid}
           carnet={this.props.carnet}

@@ -357,7 +357,7 @@ export class AffichageFichier extends React.Component {
   }
 }
 
-export class ListeFichiers extends React.Component {
+export class ActiviteFichiers extends React.Component {
 
   state = {
     pageCourante: '1',
@@ -381,19 +381,21 @@ export class ListeFichiers extends React.Component {
   renderBoutonsPages() {
     let boutonsPages = [];
     if(this.props.rapportActivite) {
-      let fichiers = this.props.rapportActivite.fichiers;
-      let nbPages = Math.ceil(fichiers.length / this.state.elementsParPage);
+      let activites = this.props.rapportActivite.activites;
+      if(activites) {
+        let nbPages = Math.ceil(activites.length / this.state.elementsParPage);
 
-      for(let page=1; page<=nbPages; page++) {
-        let cssCourante = '';
-        if(this.state.pageCourante === ''+page) {
-          cssCourante = 'courante';
+        for(let page=1; page<=nbPages; page++) {
+          let cssCourante = '';
+          if(this.state.pageCourante === ''+page) {
+            cssCourante = 'courante';
+          }
+          boutonsPages.push(
+            <button key={page} onClick={this.changerPage} value={page} className={cssCourante}>
+              {page}
+            </button>
+          );
         }
-        boutonsPages.push(
-          <button key={page} onClick={this.changerPage} value={page} className={cssCourante}>
-            {page}
-          </button>
-        );
       }
     }
     return boutonsPages;
@@ -406,10 +408,11 @@ export class ListeFichiers extends React.Component {
       let premierElem = (this.state.pageCourante-1) * this.state.elementsParPage;
       let dernierElem = premierElem + this.state.elementsParPage; // (+1)
 
-      let fichiers = this.props.rapportActivite.fichiers;
+      let activites = this.props.rapportActivite.activites;
 
-      for(let idx = premierElem; idx < dernierElem && idx < fichiers.length; idx++) {
-        let fichier = fichiers[idx];
+      if(activites) for(let idx = premierElem; idx < dernierElem && idx < activites.length; idx++) {
+        let activite = activites[idx];
+        let fichier = activite.sujet;
 
         let check;
         if(this.props.carnet.selection[fichier.uuid]) {
@@ -454,9 +457,9 @@ export class ListeFichiers extends React.Component {
         }
 
         fichiersRendered.push(
-          <div key={fichier['_mg-derniere-modification']+fichier.uuid} className="w3-row-padding tableau-fichiers">
+          <div key={activite.uuid_activite} className="w3-row-padding tableau-fichiers">
 
-            <div className="w3-col m8">
+            <div className="w3-col m6">
               <button className="nobutton" onClick={this.checkEntree}
                 value={fichier.uuid}
                 data-nom={fichier.nom}
@@ -466,6 +469,10 @@ export class ListeFichiers extends React.Component {
 
               {lienFichier}
 
+            </div>
+
+            <div className="w3-col m2">
+              {activite.type_activite}
             </div>
 
             <div className="w3-col m2 boutons-actions-droite">
