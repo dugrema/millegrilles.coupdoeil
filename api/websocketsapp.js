@@ -170,7 +170,13 @@ class WebSocketApp {
       .then( reponse => {
         let messageContent = reponse.content.toString('utf-8');
         let json_message = JSON.parse(messageContent);
-        cb(json_message.resultats); // On transmet juste les resultats
+        if(json_message.resultats) {
+          cb(json_message.resultats); // On transmet juste les resultats
+        } else {
+          // C'est une reponse custom
+          cb(json_message);
+        }
+
       })
       .catch( err => {
         console.error("Erreur requete");

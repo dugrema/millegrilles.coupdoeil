@@ -1,6 +1,7 @@
 import React from 'react';
 import Dropzone from 'react-dropzone';
 import TextareaAutosize from 'react-textarea-autosize';
+import webSocketManager from '../WebSocketManager';
 
 // import webSocketManager from '../WebSocketManager';
 import {dateformatter} from '../formatters'
@@ -309,6 +310,7 @@ export class Accueil extends React.Component {
           actionsDownload={this.props.actionsDownload}
           actionsCarnet={this.props.actionsCarnet}
           />
+        <SectionSommaireTorrent />
       </div>
     );
   }
@@ -545,4 +547,57 @@ export class FileUploadSection extends React.Component {
       </Dropzone>
     );
   }
+}
+
+class SectionSommaireTorrent extends React.Component {
+
+  state = {
+    sessionStats: null,
+  }
+
+  componentDidMount() {
+    // Effectuer requete pour afficher etat torrent (transmission)
+
+    webSocketManager.transmettreRequete('requete.torrent.sommaire', {})
+    .then( docsRecu => {
+      console.log("Etat torrent:");
+      console.log(docsRecu);
+
+      const sessionStats = docsRecu.sessionStats;
+      this.setState({sessionStats});
+    })
+    .catch( err => {
+      console.error("Erreur reception sommaire torrents");
+      console.error(err);
+    });
+
+  }
+
+  afficherStats() {
+    var stats = null;
+    if(this.state.sessionStats) {
+      stats = (
+        <div>
+          Actifs : {this.state.sessionStats.activeTorrentCount},
+          Totaux : {this.state.sessionStats.torrentCount},
+          Upload speed : {this.state.sessionStats.uploadSpeed}
+        </div>
+      );
+    }
+
+    return stats;
+  }
+
+  render() {
+    return (
+      <div className="w3-card w3-round w3-white">
+        <div className="w3-container w3-padding">
+          <h2>Torrents</h2>
+          {this.afficherStats()}
+        </div>
+      </div>
+    );
+  }
+
+
 }
