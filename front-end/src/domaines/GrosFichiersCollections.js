@@ -1,5 +1,6 @@
 import React from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
+import {dateformatter} from '../formatters';
 
 export class ActionsCollections {
 
@@ -414,7 +415,49 @@ export class AffichageCollections extends React.Component {
 
         {this.renderListeDocuments()}
 
+        <AffichageListeCollectionsFigees
+          collectionCourante={this.props.collectionCourante}/>
       </section>
+    );
+  }
+}
+
+class AffichageListeCollectionsFigees extends React.Component {
+
+  afficherListe() {
+    var liste = null;
+    if(this.props.collectionCourante && this.props.collectionCourante.figees) {
+      const collectionsFigees = this.props.collectionCourante.figees;
+
+      liste = [];
+      for(let idx in collectionsFigees) {
+        let collectionFigee = collectionsFigees[idx];
+        liste.push(
+          <div key={collectionFigee.uuid}>
+            <div>{dateformatter.format_datetime(collectionFigee.date)}</div>
+            <div>{collectionFigee.torrent_hashstring}</div>
+          </div>
+        )
+      }
+
+    }
+
+    return liste;
+  }
+
+  render() {
+    return (
+      <div className="w3-card w3-round w3-white w3-card">
+        <div className="w3-container w3-padding">
+
+          <h2><i className="fa fa-thumb-tack"/>Collections figees</h2>
+
+          <div>
+            {this.afficherListe()}
+          </div>
+
+        </div>
+      </div>
     );
   }
 }
