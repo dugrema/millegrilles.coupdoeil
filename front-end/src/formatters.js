@@ -35,7 +35,41 @@ class NumberFormatter {
   }
 }
 
+class FileSizeFormatter {
+
+  constructor() {
+    this.kb = 1024;
+    this.mb = this.kb*1024;
+    this.gb = this.mb*1024;
+    this.tb = this.gb*1024;
+    this.precision = 3;
+  }
+
+  format(nbBytes) {
+    let result, unite;
+    if(nbBytes > this.tb) {
+      result = (nbBytes/this.tb).toPrecision(this.precision);
+      unite = 'Tb';
+    } else if(nbBytes > this.gb) {
+      result = (nbBytes/this.gb).toPrecision(this.precision);
+      unite = 'Gb';
+    } else if(nbBytes > this.mb) {
+      result = (nbBytes/this.mb).toPrecision(this.precision);
+      unite = 'Mb';
+    } else if(nbBytes > this.kb) {
+      result = (nbBytes/this.kb).toPrecision(this.precision);
+      unite = 'kb';
+    } else {
+      result = nbBytes;
+      unite = 'bytes';
+    }
+
+    return result + ' ' + unite;
+  }
+}
+
 // Exports
 const dateformatter = new DateFormatter();
 const numberformatter = new NumberFormatter();
-export {dateformatter, numberformatter};
+const filesizeformatter = new FileSizeFormatter();
+export {dateformatter, numberformatter, filesizeformatter};

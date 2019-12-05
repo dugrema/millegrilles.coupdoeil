@@ -1,6 +1,8 @@
 import React from 'react';
 import webSocketManager from '../WebSocketManager';
 
+import {filesizeformatter} from '../formatters';
+
 export class ActionsRecherche {
 
   constructor(reactModule, webSocketManager) {
@@ -64,21 +66,51 @@ export class AfficherRecherche extends React.Component {
     if(listeResultats) {
       const resultats = [];
       listeResultats.forEach(resultat => {
-        resultats.push(
-          <div key={resultat.uuid} className={"w3-row-padding " + resultat.securite}>
-            <div className="w3-col m4">
-              <button className="aslink" onClick={this.ouvrirDocument} value={resultat.uuid}>
-                {resultat.nom}
-              </button>
+        const typeResultat = resultat['_mg-libelle'];
+
+        if(typeResultat === 'fichier') {
+          resultats.push(
+            <div key={"fichier"+resultat.uuid} className={"w3-row-padding row-donnees " + resultat.securite}>
+              <div className="w3-col m4">
+                <button className="aslink" onClick={this.props.actionsNavigation.chargeruuid} value={resultat.uuid}>
+                  {resultat.nom}
+                </button>
+              </div>
+              <div className="w3-col m6">
+                {resultat.commentaires}
+              </div>
+              <div className="w3-col m2">
+                {filesizeformatter.format(resultat.taille)}
+              </div>
             </div>
-            <div className="w3-col m2">
-              {resultat.taille}
+          );
+        } else if(typeResultat === 'collection') {
+          resultats.push(
+            <div key={"coll"+resultat.uuid} className={"w3-row-padding row-donnees " + resultat.securite}>
+              <div className="w3-col m4">
+                <button className="aslink" onClick={this.props.actionsNavigation.chargeruuid} value={resultat.uuid}>
+                  {resultat.nom}
+                </button>
+              </div>
+              <div className="w3-col m8">
+                {resultat.commentaires}
+              </div>
             </div>
-            <div className="w3-col m2">
-              {resultat.commentaires}
+          );
+        } else if (typeResultat === 'collection.fige') {
+          resultats.push(
+            <div key={"fige"+resultat.uuid} className={"w3-row-padding row-donnees " + resultat.securite}>
+              <div className="w3-col m4">
+                <button className="aslink" onClick={this.props.actionsNavigation.chargeruuid} value={resultat.uuid}>
+                  {resultat.nom}
+                </button>
+              </div>
+              <div className="w3-col m8">
+                {resultat.commentaires}
+              </div>
             </div>
-          </div>
-        );
+          );
+        }
       });
 
       if(resultats.length == 0) {
@@ -87,10 +119,17 @@ export class AfficherRecherche extends React.Component {
 
       affichageResultats = (
         <div className="w3-card w3-round w3-white w3-card">
-          <div className="w3-container w3-padding formulaire">
+          <div className="w3-container w3-padding">
 
             <div className="w3-col m12">
               <h2>Résultats</h2>
+            </div>
+
+
+            <div className="entete-liste">
+              <div className="w3-col m4">Nom</div>
+              <div className="w3-col m6">Commentaire</div>
+              <div className="w3-col m2">Taille</div>
             </div>
 
             {resultats}

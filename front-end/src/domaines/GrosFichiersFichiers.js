@@ -1,6 +1,6 @@
 import React from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import {dateformatter} from '../formatters'
+import {filesizeformatter, dateformatter} from '../formatters'
 import {DateTimeFormatter} from '../mgcomponents/ReactFormatters'
 
 export class ActionsFichiers {
@@ -228,7 +228,7 @@ export class AffichageFichier extends React.Component {
             </div>
             <div className="w3-row-padding">
               <div className="w3-col m3 label">Taille : </div>
-              <div className="w3-col m9 champ">{ (fichierCourant.taille / (1024*1024)).toFixed(2) } MB ({fichierCourant.taille} octets)</div>
+              <div className="w3-col m9 champ">{filesizeformatter.format(fichierCourant.taille)} ({fichierCourant.taille} octets)</div>
             </div>
             <div className="w3-row-padding">
               <div className="w3-col m3 label">Sécurité :</div>
@@ -365,7 +365,6 @@ export class AffichageFichier extends React.Component {
     let affichageVersions = [];
     versions.forEach(version=>{
       let dateVersion = dateformatter.format_datetime(version.date_version);
-      let taille = (version.taille/(1024*1024)).toFixed(2);
       affichageVersions.push(
         <div key={version.fuuid} className="ligne-version-fichier">
           <div key={'1'+version.fuuid} className="w3-row-padding row-donnees">
@@ -394,7 +393,7 @@ export class AffichageFichier extends React.Component {
           <div key={'2'+version.fuuid} className="w3-row-padding row-donnees">
             <div className="w3-col m10"></div>
             <div className="w3-col m2">
-              {taille} MB
+              {filesizeformatter.format(version.taille)}
             </div>
           </div>
         </div>

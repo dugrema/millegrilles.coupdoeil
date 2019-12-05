@@ -139,6 +139,11 @@ path {
 }
 
 /* S'assurer de prendre la place pour les DIV vide dans un tableau */
+.entete-liste > div {
+  background-color: light-grey;
+  font-weight: bolder;
+}
+
 .row-donnees > DIV {
   min-height: 1px;
 }
