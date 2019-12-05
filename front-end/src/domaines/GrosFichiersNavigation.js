@@ -555,9 +555,9 @@ class SectionSommaireTorrent extends React.Component {
     sessionStats: null,
   }
 
-  componentDidMount() {
-    // Effectuer requete pour afficher etat torrent (transmission)
+  intervalRafraichissement = null;
 
+  rafraichirTorrents = () => {
     webSocketManager.transmettreRequete('requete.torrent.sommaire', {})
     .then( docsRecu => {
       console.log("Etat torrent:");
@@ -570,7 +570,16 @@ class SectionSommaireTorrent extends React.Component {
       console.error("Erreur reception sommaire torrents");
       console.error(err);
     });
+  }
 
+  componentDidMount() {
+    // Effectuer requete pour afficher etat torrent (transmission)
+    this.rafraichirTorrents();
+    this.intervalRafraichissement = setInterval(this.rafraichirTorrents, 15000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.intervalRafraichissement);
   }
 
   afficherStats() {
