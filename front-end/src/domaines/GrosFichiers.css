@@ -214,6 +214,7 @@ button.button-2x {
 span.etiquette {
   background: #F0F8FF;
   margin-right: 1.0em;
+  white-space: nowrap;  
 }
 
 div.commentaire {

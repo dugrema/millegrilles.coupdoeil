@@ -6,6 +6,7 @@ import {ActionsFavoris, ActionsUpload, ActionsDownload} from './GrosFichiersActi
 import {Carnet, ActionsCarnet, AffichageCarnet} from './GrosFichiersCarnet';
 import {ActionsFichiers, AffichageFichier, ListeFichiers} from './GrosFichiersFichiers';
 import {ActionsCollections, AffichageCollections, AffichageCollectionFigee} from './GrosFichiersCollections';
+import {ActionsRecherche, AfficherRecherche} from './GrosFichiersRecherche';
 
 // Composants React GrosFichiers
 // import {GrosFichierAfficherPopup} from './GrosFichiersPopups';
@@ -55,6 +56,7 @@ export class GrosFichiers extends React.Component {
     this.actionsCarnet = new ActionsCarnet(this);
     this.actionsFichiers = new ActionsFichiers(this, webSocketManager);
     this.actionsCollections = new ActionsCollections(this, webSocketManager);
+    this.actionsRecherche = new ActionsRecherche(this, webSocketManager);
 
     // Configuration statique du composant:
     //   subscriptions: Le nom des routing keys qui vont etre ecoutees
@@ -304,7 +306,12 @@ export class GrosFichiers extends React.Component {
     } else if(this.state.afficherRecherche) {
       titreEntete = 'Recherche';
       affichagePrincipal = (
-        <p>Recherche ... a faire ...</p>
+        <AfficherRecherche
+          carnet={this.state.carnet}
+          actionsCarnet={this.actionsCarnet}
+          actionsNavigation={this.actionsNavigation}
+          actionsRecherche={this.actionsRecherche}
+          />
       );
     } else if (this.state.fichierCourant) {
       // AFficher un fichier

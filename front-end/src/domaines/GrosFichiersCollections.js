@@ -376,7 +376,7 @@ export class AffichageCollections extends React.Component {
       collectionCourante.etiquettes.forEach(etiquette => {
         etiquettes.push(
           <span key={etiquette} className="etiquette">
-            {etiquette}
+            <li className="fa fa-tag"/> {etiquette}
             <button onClick={this.supprimerEtiquette} value={etiquette}>
               <li className="fa fa-remove"/>
             </button>
