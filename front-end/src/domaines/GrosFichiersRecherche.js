@@ -48,10 +48,13 @@ export class AfficherRecherche extends React.Component {
   }
 
   chercher = event => {
-    this.props.actionsRecherche.chercher({texte: this.state.rechercheString})
-    .then(docs=>{
-      this.setState({resultats: docs});
-    });
+    const texte = this.state.rechercheString;
+    if(texte && texte.length > 0) {
+      this.props.actionsRecherche.chercher({texte})
+      .then(docs=>{
+        this.setState({resultats: docs});
+      });
+    }
   }
 
   ouvrirDocument = event => {
@@ -64,7 +67,7 @@ export class AfficherRecherche extends React.Component {
 
     var affichageResultats = null;
     if(listeResultats) {
-      const resultats = [];
+      var resultats = [];
       listeResultats.forEach(resultat => {
         const typeResultat = resultat['_mg-libelle'];
 
