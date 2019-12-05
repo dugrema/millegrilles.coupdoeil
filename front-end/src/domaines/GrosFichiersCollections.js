@@ -136,15 +136,6 @@ export class ActionsCollections {
     return this.webSocketManager.transmettreTransaction(domaine, transaction);
   }
 
-  figerCollection(collectionUuid) {
-    console.debug("Figer la collection " + collectionUuid);
-    let domaine = 'millegrilles.domaines.GrosFichiers.figerCollection';
-    let transaction = {
-        uuid: collectionUuid,
-    }
-    return this.webSocketManager.transmettreRequete(domaine, transaction);
-  }
-
   requeteTorrents(listeHashstrings) {
     return this.webSocketManager.transmettreRequete('requete.torrent.etat', {hashstrings: listeHashstrings})
     .then( docsRecu => {
