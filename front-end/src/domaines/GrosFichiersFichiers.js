@@ -60,6 +60,7 @@ export class AffichageFichier extends React.Component {
 
   state = {
     commentaires: null,
+    nouvelleEtiquette: '',
   }
 
   supprimer = event => {
@@ -115,6 +116,20 @@ export class AffichageFichier extends React.Component {
     })
 
     this.props.actionsFichiers.changerEtiquettes(this.props.fichierCourant.uuid, nouvelleListeEtiquettes);
+  }
+
+  changerNouvelleEtiquette = event => {
+    let nouvelleEtiquette = event.currentTarget.value;
+    this.setState({nouvelleEtiquette});
+  }
+
+  ajouterNouvelleEtiquette = event => {
+    const nouvelleListeEtiquettes = [
+      ...this.props.fichierCourant.etiquettes,
+      this.state.nouvelleEtiquette
+    ];
+    this.props.actionsFichiers.changerEtiquettes(this.props.fichierCourant.uuid, nouvelleListeEtiquettes);
+    this.setState({nouvelleEtiquette: ''});
   }
 
   // Verifier si on peut resetter les versions locales des proprietes editees.
@@ -290,7 +305,7 @@ export class AffichageFichier extends React.Component {
 
             <div className="w3-rowpadding">
               <div className="w3-col m11">
-                <h2><i className="fa fa-tags"/> Étiquettes</h2>
+                <h2><i className="fa fa-tags"/> Étiquettes et commentaires</h2>
               </div>
               <div className="w3-col m1">
                 {boutonFavori}
@@ -305,6 +320,16 @@ export class AffichageFichier extends React.Component {
 
             <div className="w3-rowpadding">
               <div className="w3-col m12">
+                <label>Ajouter une étiquette : </label>
+                <input type="text" onChange={this.changerNouvelleEtiquette} value={this.state.nouvelleEtiquette}/>
+                <button onClick={this.ajouterNouvelleEtiquette}>
+                  <i className="fa fa-plus"/>
+                </button>
+              </div>
+            </div>
+
+            <div className="w3-rowpadding">
+              <div className="w3-col m12 commentaire">
                 <TextareaAutosize
                   name="commentaires"
                   className={"autota-width-max editable " + cssEdition}
