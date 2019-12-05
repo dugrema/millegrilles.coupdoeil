@@ -44,6 +44,15 @@ export class ActionsFichiers {
     return this.webSocketManager.transmettreTransaction(domaine, transaction);
   }
 
+  changerEtiquettes = (uuid, etiquettes) => {
+    let domaine = 'millegrilles.domaines.GrosFichiers.changerEtiquettesFichier';
+    let transaction = {
+        uuid: uuid,
+        etiquettes,
+    }
+    return this.webSocketManager.transmettreTransaction(domaine, transaction);
+  }
+
 }
 
 // Affichage d'un fichier avec toutes ses versions
@@ -93,6 +102,19 @@ export class AffichageFichier extends React.Component {
     let dataset = event.currentTarget.dataset;
     console.debug("Toggle selection " + uuid);
     this.props.actionsCarnet.toggle(uuid, {...dataset});
+  }
+
+  supprimerEtiquette = event => {
+    let etiquetteASupprimer = event.currentTarget.value;
+
+    const nouvelleListeEtiquettes = [];
+    this.props.fichierCourant.etiquettes.forEach(etiquette=>{
+      if(etiquette !== etiquetteASupprimer) {
+        nouvelleListeEtiquettes.push(etiquette);
+      }
+    })
+
+    this.props.actionsFichiers.changerEtiquettes(this.props.fichierCourant.uuid, nouvelleListeEtiquettes);
   }
 
   // Verifier si on peut resetter les versions locales des proprietes editees.
@@ -247,6 +269,20 @@ export class AffichageFichier extends React.Component {
       );
     }
 
+    let etiquettes = [];
+    if(fichierCourant.etiquettes) {
+      fichierCourant.etiquettes.forEach(etiquette => {
+        etiquettes.push(
+          <span key={etiquette} className="etiquette">
+            {etiquette}
+            <button onClick={this.supprimerEtiquette} value={etiquette}>
+              <li className="fa fa-remove"/>
+            </button>
+          </span>
+        );
+      })
+    }
+
     let commentaires = (
       <div className="w3-card w3-round w3-white">
         <div className="w3-container w3-padding">
@@ -258,6 +294,12 @@ export class AffichageFichier extends React.Component {
               </div>
               <div className="w3-col m1">
                 {boutonFavori}
+              </div>
+            </div>
+
+            <div className="w3-rowpadding">
+              <div className="w3-col m12">
+                {etiquettes}
               </div>
             </div>
 

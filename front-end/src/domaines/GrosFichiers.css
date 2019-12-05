@@ -210,3 +210,8 @@ button.button-2x {
 .icone-gauche {
   padding-right: 0.5em;
 }
+
+span.etiquette {
+  background: #F0F8FF;
+  margin-right: 1.0em;
+}
