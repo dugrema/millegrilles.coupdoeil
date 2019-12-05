@@ -113,6 +113,15 @@ export class ActionsCollections {
     }
   }
 
+  changerEtiquettes = (uuid, etiquettes) => {
+    let domaine = 'millegrilles.domaines.GrosFichiers.changerEtiquettesCollection';
+    let transaction = {
+        uuid: uuid,
+        etiquettes,
+    }
+    return this.webSocketManager.transmettreTransaction(domaine, transaction);
+  }
+
   retirerFichiersCollection(collectionUuid, listeUuids) {
     console.debug("Ajouter documents du carnet a collection " + collectionUuid);
     console.debug(listeUuids);
@@ -174,6 +183,7 @@ export class AffichageCollections extends React.Component {
     pageCourante: '1',
     elementsParPage: 10,
     commentaires: null,
+    nouvelleEtiquette: '',
   }
 
   ajouterCarnet = event => {
@@ -223,6 +233,33 @@ export class AffichageCollections extends React.Component {
     })
   }
 
+  supprimerEtiquette = event => {
+    let etiquetteASupprimer = event.currentTarget.value;
+
+    const nouvelleListeEtiquettes = [];
+    this.props.collectionCourante.etiquettes.forEach(etiquette=>{
+      if(etiquette !== etiquetteASupprimer) {
+        nouvelleListeEtiquettes.push(etiquette);
+      }
+    })
+
+    this.props.actionsCollections.changerEtiquettes(this.props.collectionCourante.uuid, nouvelleListeEtiquettes);
+  }
+
+  changerNouvelleEtiquette = event => {
+    let nouvelleEtiquette = event.currentTarget.value;
+    this.setState({nouvelleEtiquette});
+  }
+
+  ajouterNouvelleEtiquette = event => {
+    const nouvelleListeEtiquettes = [
+      ...this.props.collectionCourante.etiquettes,
+      this.state.nouvelleEtiquette
+    ];
+    this.props.actionsCollections.changerEtiquettes(this.props.collectionCourante.uuid, nouvelleListeEtiquettes);
+    this.setState({nouvelleEtiquette: ''});
+  }
+
   // Verifier si on peut resetter les versions locales des proprietes editees.
   componentDidUpdate(prevProps) {
 
@@ -242,30 +279,6 @@ export class AffichageCollections extends React.Component {
     let listeDocuments = [];
     let uuid = this.props.collectionCourante.uuid;
 
-    let boutonFavori;
-    if(this.props.favorisParUuid[uuid]) {
-      boutonFavori = (
-        <button
-          title="Favori"
-          value={uuid}
-          onClick={this.props.actionsFavoris.supprimerFavori}>
-            <span className="fa-stack favori-actif">
-              <i className='fa fa-star fa-stack-1x fond'/>
-              <i className='fa fa-star-o fa-stack-1x'/>
-            </span>
-        </button>
-      );
-    } else {
-      boutonFavori = (
-        <button
-          title="Favori"
-          value={uuid}
-          onClick={this.props.actionsFavoris.ajouterFavori}>
-            <i className="fa fa-star-o favori-inactif"/>
-        </button>
-      );
-    }
-
     return(
       <div className="w3-card w3-round w3-white w3-card">
         <div className="w3-container w3-padding">
@@ -280,7 +293,6 @@ export class AffichageCollections extends React.Component {
                   <i className="fa fa-thumb-tack"/>
                 </button>
               </span>
-              {boutonFavori}
               <span className="bouton-fa">
                 <button title="Coller carnet" onClick={this.ajouterCarnet}>
                   <i className="fa fa-clipboard">
@@ -324,28 +336,101 @@ export class AffichageCollections extends React.Component {
       cssEdition = 'edition-en-cours'
     }
 
-    let commentaires = (
-      <div className="w3-card w3-round w3-white">
-        <div className="w3-container w3-padding">
-          <div className="formulaire">
+    let boutonFavori;
+    if(this.props.favorisParUuid[collectionCourante.uuid]) {
+      boutonFavori = (
+        <button
+          title="Favori"
+          value={collectionCourante.uuid}
+          onClick={this.props.actionsFavoris.supprimerFavori}>
+            <span className="fa-stack favori-actif">
+              <i className='fa fa-star fa-stack-1x fond'/>
+              <i className='fa fa-star-o fa-stack-1x'/>
+            </span>
+        </button>
+      );
+    } else {
+      boutonFavori = (
+        <button
+          title="Favori"
+          value={collectionCourante.uuid}
+          onClick={this.props.actionsFavoris.ajouterFavori}>
+            <i className="fa fa-star-o favori-inactif"/>
+        </button>
+      );
+    }
 
-            <div className="w3-col m12">
-              <TextareaAutosize
-                name="commentaires"
-                className={"autota-width-max editable " + cssEdition}
-                onChange={this.editerCommentaire}
-                onBlur={this.appliquerCommentaire}
-                value={this.state.commentaires || collectionCourante.commentaires || ''}
-                placeholder="Ajouter un commentaire ici..."
-                />
-            </div>
-
-          </div>
+    let titre = (
+      <div className="w3-rowpadding">
+        <div className="w3-col m11">
+          <h2><i className="fa fa-tags"/> Étiquettes et commentaires</h2>
+        </div>
+        <div className="w3-col m1">
+          {boutonFavori}
         </div>
       </div>
     );
 
-    return commentaires;
+    let etiquettes = [];
+    if(collectionCourante.etiquettes) {
+      collectionCourante.etiquettes.forEach(etiquette => {
+        etiquettes.push(
+          <span key={etiquette} className="etiquette">
+            {etiquette}
+            <button onClick={this.supprimerEtiquette} value={etiquette}>
+              <li className="fa fa-remove"/>
+            </button>
+          </span>
+        );
+      })
+    };
+
+    let ajouterEtiquette = (
+      <div className="w3-rowpadding">
+        <div className="w3-col m12">
+          <label>Ajouter une étiquette : </label>
+          <input type="text" onChange={this.changerNouvelleEtiquette} value={this.state.nouvelleEtiquette}/>
+          <button onClick={this.ajouterNouvelleEtiquette}>
+            <i className="fa fa-plus"/>
+          </button>
+        </div>
+      </div>
+    );
+
+    let commentaires = (
+      <div className="w3-rowpadding">
+        <div className="w3-col m12 commentaire">
+          <TextareaAutosize
+            name="commentaires"
+            className={"autota-width-max editable " + cssEdition}
+            onChange={this.editerCommentaire}
+            onBlur={this.appliquerCommentaire}
+            value={this.state.commentaires || collectionCourante.commentaires || ''}
+            placeholder="Ajouter un commentaire ici..."
+            />
+        </div>
+      </div>
+    );
+
+    return (
+      <div className="w3-card w3-round w3-white w3-card">
+        <div className="w3-container w3-padding">
+          <div className="formulaire">
+            {titre}
+
+            <div className="w3-rowpadding">
+              <div className="w3-col m12">
+                {etiquettes}
+              </div>
+            </div>
+
+            {ajouterEtiquette}
+
+            {commentaires}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   genererListeFichiers() {
@@ -435,12 +520,6 @@ export class AffichageCollections extends React.Component {
     return (
       <section className="w3-card_liste_BR">
 
-        <div className="w3-card w3-round w3-white w3-card">
-          <div className="w3-container w3-padding">
-            <h2><i className="fa fa-tags"/> Etiquettes</h2>
-          </div>
-        </div>
-
         {this.renderCommentaire()}
 
         {this.renderListeDocuments()}
@@ -470,41 +549,14 @@ export class AffichageCollectionFigee extends React.Component {
     let listeDocuments = [];
     let uuid = this.props.collectionCourante.uuid;
 
-    let boutonFavori;
-    if(this.props.favorisParUuid[uuid]) {
-      boutonFavori = (
-        <button
-          title="Favori"
-          value={uuid}
-          onClick={this.props.actionsFavoris.supprimerFavori}>
-            <span className="fa-stack favori-actif">
-              <i className='fa fa-star fa-stack-1x fond'/>
-              <i className='fa fa-star-o fa-stack-1x'/>
-            </span>
-        </button>
-      );
-    } else {
-      boutonFavori = (
-        <button
-          title="Favori"
-          value={uuid}
-          onClick={this.props.actionsFavoris.ajouterFavori}>
-            <i className="fa fa-star-o favori-inactif"/>
-        </button>
-      );
-    }
-
     return(
       <div className="w3-card w3-round w3-white w3-card">
         <div className="w3-container w3-padding">
 
           <div className="w3-rowpadding">
 
-            <h2 className="w3-col m8"><i className="fa fa-thumb-tack"/> Contenu</h2>
+            <h2 className="w3-col m12"><i className="fa fa-thumb-tack"/> Contenu</h2>
 
-            <div className="w3-col m4 boutons-actions-droite">
-              {boutonFavori}
-            </div>
           </div>
 
           <div className="liste-fichiers">
@@ -529,21 +581,71 @@ export class AffichageCollectionFigee extends React.Component {
       cssEdition = 'edition-en-cours'
     }
 
-    let commentaires = (
-      <div className="w3-card w3-round w3-white">
-        <div className="w3-container w3-padding">
-          <div className="formulaire">
+    let boutonFavori;
+    if(this.props.favorisParUuid[collectionCourante.uuid]) {
+      boutonFavori = (
+        <button
+          title="Favori"
+          value={collectionCourante.uuid}
+          onClick={this.props.actionsFavoris.supprimerFavori}>
+            <span className="fa-stack favori-actif">
+              <i className='fa fa-star fa-stack-1x fond'/>
+              <i className='fa fa-star-o fa-stack-1x'/>
+            </span>
+        </button>
+      );
+    } else {
+      boutonFavori = (
+        <button
+          title="Favori"
+          value={collectionCourante.uuid}
+          onClick={this.props.actionsFavoris.ajouterFavori}>
+            <i className="fa fa-star-o favori-inactif"/>
+        </button>
+      );
+    }
 
-            <div className="w3-col m12">
-              {collectionCourante.commentaires}
-            </div>
-
-          </div>
+    let titre = (
+      <div className="w3-rowpadding">
+        <div className="w3-col m11">
+          <h2><i className="fa fa-tags"/> Étiquettes et commentaires</h2>
+        </div>
+        <div className="w3-col m1">
+          {boutonFavori}
         </div>
       </div>
     );
 
-    return commentaires;
+    let etiquettes = [];
+    if(collectionCourante.etiquettes) {
+      collectionCourante.etiquettes.forEach(etiquette => {
+        etiquettes.push(
+          <span key={etiquette} className="etiquette">
+            {etiquette}
+          </span>
+        );
+      })
+    };
+
+    let commentaires = (
+      <div className="w3-rowpadding">
+        <div className="w3-col m12 commentaire">
+            {collectionCourante.commentaires}
+        </div>
+      </div>
+    );
+
+    return (
+      <div className="w3-card w3-round w3-white w3-card">
+        <div className="w3-container w3-padding">
+          <div className="formulaire">
+            {titre}
+            {etiquettes}
+            {commentaires}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   genererListeFichiers() {
@@ -629,12 +731,6 @@ export class AffichageCollectionFigee extends React.Component {
   render() {
     return (
       <section className="w3-card_liste_BR">
-
-        <div className="w3-card w3-round w3-white w3-card">
-          <div className="w3-container w3-padding">
-            <h2><i className="fa fa-tags"/> Etiquettes</h2>
-          </div>
-        </div>
 
         {this.renderCommentaire()}
 
@@ -760,7 +856,7 @@ class AffichageListeCollectionsFigees extends React.Component {
       <div className="w3-card w3-round w3-white w3-card">
         <div className="w3-container w3-padding">
 
-          <h2><i className="fa fa-thumb-tack"/>Collections figees</h2>
+          <h2><i className="fa fa-thumb-tack"/> Collections figees</h2>
 
           <div>
             {this.afficherListe()}
