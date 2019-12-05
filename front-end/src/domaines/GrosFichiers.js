@@ -343,6 +343,24 @@ export class GrosFichiers extends React.Component {
           actionsNavigation={this.actionsNavigation}
          />
       );
+
+    } else if(this.state.collectionFigeeCourante){
+
+      documentuuid = this.state.collectionFigeeCourante.uuid;
+      titreEntete = this.state.collectionFigeeCourante.nom;
+      if(!titreEntete) titreEntete = '';
+
+      affichagePrincipal = (
+        <AffichageCollections
+          collectionCourante={this.state.collectionFigeeCourante}
+          favorisParUuid={this.state.favorisParUuid}
+          actionsCollections={this.actionsCollections}
+          actionsDownload={this.actionsDownload}
+          actionsFavoris={this.actionsFavoris}
+          actionsNavigation={this.actionsNavigation}
+         />
+      );
+
     } else if(this.state.listeCourante){
       // Afficher une liste
       // affichagePrincipal = (<Liste />);

@@ -14,47 +14,51 @@ export class ActionsNavigation {
     this.reactModule = reactModule;
   }
 
-  retourAccueil = () => {
-    console.debug("Afficher Accueil");
+  // Reset tous les elements qui ont un impact sur la navigation
+  // Utiliser cette methode dans setState() lors d'un changement d'ecran.
+  _resetNavigation(ajoutStackNavigation) {
 
     let stackNavigation = this.reactModule.state.stackNavigation.slice(-50);
-    stackNavigation.push('Accueil');
+    if(ajoutStackNavigation) {
+      stackNavigation.push(ajoutStackNavigation);
+    }
 
-    this.reactModule.setState({
-      titreEntete: 'GrosFichiers',
-
+    return {
       listeCourante: null,
       collectionCourante: null,
+      collectionFigeeCourante: null,
       fichierCourant: null,
       afficherRecherche: false,
       afficherCarnet: false,
-      stackNavigation: stackNavigation,
+
+      stackNavigation,
+    };
+  }
+
+  retourAccueil = () => {
+    console.debug("Afficher Accueil");
+
+    this.reactModule.setState({
+      ...this._resetNavigation('Accueil'),
+      titreEntete: 'GrosFichiers',
     })
   }
 
   afficherRecherche = () => {
     console.debug("Afficher Recherche");
 
-    let stackNavigation = this.reactModule.state.stackNavigation.slice(-50);
-    stackNavigation.push('Recherche');
-
     this.reactModule.setState({
+      ...this._resetNavigation('Recherche'),
       afficherRecherche: true,
-      afficherCarnet: false,
-      stackNavigation: stackNavigation,
     })
   }
 
   afficherCarnet = () => {
     console.debug("Afficher Carnet");
 
-    let stackNavigation = this.reactModule.state.stackNavigation.slice(-50);
-    stackNavigation.push('Carnet');
-
     this.reactModule.setState({
+      ...this._resetNavigation('Carnet'),
       afficherCarnet: true,
-      afficherRecherche: false,
-      stackNavigation: stackNavigation,
     })
   }
 
@@ -62,13 +66,17 @@ export class ActionsNavigation {
     let uuid = event.currentTarget.value;
     console.debug("Afficher Collection " + uuid);
 
-    let stackNavigation = this.reactModule.state.stackNavigation.slice(-50);
-    stackNavigation.push(uuid);
+    this.reactModule.setState({
+      ...this._resetNavigation(uuid),
+    })
+  }
+
+  afficherCollectionFigee = event => {
+    let uuid = event.currentTarget.value;
+    console.debug("Afficher Collection Figee " + uuid);
 
     this.reactModule.setState({
-      afficherCarnet: false,
-      afficherRecherche: false,
-      stackNavigation: stackNavigation,
+      ...this._resetNavigation(uuid),
     })
   }
 
@@ -98,22 +106,16 @@ export class ActionsNavigation {
   }
 
   afficherDocument(documentCharge) {
-    let stackNavigation = this.reactModule.state.stackNavigation.slice(-50);
-
     let etat = {
-      afficherRecherche: false,
-      afficherCarnet: false,
-      collectionCourante: null,
-      fichierCourant: null,
-      stackNavigation: stackNavigation,
+      ...this._resetNavigation(),
     };
 
     if(documentCharge && documentCharge['_mg-libelle'] === 'fichier') {
       etat['fichierCourant'] = documentCharge;
-      stackNavigation.push(documentCharge.uuid);
+      etat.stackNavigation.push(documentCharge.uuid);
     } else if(documentCharge && documentCharge['_mg-libelle'] === 'collection') {
       etat['collectionCourante'] = documentCharge;
-      stackNavigation.push(documentCharge.uuid);
+      etat.stackNavigation.push(documentCharge.uuid);
     } else {
       console.error("Erreur chargement: fichier non trouve");
       etat = {}; // On ne change rien

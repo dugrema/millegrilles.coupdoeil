@@ -453,6 +453,197 @@ export class AffichageCollections extends React.Component {
   }
 }
 
+export class AffichageCollectionFigee extends React.Component {
+
+  state = {
+    pageCourante: '1',
+    elementsParPage: 10,
+  }
+
+  changerPage = event => {
+    let page = event.currentTarget.value;
+    this.setState({pageCourante: page});
+  }
+
+  renderListeDocuments() {
+    let listeDocuments = [];
+    let uuid = this.props.collectionCourante.uuid;
+
+    let boutonFavori;
+    if(this.props.favorisParUuid[uuid]) {
+      boutonFavori = (
+        <button
+          title="Favori"
+          value={uuid}
+          onClick={this.props.actionsFavoris.supprimerFavori}>
+            <span className="fa-stack favori-actif">
+              <i className='fa fa-star fa-stack-1x fond'/>
+              <i className='fa fa-star-o fa-stack-1x'/>
+            </span>
+        </button>
+      );
+    } else {
+      boutonFavori = (
+        <button
+          title="Favori"
+          value={uuid}
+          onClick={this.props.actionsFavoris.ajouterFavori}>
+            <i className="fa fa-star-o favori-inactif"/>
+        </button>
+      );
+    }
+
+    return(
+      <div className="w3-card w3-round w3-white w3-card">
+        <div className="w3-container w3-padding">
+
+          <div className="w3-rowpadding">
+
+            <h2 className="w3-col m8">Contenu</h2>
+
+            <div className="w3-col m4 boutons-actions-droite">
+              {boutonFavori}
+            </div>
+          </div>
+
+          <div className="liste-fichiers">
+            {this.genererListeFichiers()}
+          </div>
+
+          <div className="bas-page">
+            <div className="w3-col m12 boutons-pages">
+              {this.renderBoutonsPages()}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  renderCommentaire() {
+    let collectionCourante = this.props.collectionCourante;
+    let cssEdition = '';
+    if(this.state.commentaires) {
+      cssEdition = 'edition-en-cours'
+    }
+
+    let commentaires = (
+      <div className="w3-card w3-round w3-white">
+        <div className="w3-container w3-padding">
+          <div className="formulaire">
+
+            <div className="w3-col m12">
+              {collectionCourante.commentaires}
+            </div>
+
+          </div>
+        </div>
+      </div>
+    );
+
+    return commentaires;
+  }
+
+  genererListeFichiers() {
+    let fichiersRendered = [];
+
+    if( this.props.collectionCourante.documents ) {
+
+      let premierElem = (this.state.pageCourante-1) * this.state.elementsParPage;
+      let dernierElem = premierElem + this.state.elementsParPage; // (+1)
+
+      let selection = this.props.collectionCourante.documents;
+
+      // Creer une liste de fichiers/collections et la trier
+      let fichiers = [];
+      for(let uuid in selection) {
+        let contenu = selection[uuid];
+        fichiers.push({...contenu, uuid});
+      }
+      fichiers.sort((a,b)=>{
+        let nom_a = a['nom'];
+        let nom_b = b['nom'];
+        if(nom_a === nom_b) return 0;
+        if(!nom_a) return 1;
+        return nom_a.localeCompare(nom_b);
+      })
+
+      for(let idx = premierElem; idx < dernierElem && idx < fichiers.length; idx++) {
+        let fichier = fichiers[idx];
+
+        let icone = (<i className="fa fa-file-o icone-gauche"/>);
+        if(fichier['_mg-libelle'] === 'collection') {
+          icone = (<i className="fa fa-folder-o"/>);
+        }
+
+        fichiersRendered.push(
+          <div key={fichier.uuid} className="w3-row-padding tableau-fichiers">
+
+            <div className="w3-col m11">
+              {icone}
+              <button className="aslink" onClick={this.props.actionsNavigation.chargeruuid} value={fichier.uuid}>
+                {fichier.nom}
+              </button>
+            </div>
+
+            <div className="w3-col m1">
+              <button
+                title="Telecharger"
+                value={fichier.uuid}
+                onClick={this.props.actionsDownload.telechargerEvent}>
+                  <i className="fa fa-download"/>
+              </button>
+            </div>
+
+          </div>
+        );
+      }
+    }
+
+    return fichiersRendered;
+  }
+
+  renderBoutonsPages() {
+    let boutonsPages = [];
+    if(this.props.collectionCourante.documents) {
+      let fichiers = this.props.collectionCourante.documents;
+      let nbPages = Math.ceil(Object.keys(fichiers).length / this.state.elementsParPage);
+
+      for(let page=1; page<=nbPages; page++) {
+        let cssCourante = '';
+        if(this.state.pageCourante === ''+page) {
+          cssCourante = 'courante';
+        }
+        boutonsPages.push(
+          <button key={page} onClick={this.changerPage} value={page} className={cssCourante}>
+            {page}
+          </button>
+        );
+      }
+    }
+    return boutonsPages;
+  }
+
+  render() {
+    return (
+      <section className="w3-card_liste_BR">
+
+        <div className="w3-card w3-round w3-white w3-card">
+          <div className="w3-container w3-padding">
+            <h2><i className="fa fa-tags"/> Etiquettes</h2>
+          </div>
+        </div>
+
+        {this.renderCommentaire()}
+
+        {this.renderListeDocuments()}
+
+      </section>
+    );
+  }
+}
+
 class AffichageListeCollectionsFigees extends React.Component {
 
   intervalRefresh = null;
