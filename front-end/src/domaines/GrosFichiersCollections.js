@@ -447,7 +447,8 @@ export class AffichageCollections extends React.Component {
 
         <AffichageListeCollectionsFigees
           collectionCourante={this.props.collectionCourante}
-          actionsCollections={this.props.actionsCollections}/>
+          actionsCollections={this.props.actionsCollections}
+          actionsNavigation={this.props.actionsNavigation}/>
       </section>
     );
   }
@@ -499,7 +500,7 @@ export class AffichageCollectionFigee extends React.Component {
 
           <div className="w3-rowpadding">
 
-            <h2 className="w3-col m8">Contenu</h2>
+            <h2 className="w3-col m8"><i className="fa fa-thumb-tack"/> Contenu</h2>
 
             <div className="w3-col m4 boutons-actions-droite">
               {boutonFavori}
@@ -738,7 +739,11 @@ class AffichageListeCollectionsFigees extends React.Component {
 
         liste.push(
           <div key={collectionFigee.uuid}>
-            <div>{dateformatter.format_datetime(collectionFigee.date)}</div>
+            <div>
+              <button className='aslink' value={collectionFigee.uuid} onClick={this.props.actionsNavigation.chargeruuid}>
+                {dateformatter.format_datetime(collectionFigee.date)}
+              </button>
+            </div>
             <div>{hashstring}</div>
             <div>{boutonsTorrent}</div>
           </div>

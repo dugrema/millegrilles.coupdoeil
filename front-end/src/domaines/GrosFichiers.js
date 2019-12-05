@@ -5,7 +5,7 @@ import webSocketManager from '../WebSocketManager';
 import {ActionsFavoris, ActionsUpload, ActionsDownload} from './GrosFichiersActions';
 import {Carnet, ActionsCarnet, AffichageCarnet} from './GrosFichiersCarnet';
 import {ActionsFichiers, AffichageFichier, ListeFichiers} from './GrosFichiersFichiers';
-import {ActionsCollections, AffichageCollections} from './GrosFichiersCollections';
+import {ActionsCollections, AffichageCollections, AffichageCollectionFigee} from './GrosFichiersCollections';
 
 // Composants React GrosFichiers
 // import {GrosFichierAfficherPopup} from './GrosFichiersPopups';
@@ -26,6 +26,7 @@ export class GrosFichiers extends React.Component {
 
       listeCourante: null,       // Liste a afficher (si pas null et fichier null)
       collectionCourante: null,  // Collection a afficher (si pas null et fichier null)
+      collectionFigeeCourante: null, // Collection figee a afficher
       fichierCourant: null,      // Fichier a afficher (si pas null)
 
       favoris: null,              // Document de favoris
@@ -351,7 +352,7 @@ export class GrosFichiers extends React.Component {
       if(!titreEntete) titreEntete = '';
 
       affichagePrincipal = (
-        <AffichageCollections
+        <AffichageCollectionFigee
           collectionCourante={this.state.collectionFigeeCourante}
           favorisParUuid={this.state.favorisParUuid}
           actionsCollections={this.actionsCollections}

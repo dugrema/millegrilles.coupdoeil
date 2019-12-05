@@ -16,6 +16,7 @@ export class ActionsNavigation {
 
   // Reset tous les elements qui ont un impact sur la navigation
   // Utiliser cette methode dans setState() lors d'un changement d'ecran.
+  // Param: l'id de la page a charger, sera ajoute a la stack 'Retour' pour navigation
   _resetNavigation(ajoutStackNavigation) {
 
     let stackNavigation = this.reactModule.state.stackNavigation.slice(-50);
@@ -84,10 +85,13 @@ export class ActionsNavigation {
     let uuid = event.currentTarget.value;
     let requete = {requetes: [
       {'filtre': {
-        '_mg-libelle': {'$in': ['fichier', 'collection']},
+        '_mg-libelle': {'$in': ['fichier', 'collection', 'collection.figee']},
         'uuid': uuid,
       }},
     ]}
+
+    console.debug("Requete document:");
+    console.debug(requete);
 
     this.reactModule.chargerDocument(requete)
     .then(docs=>{
@@ -105,7 +109,7 @@ export class ActionsNavigation {
 
   }
 
-  afficherDocument(documentCharge) {
+  afficherDocument = (documentCharge) => {
     let etat = {
       ...this._resetNavigation(),
     };
@@ -115,6 +119,9 @@ export class ActionsNavigation {
       etat.stackNavigation.push(documentCharge.uuid);
     } else if(documentCharge && documentCharge['_mg-libelle'] === 'collection') {
       etat['collectionCourante'] = documentCharge;
+      etat.stackNavigation.push(documentCharge.uuid);
+    } else if(documentCharge && documentCharge['_mg-libelle'] === 'collection.figee') {
+      etat['collectionFigeeCourante'] = documentCharge;
       etat.stackNavigation.push(documentCharge.uuid);
     } else {
       console.error("Erreur chargement: fichier non trouve");
