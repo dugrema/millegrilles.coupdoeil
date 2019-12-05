@@ -61,7 +61,7 @@ class CryptoEncryptPipe {
 
           // Encoder la cle secrete
           // Convertir buffer en bytes string pour node-forge
-          var keyByteString = forge.util.bytesToHex(key);
+          var keyByteString = key.toString('hex');
           var encryptedSecretKey = this.certificat.publicKey.encrypt(keyByteString, this.rsaAlgorithm, {
             md: forge.md.sha256.create(),
             mgf1: {
