@@ -2,6 +2,7 @@ import React from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import {filesizeformatter, dateformatter} from '../formatters'
 import {DateTimeFormatter} from '../mgcomponents/ReactFormatters'
+import {IconeFichier} from '../mgcomponents/IconeFichier'
 
 export class ActionsFichiers {
 
@@ -487,10 +488,7 @@ export class ActiviteFichiers extends React.Component {
           check = ((<i className="fa fa-square-o"/>));
         }
 
-        let icone = (<i className="fa fa-file-o"/>);
-        if(fichier['_mg-libelle'] === 'collection') {
-          icone = (<i className="fa fa-folder-o"/>);
-        }
+        let icone = <IconeFichier type={fichier['_mg-libelle']} securite={fichier.securite} />
 
         let dernierChangementRendered = (
           <DateTimeFormatter date={fichier['_mg-derniere-modification']}/>

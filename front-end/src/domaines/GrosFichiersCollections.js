@@ -1,6 +1,7 @@
 import React from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import {dateformatter} from '../formatters';
+import {IconeFichier} from '../mgcomponents/IconeFichier';
 
 export class ActionsCollections {
 
@@ -460,10 +461,27 @@ export class AffichageCollections extends React.Component {
       for(let idx = premierElem; idx < dernierElem && idx < fichiers.length; idx++) {
         let fichier = fichiers[idx];
 
-        let icone = (<i className="fa fa-file-o icone-gauche"/>);
-        if(fichier['_mg-libelle'] === 'collection') {
-          icone = (<i className="fa fa-folder-o"/>);
-        }
+        let icone = <IconeFichier type={fichier['_mg-libelle']} securite={fichier.securite} />
+
+        // fichier.securite.split('.')[1];
+        //
+        // let icone;
+        // if(fichier['_mg-libelle'] === 'collection') {
+        //   icone = (
+        //     <span className="fa-stack fa-1g">
+        //       <i className={"fa fa-file fa-stack-1x icone-gauche " + securitecss}/>
+        //       <i className={"fa fa-file-o fa-stack-1x icone-gauche"}/>
+        //     </span>
+        //   );
+        // } else if(fichier['_mg-libelle'] === 'collection') {
+        //   icone = (
+        //     <span className="fa-stack fa-1g">
+        //       <i className={"fa fa-folder fa-stack-1x icone-gauche " + securitecss}/>
+        //       <i className={"fa fa-folder-o fa-stack-1x icone-gauche"}/>
+        //     </span>
+        //   );
+        // }
+
 
         fichiersRendered.push(
           <div key={fichier.uuid} className="w3-row-padding tableau-fichiers">
@@ -675,10 +693,7 @@ export class AffichageCollectionFigee extends React.Component {
       for(let idx = premierElem; idx < dernierElem && idx < fichiers.length; idx++) {
         let fichier = fichiers[idx];
 
-        let icone = (<i className="fa fa-file-o icone-gauche"/>);
-        if(fichier['_mg-libelle'] === 'collection') {
-          icone = (<i className="fa fa-folder-o"/>);
-        }
+        let icone = <IconeFichier type={fichier['_mg-libelle']} securite={fichier.securite} />
 
         fichiersRendered.push(
           <div key={fichier.uuid} className="w3-row-padding tableau-fichiers">

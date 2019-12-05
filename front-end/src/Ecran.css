@@ -204,3 +204,37 @@ input.edition {
   color: #f5f7f8;
   background-color:#303e45;
 }
+
+/* Couleurs liees aux niveaux de securite */
+
+.secure {
+  color: 	#1E90FF;
+}
+
+i.secure {
+  color: #F0F8FF;
+}
+
+.protege {
+  color: green;
+}
+
+i.protege {
+  color: #8FBC8F;
+}
+
+.prive {
+  color: black;
+}
+
+i.prive {
+  color: #DCDCDC;
+}
+
+.public {
+  color: orange;
+}
+
+i.public {
+  color: #FFB6C1;
+}

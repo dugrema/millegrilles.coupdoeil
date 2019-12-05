@@ -68,6 +68,8 @@ class FileSizeFormatter {
   }
 }
 
+class IconeTypeFichier {}
+
 // Exports
 const dateformatter = new DateFormatter();
 const numberformatter = new NumberFormatter();
