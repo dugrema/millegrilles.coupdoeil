@@ -136,6 +136,45 @@ export class ActionsCollections {
     return this.webSocketManager.transmettreTransaction(domaine, transaction);
   }
 
+  figerCollection(collectionUuid) {
+    console.debug("Figer la collection " + collectionUuid);
+    let domaine = 'millegrilles.domaines.GrosFichiers.figerCollection';
+    let transaction = {
+        uuid: collectionUuid,
+    }
+    return this.webSocketManager.transmettreRequete(domaine, transaction);
+  }
+
+  requeteTorrents(listeHashstrings) {
+    return this.webSocketManager.transmettreRequete('requete.torrent.etat', {hashstrings: listeHashstrings})
+    .then( docsRecu => {
+      console.log("Etat torrents:");
+      console.log(docsRecu);
+
+      return docsRecu.torrents;
+    })
+    .catch( err => {
+      console.error("Erreur reception sommaire torrents");
+      console.error(err);
+    });
+  }
+
+  demarrerTorrent(uuidCollection) {
+    return this.webSocketManager.transmettreRequete('commande.torrent.seederTorrent', {uuid: uuidCollection})
+    .catch( err => {
+      console.error("Erreur demarrage torrents");
+      console.error(err);
+    });
+  }
+
+  arreterTorrents(listeHashstrings) {
+    return this.webSocketManager.transmettreRequete('commande.torrent.supprimer', {hashlist: listeHashstrings})
+    .catch( err => {
+      console.error("Erreur arret torrents");
+      console.error(err);
+    });
+  }
+
 }
 
 export class AffichageCollections extends React.Component {
@@ -416,13 +455,71 @@ export class AffichageCollections extends React.Component {
         {this.renderListeDocuments()}
 
         <AffichageListeCollectionsFigees
-          collectionCourante={this.props.collectionCourante}/>
+          collectionCourante={this.props.collectionCourante}
+          actionsCollections={this.props.actionsCollections}/>
       </section>
     );
   }
 }
 
 class AffichageListeCollectionsFigees extends React.Component {
+
+  intervalRefresh = null;
+
+  state = {
+    torrentsActifs: null,
+  }
+
+  demarrerTorrent = event => {
+    let uuidCollection = event.currentTarget.value;
+    this.props.actionsCollections.demarrerTorrent(uuidCollection)
+  }
+
+  arreterTorrent = event => {
+    let hashstring = event.currentTarget.value;
+    this.props.actionsCollections.arreterTorrents([hashstring])
+  }
+
+  rafraichirTorrents = () => {
+    console.log("Tenter de rafraichir info torrents")
+    if(this.props.collectionCourante && this.props.collectionCourante.figees) {
+      const collectionsFigees = this.props.collectionCourante.figees;
+
+      const listeHashstrings = [];
+      for(let idx in collectionsFigees) {
+        let coll = collectionsFigees[idx];
+        if(coll['torrent_hashstring']) {
+          listeHashstrings.push(coll['torrent_hashstring']);
+        }
+      }
+
+      this.props.actionsCollections.requeteTorrents(listeHashstrings)
+      .then(reponse=>{
+        console.log("Reponse torrents demandes");
+        console.log(reponse);
+
+        // Indexer par hashstring
+        const torrentsActifs = {};
+        for(let idx in reponse) {
+          let torrent = reponse[idx];
+          torrentsActifs[torrent.hashString] = torrent;
+        }
+
+        this.setState({torrentsActifs});
+      })
+    }
+  }
+
+  componentDidMount() {
+    console.debug("componentDidMount collections figees");
+    this.rafraichirTorrents();  // Rafraichir immediatement
+    this.intervalRefresh = setInterval(this.rafraichirTorrents, 10000);
+  }
+
+  componentWillUnmount() {
+    console.debug("componentWillUnmount collections figees");
+    clearInterval(this.intervalRefresh);
+  }
 
   afficherListe() {
     var liste = null;
@@ -432,10 +529,36 @@ class AffichageListeCollectionsFigees extends React.Component {
       liste = [];
       for(let idx in collectionsFigees) {
         let collectionFigee = collectionsFigees[idx];
+        let uuidCollection = collectionFigee.uuid;
+        let hashstring = collectionFigee['torrent_hashstring'];
+        var boutonsTorrent;
+
+        if(this.state.torrentsActifs) {
+          const torrentInfo = this.state.torrentsActifs[hashstring];
+
+          if(torrentInfo && torrentInfo.status == 6) { // Seeding
+            // Afficher bouton arret
+            boutonsTorrent = (
+              <button onClick={this.arreterTorrent} value={hashstring}>
+                <i className="fa fa-stop" />
+              </button>
+            );
+          } else {
+            // Afficher bouton demarrer
+            boutonsTorrent = (
+              <button onClick={this.demarrerTorrent} value={uuidCollection}>
+                <i className="fa fa-play" />
+              </button>
+            );
+          }
+        }
+
+
         liste.push(
           <div key={collectionFigee.uuid}>
             <div>{dateformatter.format_datetime(collectionFigee.date)}</div>
-            <div>{collectionFigee.torrent_hashstring}</div>
+            <div>{hashstring}</div>
+            <div>{boutonsTorrent}</div>
           </div>
         )
       }
