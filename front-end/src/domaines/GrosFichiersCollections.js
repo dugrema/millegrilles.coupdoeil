@@ -126,6 +126,15 @@ export class ActionsCollections {
     }
   }
 
+  figerCollection(collectionUuid) {
+    console.debug("Figer la collection " + collectionUuid);
+    let domaine = 'millegrilles.domaines.GrosFichiers.figerCollection';
+    let transaction = {
+        uuid: collectionUuid,
+    }
+    return this.webSocketManager.transmettreTransaction(domaine, transaction);
+  }
+
 }
 
 export class AffichageCollections extends React.Component {
@@ -163,12 +172,9 @@ export class AffichageCollections extends React.Component {
     if(commentaires !== this.props.collectionCourante.commentaires) {
       this.props.actionsCollections.modifierCommentaire(
         this.props.collectionCourante.uuid, commentaires)
-      .then(msg=>{
-        // Rien a faire.
-      })
       .catch(err=>{
         console.error("Erreur ajout commentaire");
-        console.err(err);
+        console.error(err);
         // Reset commentaire.
         this.setState({commentaires: null});
       })
@@ -176,6 +182,14 @@ export class AffichageCollections extends React.Component {
       // Rien a faire. Reset commentaire.
       this.setState({commentaires: null});
     }
+  }
+
+  figerCollection = event => {
+    this.props.actionsCollections.figerCollection(this.props.collectionCourante.uuid)
+    .catch(err=>{
+      console.error("Erreur figer collection");
+      console.error(err);
+    })
   }
 
   // Verifier si on peut resetter les versions locales des proprietes editees.
@@ -230,6 +244,11 @@ export class AffichageCollections extends React.Component {
             <h2 className="w3-col m8">Contenu</h2>
 
             <div className="w3-col m4 boutons-actions-droite">
+              <span className="bouton-fa">
+                <button title="Figer" onClick={this.figerCollection}>
+                  <i className="fa fa-thumb-tack"/>
+                </button>
+              </span>
               {boutonFavori}
               <span className="bouton-fa">
                 <button title="Coller carnet" onClick={this.ajouterCarnet}>
