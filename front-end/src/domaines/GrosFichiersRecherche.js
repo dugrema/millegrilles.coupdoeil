@@ -173,6 +173,9 @@ export class AfficherRecherche extends React.Component {
           <div className="w3-col m12">
             <input type="text" value={this.state.rechercheString} onChange={this.changerRecherche} />
           </div>
+          <div className="w3-col m12">
+            Note: la recherche fonctionne uniquement sur les étiquettes.
+          </div>
         </div>
 
         <div className="w3-row-padding recherche">
