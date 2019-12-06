@@ -395,75 +395,102 @@ export class FileUploadMonitor extends React.Component {
   preparerListeCourants() {
     let liste = [];
 
-    for(let idx in this.props.uploadsCourants) {
-      let valeur = this.props.uploadsCourants[idx];
+    var resultat = null;
 
-      let classeIcone = 'fa fa-upload';
-      if(idx === ''+0) {
-        classeIcone = 'fa fa-spinner fa-pulse';
+    if(this.props.uploadsCourants && this.props.uploadsCourants.length > 0 ) {
+      for(let idx in this.props.uploadsCourants) {
+        let valeur = this.props.uploadsCourants[idx];
+
+        let classeIcone = 'fa fa-upload';
+        if(idx === ''+0) {
+          classeIcone = 'fa fa-spinner fa-pulse';
+        }
+
+        liste.push(
+          <div key={valeur.path} className="w3-row-padding">
+            <div className="w3-col m1">
+              <i className={classeIcone}/>
+            </div>
+            <div className="w3-col m9">
+              {valeur.path}
+            </div>
+            <div className="w3-col m2">
+              {valeur.progres}%
+            </div>
+          </div>
+        );
       }
 
-      liste.push(
-        <div key={valeur.path} className="w3-row-padding">
-          <div className="w3-col m1">
-            <i className={classeIcone}/>
-          </div>
-          <div className="w3-col m9">
-            {valeur.path}
-          </div>
-          <div className="w3-col m2">
-            {valeur.progres}%
-          </div>
+      resultat = (
+        <div>
+          <h2>Uploads en cours</h2>
+          {liste}
         </div>
       );
     }
 
-    return liste;
+    return resultat;
   }
 
   preparerListeCompletes() {
     let liste = [];
 
-    for(let idx in this.props.uploadsCompletes) {
-      let valeur = this.props.uploadsCompletes[idx];
+    var resultat = null;
 
-      let classeIcone = 'fa fa-check';
-      //if( erreur ) {
-      //  classeIcone = 'fa fa-window-close error';
-      //}
+    if(this.props.uploadsCompletes && this.props.uploadsCompletes.length > 0) {
+      for(let idx in this.props.uploadsCompletes) {
+        let valeur = this.props.uploadsCompletes[idx];
 
-      liste.push(
-        <div key={valeur.path} className="w3-row-padding">
-          <div className="w3-col m1">
-            <i className={classeIcone}/>
+        console.log("Valeur upload complete: ");
+        console.log(valeur);
+
+        let classeIcone = 'fa fa-check succes';
+        let progres = '100 %';
+        if( valeur.state === 'echec' ) {
+          classeIcone = 'fa fa-window-close error';
+          progres = 'N/A';
+        }
+
+        liste.push(
+          <div key={valeur.path} className="w3-row-padding">
+            <div className="w3-col m1">
+              <i className={classeIcone}/>
+            </div>
+            <div className="w3-col m9">
+              {valeur.path}
+            </div>
+            <div className="w3-col m2">
+              {progres}
+            </div>
           </div>
-          <div className="w3-col m9">
-            {valeur.path}
+        );
+      }
+
+      resultat = (
+        <div>
+          <div className="w3-container">
+            <div className="w3-col m10">
+              <h2>Uploads completes</h2>
+            </div>
+            <div className="w3-col m2">
+              <button onClick={this.props.actionsUpload.clearUploadsCompletes}>Clear</button>
+            </div>
           </div>
-          <div className="w3-col m2">
-            {valeur.progres}%
-          </div>
+
+          {liste}
+
         </div>
       );
     }
 
-    return (
-      <div>
-        <div>
-          <button onClick={this.props.actionsUpload.clearUploadsCompletes}>Clear</button>
-          </div>
-        {liste}
-      </div>
-    );
+    return resultat;
   }
 
   render() {
     return(
       <div className="w3-card w3-round w3-white">
         <div className="w3-container w3-padding">
-          <h2>Uploads completes</h2>
           {this.preparerListeCompletes()}
-          <h2>Uploads en cours</h2>
           {this.preparerListeCourants()}
         </div>
       </div>

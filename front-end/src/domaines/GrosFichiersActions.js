@@ -206,8 +206,6 @@ export class ActionsUpload {
     console.debug("Upload termine");
     console.debug(msg);
 
-    // Mettre timer pour donner 30 secondes au backend pour finir le traitement,
-    // sans quoi on considere le fichier incomplet avec erreur au back-end.
     let uploadComplete = {...this.reactModule.state.uploadsCourants[0]};
     uploadComplete.state = msg.status;
 
@@ -267,12 +265,19 @@ export class ActionsUpload {
         this.uploadTermine(msg);
       })
       .catch(err=>{
-        console.error("Erreur upload, on va reessayer plus tard");
+        console.error("Erreur upload, on marque le fichier en erreur");
         console.debug(err);
+        this.uploadEnCours = false;  // Permet d'enchainer les uploads
+        this.uploadTermine({
+          status: 'echec',
+        })
+
+        // Attendre avant de poursuivre au prochain fichier
         this.uploadRetryTimer = setTimeout(()=>{
           this.uploadEnCours = false;   // Reset flag pour permettre l'upload
           this.uploaderProchainFichier();
         }, 10000);
+        
       })
       .finally(()=>{
         this.uploadEnCours = false;

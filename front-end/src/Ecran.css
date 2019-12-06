@@ -205,6 +205,14 @@ input.edition {
   background-color:#303e45;
 }
 
+.error {
+  color: red;
+}
+
+.succes {
+  color: green;
+}
+
 /* Couleurs liees aux niveaux de securite */
 
 .secure {
