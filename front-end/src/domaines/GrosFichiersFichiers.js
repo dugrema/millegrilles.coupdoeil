@@ -54,6 +54,14 @@ export class ActionsFichiers {
     return this.webSocketManager.transmettreTransaction(domaine, transaction);
   }
 
+  decrypter = fuuid => {
+    let domaine = 'millegrilles.domaines.GrosFichiers.decrypterFichier';
+    let transaction = {
+        fuuid: fuuid,
+    }
+    return this.webSocketManager.transmettreTransaction(domaine, transaction);
+  }
+
 }
 
 // Affichage d'un fichier avec toutes ses versions
@@ -133,6 +141,11 @@ export class AffichageFichier extends React.Component {
     this.setState({nouvelleEtiquette: ''});
   }
 
+  decrypter = event => {
+    let fuuid = event.currentTarget.value;
+    this.props.actionsFichiers.decrypter(fuuid);
+  }
+
   // Verifier si on peut resetter les versions locales des proprietes editees.
   componentDidUpdate(prevProps) {
 
@@ -195,6 +208,18 @@ export class AffichageFichier extends React.Component {
       )
     }
 
+    var boutonDecrypter = null;
+    if(fichierCourant.securite === '3.protege') {
+      boutonDecrypter = (
+        <button onClick={this.decrypter} value={fichierCourant.fuuid_v_courante} title="Decrypter">
+          <span className="fa-stack fa-1g">
+            <i className="fa fa-lock fa-stack-1x"/>
+            <i className="fa fa-ban fa-stack-2x"/>
+          </span>
+        </button>
+      )
+    }
+
     let informationFichier = (
       <div className="w3-card w3-round w3-white">
         <div className="w3-container w3-padding">
@@ -233,7 +258,10 @@ export class AffichageFichier extends React.Component {
             </div>
             <div className="w3-row-padding">
               <div className="w3-col m3 label">Sécurité :</div>
-              <div className="w3-col m9 champ">{fichierCourant.securite}</div>
+              <div className="w3-col m9 champ">
+                <IconeFichier securite={fichierCourant.securite} type="fichier"/>
+                {fichierCourant.securite} {boutonDecrypter}
+              </div>
             </div>
             <div className="w3-row-padding">
               <div className="w3-col m3 label">UUID permanent :</div>
@@ -373,6 +401,7 @@ export class AffichageFichier extends React.Component {
               {dateVersion.toString()}
             </div>
             <div className="w3-col m8">
+              <IconeFichier securite={version.securite} type="fichier"/>
               {version.nom}
             </div>
             <div className="w3-col m2">
