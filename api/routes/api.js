@@ -169,4 +169,39 @@ router.post('/effectuer-ajout-token', (req, res) => {
     }
 });
 
+router.post('/generercertificat', (req, res) => {
+
+  // Verifier que le pin est correct
+  const { pin, cle_publique, sujet } = req.body;
+  let pinCorrect = sessionManagement.consommerPinTemporaireDevice(pin);
+
+  if(pinCorrect) {
+    console.debug("generercertificat: sujet " + sujet + ", cle_publique " + cle_publique);
+
+    // Creer la transaction pour creer le certificat de navigateur
+    const transaction = {
+      'sujet': sujet,
+      'cle_publique': cle_publique,
+    };
+
+    rabbitMQ.singleton.transmettreTransactionFormattee(
+      transaction, 'millegrilles.domaines.MaitreDesCles.genererCertificatNavigateur'
+    )
+    .then( certificatInfo => {
+      console.log("Recu certificat pour navigateur");
+      console.log(certificatInfo);
+      res.send(certificatInfo);
+    })
+    .catch( err => {
+      console.error("Erreur message");
+      console.error(err);
+      res.sendStatus(500);
+    });
+
+  } else {
+    res.sendStatus(403);
+  }
+
+});
+
 module.exports = router;

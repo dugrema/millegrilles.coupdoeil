@@ -133,6 +133,55 @@ class Login extends React.Component {
     });
   }
 
+  creerCertificatNavigateur = event => {
+    const form = event.currentTarget.form;
+    var pin = form.pin.value;
+
+    fetch(urlApi + '/api/generercertificat', {
+        method: 'POST',
+        headers: {
+            'content-type': 'Application/Json'
+        },
+        body: JSON.stringify({
+          pin: pin,
+          cle_publique: '',
+          sujet: '',
+        })
+    }).then(response => {
+      if(response.status === 200) {
+        response.json().then(challenge => {
+          console.debug("Challenge recu");
+          console.debug(challenge);
+          solveRegistrationChallenge(challenge).then(credentials => {
+            console.debug("Transmission de la reponse au challenge");
+            console.debug(credentials);
+            fetch(
+                urlApi + '/api/effectuer-ajout-token',
+                {
+                    method: 'POST',
+                    headers: {
+                        'content-type': 'Application/Json'
+                    },
+                    body: JSON.stringify(credentials)
+                }
+            ).then(response => {
+              response.json().then(({ loggedIn }) => {
+                if (loggedIn) {
+                    console.log('registration successful');
+                    this.isAuthenticated = true;
+                } else {
+                  console.error('registration failed');
+                }
+              });
+            });
+          });
+        });
+      } else {
+        console.error("initialiser-ajout-token() Response code: " + response.status)
+      }
+    });
+  }
+
   render() {
     // if (redirectToReferrer) return <Redirect to={from} />;
 
@@ -163,7 +212,8 @@ class Login extends React.Component {
 
         <div className="w3-col m12 optionrow">
           <div className="w3-col m2 bouton">
-            <button onClick={this.registerPin}>Activer</button>
+            <button onClick={this.registerPin}>Activer USB</button>
+            <button onClick={this.creerCertificatNavigateur}>Activer Navigater</button>
           </div>
           <div className="w3-col m10">
             Activer un nouveau token avec un pin:
