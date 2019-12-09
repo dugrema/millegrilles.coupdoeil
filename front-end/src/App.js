@@ -280,49 +280,119 @@ class App extends React.Component {
     wss_socket: null
   }
 
+  peutUtiliserCertificatLocal() {
+    if(localStorage.getItem('certificat.expiration') &&
+       localStorage.getItem('certificat.cert') &&
+       localStorage.getItem('certificat.clepublique') &&
+       localStorage.getItem('certificat.cleprivee') &&
+       localStorage.getItem('certificat.fingerprint')
+     ) {
+
+      // On a tous les elements necessaires pour login via cert
+      // Verifier si le certificat est expire.
+      let dateExpiration = localStorage.getItem('certificat.expiration') * 1000;
+      let currentDate = new Date().getTime();
+      console.log("Certificat date expiration: " + dateExpiration + ", currentDate: " + currentDate);
+      if(dateExpiration > currentDate) {
+        // Le certificat n'est pas expire, on peut l'utiliser.
+        return true;
+      }
+
+    }
+
+    return false;
+  }
+
+  // Repond a un challenge pour token USB
+  repondreChallengeTokenUSB(socket, challenge, callback) {
+    socket.on('login', confirmation=>{
+      webSocketManager.setupWebSocket(socket);
+      this.setState({loggedIn: confirmation, wss_socket: socket});
+    });
+
+    // 2. Resoudre challenge et repondre au serveur pour activer connexion
+    solveLoginChallenge(challenge)
+    .then(credentials => {
+      // console.debug("Tranmission evenement challenge_reply");
+      //socket.emit('challenge_reply', credentials);
+      callback(credentials); // Callback du challenge via websocket
+    })
+    .catch(err=>{
+      console.error("Erreur challenge reply");
+      console.error(err);
+      try{this.state.wss_socket.disconnect();} catch(err) {}
+      this.setState({wss_socket: null});
+    });
+  }
+
+  // Repond a un challenge pour certificat local
+  repondreChallengeCertificat(socket, challenge, callback) {
+
+  }
+
+  enregistrerEvenementsGeneriques(socket) {
+    socket.on('erreur', erreur=>{
+      console.error("Erreur recue par WSS");
+      console.error(erreur);
+    })
+
+    socket.on('disconnect', () => {
+      if(this.state.wss_socket === socket) {
+        console.warn("Socket " + socket.id + " disconnected");
+        this.setState({wss_socket: null, loggedIn: false});
+      } else {
+        console.info("Dangling socket closed: " + socket.id);
+      }
+    });
+
+    // Gerer l'authentification:
+    socket.on(
+      'challengeTokenUSB',
+      (challenge, cb) => {this.repondreChallengeTokenUSB(socket, challenge, cb)}
+    );
+    socket.on(
+      'challengeCertificat',
+      (challenge, cb) => {this.repondreChallengeCertificat(socket, challenge, cb)}
+    );
+    socket.on(
+      'erreur.login',
+      erreur => {
+        console.error("Erreur connexion");
+        console.error(erreur);
+        socket.disconnect();  // S'assurer de ne pas essayer de reconnecter automatiquement
+      }
+    )
+
+  }
+
   login = () => {
     if(!this.state.wss_socket) {
-      // Ouvrir un nouveau socket vers le serveur
-      let socket = openSocket('/', {reconnection: false});
 
-      // Enregistrer evenements generiques
-      socket.on('erreur', erreur=>{
-        console.error("Erreur recue par WSS");
-        console.error(erreur);
-      })
-      socket.on('disconnect', () => {
-        if(this.state.wss_socket === socket) {
-          console.warn("Socket " + socket.id + " disconnected");
-          this.setState({wss_socket: null, loggedIn: false});
-        } else {
-          console.info("Dangling socket closed: " + socket.id);
-        }
-      });
+      let socket;
+      if(this.peutUtiliserCertificatLocal()) {
 
-      // Gerer l'authentification:
-      // 1. Ecouter le challenge du serveur
-      socket.on('challenge', (challenge, cb) => {
+        // Ouvrir un socket avec certificat local.
+        // Peut se reconnecter automatiquement
+        socket = openSocket('/', {reconnection: true});
+        this.enregistrerEvenementsGeneriques(socket);
 
-        socket.on('login', confirmation=>{
-          webSocketManager.setupWebSocket(socket);
-          this.setState({loggedIn: confirmation, wss_socket: socket});
+        socket.emit('authentification', {
+          methode: 'certificatLocal',
+          fingerprint: localStorage.getItem('certificat.fingerprint'),
         });
 
-        // 2. Resoudre challenge et repondre au serveur pour activer connexion
-        solveLoginChallenge(challenge)
-        .then(credentials => {
-          // console.debug("Tranmission evenement challenge_reply");
-          //socket.emit('challenge_reply', credentials);
-          cb(credentials); // Callback du challenge via websocket
-        })
-        .catch(err=>{
-          console.error("Erreur challenge reply");
-          console.error(err);
-          try{this.state.wss_socket.disconnect();} catch(err) {}
-          this.setState({wss_socket: null});
+      } else {
+
+        // Le certificat local est absent ou invalide
+        // On va se connecter avec Token USB
+        socket = openSocket('/', {reconnection: false});
+        this.enregistrerEvenementsGeneriques(socket);
+
+        socket.emit('authentification', {
+          methode: 'tokenUSB',
         });
 
-      });
+      }
 
     } else {
       throw new ReferenceError("Login: WebSocket deja ouvert");
