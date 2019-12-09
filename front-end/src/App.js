@@ -5,6 +5,7 @@ import Ecran from './Ecran';
 import { solveRegistrationChallenge, solveLoginChallenge } from '@webauthn/client';
 import openSocket from 'socket.io-client';
 import webSocketManager from './WebSocketManager';
+import {CryptageAsymetrique} from './mgcomponents/CryptoSubtle'
 
 // const urlApi = 'https://dev2.maple.mdugre.info:3001';  // Autre site, dev.
 const urlApi = '';  // Meme serveur
@@ -138,33 +139,51 @@ class Login extends React.Component {
     var pin = form.pinnav.value;
     var sujet = form.sujet.value;
 
-    fetch(urlApi + '/api/generercertificat', {
-        method: 'POST',
-        headers: {
-            'content-type': 'Application/Json'
-        },
-        body: JSON.stringify({
-          pin: pin,
-          cle_publique: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqYE8pRzlFVwAgc2uB3ot6Ffd8pPpG4Sb8btFdjArvYcbuWvsRntBUgm/w6c831GpEoOrDr/EoEPRgTjJ81zxa1tkFprsmw9t8HJ0IOV9WF6p1X8gvf4FZaeLW6wTcA6LGhk1lRoN0jIr0VhNBejX4Xl7m7B1hR+pgmafG9Qm9acAZx2+opi9cYkG0lcl33R/106x8nnaF3jwjhBjFEazH5roHN9W253Y1subRXYC0Uq6SIlzN2HDPLn0oHLujAmf0NP6PrqHmDxfrnWc+KKuSJD2Dyf8w07AjJwJgpmWa9JrcqvYjR/BViI06/CqrtJpSAHpCguSQB3QbidSzbFF3wIDAQAB',
-          sujet: sujet,
-        })
-    }).then(response => {
-      if(response.status === 200) {
-        response.json().then(certificatInfo => {
-          console.debug("Certificat recu");
-          console.debug(certificatInfo);
+    const cryptageAsymetrique = new CryptageAsymetrique();
 
-          // Sauvegarder information dans storage local
-          localStorage.setItem('certificat.cert', certificatInfo.cert);
-          localStorage.setItem('certificat.expiration', certificatInfo.certificat_info.not_valid_after);
-          localStorage.setItem('certificat.fingerprint', certificatInfo.certificat_info.fingerprint);
-          localStorage.setItem('certificat.fullchain', certificatInfo.fullchain.join('\n'));
+    cryptageAsymetrique.genererKeyPair()
+    .then(({clePrivee, clePublique})=>{
+      sessionStorage.clePublique = clePublique;
+      sessionStorage.clePrivee = clePrivee;
+      return clePublique;
+    }).then(clePublique=>{
+      fetch(urlApi + '/api/generercertificat', {
+          method: 'POST',
+          headers: {
+              'content-type': 'Application/Json'
+          },
+          body: JSON.stringify({
+            pin: pin,
+            cle_publique: clePublique,
+            sujet: sujet,
+          })
+      }).then(response => {
+        if(response.status === 200) {
+          response.json().then(certificatInfo => {
+            console.debug("Certificat recu");
+            console.debug(certificatInfo);
 
-        });
-      } else {
-        console.error("initialiser-ajout-token() Response code: " + response.status)
-      }
+            // Sauvegarder information dans storage local
+            localStorage.setItem('certificat.cert', certificatInfo.cert);
+            localStorage.setItem('certificat.expiration', certificatInfo.certificat_info.not_valid_after);
+            localStorage.setItem('certificat.fingerprint', certificatInfo.certificat_info.fingerprint);
+            localStorage.setItem('certificat.fullchain', certificatInfo.fullchain.join('\n'));
+
+            // Transferer les cles publiques et privees de session vers local
+            localStorage.setItem('certificat.clepublique', sessionStorage.clePublique);
+            localStorage.setItem('certificat.cleprivee', sessionStorage.clePrivee);
+
+            delete sessionStorage.clePublique;
+            delete sessionStorage.clePrivee;
+
+          });
+        } else {
+          console.error("initialiser-ajout-token() Response code: " + response.status)
+        }
+      });
+
     });
+
   }
 
   render() {
