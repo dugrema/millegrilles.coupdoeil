@@ -135,7 +135,8 @@ class Login extends React.Component {
 
   creerCertificatNavigateur = event => {
     const form = event.currentTarget.form;
-    var pin = form.pin.value;
+    var pin = form.pinnav.value;
+    var sujet = form.sujet.value;
 
     fetch(urlApi + '/api/generercertificat', {
         method: 'POST',
@@ -144,37 +145,21 @@ class Login extends React.Component {
         },
         body: JSON.stringify({
           pin: pin,
-          cle_publique: '',
-          sujet: '',
+          cle_publique: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqYE8pRzlFVwAgc2uB3ot6Ffd8pPpG4Sb8btFdjArvYcbuWvsRntBUgm/w6c831GpEoOrDr/EoEPRgTjJ81zxa1tkFprsmw9t8HJ0IOV9WF6p1X8gvf4FZaeLW6wTcA6LGhk1lRoN0jIr0VhNBejX4Xl7m7B1hR+pgmafG9Qm9acAZx2+opi9cYkG0lcl33R/106x8nnaF3jwjhBjFEazH5roHN9W253Y1subRXYC0Uq6SIlzN2HDPLn0oHLujAmf0NP6PrqHmDxfrnWc+KKuSJD2Dyf8w07AjJwJgpmWa9JrcqvYjR/BViI06/CqrtJpSAHpCguSQB3QbidSzbFF3wIDAQAB',
+          sujet: sujet,
         })
     }).then(response => {
       if(response.status === 200) {
-        response.json().then(challenge => {
-          console.debug("Challenge recu");
-          console.debug(challenge);
-          solveRegistrationChallenge(challenge).then(credentials => {
-            console.debug("Transmission de la reponse au challenge");
-            console.debug(credentials);
-            fetch(
-                urlApi + '/api/effectuer-ajout-token',
-                {
-                    method: 'POST',
-                    headers: {
-                        'content-type': 'Application/Json'
-                    },
-                    body: JSON.stringify(credentials)
-                }
-            ).then(response => {
-              response.json().then(({ loggedIn }) => {
-                if (loggedIn) {
-                    console.log('registration successful');
-                    this.isAuthenticated = true;
-                } else {
-                  console.error('registration failed');
-                }
-              });
-            });
-          });
+        response.json().then(certificatInfo => {
+          console.debug("Certificat recu");
+          console.debug(certificatInfo);
+
+          // Sauvegarder information dans storage local
+          localStorage.setItem('certificat.cert', certificatInfo.cert);
+          localStorage.setItem('certificat.expiration', certificatInfo.certificat_info.not_valid_after);
+          localStorage.setItem('certificat.fingerprint', certificatInfo.certificat_info.fingerprint);
+          localStorage.setItem('certificat.fullchain', certificatInfo.fullchain.join('\n'));
+
         });
       } else {
         console.error("initialiser-ajout-token() Response code: " + response.status)
@@ -213,13 +198,28 @@ class Login extends React.Component {
         <div className="w3-col m12 optionrow">
           <div className="w3-col m2 bouton">
             <button onClick={this.registerPin}>Activer USB</button>
-            <button onClick={this.creerCertificatNavigateur}>Activer Navigater</button>
           </div>
           <div className="w3-col m10">
             Activer un nouveau token avec un pin:
             <input type="number" name="pin" className="pin" />
           </div>
         </div>
+
+
+        <div className="w3-col m12 optionrow">
+          <div className="w3-col m2 bouton">
+            <button onClick={this.creerCertificatNavigateur}>Activer Navigateur</button>
+          </div>
+          <div className="w3-col m4">
+            PIN :
+            <input type="number" name="pinnav" className="pin" />
+          </div>
+          <div className="w3-col m6">
+            Nom (e.g. iPhone) :
+            <input type="text" name="sujet"/>
+          </div>
+        </div>
+
 
         <div className="w3-col m12 optionrow">
           <div className="w3-col m2 bouton">

@@ -187,10 +187,12 @@ router.post('/generercertificat', (req, res) => {
     rabbitMQ.singleton.transmettreTransactionFormattee(
       transaction, 'millegrilles.domaines.MaitreDesCles.genererCertificatNavigateur'
     )
-    .then( certificatInfo => {
+    .then( msg => {
       console.log("Recu certificat pour navigateur");
-      console.log(certificatInfo);
-      res.send(certificatInfo);
+      let messageContent = decodeURIComponent(escape(msg.content));
+      let certificatInfo = JSON.parse(messageContent);
+      console.log(messageContent);
+      res.send(messageContent);
     })
     .catch( err => {
       console.error("Erreur message");
@@ -199,6 +201,7 @@ router.post('/generercertificat', (req, res) => {
     });
 
   } else {
+    console.debug("generercertificat pin incorrect: " + pin);
     res.sendStatus(403);
   }
 
