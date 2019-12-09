@@ -7,6 +7,7 @@ const {
     verifyAuthenticatorAssertion,
 } = require('@webauthn/server');
 const crypto = require('crypto');
+const pki = require('./pki')
 
 class SessionManagement {
 
@@ -125,14 +126,14 @@ class SessionManagement {
           const { challenge, keyId } = parseLoginRequest(reply);
           if (!challenge) {
             // console.debug("Challenge pas recu")
-            socket.emit('erreur', {'erreur': 'Challenge pas initialise'});
+            socket.emit('erreur.login', {'erreur': 'Challenge pas initialise'});
             socket.disconnect();
             return;
           }
 
           if (challenge_genere.challenge !== challenge) {
             console.warn("Challenge ne match pas");
-            socket.emit('erreur', {'erreur': 'Challenge mismatch'});
+            socket.emit('erreur.login', {'erreur': 'Challenge mismatch'});
             socket.disconnect();
             return;
           }
@@ -144,7 +145,7 @@ class SessionManagement {
             // console.log(doc);
             if (!doc || doc.empreinte_absente) {
               console.warn("Doc absent ou empreinte_absente trouvee");
-              socket.emit('erreur', {'erreur': 'Doc absent ou empreinte_absente==true'});
+              socket.emit('erreur.login', {'erreur': 'Doc absent ou empreinte_absente==true'});
               socket.disconnect();
               return;
             }
@@ -168,7 +169,7 @@ class SessionManagement {
             if(!cle_match) {
               console.error("Cle inconnue: " + cle_id_utilisee);
               console.error(cle_id_utilisee);
-              socket.emit('erreur', {'erreur': 'Cle inconnue'});
+              socket.emit('erreur.login', {'erreur': 'Cle inconnue'});
               socket.disconnect();
               return;
             }
@@ -179,7 +180,7 @@ class SessionManagement {
           }).catch( err => {
             console.error("Erreur login")
             console.error(err);
-            socket.emit('erreur', {'erreur': 'Erreur login generique'});
+            socket.emit('erreur.login', {'erreur': 'Erreur login generique'});
             socket.disconnect();
           });
       });
@@ -187,18 +188,24 @@ class SessionManagement {
     }).catch( err => {
       console.error("Erreur login")
       console.error(err);
-      socket.emit('erreur', {'erreur': 'Erreur login - timeout MQ'});
+      socket.emit('erreur.login', {'erreur': 'Erreur login - timeout MQ'});
       socket.disconnect();
     });
   }
 
-  reponseChallengeCertificat(socket, challenge, reponse) {
+  recevoirReponseChallengeCertificat(socket, challenge, reponse) {
     console.debug("Reponse challenge certificat");
     console.debug(reponse);
+    const bufferReponse = new Buffer(reponse.reponseChallenge, 'base64');
+    console.debug(bufferReponse.toString('utf-8'));
     console.debug("Challenge original")
     console.debug(challenge);
+    console.debug(challenge.toString('hex'));
 
-    if(challenge === reponse.reponseChallenge) {
+    const challengeOriginalHex = challenge.toString('hex');
+    const reponseHex = bufferReponse.toString('utf-8');
+
+    if(challengeOriginalHex === reponseHex) {
       // Ok
       console.debug("Reponse challenge ok");
       socket.emit('login', true);
@@ -208,26 +215,64 @@ class SessionManagement {
   }
 
   creerChallengeCertificat(socket, fingerprint) {
-    // Authentifier le socket
+    console.debug("Requete verification " + fingerprint);
 
-    const challenge = 'je te challenge ' + fingerprint;
-    socket.emit('challengeCertificat',
-      {challenge},
-      reponse => {this.reponseChallengeCertificat(socket, challenge, reponse)}
-    )
+    let requete = {'fingerprint': fingerprint};
+    rabbitMQ.singleton.transmettreRequete(
+      'requete.millegrilles.domaines.Pki.confirmerCertificat', requete)
+    .then( reponseCertVerif => {
+      console.debug("Response verification certificat");
+      const contenuResponseCertVerif = JSON.parse(reponseCertVerif.content.toString('utf-8'));
+      console.debug(contenuResponseCertVerif);
 
-    /*
-    let filtre = {"_mg-libelle": "cles"};
-    rabbitMQ.singleton.get_document(
-      'millegrilles.domaines.Principale', filtre)
-    .then( doc => {
+      if(contenuResponseCertVerif.valide && contenuResponseCertVerif.roles) {
+        // Certificat est valide, on verifie que c'est bien un certificat de navigateur
+        const roles = contenuResponseCertVerif.roles;
+        let estRoleNavigateur = false;
+        for(let idx in roles) {
+          let role = roles[idx];
+          estRoleNavigateur = estRoleNavigateur || (role === 'coupdoeil.navigateur');
+        }
+        console.log(estRoleNavigateur);
 
+        if(estRoleNavigateur === true) {
+          // C'est bien un certificat de navigateur. On genere un challenge
+          // avec la cle publique.
+          let pemCertificat = contenuResponseCertVerif.certificat;
+          const certificat = pki.chargerCertificatPEM(pemCertificat);
+          console.log(certificat);
+
+          pki.genererKeyAndIV((err, randVal)=>{
+            if(err) {
+              console.error("Erreur creation challenge random");
+              socket.emit('erreur.login', {'erreur': 'Generation random secret'});
+              socket.disconnect();
+              return;
+            }
+            // Crypter un challenge pour le navigateur
+            const challenge = randVal.key;
+            let challengeCrypte = pki.crypterContenuAsymetric(certificat.publicKey, challenge);
+            socket.emit('challengeCertificat',
+              {challengeCrypte},
+              reponse => {this.recevoirReponseChallengeCertificat(socket, challenge, reponse)}
+            )
+          });
+
+        } else {
+          socket.emit('erreur.login', {'erreur': 'Role certificat doit inclure coupdoeil.navigateur'});
+          socket.disconnect();
+        }
+
+      } else {
+        socket.emit('erreur.login', {'erreur': 'Certificat invalide'});
+        socket.disconnect();
+      }
     })
     .catch(err=>{
       console.error("Erreur authentification par certificat");
       console.error(err);
     });
-    */
+
   }
 
   // Ajoute un socket et attend l'evenement d'authentification

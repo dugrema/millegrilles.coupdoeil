@@ -58,6 +58,11 @@ class PKIUtils {
     this.fingerprint = fingerprint;
   }
 
+  chargerCertificatPEM(pem) {
+    let parsedCert = forge.pki.certificateFromPem(pem);
+    return parsedCert;
+  }
+
   getFingerprint() {
     return this.fingerprint;
   }
@@ -142,7 +147,7 @@ class PKIUtils {
 
   _creerCipherKey(certificat) {
     let promise = new Promise((resolve, reject) => {
-      this._genererKeyAndIV((err, {key, iv})=>{
+      this.genererKeyAndIV((err, {key, iv})=>{
         if(err) {
           reject(err);
         }
@@ -151,16 +156,17 @@ class PKIUtils {
 
         // Encoder la cle secrete
         // Convertir buffer en bytes string pour node-forge
-        var keyByteString = forge.util.bytesToHex(key);
-        var encryptedSecretKey = certificat.publicKey.encrypt(keyByteString, this.rsaAlgorithm, {
-          md: forge.md.sha256.create(),
-          mgf1: {
-            md: forge.md.sha256.create()
-          }
-        });
+        // var keyByteString = forge.util.bytesToHex(key);
+        // var encryptedSecretKey = certificat.publicKey.encrypt(keyByteString, this.rsaAlgorithm, {
+        //   md: forge.md.sha256.create(),
+        //   mgf1: {
+        //     md: forge.md.sha256.create()
+        //   }
+        // });
+
+        var encryptedSecretKey = this.crypterContenuAsymetric(certificat.publicKey, key);
 
         // Encoder en base64
-        encryptedSecretKey = forge.util.encode64(encryptedSecretKey);
         iv = iv.toString('base64');
 
         resolve({cipher, encryptedSecretKey, iv});
@@ -171,7 +177,20 @@ class PKIUtils {
     return promise;
   }
 
-  _genererKeyAndIV(cb) {
+  crypterContenuAsymetric(publicKey, contentToEncrypt) {
+    var keyByteString = forge.util.bytesToHex(contentToEncrypt);
+    var encryptedContent = publicKey.encrypt(keyByteString, this.rsaAlgorithm, {
+      md: forge.md.sha256.create(),
+      mgf1: {
+        md: forge.md.sha256.create()
+      }
+    });
+
+    encryptedContent = forge.util.encode64(encryptedContent);
+    return encryptedContent;
+  }
+
+  genererKeyAndIV(cb) {
     var lenBuffer = 16 + 32;
     crypto.pseudoRandomBytes(lenBuffer, (err, pseudoRandomBytes) => {
       // Creer deux buffers, iv (16 bytes) et password (24 bytes)

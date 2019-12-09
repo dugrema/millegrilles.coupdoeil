@@ -335,7 +335,20 @@ class App extends React.Component {
       this.setState({loggedIn: confirmation, wss_socket: socket});
     });
 
-    callback({reponseChallenge: challenge.challenge});
+    // Decrypter le challenge avec la cle privee
+    const challengeCrypte = challenge.challengeCrypte;
+    const cryptageAsymetrique = new CryptageAsymetrique();
+
+    cryptageAsymetrique.decrypterCleSecrete(
+      challengeCrypte, localStorage.getItem('certificat.cleprivee'))
+    .then(cleSecreteDecryptee=>{
+      console.log("Resultat cle secrete decryptee: " + cleSecreteDecryptee);
+      callback({reponseChallenge: cleSecreteDecryptee});
+    })
+    .catch(err=>{
+      console.error("Erreur DecryptCleSecrete");
+      console.error(err);
+    })
 
   }
 
