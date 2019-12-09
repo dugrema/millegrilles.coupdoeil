@@ -90,7 +90,7 @@ class SessionManagement {
 
     if(params.methode === 'certificatLocal') {
       let fingerprint = params.fingerprint;
-
+      this.creerChallengeCertificat(socket, fingerprint);
     } else if (params.methode === 'tokenUSB') {
       this.creerChallengeUSB(socket);
     } else {
@@ -192,17 +192,50 @@ class SessionManagement {
     });
   }
 
+  reponseChallengeCertificat(socket, challenge, reponse) {
+    console.debug("Reponse challenge certificat");
+    console.debug(reponse);
+    console.debug("Challenge original")
+    console.debug(challenge);
+
+    if(challenge === reponse.reponseChallenge) {
+      // Ok
+      console.debug("Reponse challenge ok");
+      socket.emit('login', true);
+    } else {
+      console.warn("Challenge et reponse differents");
+    }
+  }
+
+  creerChallengeCertificat(socket, fingerprint) {
+    // Authentifier le socket
+
+    const challenge = 'je te challenge ' + fingerprint;
+    socket.emit('challengeCertificat',
+      {challenge},
+      reponse => {this.reponseChallengeCertificat(socket, challenge, reponse)}
+    )
+
+    /*
+    let filtre = {"_mg-libelle": "cles"};
+    rabbitMQ.singleton.get_document(
+      'millegrilles.domaines.Principale', filtre)
+    .then( doc => {
+
+    })
+    .catch(err=>{
+      console.error("Erreur authentification par certificat");
+      console.error(err);
+    });
+    */
+  }
+
   // Ajoute un socket et attend l'evenement d'authentification
   addSocketConnection(socket) {
     socket.on('authentification', params=>{this.authentifier(socket, params)});
   }
 
 }
-
-function challengeOAuth2() {
-
-}
-
 
 const sessionManagement = new SessionManagement();
 sessionManagement.start();

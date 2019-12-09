@@ -327,6 +327,15 @@ class App extends React.Component {
 
   // Repond a un challenge pour certificat local
   repondreChallengeCertificat(socket, challenge, callback) {
+    console.debug("Challenge certificat recu, on repond");
+    console.debug(challenge);
+
+    socket.on('login', confirmation=>{
+      webSocketManager.setupWebSocket(socket);
+      this.setState({loggedIn: confirmation, wss_socket: socket});
+    });
+
+    callback({reponseChallenge: challenge.challenge});
 
   }
 
