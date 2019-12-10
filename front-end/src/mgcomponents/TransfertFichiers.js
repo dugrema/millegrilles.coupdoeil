@@ -30,7 +30,8 @@ export class UploadFichierSocketio {
         console.debug("Debut");
         socket.emit('upload.nouveauFichier', {
           nomFichier, typeFichier, tailleFichier, fuuid, securite,
-          iv: infoCryptage.iv, cleSecreteCryptee: infoCryptage.cleSecreteCryptee,
+          iv: infoCryptage.iv,
+          cleSecreteCryptee: infoCryptage.cleSecreteCryptee,
         },
         reponse=>{
           console.debug("_executerUploadFichier, reponse serveur");

@@ -14,7 +14,7 @@ class SocketIoUpload {
     this.rabbitMQ = rabbitMQ;
     this.socket = null;
     this.infoFichier = null;
-    this.chunkInput = new ChunkInput();
+    this.chunkInput = null;
   }
 
   enregistrer(socket) {
@@ -32,23 +32,24 @@ class SocketIoUpload {
     console.debug("Demande de preparation d'upload de nouveau fichier");
     console.debug(infoFichier);
     this.infoFichier = infoFichier;
+    this.chunkInput = new ChunkInput()
 
     // Ouvrir un streamWriter avec consignation.grosfichiers
     const crypte = infoFichier.encryptedSecretKey !== undefined;
     this.creerOutputStream(infoFichier.fuuid, crypte);
 
     this.transmettreInformationCle(infoFichier)
-    // .then(()=>{
+    .then(()=>{
       callback({pret: true});
-    // })
-    // .catch(err=>{
-    //   console.error("Erreur transmission metadata, on annule le transfert");
-    //
-    //   // Annuler transfert
-    //   callback({pret: false, erreur: err});
-    //
-    //   annulerTransfert();
-    // });
+    })
+    .catch(err=>{
+      console.error("Erreur transmission metadata, on annule le transfert");
+
+      // Annuler transfert
+      callback({pret: false, erreur: err});
+
+      annulerTransfert();
+    });
 
   }
 
@@ -141,9 +142,9 @@ class SocketIoUpload {
     let transactionNouvelleVersion = {
       fuuid: infoFichier.fuuid,
       securite: infoFichier.securite,
-      nom: infoFichier.originalname,
-      taille: infoFichier.size,
-      mimetype: infoFichier.mimetype,
+      nom: infoFichier.nomFichier,
+      taille: infoFichier.tailleFichier,
+      mimetype: infoFichier.typeFichier,
       sha256: sha256,
       reception: {
         methode: "coupdoeil.navigateur",
@@ -166,10 +167,9 @@ class SocketIoUpload {
     let transactionInformationCryptee = {
       domaine: 'millegrilles.domaines.GrosFichiers',
       'identificateurs_document': {
-        fuuid: infoFichier.fileUuid,
+        fuuid: infoFichier.fuuid,
       },
-      fingerprint: infoFichier.fingerprint,
-      cle: infoFichier.encryptedSecretKey,
+      cle: infoFichier.cleSecreteCryptee,
       iv: infoFichier.iv,
     };
 
