@@ -1,4 +1,7 @@
 import axios from 'axios';
+import {MilleGrillesCryptoHelper} from '../mgcomponents/CryptoSubtle';
+
+const cryptoHelper = new MilleGrillesCryptoHelper();
 
 export class ActionsFavoris {
 
@@ -237,51 +240,10 @@ export class ActionsUpload {
     if(this.reactModule.state.uploadsCourants.length > 0){
       this.uploadEnCours = true;
 
-      // Demander un token (OTP) via websockets
-      this.webSocketManager.demanderTokenTransfert()
-      .then(token=>{
-        let uploadInfo = this.reactModule.state.uploadsCourants[0];
-        console.debug("Token obtenu, debut de l'upload de " + uploadInfo.path);
+      const uploadInfo = this.reactModule.state.uploadsCourants[0];
 
-        let data = new FormData();
-        data.append('securite', uploadInfo.securite);
-        data.append('grosfichier', uploadInfo.acceptedFile);
-        if(uploadInfo.documentuuid) {
-          data.append('documentuuid', uploadInfo.documentuuid);
-        }
-        let config = {
-          headers: {
-            'authtoken': token,
-          },
-          onUploadProgress: this.uploadProgress,
-          //cancelToken: new CancelToken(function (cancel) {
-          // }),
-        }
+      this.webSocketManager.uploadFichier(uploadInfo);
 
-        return axios.put('/grosFichiers/nouveauFichier', data, config);
-      })
-      .then(msg=>{
-        this.uploadEnCours = false;  // Permet d'enchainer les uploads
-        this.uploadTermine(msg);
-      })
-      .catch(err=>{
-        console.error("Erreur upload, on marque le fichier en erreur");
-        console.debug(err);
-        this.uploadEnCours = false;  // Permet d'enchainer les uploads
-        this.uploadTermine({
-          status: 'echec',
-        })
-
-        // Attendre avant de poursuivre au prochain fichier
-        this.uploadRetryTimer = setTimeout(()=>{
-          this.uploadEnCours = false;   // Reset flag pour permettre l'upload
-          this.uploaderProchainFichier();
-        }, 10000);
-        
-      })
-      .finally(()=>{
-        this.uploadEnCours = false;
-      });
     } else {
       this.uploadEnCours = false;
       console.debug("Il n'y a rien a uploader.");

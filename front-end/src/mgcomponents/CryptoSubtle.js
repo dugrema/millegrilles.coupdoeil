@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 function str2ab(str) {
 
   const buf = new ArrayBuffer(str.length);
@@ -245,6 +247,124 @@ export class CryptageSymetrique {
       buffer
     );
 
+  }
+
+}
+
+export class MilleGrillesCryptoHelper {
+
+  algorithm = 'aes-256-cbc';  // Meme algorithme utilise sur MG en Python
+  rsaAlgorithm = 'RSA-OAEP';
+  cryptageAsymetrique = new CryptageAsymetrique();
+
+  crypter(dictACrypter, clePublique) {
+    return new Promise((resolve, reject)=>{
+      let contenuACrypter = JSON.stringify(dictACrypter);
+
+      this.creerCipherKey()
+      .then(cipher_key_iv=>{
+
+        let {cipher, key, iv} = cipher_key_iv;
+        let keyString = key.toString('base64');
+        let ivString = iv.toString('base64');
+        console.log("Secrets key=" + keyString + ", iv=" + ivString);
+
+        let contenuCrypte = cipher.update(contenuACrypter, 'utf8', 'base64');
+        contenuCrypte += cipher.final('base64');
+        console.log("Contenu crypte: " + contenuCrypte);
+
+        let resultat = {contenu: contenuACrypter, contenuCrypte, cleSecrete: keyString, iv: ivString};
+        if(clePublique) {
+          this.cryptageAsymetrique.crypterCleSecrete(clePublique, key)
+          .then(cleSecreteCryptee=>{
+              resultat.cleSecreteCryptee = btoa(String.fromCharCode.apply(null, new Uint8Array(cleSecreteCryptee)));
+              resolve(resultat);
+          })
+          .catch(err=>{
+            reject(err);
+          })
+        } else {
+          resolve(resultat);
+        }
+
+      })
+      .catch(err=>{
+        reject(err);
+      });
+    })
+  }
+
+  // Genere un cipher et crypter la cle secrete
+  creerCipherCrypterCleSecrete() {
+    return new Promise((resolve, reject)=>{
+      this.creerCipherKey()
+      .then(cipher_key_iv=>{
+        let {cipher, key, iv} = cipher_key_iv;
+        let keyString = key.toString('base64');
+        let ivString = iv.toString('base64');
+        console.log("Secrets key=" + keyString + ", iv=" + ivString);
+
+        // TODO : Crypter cle secrete.
+
+        let resultat = {cipher, cleSecrete: keyString, iv: ivString};
+        resolve(resultat);
+
+      })
+      .catch(err=>{
+        reject(err);
+      });
+    })
+  }
+
+  genererSecret(callback) {
+    var lenBuffer = 16 + 32;
+    crypto.pseudoRandomBytes(lenBuffer, (err, pseudoRandomBytes) => {
+      // Creer deux buffers, iv (16 bytes) et password (24 bytes)
+      var iv = pseudoRandomBytes.slice(0, 16);
+      var key = pseudoRandomBytes.slice(16, pseudoRandomBytes.length);
+      callback(err, {key: key, iv: iv});
+    });
+  }
+
+  creerCipherKey() {
+    let promise = new Promise((resolve, reject) => {
+      this.genererSecret((err, {key, iv})=>{
+        if(err) {
+          reject(err);
+        }
+
+        console.log("Creer cipher");
+        var cipher = crypto.createCipheriv(this.algorithm, key, iv);
+
+        resolve({cipher, key, iv});
+      });
+    });
+
+    return promise;
+  }
+
+  decrypter(contenuCrypte, cleSecrete, iv) {
+    return new Promise((resolve, reject)=>{
+
+      let cleSecreteBuffer = str2ab(window.atob(cleSecrete));
+      let ivBuffer = str2ab(window.atob(iv));
+
+      console.log("Creer decipher secretKey: " + cleSecreteBuffer.toString('base64') + ", iv: " + ivBuffer.toString('base64'));
+      var decipher = crypto.createDecipheriv(this.algorithm, cleSecreteBuffer, ivBuffer);
+
+      console.log("Decrypter " + contenuCrypte.toString('base64'));
+      let contenuDecrypteString = decipher.update(contenuCrypte, 'base64',  'utf8');
+      contenuDecrypteString += decipher.final('utf8');
+
+      console.debug("Contenu decrypte :");
+      console.debug(contenuDecrypteString);
+
+      let dictDecrypte = JSON.parse(contenuDecrypteString);
+      console.log("Dict decrypte: ");
+      console.log(dictDecrypte);
+
+      resolve(contenuDecrypteString);
+    });
   }
 
 }
