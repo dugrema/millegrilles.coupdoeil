@@ -255,6 +255,10 @@ export class ActionsUpload {
       this.webSocketManager.uploadFichier(uploadInfo)
       .then(confirmation=>{
         console.debug("Upload fichier termine");
+        this.uploadEnCours = false;
+        this.uploadTermine({
+          status: 'succes',
+        })
       })
       .catch(err=>{
         // Attendre avant de poursuivre au prochain fichier

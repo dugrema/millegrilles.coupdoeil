@@ -33,7 +33,15 @@ export class UploadFichierSocketio {
 
           if(reponse.pret) {
             // Demarrer upload
-            this._executerUploadFichier(socket, uploadInfo, cipher);
+            this._executerUploadFichier(socket, uploadInfo, cipher)
+            .then(()=>{
+              console.debug("Fin _executerUploadFichier");
+              resolve();
+            })
+            .catch(err=>{
+              console.error("Erreur _executerUploadFichier");
+              reject(err);
+            });
           } else {
             throw(reponse.erreur);
           }
@@ -57,7 +65,6 @@ export class UploadFichierSocketio {
       function terminer() {
         console.log("Upload termine");
         socket.emit('upload.fin', {sha256: "mon sha est mort"});
-        this.uploadEnCours = false;
         resolve();
       };
 
@@ -69,8 +76,9 @@ export class UploadFichierSocketio {
             console.debug("Dernier paquet");
             let contenuCrypte = cipher.final();
             if(contenuCrypte.length > 0) {
-              socket.emit('upload.paquet', contenuCrypte.buffer, terminer);
+              socket.emit('upload.paquet', contenuCrypte.buffer);
             }
+            terminer();
             return;
           }
 
@@ -85,8 +93,8 @@ export class UploadFichierSocketio {
           // console.log(contenuCrypte);
 
           // console.log("Paquet de " + value.length + " bytes");
-          socket.emit('upload.paquet', contenuCrypte.buffer, read);
-
+          socket.emit('upload.paquet', contenuCrypte.buffer);
+          read();
           // return read();
         });
       }
