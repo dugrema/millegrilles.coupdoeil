@@ -200,6 +200,18 @@ class PKIUtils {
     });
   }
 
+  extraireClePublique(certificat) {
+    const clePubliquePEM = forge.pki.publicKeyToPem(certificat.publicKey);
+    console.debug('Cle publique maitredescles ');
+    console.debug(clePubliquePEM);
+
+    var clePublique = clePubliquePEM
+      .replace('-----BEGIN PUBLIC KEY-----', '')
+      .replace('-----END PUBLIC KEY-----', '')
+      .replace(/\n/g, '');
+
+    return clePublique;
+  }
 
 };
 

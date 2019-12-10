@@ -1,7 +1,8 @@
 var rabbitMQ = require('./routes/res/rabbitMQ');
 var fs = require('fs');
 var sessionManagement = require('./routes/res/sessionManagement');
-var {SocketIoUpload} = require('./routes/res/SocketioUpload')
+var {SocketIoUpload} = require('./routes/res/SocketioUpload');
+var pki = require('./routes/res/pki');
 
 const {
     generateRegistrationChallenge,
@@ -277,8 +278,29 @@ class WebSocketApp {
       })
     });
 
+    socket.on('demandeClePubliqueMaitredescles', (msg, cb) => {
+      extraireClePubliqueMaitredescles().then(clePublique=>{
+        cb(clePublique);
+      });
+    });
+
   }
 
+}
+
+function extraireClePubliqueMaitredescles() {
+  return rabbitMQ.singleton.demanderCertificatMaitreDesCles()
+  .then(certificat=>{
+    console.debug("Certificat maitredescles");
+    console.debug(certificat);
+
+    const clePublique = pki.extraireClePublique(certificat);
+
+    console.debug(clePublique);
+
+    // Enlever le wrapping pour faciliter l'usage pour le navigateur
+    return clePublique
+  })
 }
 
 const websocketapp = new WebSocketApp();

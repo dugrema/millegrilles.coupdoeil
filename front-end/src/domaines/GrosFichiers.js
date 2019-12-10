@@ -111,6 +111,20 @@ export class GrosFichiers extends React.Component {
       console.error("Erreur chargement document racine");
       console.error(err);
     });
+
+
+    // S'assurer que la cle publique du maitre des cles est disponible
+    if(!sessionStorage.clePubliqueMaitredescles) {
+      webSocketManager.emit('demandeClePubliqueMaitredescles', {})
+      .then(clePublique=>{
+        sessionStorage.clePubliqueMaitredescles = clePublique;
+      })
+      .catch(err=>{
+        console.error("Erreur demande cle publique du maitredescles");
+        console.error(err);
+      });
+    }
+
   }
 
   componentWillUnmount() {
