@@ -5,67 +5,86 @@ const cryptoHelper = new MilleGrillesCryptoHelper();
 export class UploadFichierSocketio {
 
   uploadFichier(socket, uploadInfo) {
-    return cryptoHelper.creerCipherCrypterCleSecrete()
-    .then(infoCryptage=>{
+    console.debug("Upload fichier avec");
+    console.debug(uploadInfo);
 
-      const fichier = uploadInfo.acceptedFile;
-      let nomFichier = fichier.name;
-      let typeFichier = fichier.type;
-      let tailleFichier = fichier.size;
+    return new Promise((resolve, reject)=>{
 
-      let cipher = infoCryptage.cipher;
+      cryptoHelper.creerCipherCrypterCleSecrete()
+      .then(infoCryptage=>{
 
-      socket.emit('upload.nouveauFichier', {
-        nomFichier, typeFichier, tailleFichier,
-        iv: infoCryptage.iv, cleSecrete: infoCryptage.cleSecrete,
-      });
+        const fichier = uploadInfo.acceptedFile;
+        let nomFichier = fichier.name;
+        let typeFichier = fichier.type;
+        let tailleFichier = fichier.size;
 
-      let reader = fichier.stream().getReader();
+        let cipher = infoCryptage.cipher;
 
-      function read() {
-        return reader.read().then(({value, done})=>{
-          if(done) {
-            let contenuCrypte = cipher.final();
-            if(contenuCrypte.length > 0) {
-              socket.emit('upload.paquet', contenuCrypte.buffer);
-            }
-            return;
+        console.debug("Debut");
+        socket.emit('upload.nouveauFichier', {
+          nomFichier, typeFichier, tailleFichier,
+          iv: infoCryptage.iv, cleSecrete: infoCryptage.cleSecrete,
+        },
+        reponse=>{
+          console.debug("_executerUploadFichier, reponse serveur");
+          console.debug(reponse);
+
+          if(reponse.pret) {
+            // Demarrer upload
+            this._executerUploadFichier(socket, uploadInfo, cipher);
+          } else {
+            throw(reponse.erreur);
           }
-
-          // console.log("Contenu original");
-          // console.log(value);
-          let valueString = String.fromCharCode.apply(null, new Uint8Array(value));
-
-          let contenuCrypte = cipher.update(valueString, 'binary');
-
-          // console.log("Contenu crypte");
-          // console.log(contenuCrypte);
-
-          // console.log("Paquet de " + value.length + " bytes");
-          socket.emit('upload.paquet', contenuCrypte.buffer);
-
-          return read();
         });
-      } read(); // Demarrer boucle execution data
+      })
+      .catch(err=>{
+        reject(err); // Passer l'erreur
+      })
 
-    })
-    .catch(err=>{
+    });
+
+  }
+
+  _executerUploadFichier(socket, uploadInfo, cipher) {
+
+    const fichier = uploadInfo.acceptedFile;
+    let reader = fichier.stream().getReader();
+
+    function read() {
+      return reader.read().then(({value, done})=>{
+        if(done) {
+          console.debug("Dernier paquet");
+          let contenuCrypte = cipher.final();
+          if(contenuCrypte.length > 0) {
+            socket.emit('upload.paquet', contenuCrypte.buffer);
+          }
+          return;
+        }
+
+        console.debug("Paquet");
+        // console.log("Contenu original");
+        // console.log(value);
+        let valueString = String.fromCharCode.apply(null, new Uint8Array(value));
+
+        let contenuCrypte = cipher.update(valueString, 'binary');
+
+        // console.log("Contenu crypte");
+        // console.log(contenuCrypte);
+
+        // console.log("Paquet de " + value.length + " bytes");
+        socket.emit('upload.paquet', contenuCrypte.buffer);
+
+        return read();
+      });
+    }
+
+    // Demarrer boucle execution data
+    read().catch(err=>{
       console.error("Erreur upload, on marque le fichier en erreur");
       console.debug(err);
       this.uploadEnCours = false;  // Permet d'enchainer les uploads
-      // this.uploadTermine({
-      //   status: 'echec',
-      // })
       socket.emit('upload.annuler', {message: "Hourra!"});
 
-      // Attendre avant de poursuivre au prochain fichier
-      // this.uploadTermine({
-      //   status: 'echec',
-      // })
-      // this.uploadRetryTimer = setTimeout(()=>{
-      //   this.uploadEnCours = false;   // Reset flag pour permettre l'upload
-      //   this.uploaderProchainFichier();
-      // }, 10000);
       throw(err);
     })
     .finally(()=>{

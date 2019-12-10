@@ -119,6 +119,7 @@ class WebSocketApp {
         sessionManagement.addSocketConnection(socket)
       })
       .then(()=>{
+        console.debug("Authentification est completee");
         this.saveAuthenticated(socketResources);
         this.registerEvents(socketResources);
       }).catch(err=>{
@@ -148,7 +149,8 @@ class WebSocketApp {
     let channel = socketResources.mqChannel;
     let reply_q = socketResources.reply_q;
 
-    const ioUpload = new SocketIoUpload(socket);
+    // Enregistrer evenements upload
+    new SocketIoUpload().enregistrer(socket);
 
     socket.on('subscribe', message => {
       rabbitMQ.singleton.routingKeyManager

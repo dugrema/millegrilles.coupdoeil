@@ -242,7 +242,20 @@ export class ActionsUpload {
 
       const uploadInfo = this.reactModule.state.uploadsCourants[0];
 
-      this.webSocketManager.uploadFichier(uploadInfo);
+      this.webSocketManager.uploadFichier(uploadInfo)
+      .then(confirmation=>{
+        console.debug("Upload fichier termine");
+      })
+      .catch(err=>{
+        // Attendre avant de poursuivre au prochain fichier
+        this.uploadTermine({
+          status: 'echec',
+        })
+        this.uploadRetryTimer = setTimeout(()=>{
+          this.uploadEnCours = false;   // Reset flag pour permettre l'upload
+          this.uploaderProchainFichier();
+        }, 10000);
+      });
 
     } else {
       this.uploadEnCours = false;

@@ -24,7 +24,7 @@ class SocketIoUpload {
 
   nouveauFichier(infoFichier, callback) {
     console.debug("Demande de preparation d'upload de nouveau fichier");
-    console.debug(msg);
+    console.debug(infoFichier);
     this.infoFichier = infoFichier;
 
     // Ouvrir un streamWriter avec consignation.grosfichiers
