@@ -8,9 +8,14 @@ export class UploadFichierSocketio {
     console.debug("Upload fichier avec");
     console.debug(uploadInfo);
 
+    const clePubliqueMaitredescles = sessionStorage.clePubliqueMaitredescles;
+    if(!clePubliqueMaitredescles) {
+      throw new Error("Cle publique du maitre des cles n'est pas disponible, on ne peut pas crypter le fichier.");
+    }
+
     return new Promise((resolve, reject)=>{
 
-      cryptoHelper.creerCipherCrypterCleSecrete()
+      cryptoHelper.creerCipherCrypterCleSecrete(clePubliqueMaitredescles)
       .then(infoCryptage=>{
 
         const fichier = uploadInfo.acceptedFile;
@@ -25,7 +30,7 @@ export class UploadFichierSocketio {
         console.debug("Debut");
         socket.emit('upload.nouveauFichier', {
           nomFichier, typeFichier, tailleFichier, fuuid, securite,
-          iv: infoCryptage.iv, cleSecrete: infoCryptage.cleSecrete,
+          iv: infoCryptage.iv, cleSecreteCryptee: infoCryptage.cleSecreteCryptee,
         },
         reponse=>{
           console.debug("_executerUploadFichier, reponse serveur");

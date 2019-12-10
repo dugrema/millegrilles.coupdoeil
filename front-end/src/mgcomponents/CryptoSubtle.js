@@ -267,28 +267,32 @@ export class MilleGrillesCryptoHelper {
         let {cipher, key, iv} = cipher_key_iv;
         let keyString = key.toString('base64');
         let ivString = iv.toString('base64');
-        console.log("Secrets key=" + keyString + ", iv=" + ivString);
+        console.debug("Secrets key=" + keyString + ", iv=" + ivString);
 
         let contenuCrypte = cipher.update(contenuACrypter, 'utf8', 'base64');
         contenuCrypte += cipher.final('base64');
-        console.log("Contenu crypte: " + contenuCrypte);
+        console.debug("Contenu crypte: " + contenuCrypte);
 
         let resultat = {contenu: contenuACrypter, contenuCrypte, cleSecrete: keyString, iv: ivString};
         if(clePublique) {
+          console.debug("Crypte cle secrete avec cle publique du maitredescles");
           this.cryptageAsymetrique.crypterCleSecrete(clePublique, key)
           .then(cleSecreteCryptee=>{
               resultat.cleSecreteCryptee = btoa(String.fromCharCode.apply(null, new Uint8Array(cleSecreteCryptee)));
               resolve(resultat);
           })
           .catch(err=>{
+            console.error("Erreur cryptage cle secrete");
             reject(err);
           })
         } else {
+          console.debug("La cle secrete ne sera pas cryptee");
           resolve(resultat);
         }
 
       })
       .catch(err=>{
+        console.error("Erreur creation cipher crypte");
         reject(err);
       });
     })
@@ -305,9 +309,23 @@ export class MilleGrillesCryptoHelper {
         console.log("Secrets key=" + keyString + ", iv=" + ivString);
 
         // TODO : Crypter cle secrete avec la clePublique
-
-        let resultat = {cipher, cleSecrete: keyString, iv: ivString};
-        resolve(resultat);
+        if(clePublique) {
+          console.debug("Crypte cle secrete avec cle publique du maitredescles");
+          this.cryptageAsymetrique.crypterCleSecrete(clePublique, key)
+          .then(cleSecreteCryptee=>{
+            let resultat = {cipher, iv: ivString};
+            resultat.cleSecreteCryptee = btoa(String.fromCharCode.apply(null, new Uint8Array(cleSecreteCryptee)));
+            resolve(resultat);
+          })
+          .catch(err=>{
+            console.error("Erreur cryptage cle secrete");
+            reject(err);
+          })
+        } else {
+          console.debug("La cle secrete ne sera pas cryptee");
+          let resultat = {cipher, cleSecrete: keyString, iv: ivString};
+          resolve(resultat);
+        }
 
       })
       .catch(err=>{
