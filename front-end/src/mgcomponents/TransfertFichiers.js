@@ -71,6 +71,7 @@ export class UploadFichierSocketio {
             if(contenuCrypte.length > 0) {
               socket.emit('upload.paquet', contenuCrypte.buffer, terminer);
             }
+            return;
           }
 
           // console.debug("Paquet");

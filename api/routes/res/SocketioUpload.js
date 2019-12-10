@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const pki = require('./pki')
 const request = require('request');
+const { Readable } = require('stream');
 
 const serveurConsignation = process.env.MG_CONSIGNATION_HTTP || 'https://consignationfichiers';
 
@@ -12,8 +13,8 @@ class SocketIoUpload {
   constructor(rabbitMQ) {
     this.rabbitMQ = rabbitMQ;
     this.socket = null;
-    this.streamWriter = null;
     this.infoFichier = null;
+    this.chunkInput = new ChunkInput();
   }
 
   enregistrer(socket) {
@@ -34,7 +35,7 @@ class SocketIoUpload {
 
     // Ouvrir un streamWriter avec consignation.grosfichiers
     const crypte = infoFichier.encryptedSecretKey !== undefined;
-    this.streamWriter = this.creerOutputStream(infoFichier.fuuid, crypte);
+    this.creerOutputStream(infoFichier.fuuid, crypte);
 
     this.transmettreInformationCle(infoFichier)
     // .then(()=>{
@@ -51,14 +52,10 @@ class SocketIoUpload {
 
   }
 
-  paquet(msg, callback) {
-    console.debug("Paquet " + msg.length);
+  paquet(chunk, callback) {
+    console.debug("Paquet " + chunk.length);
 
-    if(this.streamWriter.writable) {
-      this.streamWriter.write(msg)
-    } else {
-      console.error("Stream pas writable");
-    }
+    this.chunkInput.ajouterChunk(chunk)
 
     // Transmettre une notification de paquet sauvegarde
     // Permet de synchroniser l'upload (style ACK)
@@ -69,7 +66,7 @@ class SocketIoUpload {
     console.debug("Fin");
     console.debug(msg);
 
-    this.streamWriter.end();
+    this.chunkInput.terminer()
 
     const sha256 = msg.sha256;
 
@@ -91,17 +88,17 @@ class SocketIoUpload {
       console.error(err);
     }
 
-    if(this.streamWriter) {
-      try {
-        this.streamWriter.destroy(err);
-      } catch (err2) {
-        console.warn("Erreur destroy");
-        console.warn(err2);
-      }
-    }
+    // if(this.streamWriter) {
+    //   try {
+    //     this.streamWriter.destroy(err);
+    //   } catch (err2) {
+    //     console.warn("Erreur destroy");
+    //     console.warn(err2);
+    //   }
+    // }
 
     this.infoFichier = null;
-    this.streamWriter = null;
+    // this.streamWriter = null;
 
     if(this.socket) {
       this.socket.emit('upload.annule');
@@ -120,21 +117,24 @@ class SocketIoUpload {
       agentOptions: {ca: pki.ca},  // Utilisation certificats SSL internes
     };
 
-    const outStream = request.put(options, (err, httpResponse, body) =>{
-      console.debug("Upload PUT complete pour " + fileUuid);
-      // console.debug(httpResponse);
-      console.debug("Response body");
-      console.debug(body);
+    new Promise((resolve, reject)=>{
+
+      const outStream = request.put(options, (err, httpResponse, body) =>{
+        console.debug("Upload PUT complete pour " + fileUuid);
+        // console.debug(httpResponse);
+        console.debug("Response body");
+        console.debug(body);
+
+      });
+      this.chunkInput.pipe(outStream);
+
+      outStream.on('error', reject);
+
+      outStream.on('end', resolve);
 
     });
 
-    new Promise((resolve, reject)=>{
-      outStream.on('error', reject);
-      outStream.on('end', resolve);
-    })
-
-    console.debug("Oustream cree, on retourne")
-    return outStream;
+    console.debug("Oustream cree + promise");
   }
 
   transmettreTransactionMetadata(infoFichier, sha256) {
@@ -180,6 +180,39 @@ class SocketIoUpload {
     return this.rabbitMQ.transmettreTransactionFormattee(transactionInformationCryptee, domaine);
   }
 
+}
+
+class ChunkInput extends Readable {
+  constructor(options) {
+    super(options);
+
+    // Buffer de reception pour les chunks, au besoin.
+    this.chunks = [];
+    this.termine = false;
+  }
+
+  ajouterChunk(chunk) {
+    if (!this.push(chunk)) {
+      console.debug("Ajout chunk au buffer");
+      this.chunks.push(chunk);
+    }
+  }
+
+  terminer() {
+    this.termine = true;
+    this.push(null);
+  }
+
+  // _read() will be called when the stream wants to pull more data in.
+  // The advisory size argument is ignored in this case.
+  _read(size) {
+    if(this.termine) {
+      this.push(null);
+    }
+    if(this.chunks.length > 0) {
+      this.push(this.chunks.shift());
+    }
+  }
 }
 
 module.exports = {SocketIoUpload};
