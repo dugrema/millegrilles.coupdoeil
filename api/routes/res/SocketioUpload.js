@@ -10,14 +10,18 @@ class SocketIoUpload {
     this.streamWriter = null;
 
     this.infoFichier = null;
+
+    this._enregistrer();
   }
 
-  enregistrer(socket) {
-    socket.on('upload.nouveauFichier', this.nouveauFichier.bind(this));
-    socket.on('upload.paquet', this.paquet.bind(this));
-    socket.on('upload.fin', this.fin.bind(this));
-    socket.on('upload.annuler', this.annulerTransfert.bind(this));
-    socket.on('disconnect', this.annulerTransfert.bind(this));
+  _enregistrer() {
+    console.debug("Enregistrer events SocketIoUpload");
+
+    this.socket.on('upload.nouveauFichier', this.nouveauFichier.bind(this));
+    this.socket.on('upload.paquet', this.paquet.bind(this));
+    this.socket.on('upload.fin', this.fin.bind(this));
+    this.socket.on('upload.annuler', this.annulerTransfert.bind(this));
+    this.socket.on('disconnect', this.annulerTransfert.bind(this));
   }
 
   nouveauFichier(infoFichier, callback) {
@@ -29,33 +33,33 @@ class SocketIoUpload {
     this.streamWriter = null;
 
     // Transmettre les transactions metadata et cles
-    this.transmettreTransactionMetadata(infoFichier)
-    .then(()=>{
-      return this.transmettreInformationCle(infoFichier);
-    })
-    .then(()=>{
+    // this.transmettreTransactionMetadata(infoFichier)
+    // .then(()=>{
+    //   return this.transmettreInformationCle(infoFichier);
+    // })
+    // .then(()=>{
       callback({pret: true});
-    })
-    .catch(err=>{
-      console.error("Erreur transmission metadata, on annule le transfert");
-
-      // Annuler transfert
-      callback({pret: false, erreur: err});
-
-      annulerTransfert();
-    });
+    // })
+    // .catch(err=>{
+    //   console.error("Erreur transmission metadata, on annule le transfert");
+    //
+    //   // Annuler transfert
+    //   callback({pret: false, erreur: err});
+    //
+    //   annulerTransfert();
+    // });
 
   }
 
   paquet(msg) {
     console.debug("Paquet " + msg.length);
-    this.streamWriter.write(msg);
+    // this.streamWriter.write(msg);
   }
 
   fin(msg) {
     console.debug("Fin");
     console.debug(msg);
-    this.streamWriter.close();
+    // this.streamWriter.close();
 
     // Cleanup
     this.streamWriter = null;
@@ -110,5 +114,4 @@ class SocketIoUpload {
 
 }
 
-const ioUpload = new IoUpload();
-module.exports = ioUpload;
+module.exports = {SocketIoUpload};

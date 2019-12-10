@@ -1,6 +1,7 @@
 var rabbitMQ = require('./routes/res/rabbitMQ');
 var fs = require('fs');
 var sessionManagement = require('./routes/res/sessionManagement');
+var {SocketIoUpload} = require('./routes/res/SocketioUpload')
 
 const {
     generateRegistrationChallenge,
@@ -146,6 +147,9 @@ class WebSocketApp {
     let socket = socketResources.socket;
     let channel = socketResources.mqChannel;
     let reply_q = socketResources.reply_q;
+
+    const ioUpload = SocketIoUpload(socket);
+    ioUpload.enregistrer(socket);
 
     socket.on('subscribe', message => {
       rabbitMQ.singleton.routingKeyManager
