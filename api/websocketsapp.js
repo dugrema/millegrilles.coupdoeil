@@ -148,8 +148,7 @@ class WebSocketApp {
     let channel = socketResources.mqChannel;
     let reply_q = socketResources.reply_q;
 
-    const ioUpload = SocketIoUpload(socket);
-    ioUpload.enregistrer(socket);
+    const ioUpload = new SocketIoUpload(socket);
 
     socket.on('subscribe', message => {
       rabbitMQ.singleton.routingKeyManager

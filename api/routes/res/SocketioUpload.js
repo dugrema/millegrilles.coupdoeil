@@ -5,17 +5,15 @@ const path = require('path');
 // via socket.io. Genere transactions nouvelleCle et metadata pour GrosFichiers.
 class SocketIoUpload {
 
-  constructor(socket) {
-    this.socket = socket;
+  constructor() {
+    this.socket = null;
     this.streamWriter = null;
-
     this.infoFichier = null;
-
-    this._enregistrer();
   }
 
-  _enregistrer() {
+  enregistrer(socket) {
     console.debug("Enregistrer events SocketIoUpload");
+    this.socket = socket;
 
     this.socket.on('upload.nouveauFichier', this.nouveauFichier.bind(this));
     this.socket.on('upload.paquet', this.paquet.bind(this));
@@ -79,7 +77,7 @@ class SocketIoUpload {
     this.infoFichier = null;
     this.streamWriter = null;
 
-    socket.emit('upload.annule');
+    this.socket.emit('upload.annule');
   }
 
   transmettreTransactionMetadata(infoFichier) {
