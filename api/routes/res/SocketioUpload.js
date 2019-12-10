@@ -1,11 +1,16 @@
 const fs = require('fs');
 const path = require('path');
+const pki = require('./pki')
+const request = require('request');
+
+const serveurConsignation = process.env.MG_CONSIGNATION_HTTP || 'https://consignationfichiers';
 
 // Classe qui supporte un upload par stream a partir d'un navigateur
 // via socket.io. Genere transactions nouvelleCle et metadata pour GrosFichiers.
 class SocketIoUpload {
 
-  constructor() {
+  constructor(rabbitMQ) {
+    this.rabbitMQ = rabbitMQ;
     this.socket = null;
     this.streamWriter = null;
     this.infoFichier = null;
@@ -28,13 +33,10 @@ class SocketIoUpload {
     this.infoFichier = infoFichier;
 
     // Ouvrir un streamWriter avec consignation.grosfichiers
-    this.streamWriter = null;
+    const crypte = infoFichier.encryptedSecretKey !== undefined;
+    this.streamWriter = this.creerOutputStream(infoFichier.fuuid, crypte);
 
-    // Transmettre les transactions metadata et cles
-    // this.transmettreTransactionMetadata(infoFichier)
-    // .then(()=>{
-    //   return this.transmettreInformationCle(infoFichier);
-    // })
+    this.transmettreInformationCle(infoFichier)
     // .then(()=>{
       callback({pret: true});
     // })
@@ -49,22 +51,46 @@ class SocketIoUpload {
 
   }
 
-  paquet(msg) {
+  paquet(msg, callback) {
     console.debug("Paquet " + msg.length);
-    // this.streamWriter.write(msg);
+
+    if(this.streamWriter.writable) {
+      this.streamWriter.write(msg)
+    } else {
+      console.error("Stream pas writable");
+    }
+
+    // Transmettre une notification de paquet sauvegarde
+    // Permet de synchroniser l'upload (style ACK)
+    if(callback) callback();
   }
 
   fin(msg) {
     console.debug("Fin");
     console.debug(msg);
-    // this.streamWriter.close();
 
-    // Cleanup
-    this.streamWriter = null;
-    this.infoFichier = null;
+    this.streamWriter.end();
+
+    const sha256 = msg.sha256;
+
+    // Transmettre les transactions metadata
+    return this.transmettreTransactionMetadata(this.infoFichier, sha256)
+    .then(()=>{
+      console.log("Transaction fin complete");
+    })
+    .finally(()=>{
+      // Cleanup
+      this.infoFichier = null;
+    });
+
   }
 
-  annulerTransfert() {
+  annulerTransfert(err) {
+    console.error("Annuler transfert fichier");
+    if(err) {
+      console.error(err);
+    }
+
     if(this.streamWriter) {
       try {
         this.streamWriter.destroy(err);
@@ -77,37 +103,81 @@ class SocketIoUpload {
     this.infoFichier = null;
     this.streamWriter = null;
 
-    this.socket.emit('upload.annule');
+    if(this.socket) {
+      this.socket.emit('upload.annule');
+    }
   }
 
-  transmettreTransactionMetadata(infoFichier) {
-    // let transactionNouvelleVersion = {
-    //   fuuid: fileUuid,
-    //   securite: securite,
-    //   nom: fichier.originalname,
-    //   taille: fichier.size,
-    //   mimetype: fichier.mimetype,
-    //   sha256: fichier.hash,
-    //   reception: {
-    //     methode: "coupdoeil",
-    //     "noeud": "public1.maple.mdugre.info"
-    //   }
-    // }
-    // if(documentuuid) {
-    //   transactionNouvelleVersion.documentuuid = documentuuid;
-    // }
+  creerOutputStream(fileUuid, crypte, paquet) {
+    let pathServeur = serveurConsignation + '/' +
+      path.join('grosfichiers', 'local', 'nouveauFichier', fileUuid);
+    let options = {
+      url: pathServeur,
+      headers: {
+        fileuuid: fileUuid,
+        encrypte: crypte,
+      },
+      agentOptions: {ca: pki.ca},  // Utilisation certificats SSL internes
+    };
+
+    const outStream = request.put(options, (err, httpResponse, body) =>{
+      console.debug("Upload PUT complete pour " + fileUuid);
+      // console.debug(httpResponse);
+      console.debug("Response body");
+      console.debug(body);
+
+    });
+
+    new Promise((resolve, reject)=>{
+      outStream.on('error', reject);
+      outStream.on('end', resolve);
+    })
+
+    console.debug("Oustream cree, on retourne")
+    return outStream;
+  }
+
+  transmettreTransactionMetadata(infoFichier, sha256) {
+    let transactionNouvelleVersion = {
+      fuuid: infoFichier.fuuid,
+      securite: infoFichier.securite,
+      nom: infoFichier.originalname,
+      taille: infoFichier.size,
+      mimetype: infoFichier.mimetype,
+      sha256: sha256,
+      reception: {
+        methode: "coupdoeil.navigateur",
+        "noeud": "public1.maple.mdugre.info"
+      }
+    }
+    if(infoFichier.documentuuid) {
+      transactionNouvelleVersion.documentuuid = infoFichier.documentuuid;
+    }
+    console.debug("Transaction metadata:");
+    console.debug(transactionNouvelleVersion);
+
+    let domaine = 'millegrilles.domaines.GrosFichiers.nouvelleVersion.metadata';
+
+    return this.rabbitMQ.transmettreTransactionFormattee(transactionNouvelleVersion, domaine);
+
   }
 
   transmettreInformationCle(infoFichier) {
-    // let transactionInformationCryptee = {
-    //   domaine: 'millegrilles.domaines.GrosFichiers',
-    //   'identificateurs_document': {
-    //     fuuid: fileUuid,
-    //   },
-    //   fingerprint: 'abcd',
-    //   cle: fichier.encryptedSecretKey,
-    //   iv: fichier.iv,
-    // };
+    let transactionInformationCryptee = {
+      domaine: 'millegrilles.domaines.GrosFichiers',
+      'identificateurs_document': {
+        fuuid: infoFichier.fileUuid,
+      },
+      fingerprint: infoFichier.fingerprint,
+      cle: infoFichier.encryptedSecretKey,
+      iv: infoFichier.iv,
+    };
+
+    console.debug("Information fichier cle ");
+    console.debug(transactionInformationCryptee);
+    let domaine = 'millegrilles.domaines.MaitreDesCles.nouvelleCle.grosFichier';
+
+    return this.rabbitMQ.transmettreTransactionFormattee(transactionInformationCryptee, domaine);
   }
 
 }

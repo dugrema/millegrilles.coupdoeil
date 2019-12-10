@@ -17,12 +17,14 @@ export class UploadFichierSocketio {
         let nomFichier = fichier.name;
         let typeFichier = fichier.type;
         let tailleFichier = fichier.size;
+        let fuuid = uploadInfo.fuuid;
+        let securite = uploadInfo.securite;
 
         let cipher = infoCryptage.cipher;
 
         console.debug("Debut");
         socket.emit('upload.nouveauFichier', {
-          nomFichier, typeFichier, tailleFichier,
+          nomFichier, typeFichier, tailleFichier, fuuid, securite,
           iv: infoCryptage.iv, cleSecrete: infoCryptage.cleSecrete,
         },
         reponse=>{
@@ -50,48 +52,62 @@ export class UploadFichierSocketio {
     const fichier = uploadInfo.acceptedFile;
     let reader = fichier.stream().getReader();
 
-    function read() {
-      return reader.read().then(({value, done})=>{
-        if(done) {
-          console.debug("Dernier paquet");
-          let contenuCrypte = cipher.final();
-          if(contenuCrypte.length > 0) {
-            socket.emit('upload.paquet', contenuCrypte.buffer);
+    return new Promise((resolve, reject)=> {
+
+      function terminer() {
+        console.log("Upload termine");
+        socket.emit('upload.fin', {sha256: "mon sha est mort"});
+        this.uploadEnCours = false;
+        resolve();
+      };
+
+      function read() {
+        console.debug("Read invoque");
+        //return
+        reader.read().then(({value, done})=>{
+          if(done) {
+            console.debug("Dernier paquet");
+            let contenuCrypte = cipher.final();
+            if(contenuCrypte.length > 0) {
+              socket.emit('upload.paquet', contenuCrypte.buffer, terminer);
+            }
           }
-          return;
-        }
 
-        console.debug("Paquet");
-        // console.log("Contenu original");
-        // console.log(value);
-        let valueString = String.fromCharCode.apply(null, new Uint8Array(value));
+          // console.debug("Paquet");
+          // console.log("Contenu original");
+          // console.log(value);
+          let valueString = String.fromCharCode.apply(null, new Uint8Array(value));
 
-        let contenuCrypte = cipher.update(valueString, 'binary');
+          let contenuCrypte = cipher.update(valueString, 'binary');
 
-        // console.log("Contenu crypte");
-        // console.log(contenuCrypte);
+          // console.log("Contenu crypte");
+          // console.log(contenuCrypte);
 
-        // console.log("Paquet de " + value.length + " bytes");
-        socket.emit('upload.paquet', contenuCrypte.buffer);
+          // console.log("Paquet de " + value.length + " bytes");
+          socket.emit('upload.paquet', contenuCrypte.buffer, read);
 
-        return read();
-      });
-    }
+          // return read();
+        });
+      }
 
-    // Demarrer boucle execution data
-    read().catch(err=>{
-      console.error("Erreur upload, on marque le fichier en erreur");
-      console.debug(err);
-      this.uploadEnCours = false;  // Permet d'enchainer les uploads
-      socket.emit('upload.annuler', {message: "Hourra!"});
+      read();
+    });
 
-      throw(err);
-    })
-    .finally(()=>{
-      console.log("Fini!");
-      socket.emit('upload.fin', {message: "Hourra!"});
-      this.uploadEnCours = false;
-    })
+    // // Demarrer boucle execution data
+    // read().catch(err=>{
+    //   console.error("Erreur upload, on marque le fichier en erreur");
+    //   console.debug(err);
+    //   this.uploadEnCours = false;  // Permet d'enchainer les uploads
+    //   socket.emit('upload.annuler', {message: "Hourra!"});
+    //
+    //   throw(err);
+    // })
+    // .finally(()=>{
+    // function terminer() {
+    //   console.log("Upload termine");
+    //   socket.emit('upload.fin', {sha256: "mon sha est mort"});
+    //   this.uploadEnCours = false;
+    // })
   }
 
 }

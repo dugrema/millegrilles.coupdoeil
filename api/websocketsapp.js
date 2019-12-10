@@ -150,7 +150,7 @@ class WebSocketApp {
     let reply_q = socketResources.reply_q;
 
     // Enregistrer evenements upload
-    new SocketIoUpload().enregistrer(socket);
+    new SocketIoUpload(rabbitMQ.singleton).enregistrer(socket);
 
     socket.on('subscribe', message => {
       rabbitMQ.singleton.routingKeyManager

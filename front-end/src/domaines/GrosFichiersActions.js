@@ -1,4 +1,5 @@
 import axios from 'axios';
+import uuidv1 from 'uuid/v1';
 import {MilleGrillesCryptoHelper} from '../mgcomponents/CryptoSubtle';
 
 const cryptoHelper = new MilleGrillesCryptoHelper();
@@ -170,9 +171,18 @@ export class ActionsUpload {
     console.debug("Commencer upload");
     console.debug(fileInfo);
 
+    // Generer informations pour le fichier
+    const fuuid = uuidv1();
+
     // Copier array d'uploads courants, ajouter copie d'info fichiers
     let uploadsCourants = [...this.reactModule.state.uploadsCourants];
-    uploadsCourants.push({acceptedFile, ...fileInfo, progres: 0, path: acceptedFile.path});
+    uploadsCourants.push({
+      acceptedFile,
+      ...fileInfo,
+      fuuid,
+      progres: 0,
+      path: acceptedFile.path}
+    );
 
     // Mettre a jour la liste des uploads;
     this.reactModule.setState({uploadsCourants});

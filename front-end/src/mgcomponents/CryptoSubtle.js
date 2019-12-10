@@ -295,7 +295,7 @@ export class MilleGrillesCryptoHelper {
   }
 
   // Genere un cipher et crypter la cle secrete
-  creerCipherCrypterCleSecrete() {
+  creerCipherCrypterCleSecrete(clePublique) {
     return new Promise((resolve, reject)=>{
       this.creerCipherKey()
       .then(cipher_key_iv=>{
@@ -304,7 +304,7 @@ export class MilleGrillesCryptoHelper {
         let ivString = iv.toString('base64');
         console.log("Secrets key=" + keyString + ", iv=" + ivString);
 
-        // TODO : Crypter cle secrete.
+        // TODO : Crypter cle secrete avec la clePublique
 
         let resultat = {cipher, cleSecrete: keyString, iv: ivString};
         resolve(resultat);
