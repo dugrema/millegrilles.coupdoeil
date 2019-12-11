@@ -1,5 +1,6 @@
 import {MilleGrillesCryptoHelper} from '../mgcomponents/CryptoSubtle';
 
+const crypto = require('crypto');
 const cryptoHelper = new MilleGrillesCryptoHelper();
 
 export class UploadFichierSocketio {
@@ -66,11 +67,14 @@ export class UploadFichierSocketio {
     const fichier = uploadInfo.acceptedFile;
     let reader = fichier.stream().getReader();
 
+    const sha256Calc = crypto.createHash('sha256');
+
     return new Promise((resolve, reject)=> {
 
       function terminer() {
-        console.log("Upload termine");
-        socket.emit('upload.fin', {sha256: "mon sha est mort"});
+        var hashResult = sha256Calc.digest('hex');
+        console.log("Upload termine, sha256: " + hashResult);
+        socket.emit('upload.fin', {sha256: hashResult});
         resolve();
       };
 
@@ -83,6 +87,7 @@ export class UploadFichierSocketio {
             let contenuCrypte = cipher.final();
             if(contenuCrypte.length > 0) {
               socket.emit('upload.paquet', contenuCrypte.buffer);
+              sha256Calc.update(contenuCrypte);
             }
             terminer();
             return;
@@ -100,6 +105,8 @@ export class UploadFichierSocketio {
 
           // console.log("Paquet de " + value.length + " bytes");
           socket.emit('upload.paquet', contenuCrypte.buffer);
+          sha256Calc.update(contenuCrypte);
+
           read();
           // return read();
         });
