@@ -69,6 +69,9 @@ export class CryptageAsymetrique {
     });
   }
 
+  // Crypte une cle secrete. Passer la clePublique en format base64 (i.e. PEM
+  // sur une ligne sans wrappers) et la cleSecreteHexString en format
+  // hex (e.g. 64 chars cd0adcc5c75...)
   crypterCleSecrete(clePublique, cleSecreteHexString) {
     // var keyByteString = forge.util.bytesToHex(cleSecrete);
 

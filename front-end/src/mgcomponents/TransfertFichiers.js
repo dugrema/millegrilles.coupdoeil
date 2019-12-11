@@ -18,7 +18,7 @@ export class UploadFichierSocketio {
 
       const fichier = uploadInfo.acceptedFile;
       var promise;
-      if(!fichier.stream) {
+      if(fichier.stream) {
         console.debug("On peut streamer le fichier, on prend crypto");
         promise = cryptoHelper.creerCipherCrypterCleSecrete(clePubliqueMaitredescles);
       } else {
