@@ -17,11 +17,11 @@ function ab2hex(buffer) {
   return s;
 }
 
-function toHexString(byteArray) {
-  return Array.prototype.map.call(byteArray, function(byte) {
-    return ('0' + (byte & 0xFF).toString(16)).slice(-2);
-  }).join('');
-}
+// function toHexString(byteArray) {
+//   return Array.prototype.map.call(byteArray, function(byte) {
+//     return ('0' + (byte & 0xFF).toString(16)).slice(-2);
+//   }).join('');
+// }
 
 function toByteArray(hexString) {
   var result = [];
@@ -130,8 +130,8 @@ export class CryptageAsymetrique {
 
   decrypterCleSecrete(cleSecreteCryptee, clePrivee) {
     console.debug("Decrypter cle secrete");
-    console.debug("Cle privee")
-    console.warn(clePrivee);
+    // console.debug("Cle privee")
+    // console.warn(clePrivee);
     let clePriveeBuffer = str2ab(window.atob(clePrivee));
     // console.log(clePriveeBuffer);
     // console.log("Cle secrete cryptee");
@@ -248,9 +248,9 @@ export class CryptageSymetrique {
     console.debug("IV: ")
     console.debug(ivABView);
 
-    console.warn("Cle hex : " + cle);
+    // console.warn("Cle hex : " + cle);
     let cleArray = toByteArray(cle);
-    console.warn(cleArray);
+    // console.warn(cleArray);
 
     let cleABView = new Uint8Array(cleArray.length);
     for(let i=0; i<cleArray.length; i++) {
@@ -258,7 +258,7 @@ export class CryptageSymetrique {
       cleABView[i] = cleArray[i];
     }
     console.debug("Cle ABView ");
-    console.warn(cleABView);
+    // console.warn(cleABView);
 
     // Importer cle secrete format subtle
     return window.crypto.subtle.importKey(
@@ -477,8 +477,8 @@ export class MilleGrillesCryptoHelper {
       console.debug("Contenu decrypte :");
       // console.debug(contenuDecrypteString);
 
-      let dictDecrypte = JSON.parse(contenuDecrypteString);
-      console.log("Dict decrypte: ");
+      // let dictDecrypte = JSON.parse(contenuDecrypteString);
+      // console.log("Dict decrypte: ");
       // console.log(dictDecrypte);
 
       resolve(contenuDecrypteString);
@@ -490,13 +490,13 @@ export class MilleGrillesCryptoHelper {
     return cryptageAsymetrique.decrypterCleSecrete(cleSecreteCryptee, clePrivee)
     .then(cleBase64=>{
       console.debug("Cle secrete decryptee");
-      console.warn('Cle secrete b64 ' + cleBase64);
+      // console.warn('Cle secrete b64 ' + cleBase64);
 
       return cryptageSymetrique.chargerCleSecrete(cleBase64, iv)
       .then(resultatCle=>{
 
         console.debug("Cle secrete chargee");
-        console.warn(resultatCle);
+        // console.warn(resultatCle);
 
         let ivABView = resultatCle.iv;
         let cleSecreteSubtle = resultatCle.cleSecrete;

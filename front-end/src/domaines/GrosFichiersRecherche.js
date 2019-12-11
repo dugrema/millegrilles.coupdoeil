@@ -1,5 +1,5 @@
 import React from 'react';
-import webSocketManager from '../WebSocketManager';
+// import webSocketManager from '../WebSocketManager';
 
 import {filesizeformatter} from '../formatters';
 
@@ -116,7 +116,7 @@ export class AfficherRecherche extends React.Component {
         }
       });
 
-      if(resultats.length == 0) {
+      if(resultats.length === 0) {
         resultats = 'Aucuns résultats';
       }
 

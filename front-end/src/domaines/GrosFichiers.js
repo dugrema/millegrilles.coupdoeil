@@ -4,7 +4,7 @@ import './GrosFichiers.css';
 import webSocketManager from '../WebSocketManager';
 import {ActionsFavoris, ActionsUpload, ActionsDownload} from './GrosFichiersActions';
 import {Carnet, ActionsCarnet, AffichageCarnet} from './GrosFichiersCarnet';
-import {ActionsFichiers, AffichageFichier, ListeFichiers} from './GrosFichiersFichiers';
+import {ActionsFichiers, AffichageFichier} from './GrosFichiersFichiers';
 import {ActionsCollections, AffichageCollections, AffichageCollectionFigee} from './GrosFichiersCollections';
 import {ActionsRecherche, AfficherRecherche} from './GrosFichiersRecherche';
 

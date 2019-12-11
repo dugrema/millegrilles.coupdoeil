@@ -68,7 +68,7 @@ class FileSizeFormatter {
   }
 }
 
-class IconeTypeFichier {}
+// class IconeTypeFichier {}
 
 // Exports
 const dateformatter = new DateFormatter();

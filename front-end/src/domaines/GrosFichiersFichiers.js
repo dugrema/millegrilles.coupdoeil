@@ -469,7 +469,7 @@ export class ActiviteFichiers extends React.Component {
   checkEntree = event => {
     let uuid = event.currentTarget.value;
     let dataset = event.currentTarget.dataset;
-    let etat = !this.state.selection[uuid];
+    // let etat = !this.state.selection[uuid];
     console.debug("Selection " + uuid);
     this.props.actionsCarnet.toggle(uuid, {...dataset});
   }

@@ -34,7 +34,7 @@ export class UploadFichierSocketio {
         let fuuid = uploadInfo.fuuid;
         let securite = uploadInfo.securite;
 
-        let cipher = infoCryptage.cipher;
+        // let cipher = infoCryptage.cipher;
 
         console.debug("Debut");
         socket.emit('upload.nouveauFichier', {
@@ -143,21 +143,6 @@ export class UploadFichierSocketio {
       read();
     });
 
-    // // Demarrer boucle execution data
-    // read().catch(err=>{
-    //   console.error("Erreur upload, on marque le fichier en erreur");
-    //   console.debug(err);
-    //   this.uploadEnCours = false;  // Permet d'enchainer les uploads
-    //   socket.emit('upload.annuler', {message: "Hourra!"});
-    //
-    //   throw(err);
-    // })
-    // .finally(()=>{
-    // function terminer() {
-    //   console.log("Upload termine");
-    //   socket.emit('upload.fin', {sha256: "mon sha est mort"});
-    //   this.uploadEnCours = false;
-    // })
   }
 
 }

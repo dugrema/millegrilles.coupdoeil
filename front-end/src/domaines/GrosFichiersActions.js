@@ -176,7 +176,7 @@ export class ActionsDownload {
 
     let downloadUrl = this.reactModule.state.downloadUrl;
     let nomFichier = fichier.nom;
-    let contentType = fichier.mimetype;
+    // let contentType = fichier.mimetype;
     let securite = fichier.securite;
 
     return this.webSocketManager.demanderTokenTransfert()

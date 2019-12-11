@@ -4,7 +4,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 import webSocketManager from '../WebSocketManager';
 
 // import webSocketManager from '../WebSocketManager';
-import {dateformatter} from '../formatters'
+// import {dateformatter} from '../formatters'
 
 import {ActiviteFichiers} from './GrosFichiersFichiers';
 
@@ -136,7 +136,7 @@ export class ActionsNavigation {
     // console.debug("Stack navigation");
     // console.debug(stackNavigation);
 
-    let courant = stackNavigation.pop();  // Enlever page courante
+    stackNavigation.pop();  // Enlever page courante
     let revenirA = stackNavigation.pop(); // Celui qu'on veut
     if(revenirA) {
       // Mettre a jour la stack, la page va etre remise au chargement

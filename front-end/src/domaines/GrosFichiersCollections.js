@@ -277,8 +277,8 @@ export class AffichageCollections extends React.Component {
   }
 
   renderListeDocuments() {
-    let listeDocuments = [];
-    let uuid = this.props.collectionCourante.uuid;
+    // let listeDocuments = [];
+    // let uuid = this.props.collectionCourante.uuid;
 
     return(
       <div className="w3-card w3-round w3-white w3-card">
@@ -564,8 +564,8 @@ export class AffichageCollectionFigee extends React.Component {
   }
 
   renderListeDocuments() {
-    let listeDocuments = [];
-    let uuid = this.props.collectionCourante.uuid;
+    // let listeDocuments = [];
+    // let uuid = this.props.collectionCourante.uuid;
 
     return(
       <div className="w3-card w3-round w3-white w3-card">
@@ -594,10 +594,10 @@ export class AffichageCollectionFigee extends React.Component {
 
   renderCommentaire() {
     let collectionCourante = this.props.collectionCourante;
-    let cssEdition = '';
-    if(this.state.commentaires) {
-      cssEdition = 'edition-en-cours'
-    }
+    // let cssEdition = '';
+    // if(this.state.commentaires) {
+    //   cssEdition = 'edition-en-cours'
+    // }
 
     let boutonFavori;
     if(this.props.favorisParUuid[collectionCourante.uuid]) {
@@ -830,7 +830,7 @@ class AffichageListeCollectionsFigees extends React.Component {
         if(this.state.torrentsActifs) {
           const torrentInfo = this.state.torrentsActifs[hashstring];
 
-          if(torrentInfo && torrentInfo.status == 6) { // Seeding
+          if(torrentInfo && torrentInfo.status === 6) { // Seeding
             // Afficher bouton arret
             boutonsTorrent = (
               <button onClick={this.arreterTorrent} value={hashstring}>
