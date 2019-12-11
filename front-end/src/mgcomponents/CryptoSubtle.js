@@ -11,6 +11,12 @@ function str2ab(str) {
 
 }
 
+function ab2hex(buffer) {
+  var s = '', h = '0123456789abcdef';
+  (new Uint8Array(buffer)).forEach((v) => { s += h[v >> 4] + h[v & 15]; });
+  return s;
+}
+
 export class CryptageAsymetrique {
 
   algorithm = "RSA-OAEP";
@@ -33,22 +39,22 @@ export class CryptageAsymetrique {
           ["encrypt", "decrypt"]
         )
         .then(keyPair=>{
-          console.log("Cles generees");
-          console.log(keyPair);
+          console.debug("Cles generees");
+          // console.debug(keyPair);
 
           window.crypto.subtle.exportKey('spki', keyPair.publicKey)
           .then(clePublique=>{
-            console.log(clePublique);
+            console.debug(clePublique);
             window.crypto.subtle.exportKey('pkcs8', keyPair.privateKey)
             .then(clePrivee=>{
-              console.log(clePrivee);
+              // console.warn(clePrivee);
 
               let cles = {
                 clePrivee: btoa(String.fromCharCode.apply(null, new Uint8Array(clePrivee))),
                 clePublique: btoa(String.fromCharCode.apply(null, new Uint8Array(clePublique))),
               };
 
-              console.log(cles);
+              // console.warn(cles);
 
               resolve(cles);
             })
@@ -63,7 +69,7 @@ export class CryptageAsymetrique {
     });
   }
 
-  crypterCleSecrete(clePublique, cleSecrete) {
+  crypterCleSecrete(clePublique, cleSecreteHexString) {
     // var keyByteString = forge.util.bytesToHex(cleSecrete);
 
     console.log("Crypter cle secrete. Cle publique : ");
@@ -71,11 +77,12 @@ export class CryptageAsymetrique {
     let clePubliqueBuffer = str2ab(window.atob(clePublique));
     console.log(clePubliqueBuffer);
 
-    console.warn("Cle secrete");
-    console.warn(cleSecrete.toString());
-    let cleSecreteHex = cleSecrete.toString('hex');
-    console.warn(cleSecreteHex.toString());
-    let cleSecreteBuffer = str2ab(cleSecreteHex);
+    // console.warn("Cle secrete");
+    // console.warn(cleSecrete);
+    // let cleSecreteHex = cleSecrete.toString('hex');
+    // console.warn(cleSecreteHexString);
+    let cleSecreteBuffer = str2ab(cleSecreteHexString);
+    // console.warn(cleSecreteBuffer);
 
     return window.crypto.subtle.importKey(
       'spki',
@@ -89,8 +96,8 @@ export class CryptageAsymetrique {
     )
     .then(clePubliqueImportee=>{
 
-      console.log("Cle publique chargee");
-      console.log(clePubliqueImportee);
+      console.debug("Cle publique chargee");
+      console.debug(clePubliqueImportee);
 
       return window.crypto.subtle.encrypt(
         {
@@ -330,10 +337,19 @@ export class MilleGrillesCryptoHelper {
           console.debug("IV");
           console.debug(resultat.iv);
           resultat.bufferCrypte = result.bufferCrypte;
-          return cryptageAsymetrique.crypterCleSecrete(clePublique, result.cleSecrete)
+
+          // Preparer format cle secrete
+          let cleSecrete = result.cleSecreteExportee;
+          let cleSecreteHexString = ab2hex(cleSecrete);
+
+          // console.warn("Cle secrete hex string");
+          // console.warn(cleSecreteHexString);
+
+          return cryptageAsymetrique.crypterCleSecrete(clePublique, cleSecreteHexString);
         })
         .then(cleSecreteCryptee=>{
-          console.debug("Cle secrete cryptee");
+          console.debug("Cle secrete est cryptee");
+          console.debug(cleSecreteCryptee);
 
           resultat.cleSecreteCryptee = btoa(String.fromCharCode.apply(null, new Uint8Array(cleSecreteCryptee)));
           resolve(resultat);
@@ -355,15 +371,16 @@ export class MilleGrillesCryptoHelper {
       this.creerCipherKey()
       .then(cipher_key_iv=>{
         let {cipher, key, iv} = cipher_key_iv;
-        let keyString = key.toString('base64');
+        let keyHexString = key.toString('hex');
         let ivString = iv.toString('base64');
-        console.log("Secrets key=" + keyString + ", iv=" + ivString);
-        console.warn(key);
+        // console.warn("Secrets key=" + keyHexString + ", iv=" + ivString);
+        // console.warn(key);
 
         // Crypter cle secrete avec la clePublique
         if(clePublique) {
           console.debug("Crypte cle secrete avec cle publique du maitredescles");
-          cryptageAsymetrique.crypterCleSecrete(clePublique, key)
+
+          cryptageAsymetrique.crypterCleSecrete(clePublique, keyHexString)
           .then(cleSecreteCryptee=>{
             let resultat = {cipher, iv: ivString};
             resultat.cleSecreteCryptee = btoa(String.fromCharCode.apply(null, new Uint8Array(cleSecreteCryptee)));
@@ -375,7 +392,7 @@ export class MilleGrillesCryptoHelper {
           })
         } else {
           console.debug("La cle secrete ne sera pas cryptee");
-          let resultat = {cipher, cleSecrete: keyString, iv: ivString};
+          let resultat = {cipher, cleSecrete: keyHexString, iv: ivString};
           resolve(resultat);
         }
 
