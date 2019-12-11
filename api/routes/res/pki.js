@@ -207,8 +207,9 @@ class PKIUtils {
 
     var clePublique = clePubliquePEM
       .replace('-----BEGIN PUBLIC KEY-----', '')
-      .replace('-----END PUBLIC KEY-----', '')
-      .replace(/\n/g, '');
+      .replace('-----END PUBLIC KEY-----', '');
+    // Remplacer les \n pour mettre la cle sur une seule ligne
+    clePublique = clePublique.split('\n').join('');
 
     return clePublique;
   }
