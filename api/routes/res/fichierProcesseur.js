@@ -141,10 +141,32 @@ class ProcesseurDownloadCrypte {
     this.algorithm = 'aes-256-cbc';  // Meme algorithme utilise sur MG en Python
   }
 
+  getCleSecreteCryptee(fuuid) {
+
+    let routing = 'requete.millegrilles.domaines.MaitreDesCles.decryptageGrosFichier';
+    let requete = {
+      fuuid: fuuid
+    }
+
+    return rabbitMQ.singleton.transmettreRequete(routing, requete)
+    .then(reponse=>{
+      console.debug("Recu message pour decrypter fuuid: " + fuuid);
+      let messageContent = decodeURIComponent(escape(reponse.content));
+      let json_message = JSON.parse(messageContent);
+      if(json_message.acces)  {
+        if(json_message.acces === '0.refuse') {
+          throw new Error("Access refuse au fichier " + fuuid);
+        }
+      }
+      console.debug(json_message);
+      return {cle: json_message.cle, iv: json_message.iv};
+    });
+  }
+
   getDecipherPipe4fuuid(fuuid) {
     // On doit commencer par demander une cle pour decrypte le fichier
     // Ensuite on prepare un decipher pipe pour decrypter le contenu.
-
+    /*
     let routing = 'requete.millegrilles.domaines.MaitreDesCles.decryptageGrosFichier';
     let requete = {
       fuuid: fuuid
@@ -160,11 +182,13 @@ class ProcesseurDownloadCrypte {
           throw "Access refuse au fichier " + fuuid;
         }
       }
-      console.debug(json_message);
-      let cleSecrete = forge.util.decode64(json_message.cle);
-      let iv = Buffer.from(json_message.iv, 'base64');
-      console.debug("IV (" + iv.length + "): ");
-      console.debug(iv);
+      console.debug(json_message);*/
+    return this.getCleSecreteCryptee(fuuid)
+    .then(({cle, iv}) => {
+      let cleSecrete = forge.util.decode64(cle);
+      let ivBuffer = Buffer.from(iv, 'base64');
+      console.debug("IV (" + ivBuffer.length + "): ");
+      console.debug(ivBuffer);
 
       // Decrypter la cle secrete avec notre cle privee
       var decryptedSecretKey = this.key.decrypt(cleSecrete, 'RSA-OAEP', {
@@ -179,7 +203,7 @@ class ProcesseurDownloadCrypte {
       console.debug(decryptedSecretKey);
 
       // Creer un decipher stream
-      var decipher = crypto.createDecipheriv('aes256', decryptedSecretKey, iv);
+      var decipher = crypto.createDecipheriv('aes256', decryptedSecretKey, ivBuffer);
       return decipher;
 
       // let cleSecreteBuffer = decryptedSecretKey; //str2ab(window.atob(cleSecrete));

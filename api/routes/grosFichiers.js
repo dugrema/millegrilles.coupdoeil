@@ -95,16 +95,26 @@ router.post('/local/*', function(req, res, next) {
 
   let fuuid = req.body.fuuid;
   let securite = req.body.securite;
+  let fingerprint = req.body.fingerprint;
   console.debug("local fichier: " + req.url + " fuuid: " + fuuid + ", securite: " + securite);
 
   let promiseStream = null;
   if(securite === '3.protege' || securite === '4.secure') {
-    console.debug("Le fichier est crypte. On doit demander un pipe de decryptage");
-    promiseStream = fichierProcesseurDownloadCrypte.getDecipherPipe4fuuid(fuuid)
-    .then(pipeDecipher=>{
-      pipeDecipher.pipe(res);
-      return pipeDecipher; // Pipe au travers du decipher
-    })
+    console.debug("Le fichier est crypte.");
+
+    if(fingerprint) {
+      console.debug("Le navigateur est capable de decrypter, on demande la cle secrete cryptee");
+      
+
+    } else {
+      console.debug("Aucun fingerprint de navigateur, on doit demander un pipe de decryptage");
+      promiseStream = fichierProcesseurDownloadCrypte.getDecipherPipe4fuuid(fuuid)
+      .then(pipeDecipher=>{
+        pipeDecipher.pipe(res);
+        return pipeDecipher; // Pipe au travers du decipher
+      })
+    }
+
   } else {
     promiseStream = new Promise((resolve, reject)=>{
       resolve(res);  // Pipe directement aux resultats
