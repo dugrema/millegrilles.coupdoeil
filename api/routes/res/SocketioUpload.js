@@ -80,6 +80,10 @@ class SocketIoUpload {
     .then(()=>{
       console.log("Transaction fin complete");
     })
+    .catch(err=>{
+      console.error("Erreur transmission metadata");
+      console.error(err);
+    })
     .finally(()=>{
       // Cleanup
       this.infoFichier = null;

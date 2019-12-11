@@ -18,7 +18,7 @@ export class UploadFichierSocketio {
 
       const fichier = uploadInfo.acceptedFile;
       var promise;
-      if(!fichier.stream) {
+      if(fichier.stream) {
         console.debug("On peut streamer le fichier, on prend crypto");
         promise = cryptoHelper.creerCipherCrypterCleSecrete(clePubliqueMaitredescles);
       } else {
@@ -99,7 +99,7 @@ export class UploadFichierSocketio {
       };
 
       function read() {
-        console.debug("Read invoque");
+        // console.debug("Read invoque");
 
         reader.read().then(({value, done})=>{
           if(done) {
@@ -117,8 +117,8 @@ export class UploadFichierSocketio {
           }
 
           // console.debug("Paquet");
-          console.log("Contenu original");
-          console.log(value);
+          // console.log("Contenu original");
+          // console.log(value);
 
           let contenuCrypte;
           if(cipher) { // Crypter le contenu
@@ -128,8 +128,8 @@ export class UploadFichierSocketio {
             contenuCrypte = new Uint8Array(value); //{buffer: value};
           }
 
-          console.log("Contenu crypte");
-          console.log(contenuCrypte);
+          // console.log("Contenu crypte");
+          // console.log(contenuCrypte);
 
           // console.log("Paquet de " + value.length + " bytes");
           socket.emit('upload.paquet', contenuCrypte.buffer);
@@ -181,18 +181,18 @@ class BufferReader {
     const position = this.position;
     this.position += this.blockSize;
     const positionFin = this.position;
-    console.debug("Lecture block " + position + " a " + positionFin + " (taille " + tailleFichier + ")");
+    // console.debug("Lecture block " + position + " a " + positionFin + " (taille " + tailleFichier + ")");
 
     return new Promise((resolve, reject) => {
-      console.debug("Lecture position " + position);
+      // console.debug("Lecture position " + position);
 
       if(position < tailleFichier) {
         let buffer = this.buffer.slice(position, positionFin);
-        console.debug("Sliced buffer");
-        console.debug(buffer);
+        // console.debug("Sliced buffer");
+        // console.debug(buffer);
         let termine = positionFin >= tailleFichier;
 
-        console.debug("Termine? " + termine);
+        // console.debug("Termine? " + termine);
         // buffer = new Uint8Array(buffer);
         resolve({value: buffer, done: termine});
       } else {

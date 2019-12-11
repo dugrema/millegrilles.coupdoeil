@@ -66,13 +66,15 @@ export class CryptageAsymetrique {
   crypterCleSecrete(clePublique, cleSecrete) {
     // var keyByteString = forge.util.bytesToHex(cleSecrete);
 
-    console.log("Crypter cle secrete");
-    // console.log(clePublique);
+    console.log("Crypter cle secrete. Cle publique : ");
+    console.log(clePublique);
     let clePubliqueBuffer = str2ab(window.atob(clePublique));
-    // console.log(clePubliqueBuffer);
+    console.log(clePubliqueBuffer);
 
+    console.warn("Cle secrete");
+    console.warn(cleSecrete.toString());
     let cleSecreteHex = cleSecrete.toString('hex');
-    //console.log(cleSecreteHex.toString());
+    console.warn(cleSecreteHex.toString());
     let cleSecreteBuffer = str2ab(cleSecreteHex);
 
     return window.crypto.subtle.importKey(
@@ -190,7 +192,8 @@ export class CryptageSymetrique {
       clesIvLocal = clesIv;
       // console.log(clesIv.cleSecrete);
       // console.log('Cle secrete : ' + btoa(String.fromCharCode.apply(null, new Uint8Array(clesIv.cleSecreteExportee))));
-      console.log('iv : ' + btoa(String.fromCharCode.apply(null, new Uint8Array(clesIv.iv))));
+      clesIvLocal.ivString =  btoa(String.fromCharCode.apply(null, new Uint8Array(clesIv.iv)));
+      console.log('iv : ' + clesIvLocal.ivString);
 
       return window.crypto.subtle.encrypt(
         {
@@ -314,8 +317,6 @@ export class MilleGrillesCryptoHelper {
 
       var reader = new FileReader();
       var resultat = {};
-      var iv = null;
-      var bufferCrypte = null;
       reader.onload = function() {
         var buffer = reader.result;
         console.debug("Ficher charge dans buffer, taille " + buffer.byteLength);
@@ -325,7 +326,9 @@ export class MilleGrillesCryptoHelper {
         .then(result=>{
           console.debug("Contenu crypte charge dans buffer");
 
-          resultat.iv = result.iv;
+          resultat.iv = result.ivString;
+          console.debug("IV");
+          console.debug(resultat.iv);
           resultat.bufferCrypte = result.bufferCrypte;
           return cryptageAsymetrique.crypterCleSecrete(clePublique, result.cleSecrete)
         })
@@ -354,12 +357,13 @@ export class MilleGrillesCryptoHelper {
         let {cipher, key, iv} = cipher_key_iv;
         let keyString = key.toString('base64');
         let ivString = iv.toString('base64');
-        // console.log("Secrets key=" + keyString + ", iv=" + ivString);
+        console.log("Secrets key=" + keyString + ", iv=" + ivString);
+        console.warn(key);
 
         // Crypter cle secrete avec la clePublique
         if(clePublique) {
           console.debug("Crypte cle secrete avec cle publique du maitredescles");
-          this.cryptageAsymetrique.crypterCleSecrete(clePublique, key)
+          cryptageAsymetrique.crypterCleSecrete(clePublique, key)
           .then(cleSecreteCryptee=>{
             let resultat = {cipher, iv: ivString};
             resultat.cleSecreteCryptee = btoa(String.fromCharCode.apply(null, new Uint8Array(cleSecreteCryptee)));
