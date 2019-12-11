@@ -118,18 +118,35 @@ export class ActionsDownload {
       fuuid = fichier.fuuid_v_courante;
     }
 
-    let securite = fichier.securite;
     let nomFichier = fichier.nom;
-    let contentType = fichier.mimetype;
+    let securite = fichier.securite;
 
     console.debug("1. Bouton clique pour fichier " + nomFichier);
-    let form = this.refFormulaireDownload.current;
-    let downloadUrl = this.reactModule.state.downloadUrl;
 
-    console.debug("2. fuuide: " + fuuid);
+    if(securite === '3.protege' || securite === '4.secure') {
+      console.debug("2. Telecharger fichier crypte fuuide: " + fuuid);
+
+    } else {
+      console.debug("2. Telecharger fichier standard fuuide: " + fuuid);
+      let form = this.refFormulaireDownload.current;
+      this.telechargerViaForm(form, fuuid, fichier, opts)
+      .catch(err=>{
+        console.error("Erreur preparation download");
+        console.error(err);
+      })
+    }
+
+  }
+
+  telechargerViaForm(form, fuuid, fichier, opts) {
     // Demander un OTP pour telecharger le fichier
-    this.webSocketManager.demanderTokenTransfert()
+    return this.webSocketManager.demanderTokenTransfert()
     .then(token=>{
+      let downloadUrl = this.reactModule.state.downloadUrl;
+      let nomFichier = fichier.nom;
+      let contentType = fichier.mimetype;
+      let securite = fichier.securite;
+
       form.action = downloadUrl + "/" + nomFichier;
       form.fuuid.value = fuuid;
       form.nomfichier.value = nomFichier;
@@ -146,13 +163,7 @@ export class ActionsDownload {
 
       console.debug("2. Submit preparation, download " + form.action + ", recu token " + form.authtoken.value);
       form.submit(); // Token pret, submit.
-
     })
-    .catch(err=>{
-      console.error("Erreur preparation download");
-      console.error(err);
-    })
-
   }
 
 
