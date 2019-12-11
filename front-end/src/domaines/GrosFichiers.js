@@ -46,6 +46,10 @@ export class GrosFichiers extends React.Component {
       uploadsCourants: [], // Upload Q du navigateur
       uploadsCompletes: [], // Uploads en attente de confirmation via MQ
 
+      // Placeholder en memoire pour fichiers decryptes
+      // {nomFichier, contenu}
+      downloadDecrypte: null,
+
     };
 
     // Classe d'actions web
@@ -419,6 +423,7 @@ export class GrosFichiers extends React.Component {
               carnet={this.state.carnet}
               actionsNavigation={this.actionsNavigation}
               actionsUpload={this.actionsUpload}
+              downloadDecrypte={this.state.downloadDecrypte}
               actionRenommer={actionRenommer}
               documentuuid={documentuuid}
               />

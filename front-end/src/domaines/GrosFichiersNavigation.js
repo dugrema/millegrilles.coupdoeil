@@ -246,6 +246,16 @@ export class Entete extends React.Component {
       );
     }
 
+    let boutonDownload = null;
+    if(this.props.downloadDecrypte) {
+      // <button onClick={this.props.actionsNavigation.downloadFichier}>
+      boutonDownload = (
+        <a href={this.props.downloadDecrypte.contenu} download={this.props.downloadDecrypte.nomFichier}>
+          <i title="Telecharger" className="fa fa-download fa-2x"/>
+        </a>
+      );
+    }
+
     return(
       <div className="w3-card w3-round w3-white w3-card w3-card_BR">
         <div className="w3-container w3-padding">
@@ -261,6 +271,7 @@ export class Entete extends React.Component {
               <button onClick={this.props.actionsNavigation.afficherRecherche}>
                 <i title="Recherche" className="fa fa-search fa-2x"/>
               </button>
+              {boutonDownload}
             </div>
             <div className="w3-col m8 entete-titre">
               {elementTitre}

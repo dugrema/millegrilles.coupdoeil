@@ -224,7 +224,12 @@ export class ActionsDownload {
           console.log("Fichier est decrypte");
           const blobFichier = new Blob([new Uint8Array(bufferDecrypte)], {type: contentType});
           let dataUrl = window.URL.createObjectURL(blobFichier);
-          // this.setState({dataUrl});
+
+          // Conserver le fichier pour permettre le telechargement
+          this.reactModule.setState({downloadDecrypte: {
+            nomFichier,
+            contenu: dataUrl
+          }});
         })
         .catch(err=>{
           console.error("Erreur decryptage fichier telecharge");
