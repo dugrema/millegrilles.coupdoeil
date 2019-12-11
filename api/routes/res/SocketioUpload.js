@@ -35,7 +35,7 @@ class SocketIoUpload {
     this.chunkInput = new ChunkInput()
 
     // Ouvrir un streamWriter avec consignation.grosfichiers
-    const crypte = infoFichier.encryptedSecretKey !== undefined;
+    const crypte = infoFichier.cleSecreteCryptee !== undefined;
     this.creerOutputStream(infoFichier.fuuid, crypte);
 
     this.transmettreInformationCle(infoFichier)
@@ -171,6 +171,7 @@ class SocketIoUpload {
       },
       cle: infoFichier.cleSecreteCryptee,
       iv: infoFichier.iv,
+      securite: infoFichier.securite,
     };
 
     console.debug("Information fichier cle ");

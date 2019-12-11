@@ -137,6 +137,8 @@ class ProcesseurDownloadCrypte {
     this._charger_key(key=>{
       this.key = key;
     })
+
+    this.algorithm = 'aes-256-cbc';  // Meme algorithme utilise sur MG en Python
   }
 
   getDecipherPipe4fuuid(fuuid) {
@@ -179,6 +181,13 @@ class ProcesseurDownloadCrypte {
       // Creer un decipher stream
       var decipher = crypto.createDecipheriv('aes256', decryptedSecretKey, iv);
       return decipher;
+
+      // let cleSecreteBuffer = decryptedSecretKey; //str2ab(window.atob(cleSecrete));
+      // let ivBuffer = iv; //str2ab(window.atob(iv));
+
+      // console.log("Creer decipher secretKey: " + cleSecreteBuffer.toString('base64') + ", iv: " + ivBuffer.toString('base64'));
+      // var decipher = crypto.createDecipheriv(this.algorithm, cleSecreteBuffer, ivBuffer);
+      // return decipher;
     })
   }
 

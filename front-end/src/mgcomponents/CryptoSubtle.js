@@ -70,9 +70,10 @@ export class CryptageAsymetrique {
     console.log(clePublique);
     let clePubliqueBuffer = str2ab(window.atob(clePublique));
     console.log(clePubliqueBuffer);
-    console.log(cleSecrete);
 
-    let cleSecreteBuffer = str2ab(cleSecrete.toString('hex'));
+    let cleSecreteHex = cleSecrete.toString('hex');
+    //console.log(cleSecreteHex.toString());
+    let cleSecreteBuffer = str2ab(cleSecreteHex);
 
     return window.crypto.subtle.importKey(
       'spki',
