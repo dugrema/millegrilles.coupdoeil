@@ -17,6 +17,20 @@ function ab2hex(buffer) {
   return s;
 }
 
+function toHexString(byteArray) {
+  return Array.prototype.map.call(byteArray, function(byte) {
+    return ('0' + (byte & 0xFF).toString(16)).slice(-2);
+  }).join('');
+}
+
+function toByteArray(hexString) {
+  var result = [];
+  for (var i = 0; i < hexString.length; i += 2) {
+    result.push(parseInt(hexString.substr(i, 2), 16));
+  }
+  return result;
+}
+
 export class CryptageAsymetrique {
 
   algorithm = "RSA-OAEP";
@@ -115,8 +129,9 @@ export class CryptageAsymetrique {
   }
 
   decrypterCleSecrete(cleSecreteCryptee, clePrivee) {
-    console.log("Decrypter cle secrete");
-    // console.log(clePrivee);
+    console.debug("Decrypter cle secrete");
+    console.debug("Cle privee")
+    console.warn(clePrivee);
     let clePriveeBuffer = str2ab(window.atob(clePrivee));
     // console.log(clePriveeBuffer);
     // console.log("Cle secrete cryptee");
@@ -230,16 +245,23 @@ export class CryptageSymetrique {
     for(let i=0; i<iv.length; i++) {
       ivABView[i] = iv.charCodeAt(i);
     }
-    console.log(ivABView);
+    console.debug("IV: ")
+    console.debug(ivABView);
 
-    let cleABView = new Uint8Array(cle.length);
-    for(let i=0; i<cle.length; i++) {
-      cleABView[i] = cle.charCodeAt(i);
+    console.warn("Cle hex : " + cle);
+    let cleArray = toByteArray(cle);
+    console.warn(cleArray);
+
+    let cleABView = new Uint8Array(cleArray.length);
+    for(let i=0; i<cleArray.length; i++) {
+      //cleABView[i] = cleArray.charCodeAt(i);
+      cleABView[i] = cleArray[i];
     }
-    // console.log(cleABView);
+    console.debug("Cle ABView ");
+    console.warn(cleABView);
 
     // Importer cle secrete format subtle
-    return crypto.subtle.importKey(
+    return window.crypto.subtle.importKey(
       'raw',
       cleABView,
       {
@@ -254,13 +276,13 @@ export class CryptageSymetrique {
       // console.log(cleSecreteSubtle);
 
       return {cleSecrete: cleSecreteSubtle, iv: ivABView};
-    });
+    })
 
   }
 
   decrypterContenu(buffer, cleSecrete, iv) {
 
-    return crypto.subtle.decrypt(
+    return window.crypto.subtle.decrypt(
       {name: "AES-CBC", iv: iv},
       cleSecrete,
       buffer
@@ -461,6 +483,29 @@ export class MilleGrillesCryptoHelper {
 
       resolve(contenuDecrypteString);
     });
+  }
+
+  decrypterSubtle(contenuCrypte, cleSecreteCryptee, iv, clePrivee) {
+
+    return cryptageAsymetrique.decrypterCleSecrete(cleSecreteCryptee, clePrivee)
+    .then(cleBase64=>{
+      console.debug("Cle secrete decryptee");
+      console.warn('Cle secrete b64 ' + cleBase64);
+
+      return cryptageSymetrique.chargerCleSecrete(cleBase64, iv)
+      .then(resultatCle=>{
+
+        console.debug("Cle secrete chargee");
+        console.warn(resultatCle);
+
+        let ivABView = resultatCle.iv;
+        let cleSecreteSubtle = resultatCle.cleSecrete;
+
+        return cryptageSymetrique.decrypterContenu(contenuCrypte, cleSecreteSubtle, ivABView);
+
+      })
+    });
+
   }
 
 }

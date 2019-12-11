@@ -41,11 +41,14 @@ function _charger_certificat(cb) {
 //   multerCryptoStorageHandler.setCertificatMaitreDesCles(cert);
 // })
 
-const bodyParserHandler = bodyParser.urlencoded({ extended: false });
+const bodyParserHandler = bodyParser.urlencoded({ extended: true });
 
 function authentication(req, res, next) {
   // Pour le transfert de fichiers, il faut fournir un token de connexion
   let authtoken = req.headers.authtoken || req.body.authtoken;
+  console.debug("Headers ");
+  console.debug(req.headers);
+  console.debug(req.body);
   console.debug("AUTH: Recu token " + authtoken);
   if(sessionManagement.consommerToken(authtoken)) {
     // console.debug("Token consomme: " + authtoken + ", accepte.");
@@ -86,12 +89,14 @@ router.put(
   }
 );
 
-router.post('/local/*', function(req, res, next) {
+const noFileMulter = multer();
+
+router.post('/local/*', noFileMulter.none(), function(req, res, next) {
   console.debug("local POST " + req.url);
   // console.debug("Headers: ");
   // console.debug(req.headers);
-  // console.debug("Body: ");
-  // console.debug(req.body);
+  console.debug("/local POST Body: ");
+  console.debug(req.body);
 
   let fuuid = req.body.fuuid;
   let securite = req.body.securite;
@@ -108,7 +113,7 @@ router.post('/local/*', function(req, res, next) {
       .then((cleIv)=>{
         // Ajouter dict de cle et iv au response header
         res.set(cleIv);
-        
+
         // Pipe dans le result stream directement
         // Le decryptage va etre fait par le navigateur directement
         return res;

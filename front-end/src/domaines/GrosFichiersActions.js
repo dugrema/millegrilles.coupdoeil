@@ -123,9 +123,13 @@ export class ActionsDownload {
 
     console.debug("1. Bouton clique pour fichier " + nomFichier);
 
-    if(securite === '3.protege' || securite === '4.secure') {
+    if(localStorage.getItem('certificat.fingerprint') && (securite === '3.protege' || securite === '4.secure')) {
       console.debug("2. Telecharger fichier crypte fuuide: " + fuuid);
-
+      this.telechargerViaRequest(fuuid, fichier, opts)
+      .catch(err=>{
+        console.error("Erreur telechargement fichier crypte");
+        console.error(err);
+      })
     } else {
       console.debug("2. Telecharger fichier standard fuuide: " + fuuid);
       let form = this.refFormulaireDownload.current;
@@ -138,6 +142,7 @@ export class ActionsDownload {
 
   }
 
+  // Utilise un form.submit pour lancer le telechargement
   telechargerViaForm(form, fuuid, fichier, opts) {
     // Demander un OTP pour telecharger le fichier
     return this.webSocketManager.demanderTokenTransfert()
@@ -166,6 +171,70 @@ export class ActionsDownload {
     })
   }
 
+  // Utilise request.post pour telecharger, decrypte le contenu avant de l'exposer
+  telechargerViaRequest(fuuid, fichier, opts) {
+
+    let downloadUrl = this.reactModule.state.downloadUrl;
+    let nomFichier = fichier.nom;
+    let contentType = fichier.mimetype;
+    let securite = fichier.securite;
+
+    return this.webSocketManager.demanderTokenTransfert()
+    .then(token=>{
+      console.debug("Token download: " + token);
+      // let utiliseCache = {};
+      // if(this.state.fichierDate) {
+      //   utiliseCache['If-Modified-Since'] = this.state.fichierDate;
+      // }
+      // if(this.state.etag) {
+      //   utiliseCache['ETag'] = this.state.etag;
+      // }
+
+      var body = new FormData();
+      body.set('fuuid', fuuid);
+      body.set('securite', securite);
+      body.set('fingerprint', localStorage.getItem('certificat.fingerprint'));
+      body.set('authtoken', token);
+
+      // body = {
+      //   fuuid, securite,
+      //   authtoken: token,
+      //   fingerprint: localStorage.getItem('certificat.fingerprint')
+      // }
+
+      axios.post(downloadUrl + '/' + nomFichier, body, {
+        responseType: 'arraybuffer',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          // 'Content-Type': 'multipart/form-data',
+          'authtoken': token,
+        }
+      })
+      .then(response=>{
+        console.log("Resultat Download");
+        console.log(response.headers);
+        let contentType = response.headers['content-type']
+
+        let cleSecrete = response.headers.cle;
+        let iv = response.headers.iv;
+
+        // Decrypter
+        cryptoHelper.decrypterSubtle(response.data, cleSecrete, iv, localStorage.getItem('certificat.cleprivee'))
+        .then(bufferDecrypte=>{
+          console.log("Fichier est decrypte");
+          const blobFichier = new Blob([new Uint8Array(bufferDecrypte)], {type: contentType});
+          let dataUrl = window.URL.createObjectURL(blobFichier);
+          // this.setState({dataUrl});
+        })
+        .catch(err=>{
+          console.error("Erreur decryptage fichier telecharge");
+          console.error(err);
+        });
+
+      });
+
+    })
+  }
 
 }
 
