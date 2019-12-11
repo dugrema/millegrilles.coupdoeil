@@ -223,7 +223,7 @@ class SessionManagement {
     .then( reponseCertVerif => {
       console.debug("Response verification certificat");
       const contenuResponseCertVerif = JSON.parse(reponseCertVerif.content.toString('utf-8'));
-      console.debug(contenuResponseCertVerif);
+      // console.debug(contenuResponseCertVerif);
 
       if(contenuResponseCertVerif.valide && contenuResponseCertVerif.roles) {
         // Certificat est valide, on verifie que c'est bien un certificat de navigateur
@@ -233,14 +233,14 @@ class SessionManagement {
           let role = roles[idx];
           estRoleNavigateur = estRoleNavigateur || (role === 'coupdoeil.navigateur');
         }
-        console.log(estRoleNavigateur);
+        // console.log(estRoleNavigateur);
 
         if(estRoleNavigateur === true) {
           // C'est bien un certificat de navigateur. On genere un challenge
           // avec la cle publique.
           let pemCertificat = contenuResponseCertVerif.certificat;
           const certificat = pki.chargerCertificatPEM(pemCertificat);
-          console.log(certificat);
+          // console.log(certificat);
 
           pki.genererKeyAndIV((err, randVal)=>{
             if(err) {

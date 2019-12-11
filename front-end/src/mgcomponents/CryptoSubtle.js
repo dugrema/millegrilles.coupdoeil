@@ -67,9 +67,9 @@ export class CryptageAsymetrique {
     // var keyByteString = forge.util.bytesToHex(cleSecrete);
 
     console.log("Crypter cle secrete");
-    console.log(clePublique);
+    // console.log(clePublique);
     let clePubliqueBuffer = str2ab(window.atob(clePublique));
-    console.log(clePubliqueBuffer);
+    // console.log(clePubliqueBuffer);
 
     let cleSecreteHex = cleSecrete.toString('hex');
     //console.log(cleSecreteHex.toString());
@@ -104,11 +104,11 @@ export class CryptageAsymetrique {
 
   decrypterCleSecrete(cleSecreteCryptee, clePrivee) {
     console.log("Decrypter cle secrete");
-    console.log(clePrivee);
+    // console.log(clePrivee);
     let clePriveeBuffer = str2ab(window.atob(clePrivee));
-    console.log(clePriveeBuffer);
-    console.log("Cle secrete cryptee");
-    console.log(cleSecreteCryptee);
+    // console.log(clePriveeBuffer);
+    // console.log("Cle secrete cryptee");
+    // console.log(cleSecreteCryptee);
 
     return window.crypto.subtle.importKey(
       'pkcs8',
@@ -123,7 +123,7 @@ export class CryptageAsymetrique {
     .then(clePriveeImportee=>{
 
       console.log("Cle privee chargee");
-      console.log(clePriveeImportee);
+      // console.log(clePriveeImportee);
 
       let cleSecreteCrypteeBuffer = str2ab(window.atob(cleSecreteCryptee));
 
@@ -138,9 +138,9 @@ export class CryptageAsymetrique {
     })
     .then(cleSecreteDecryptee=>{
       console.log("Cle secrete decryptee");
-      console.log(cleSecreteDecryptee);
+      // console.log(cleSecreteDecryptee);
       let cleSecreteB64 = btoa(String.fromCharCode.apply(null, new Uint8Array(cleSecreteDecryptee)));
-      console.log(cleSecreteB64);
+      // console.log(cleSecreteB64);
       return cleSecreteB64;
     });
 
@@ -186,9 +186,9 @@ export class CryptageSymetrique {
     return this.genererCleSecreteIv()
     .then(clesIv=>{
       clesIvLocal = clesIv;
-      console.log(clesIv.cleSecrete);
-      console.log('Cle secrete : ' + btoa(String.fromCharCode.apply(null, new Uint8Array(clesIv.cleSecreteExportee))));
-      console.log('iv : ' + btoa(String.fromCharCode.apply(null, new Uint8Array(clesIv.iv))));
+      // console.log(clesIv.cleSecrete);
+      // console.log('Cle secrete : ' + btoa(String.fromCharCode.apply(null, new Uint8Array(clesIv.cleSecreteExportee))));
+      // console.log('iv : ' + btoa(String.fromCharCode.apply(null, new Uint8Array(clesIv.iv))));
 
       return crypto.subtle.encrypt(
         {
@@ -220,7 +220,7 @@ export class CryptageSymetrique {
     for(let i=0; i<cle.length; i++) {
       cleABView[i] = cle.charCodeAt(i);
     }
-    console.log(cleABView);
+    // console.log(cleABView);
 
     // Importer cle secrete format subtle
     return crypto.subtle.importKey(
@@ -235,7 +235,7 @@ export class CryptageSymetrique {
     )
     .then(cleSecreteSubtle=>{
       console.log("Cle subtle");
-      console.log(cleSecreteSubtle);
+      // console.log(cleSecreteSubtle);
 
       return {cleSecrete: cleSecreteSubtle, iv: ivABView};
     });
@@ -270,7 +270,7 @@ export class MilleGrillesCryptoHelper {
         let {cipher, key, iv} = cipher_key_iv;
         let keyString = key.toString('base64');
         let ivString = iv.toString('base64');
-        console.debug("Secrets key=" + keyString + ", iv=" + ivString);
+        // console.debug("Secrets key=" + keyString + ", iv=" + ivString);
 
         let contenuCrypte = cipher.update(contenuACrypter, 'utf8', 'base64');
         contenuCrypte += cipher.final('base64');
@@ -309,7 +309,7 @@ export class MilleGrillesCryptoHelper {
         let {cipher, key, iv} = cipher_key_iv;
         let keyString = key.toString('base64');
         let ivString = iv.toString('base64');
-        console.log("Secrets key=" + keyString + ", iv=" + ivString);
+        // console.log("Secrets key=" + keyString + ", iv=" + ivString);
 
         // Crypter cle secrete avec la clePublique
         if(clePublique) {
@@ -376,7 +376,7 @@ export class MilleGrillesCryptoHelper {
       let cleSecreteBuffer = str2ab(window.atob(cleSecrete));
       let ivBuffer = str2ab(window.atob(iv));
 
-      console.log("Creer decipher secretKey: " + cleSecreteBuffer.toString('base64') + ", iv: " + ivBuffer.toString('base64'));
+      // console.log("Creer decipher secretKey: " + cleSecreteBuffer.toString('base64') + ", iv: " + ivBuffer.toString('base64'));
       var decipher = crypto.createDecipheriv(this.algorithm, cleSecreteBuffer, ivBuffer);
 
       console.log("Decrypter " + contenuCrypte.toString('base64'));
@@ -384,11 +384,11 @@ export class MilleGrillesCryptoHelper {
       contenuDecrypteString += decipher.final('utf8');
 
       console.debug("Contenu decrypte :");
-      console.debug(contenuDecrypteString);
+      // console.debug(contenuDecrypteString);
 
       let dictDecrypte = JSON.parse(contenuDecrypteString);
       console.log("Dict decrypte: ");
-      console.log(dictDecrypte);
+      // console.log(dictDecrypte);
 
       resolve(contenuDecrypteString);
     });
