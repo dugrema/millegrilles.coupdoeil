@@ -141,11 +141,19 @@ class ProcesseurDownloadCrypte {
     this.algorithm = 'aes-256-cbc';  // Meme algorithme utilise sur MG en Python
   }
 
-  getCleSecreteCryptee(fuuid) {
+  // Demande au maitredescles de transmettre la cle secrete du fichier.
+  // Par defaut, le certificat utilise pour re-encrypter la cle est celui de
+  // CoupDOeil api, mais si le fingerprint du navigateur est fourni c'est plutot
+  // ce certificat qui sera utilise.
+  getCleSecreteCryptee(fuuid, fingerprint) {
 
     let routing = 'requete.millegrilles.domaines.MaitreDesCles.decryptageGrosFichier';
     let requete = {
       fuuid: fuuid
+    }
+    if(fingerprint) {
+      // Ajouter le fingerprint du certificat a utiliser pour re-encrypter la cle
+      requete.fingerprint = fingerprint;
     }
 
     return rabbitMQ.singleton.transmettreRequete(routing, requete)

@@ -104,7 +104,15 @@ router.post('/local/*', function(req, res, next) {
 
     if(fingerprint) {
       console.debug("Le navigateur est capable de decrypter, on demande la cle secrete cryptee");
-      
+      promiseStream = fichierProcesseurDownloadCrypte.getCleSecreteCryptee(fuuid, fingerprint)
+      .then((cleIv)=>{
+        // Ajouter dict de cle et iv au response header
+        res.set(cleIv);
+        
+        // Pipe dans le result stream directement
+        // Le decryptage va etre fait par le navigateur directement
+        return res;
+      });
 
     } else {
       console.debug("Aucun fingerprint de navigateur, on doit demander un pipe de decryptage");
@@ -117,7 +125,7 @@ router.post('/local/*', function(req, res, next) {
 
   } else {
     promiseStream = new Promise((resolve, reject)=>{
-      resolve(res);  // Pipe directement aux resultats
+      resolve(res);  // Retourne result stream directement
     })
   }
 
