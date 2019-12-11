@@ -63,7 +63,7 @@ export class CryptageAsymetrique {
     });
   }
 
-  crypterCleSecrete(clePublique, cleSecrete, iv) {
+  crypterCleSecrete(clePublique, cleSecrete) {
     // var keyByteString = forge.util.bytesToHex(cleSecrete);
 
     console.log("Crypter cle secrete");
@@ -153,7 +153,7 @@ export class CryptageSymetrique {
     var cleSecreteLocal = null;
     var cleSecreteExporteeLocal = null;
 
-    return crypto.subtle.generateKey(
+    return window.crypto.subtle.generateKey(
       {
         name: 'AES-CBC',
         length: 256,
@@ -161,12 +161,14 @@ export class CryptageSymetrique {
       true,
       ['encrypt', 'decrypt']
     ).then(cleSecrete=>{
+      console.debug("Cle secrete generee");
       cleSecreteLocal = cleSecrete;
 
       // Exporter et crypter cle secrete
-      return crypto.subtle.exportKey('raw', cleSecrete);
+      return window.crypto.subtle.exportKey('raw', cleSecrete);
     })
     .then(cleSecreteExportee=>{
+      console.debug("Cle secrete exportee");
       cleSecreteExporteeLocal = cleSecreteExportee;
 
       const iv = new ArrayBuffer(16);
@@ -188,9 +190,9 @@ export class CryptageSymetrique {
       clesIvLocal = clesIv;
       // console.log(clesIv.cleSecrete);
       // console.log('Cle secrete : ' + btoa(String.fromCharCode.apply(null, new Uint8Array(clesIv.cleSecreteExportee))));
-      // console.log('iv : ' + btoa(String.fromCharCode.apply(null, new Uint8Array(clesIv.iv))));
+      console.log('iv : ' + btoa(String.fromCharCode.apply(null, new Uint8Array(clesIv.iv))));
 
-      return crypto.subtle.encrypt(
+      return window.crypto.subtle.encrypt(
         {
           name: "AES-CBC",
           iv: clesIv.iv
@@ -200,6 +202,7 @@ export class CryptageSymetrique {
       )
     })
     .then(bufferCrypte=>{
+      console.debug("Fichier crypte dans buffer");
       return ({...clesIvLocal, bufferCrypte});
     });
   }
@@ -254,13 +257,16 @@ export class CryptageSymetrique {
 
 }
 
+const cryptageAsymetrique = new CryptageAsymetrique();
+const cryptageSymetrique = new CryptageSymetrique();
+
 export class MilleGrillesCryptoHelper {
 
   algorithm = 'aes-256-cbc';  // Meme algorithme utilise sur MG en Python
   rsaAlgorithm = 'RSA-OAEP';
-  cryptageAsymetrique = new CryptageAsymetrique();
 
   crypter(dictACrypter, clePublique) {
+
     return new Promise((resolve, reject)=>{
       let contenuACrypter = JSON.stringify(dictACrypter);
 
@@ -279,7 +285,7 @@ export class MilleGrillesCryptoHelper {
         let resultat = {contenu: contenuACrypter, contenuCrypte, cleSecrete: keyString, iv: ivString};
         if(clePublique) {
           console.debug("Crypte cle secrete avec cle publique du maitredescles");
-          this.cryptageAsymetrique.crypterCleSecrete(clePublique, key)
+          cryptageAsymetrique.crypterCleSecrete(clePublique, key)
           .then(cleSecreteCryptee=>{
               resultat.cleSecreteCryptee = btoa(String.fromCharCode.apply(null, new Uint8Array(cleSecreteCryptee)));
               resolve(resultat);
@@ -299,6 +305,45 @@ export class MilleGrillesCryptoHelper {
         reject(err);
       });
     })
+  }
+
+  crypterFichier(clePublique, acceptedFile) {
+
+    return new Promise((resolve, reject) => {
+      console.debug("Crypter fichier avec clePublique");
+
+      var reader = new FileReader();
+      var resultat = {};
+      var iv = null;
+      var bufferCrypte = null;
+      reader.onload = function() {
+        var buffer = reader.result;
+        console.debug("Ficher charge dans buffer, taille " + buffer.byteLength);
+
+        // Crypter le fichier. Genere la cle secrete et le iv
+        cryptageSymetrique.crypterContenu(buffer)
+        .then(result=>{
+          console.debug("Contenu crypte charge dans buffer");
+
+          resultat.iv = result.iv;
+          resultat.bufferCrypte = result.bufferCrypte;
+          return cryptageAsymetrique.crypterCleSecrete(clePublique, result.cleSecrete)
+        })
+        .then(cleSecreteCryptee=>{
+          console.debug("Cle secrete cryptee");
+
+          resultat.cleSecreteCryptee = btoa(String.fromCharCode.apply(null, new Uint8Array(cleSecreteCryptee)));
+          resolve(resultat);
+        })
+        .catch(err=>{
+          console.error("Erreur dans crypterFichier");
+          reject(err);
+        })
+      };
+
+      reader.readAsArrayBuffer(acceptedFile);
+    });
+
   }
 
   // Genere un cipher et crypter la cle secrete

@@ -39,24 +39,28 @@ class SocketIoUpload {
     this.creerOutputStream(infoFichier.fuuid, crypte);
 
     this.transmettreInformationCle(infoFichier)
-    .then(()=>{
+    //.then(()=>{
       callback({pret: true});
-    })
-    .catch(err=>{
-      console.error("Erreur transmission metadata, on annule le transfert");
-
-      // Annuler transfert
-      callback({pret: false, erreur: err});
-
-      annulerTransfert();
-    });
+    // })
+    // .catch(err=>{
+    //   console.error("Erreur transmettreInformationCle, on annule le transfert");
+    //
+    //   // Annuler transfert
+    //   callback({pret: false, erreur: err});
+    //
+    //   this.annulerTransfert();
+    // });
 
   }
 
   paquet(chunk, callback) {
-    console.debug("Paquet " + chunk.length);
-
-    this.chunkInput.ajouterChunk(chunk)
+    if(chunk && chunk.length) {
+      console.debug("Paquet " + chunk.length);
+      this.chunkInput.ajouterChunk(chunk)
+    } else {
+      console.debug("Paquet vide, on l'ignore");
+      console.debug(chunk);
+    }
 
     // Transmettre une notification de paquet sauvegarde
     // Permet de synchroniser l'upload (style ACK)

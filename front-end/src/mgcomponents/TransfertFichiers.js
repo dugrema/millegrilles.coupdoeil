@@ -16,10 +16,18 @@ export class UploadFichierSocketio {
 
     return new Promise((resolve, reject)=>{
 
-      cryptoHelper.creerCipherCrypterCleSecrete(clePubliqueMaitredescles)
-      .then(infoCryptage=>{
+      const fichier = uploadInfo.acceptedFile;
+      var promise;
+      if(!fichier.stream) {
+        console.debug("On peut streamer le fichier, on prend crypto");
+        promise = cryptoHelper.creerCipherCrypterCleSecrete(clePubliqueMaitredescles);
+      } else {
+        console.debug("On ne peut pas streamer le fichier, on prend subtle");
+        promise = cryptoHelper.crypterFichier(clePubliqueMaitredescles, fichier);
+      }
 
-        const fichier = uploadInfo.acceptedFile;
+      promise.then(infoCryptage=>{
+
         let nomFichier = fichier.name;
         let typeFichier = fichier.type;
         let tailleFichier = fichier.size;
@@ -40,7 +48,7 @@ export class UploadFichierSocketio {
 
           if(reponse.pret) {
             // Demarrer upload
-            this._executerUploadFichier(socket, uploadInfo, cipher)
+            this._executerUploadFichier(socket, uploadInfo, infoCryptage)
             .then(()=>{
               console.debug("Fin _executerUploadFichier");
               resolve();
@@ -62,10 +70,22 @@ export class UploadFichierSocketio {
 
   }
 
-  _executerUploadFichier(socket, uploadInfo, cipher) {
+  // Execute l'upload.
+  _executerUploadFichier(socket, uploadInfo, infoCryptage) {
 
     const fichier = uploadInfo.acceptedFile;
-    let reader = fichier.stream().getReader();
+
+    // L'upload a 2 modes d'operation: si le .stream() est disponible, on
+    // executer la lecture du fichier par blocks et on l'encrypte avec un cipher.
+    // Pour les appareils mobiles, .stream() n'est pas disponible sur acceptedFile -
+    // le bufferCrypte est prepare a l'avance via subtle et il ne reste qu'a le transmettre.
+    const cipher = infoCryptage.cipher; // Peut etre null
+    let reader;
+    if(infoCryptage.bufferCrypte) {
+      reader = new BufferReader(infoCryptage.bufferCrypte);
+    } else {
+      reader = fichier.stream().getReader();
+    }
 
     const sha256Calc = crypto.createHash('sha256');
 
@@ -80,12 +100,15 @@ export class UploadFichierSocketio {
 
       function read() {
         console.debug("Read invoque");
-        //return
+
         reader.read().then(({value, done})=>{
           if(done) {
             console.debug("Dernier paquet");
-            let contenuCrypte = cipher.final();
-            if(contenuCrypte.length > 0) {
+            let contenuCrypte = value;
+            if(cipher) { // Crypter le contenu
+              contenuCrypte = cipher.final();
+            }
+            if(contenuCrypte && contenuCrypte.length > 0) {
               socket.emit('upload.paquet', contenuCrypte.buffer);
               sha256Calc.update(contenuCrypte);
             }
@@ -94,14 +117,19 @@ export class UploadFichierSocketio {
           }
 
           // console.debug("Paquet");
-          // console.log("Contenu original");
-          // console.log(value);
-          let valueString = String.fromCharCode.apply(null, new Uint8Array(value));
+          console.log("Contenu original");
+          console.log(value);
 
-          let contenuCrypte = cipher.update(valueString, 'binary');
+          let contenuCrypte;
+          if(cipher) { // Crypter le contenu
+            let valueString = String.fromCharCode.apply(null, new Uint8Array(value));
+            contenuCrypte = cipher.update(valueString, 'binary');
+          } else { // Contenu deja crypte
+            contenuCrypte = new Uint8Array(value); //{buffer: value};
+          }
 
-          // console.log("Contenu crypte");
-          // console.log(contenuCrypte);
+          console.log("Contenu crypte");
+          console.log(contenuCrypte);
 
           // console.log("Paquet de " + value.length + " bytes");
           socket.emit('upload.paquet', contenuCrypte.buffer);
@@ -130,6 +158,48 @@ export class UploadFichierSocketio {
     //   socket.emit('upload.fin', {sha256: "mon sha est mort"});
     //   this.uploadEnCours = false;
     // })
+  }
+
+}
+
+// Simule un streamReader pour les besoins du transfert
+class BufferReader {
+
+  constructor(buffer) {
+    this.buffer = new Uint8Array(buffer);
+    this.position = 0;
+    this.blockSize = 64 * 1024;
+
+    if(!buffer.byteLength) {
+      throw new Error("Buffer n'a pas de taille ou invalide");
+    }
+  }
+
+  read() {
+    // Changer la position avant l'execution de la Promise
+    const tailleFichier = this.buffer.byteLength;
+    const position = this.position;
+    this.position += this.blockSize;
+    const positionFin = this.position;
+    console.debug("Lecture block " + position + " a " + positionFin + " (taille " + tailleFichier + ")");
+
+    return new Promise((resolve, reject) => {
+      console.debug("Lecture position " + position);
+
+      if(position < tailleFichier) {
+        let buffer = this.buffer.slice(position, positionFin);
+        console.debug("Sliced buffer");
+        console.debug(buffer);
+        let termine = positionFin >= tailleFichier;
+
+        console.debug("Termine? " + termine);
+        // buffer = new Uint8Array(buffer);
+        resolve({value: buffer, done: termine});
+      } else {
+        reject(new Error("BufferReader deja ferme."));
+      }
+
+    });
   }
 
 }
