@@ -6,8 +6,8 @@ const cryptoHelper = new MilleGrillesCryptoHelper();
 export class UploadFichierSocketio {
 
   uploadFichier(socket, uploadInfo) {
-    console.debug("Upload fichier avec");
-    console.debug(uploadInfo);
+    // console.debug("Upload fichier avec");
+    // console.debug(uploadInfo);
 
     const clePubliqueMaitredescles = sessionStorage.clePubliqueMaitredescles;
     if(!clePubliqueMaitredescles) {
@@ -19,10 +19,10 @@ export class UploadFichierSocketio {
       const fichier = uploadInfo.acceptedFile;
       var promise;
       if(fichier.stream) {
-        console.debug("On peut streamer le fichier, on prend crypto");
+        // console.debug("On peut streamer le fichier, on prend crypto");
         promise = cryptoHelper.creerCipherCrypterCleSecrete(clePubliqueMaitredescles);
       } else {
-        console.debug("On ne peut pas streamer le fichier, on prend subtle");
+        // console.debug("On ne peut pas streamer le fichier, on prend subtle");
         promise = cryptoHelper.crypterFichier(clePubliqueMaitredescles, fichier);
       }
 
@@ -36,21 +36,21 @@ export class UploadFichierSocketio {
 
         // let cipher = infoCryptage.cipher;
 
-        console.debug("Debut");
+        // console.debug("Debut");
         socket.emit('upload.nouveauFichier', {
           nomFichier, typeFichier, tailleFichier, fuuid, securite,
           iv: infoCryptage.iv,
           cleSecreteCryptee: infoCryptage.cleSecreteCryptee,
         },
         reponse=>{
-          console.debug("_executerUploadFichier, reponse serveur");
-          console.debug(reponse);
+          // console.debug("_executerUploadFichier, reponse serveur");
+          // console.debug(reponse);
 
           if(reponse.pret) {
             // Demarrer upload
             this._executerUploadFichier(socket, uploadInfo, infoCryptage)
             .then(()=>{
-              console.debug("Fin _executerUploadFichier");
+              // console.debug("Fin _executerUploadFichier");
               resolve();
             })
             .catch(err=>{
@@ -93,7 +93,7 @@ export class UploadFichierSocketio {
 
       function terminer() {
         var hashResult = sha256Calc.digest('hex');
-        console.log("Upload termine, sha256: " + hashResult);
+        // console.log("Upload termine, sha256: " + hashResult);
         socket.emit('upload.fin', {sha256: hashResult});
         resolve();
       };
@@ -103,7 +103,7 @@ export class UploadFichierSocketio {
 
         reader.read().then(({value, done})=>{
           if(done) {
-            console.debug("Dernier paquet");
+            // console.debug("Dernier paquet");
             let contenuCrypte = value;
             if(cipher) { // Crypter le contenu
               contenuCrypte = cipher.final();

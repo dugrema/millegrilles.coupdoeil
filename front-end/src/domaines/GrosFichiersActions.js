@@ -13,7 +13,7 @@ export class ActionsFavoris {
 
   ajouterFavori = event => {
     let uuidFavori = event.currentTarget.value;
-    console.debug("Ajouter favori " + uuidFavori);
+    // console.debug("Ajouter favori " + uuidFavori);
 
     let transaction = {
       "uuid": uuidFavori,
@@ -22,7 +22,7 @@ export class ActionsFavoris {
     this.webSocketManager.transmettreTransaction(
       'millegrilles.domaines.GrosFichiers.ajouterFavori', transaction)
     .then(msg=>{
-      console.debug("Favori ajoute: " + uuidFavori);
+      // console.debug("Favori ajoute: " + uuidFavori);
     }).catch(err=>{
       console.error("Erreur ajout favori");
       console.error(err);
@@ -32,7 +32,7 @@ export class ActionsFavoris {
 
   supprimerFavori = event => {
     let uuidFavori = event.currentTarget.value;
-    console.debug("Supprimer favori " + uuidFavori);
+    // console.debug("Supprimer favori " + uuidFavori);
 
     let transaction = {
       "uuid": uuidFavori,
@@ -41,7 +41,7 @@ export class ActionsFavoris {
     this.webSocketManager.transmettreTransaction(
       'millegrilles.domaines.GrosFichiers.supprimerFavori', transaction)
     .then(msg=>{
-      console.debug("Favori supprime: " + uuidFavori);
+      // console.debug("Favori supprime: " + uuidFavori);
     }).catch(err=>{
       console.error("Erreur suppression favori");
       console.error(err);
@@ -86,8 +86,8 @@ export class ActionsDownload {
       requetes: [{'filtre': {'_mg-libelle': 'fichier', 'uuid': uuidfichier}}]
     })
     .then(resultats=>{
-      console.debug("Resultats requete fichier " + uuidfichier);
-      console.debug(resultats);
+      // console.debug("Resultats requete fichier " + uuidfichier);
+      // console.debug(resultats);
       let fichier = resultats[0][0];
 
       this.telecharger({
@@ -105,7 +105,7 @@ export class ActionsDownload {
 
   telecharger = ({fichier, opts}) => {
     let uuidfichier = fichier.uuid;
-    console.debug("Telecharger fichier uuid: " + uuidfichier + ": " + fichier);
+    // console.debug("Telecharger fichier uuid: " + uuidfichier + ": " + fichier);
     if(!fichier) {
       throw new Error("Erreur fichier inconnu: " + uuidfichier)
     }
@@ -118,20 +118,20 @@ export class ActionsDownload {
       fuuid = fichier.fuuid_v_courante;
     }
 
-    let nomFichier = fichier.nom;
+    // let nomFichier = fichier.nom;
     let securite = fichier.securite;
 
-    console.debug("1. Bouton clique pour fichier " + nomFichier);
+    // console.debug("1. Bouton clique pour fichier " + nomFichier);
 
     if(localStorage.getItem('certificat.fingerprint') && (securite === '3.protege' || securite === '4.secure')) {
-      console.debug("2. Telecharger fichier crypte fuuide: " + fuuid);
+      // console.debug("2. Telecharger fichier crypte fuuide: " + fuuid);
       this.telechargerViaRequest(fuuid, fichier, opts)
       .catch(err=>{
         console.error("Erreur telechargement fichier crypte");
         console.error(err);
       })
     } else {
-      console.debug("2. Telecharger fichier standard fuuide: " + fuuid);
+      // console.debug("2. Telecharger fichier standard fuuide: " + fuuid);
       let form = this.refFormulaireDownload.current;
       this.telechargerViaForm(form, fuuid, fichier, opts)
       .catch(err=>{
@@ -181,7 +181,7 @@ export class ActionsDownload {
 
     return this.webSocketManager.demanderTokenTransfert()
     .then(token=>{
-      console.debug("Token download: " + token);
+      // console.debug("Token download: " + token);
       // let utiliseCache = {};
       // if(this.state.fichierDate) {
       //   utiliseCache['If-Modified-Since'] = this.state.fichierDate;
@@ -211,8 +211,8 @@ export class ActionsDownload {
         }
       })
       .then(response=>{
-        console.log("Resultat Download");
-        console.log(response.headers);
+        // console.log("Resultat Download");
+        // console.log(response.headers);
         let contentType = response.headers['content-type']
 
         let cleSecrete = response.headers.cle;
@@ -221,7 +221,7 @@ export class ActionsDownload {
         // Decrypter
         cryptoHelper.decrypterSubtle(response.data, cleSecrete, iv, localStorage.getItem('certificat.cleprivee'))
         .then(bufferDecrypte=>{
-          console.log("Fichier est decrypte");
+          // console.log("Fichier est decrypte");
           const blobFichier = new Blob([new Uint8Array(bufferDecrypte)], {type: contentType});
           let dataUrl = window.URL.createObjectURL(blobFichier);
 
@@ -253,8 +253,8 @@ export class ActionsUpload {
   }
 
   ajouterUpload = (acceptedFile, fileInfo) => {
-    console.debug("Commencer upload");
-    console.debug(fileInfo);
+    // console.debug("Commencer upload");
+    // console.debug(fileInfo);
 
     // Generer informations pour le fichier
     const fuuid = uuidv1();
@@ -301,8 +301,8 @@ export class ActionsUpload {
   uploadTermine = msg => {
     // L'upload est termine sur le navigateur, mais on attend toujours la
     // confirmation via un update MQ (document fichier).
-    console.debug("Upload termine");
-    console.debug(msg);
+    // console.debug("Upload termine");
+    // console.debug(msg);
 
     let uploadComplete = {...this.reactModule.state.uploadsCourants[0]};
     uploadComplete.state = msg.status;
@@ -339,7 +339,7 @@ export class ActionsUpload {
 
       this.webSocketManager.uploadFichier(uploadInfo)
       .then(confirmation=>{
-        console.debug("Upload fichier termine");
+        // console.debug("Upload fichier termine");
         this.uploadEnCours = false;
         this.uploadTermine({
           status: 'succes',

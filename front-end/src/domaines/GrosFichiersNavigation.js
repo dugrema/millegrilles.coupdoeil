@@ -37,7 +37,7 @@ export class ActionsNavigation {
   }
 
   retourAccueil = () => {
-    console.debug("Afficher Accueil");
+    // console.debug("Afficher Accueil");
 
     this.reactModule.setState({
       ...this._resetNavigation('Accueil'),
@@ -90,13 +90,13 @@ export class ActionsNavigation {
       }},
     ]}
 
-    console.debug("Requete document:");
-    console.debug(requete);
+    // console.debug("Requete document:");
+    // console.debug(requete);
 
     this.reactModule.chargerDocument(requete)
     .then(docs=>{
-      console.debug("chargeruuid: Recu document ");
-      console.debug(docs);
+      // console.debug("chargeruuid: Recu document ");
+      // console.debug(docs);
 
       let documentCharge = docs[0][0];
       this.afficherDocument(documentCharge);
@@ -452,8 +452,8 @@ export class FileUploadMonitor extends React.Component {
       for(let idx in this.props.uploadsCompletes) {
         let valeur = this.props.uploadsCompletes[idx];
 
-        console.log("Valeur upload complete: ");
-        console.log(valeur);
+        // console.log("Valeur upload complete: ");
+        // console.log(valeur);
 
         let classeIcone = 'fa fa-check succes';
         let progres = '100 %';
@@ -514,7 +514,7 @@ export class FileUploadSection extends React.Component {
 
   uploadFileProcessor = (acceptedFiles) => {
     // Traitement d'un fichier a uploader.
-    console.debug(acceptedFiles);
+    // console.debug(acceptedFiles);
 
     let securite = '3.protege';  // Par defaut, augmenter a 4.secure lorsque pret
     let documentuuid = this.props.documentuuid;
@@ -522,7 +522,7 @@ export class FileUploadSection extends React.Component {
     // let repertoire_uuid = this.props.repertoireCourant.repertoire_uuid;
     // let securite = this.props.repertoireCourant.securite;
 
-    console.debug("Upload fichier avec securite: " + securite);
+    // console.debug("Upload fichier avec securite: " + securite);
 
     acceptedFiles.forEach( file=> {
       // Ajouter le fichier a l'upload queue
@@ -567,8 +567,8 @@ class SectionSommaireTorrent extends React.Component {
   rafraichirTorrents = () => {
     webSocketManager.transmettreRequete('requete.torrent.sommaire', {})
     .then( docsRecu => {
-      console.log("Etat torrent:");
-      console.log(docsRecu);
+      // console.log("Etat torrent:");
+      // console.log(docsRecu);
 
       const sessionStats = docsRecu.sessionStats;
       this.setState({sessionStats});

@@ -292,7 +292,7 @@ class App extends React.Component {
       // Verifier si le certificat est expire.
       let dateExpiration = localStorage.getItem('certificat.expiration') * 1000;
       let currentDate = new Date().getTime();
-      console.log("Certificat date expiration: " + dateExpiration + ", currentDate: " + currentDate);
+      // console.log("Certificat date expiration: " + dateExpiration + ", currentDate: " + currentDate);
       if(dateExpiration > currentDate) {
         // Le certificat n'est pas expire, on peut l'utiliser.
         return true;
@@ -327,8 +327,8 @@ class App extends React.Component {
 
   // Repond a un challenge pour certificat local
   repondreChallengeCertificat(socket, challenge, callback) {
-    console.debug("Challenge certificat recu, on repond");
-    console.debug(challenge);
+    // console.debug("Challenge certificat recu, on repond");
+    // console.debug(challenge);
 
     socket.on('login', confirmation=>{
       webSocketManager.setupWebSocket(socket);
@@ -342,7 +342,7 @@ class App extends React.Component {
     cryptageAsymetrique.decrypterCleSecrete(
       challengeCrypte, localStorage.getItem('certificat.cleprivee'))
     .then(cleSecreteDecryptee=>{
-      console.log("Resultat cle secrete decryptee: " + cleSecreteDecryptee);
+      // console.log("Resultat cle secrete decryptee: " + cleSecreteDecryptee);
       callback({reponseChallenge: cleSecreteDecryptee});
     })
     .catch(err=>{

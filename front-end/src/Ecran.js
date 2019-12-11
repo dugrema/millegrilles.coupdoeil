@@ -44,7 +44,7 @@ class EcranApp extends React.Component {
 
     changerDomaine: (event) => {
       const domaine = event.currentTarget.dataset.domaine;
-       console.debug('Domaine change vers: ' + domaine);
+       // console.debug('Domaine change vers: ' + domaine);
       if(domaine) {
         if(domaine !== this.state.navigationState.domaineActif) {
           this.setState({navigationState: {domaineActif: domaine}});

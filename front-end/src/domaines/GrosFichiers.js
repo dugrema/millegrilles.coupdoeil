@@ -88,8 +88,8 @@ export class GrosFichiers extends React.Component {
     ]
     })
     .then(docs=>{
-      console.debug("Documents speciaux");
-      console.debug(docs);
+      // console.debug("Documents speciaux");
+      // console.debug(docs);
 
       // On recoit une liste de resultats, avec une liste de documents.
       let resultatDocs = docs[0];
@@ -262,7 +262,7 @@ export class GrosFichiers extends React.Component {
   }
 
   processMessage = (routingKey, doc) => {
-    console.debug("Message de MQ: " + routingKey);
+    // console.debug("Message de MQ: " + routingKey);
 
     if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.rapport.activite') {
       this.setState({

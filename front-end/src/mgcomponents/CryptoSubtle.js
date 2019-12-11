@@ -89,10 +89,10 @@ export class CryptageAsymetrique {
   crypterCleSecrete(clePublique, cleSecreteHexString) {
     // var keyByteString = forge.util.bytesToHex(cleSecrete);
 
-    console.log("Crypter cle secrete. Cle publique : ");
-    console.log(clePublique);
+    // console.log("Crypter cle secrete. Cle publique : ");
+    // console.log(clePublique);
     let clePubliqueBuffer = str2ab(window.atob(clePublique));
-    console.log(clePubliqueBuffer);
+    // console.log(clePubliqueBuffer);
 
     // console.warn("Cle secrete");
     // console.warn(cleSecrete);
@@ -113,8 +113,8 @@ export class CryptageAsymetrique {
     )
     .then(clePubliqueImportee=>{
 
-      console.debug("Cle publique chargee");
-      console.debug(clePubliqueImportee);
+      // console.debug("Cle publique chargee");
+      // console.debug(clePubliqueImportee);
 
       return window.crypto.subtle.encrypt(
         {
@@ -129,7 +129,7 @@ export class CryptageAsymetrique {
   }
 
   decrypterCleSecrete(cleSecreteCryptee, clePrivee) {
-    console.debug("Decrypter cle secrete");
+    // console.debug("Decrypter cle secrete");
     // console.debug("Cle privee")
     // console.warn(clePrivee);
     let clePriveeBuffer = str2ab(window.atob(clePrivee));
@@ -149,7 +149,7 @@ export class CryptageAsymetrique {
     )
     .then(clePriveeImportee=>{
 
-      console.log("Cle privee chargee");
+      // console.log("Cle privee chargee");
       // console.log(clePriveeImportee);
 
       let cleSecreteCrypteeBuffer = str2ab(window.atob(cleSecreteCryptee));
@@ -164,7 +164,7 @@ export class CryptageAsymetrique {
 
     })
     .then(cleSecreteDecryptee=>{
-      console.log("Cle secrete decryptee");
+      // console.log("Cle secrete decryptee");
       // console.log(cleSecreteDecryptee);
       let cleSecreteB64 = btoa(String.fromCharCode.apply(null, new Uint8Array(cleSecreteDecryptee)));
       // console.log(cleSecreteB64);
@@ -245,8 +245,8 @@ export class CryptageSymetrique {
     for(let i=0; i<iv.length; i++) {
       ivABView[i] = iv.charCodeAt(i);
     }
-    console.debug("IV: ")
-    console.debug(ivABView);
+    // console.debug("IV: ")
+    // console.debug(ivABView);
 
     // console.warn("Cle hex : " + cle);
     let cleArray = toByteArray(cle);
@@ -257,7 +257,7 @@ export class CryptageSymetrique {
       //cleABView[i] = cleArray.charCodeAt(i);
       cleABView[i] = cleArray[i];
     }
-    console.debug("Cle ABView ");
+    // console.debug("Cle ABView ");
     // console.warn(cleABView);
 
     // Importer cle secrete format subtle
@@ -272,7 +272,7 @@ export class CryptageSymetrique {
       ['decrypt']
     )
     .then(cleSecreteSubtle=>{
-      console.log("Cle subtle");
+      // console.log("Cle subtle");
       // console.log(cleSecreteSubtle);
 
       return {cleSecrete: cleSecreteSubtle, iv: ivABView};
@@ -403,7 +403,7 @@ export class MilleGrillesCryptoHelper {
 
         // Crypter cle secrete avec la clePublique
         if(clePublique) {
-          console.debug("Crypte cle secrete avec cle publique du maitredescles");
+          // console.debug("Crypte cle secrete avec cle publique du maitredescles");
 
           cryptageAsymetrique.crypterCleSecrete(clePublique, keyHexString)
           .then(cleSecreteCryptee=>{
@@ -451,7 +451,7 @@ export class MilleGrillesCryptoHelper {
           reject(err);
         }
 
-        console.log("Creer cipher");
+        // console.log("Creer cipher");
         var cipher = crypto.createCipheriv(this.algorithm, key, iv);
 
         resolve({cipher, key, iv});
@@ -489,13 +489,13 @@ export class MilleGrillesCryptoHelper {
 
     return cryptageAsymetrique.decrypterCleSecrete(cleSecreteCryptee, clePrivee)
     .then(cleBase64=>{
-      console.debug("Cle secrete decryptee");
+      // console.debug("Cle secrete decryptee");
       // console.warn('Cle secrete b64 ' + cleBase64);
 
       return cryptageSymetrique.chargerCleSecrete(cleBase64, iv)
       .then(resultatCle=>{
 
-        console.debug("Cle secrete chargee");
+        // console.debug("Cle secrete chargee");
         // console.warn(resultatCle);
 
         let ivABView = resultatCle.iv;
