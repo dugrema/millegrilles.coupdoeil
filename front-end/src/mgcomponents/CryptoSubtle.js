@@ -72,6 +72,8 @@ export class CryptageAsymetrique {
     console.log(clePubliqueBuffer);
     console.log(cleSecrete);
 
+    let cleSecreteBuffer = str2ab(cleSecrete.toString('hex'));
+
     return window.crypto.subtle.importKey(
       'spki',
       clePubliqueBuffer,
@@ -92,7 +94,7 @@ export class CryptageAsymetrique {
           name: this.algorithm
         },
         clePubliqueImportee,
-        cleSecrete
+        cleSecreteBuffer
       );
 
     });
@@ -308,7 +310,7 @@ export class MilleGrillesCryptoHelper {
         let ivString = iv.toString('base64');
         console.log("Secrets key=" + keyString + ", iv=" + ivString);
 
-        // TODO : Crypter cle secrete avec la clePublique
+        // Crypter cle secrete avec la clePublique
         if(clePublique) {
           console.debug("Crypte cle secrete avec cle publique du maitredescles");
           this.cryptageAsymetrique.crypterCleSecrete(clePublique, key)
@@ -337,10 +339,16 @@ export class MilleGrillesCryptoHelper {
   genererSecret(callback) {
     var lenBuffer = 16 + 32;
     crypto.pseudoRandomBytes(lenBuffer, (err, pseudoRandomBytes) => {
+      if(err) {
+        callback(err, {});
+        return;
+      }
+
       // Creer deux buffers, iv (16 bytes) et password (24 bytes)
       var iv = pseudoRandomBytes.slice(0, 16);
       var key = pseudoRandomBytes.slice(16, pseudoRandomBytes.length);
-      callback(err, {key: key, iv: iv});
+      callback(null, {key, iv});
+
     });
   }
 
