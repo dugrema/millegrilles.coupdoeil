@@ -74,7 +74,7 @@ class ProcesseurUpload {
           rabbitMQ.singleton.transmettreTransactionFormattee(
               transactionInformationCryptee,
               'millegrilles.domaines.MaitreDesCles.nouvelleCle.grosFichier',
-              {version: 5}
+              {version: 6}
           )
           .then(msg=>{
             // console.debug("Recu confirmation cle");

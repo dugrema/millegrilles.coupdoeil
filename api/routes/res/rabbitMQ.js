@@ -10,6 +10,8 @@ const routingKeyNouvelleTransaction = 'transaction.nouvelle';
 class RabbitMQWrapper {
 
   constructor() {
+    this.idmg = process.env.MG_IDMG;
+
     this.url = null;
     this.connection = null;
     this.channel = null;
@@ -326,7 +328,7 @@ class RabbitMQWrapper {
   _formatterInfoTransaction(domaine, opts) {
     // Ces valeurs n'ont de sens que sur le serveur.
     // Calculer secondes UTC (getTime retourne millisecondes locales)
-    let version = 4;
+    let version = 6;
     if(opts) {
       version = opts.version || version;
     }
@@ -336,7 +338,8 @@ class RabbitMQWrapper {
     let sourceSystem = 'coupdoeil/' + 'dev2.maple.mdugre.info' + "@" + pki.getCommonName();
     let infoTransaction = {
       'domaine': domaine,
-      'source-systeme': sourceSystem,
+      // 'source-systeme': sourceSystem,
+      'idmg': this.idmg,
       'uuid-transaction': uuidv4(),
       'estampille': tempsLecture,
       'certificat': pki.getFingerprint(),
