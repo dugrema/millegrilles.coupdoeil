@@ -2,20 +2,22 @@ import React from 'react';
 // import manifest from './manifest.build.js';  // App version, build date
 
 // Importer les Domaines et creer la liste des domaines connus
-import {SenseursPassifs} from './domaines/SenseursPassifs';
+import {Annuaire} from './domaines/Annuaire';
 import {GrosFichiers} from './domaines/GrosFichiers';
 import {InterfacePrincipale} from './domaines/Principale.js';
-import {Plume} from './domaines/Plume.js';
 import {Parametres} from './domaines/Parametres.js';
 import {Pki} from './domaines/Pki.js';
+import {Plume} from './domaines/Plume.js';
+import {SenseursPassifs} from './domaines/SenseursPassifs';
 
 const domainesConnus = {
-  'SenseursPassifs': SenseursPassifs,
+  'Annuaire': Annuaire,
   'GrosFichiers': GrosFichiers,
-  'Principale': InterfacePrincipale,
-  'Plume': Plume,
   'Parametres': Parametres,
+  'Plume': Plume,
   'Pki': Pki,
+  'Principale': InterfacePrincipale,
+  'SenseursPassifs': SenseursPassifs,
 };
 
 export function SectionContenu(props) {
