@@ -1,9 +1,9 @@
 import React from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
+import { Form, Container, Row, Col } from 'react-bootstrap';
 import manifest from '../manifest.build.js';  // App version, build date
 import { solveRegistrationChallenge } from '@webauthn/client';
 import webSocketManager from '../WebSocketManager';
-import { Trans } from 'react-i18next';
+import { Trans, Translation } from 'react-i18next';
 
 import './Principale.css';
 
@@ -26,7 +26,7 @@ export class InterfacePrincipale extends React.Component {
 
   version() {
     return (
-      <div className="w3-card w3-round w3-white">
+      <div className="w3-card w3-round w3-white w3-card_BR">
         <div className="w3-container w3-padding">
           <h2 className="w3-opacity">Information générale</h2>
 
@@ -42,7 +42,7 @@ export class InterfacePrincipale extends React.Component {
 
   fonctionsGestion() {
     return (
-      <div className="w3-card w3-round w3-white">
+      <div className="w3-card w3-round w3-white w3-card_BR">
         <div className="w3-container w3-padding">
           <h2 className="w3-opacity">Fonctions de gestion de votre MilleGrille</h2>
 
@@ -101,15 +101,93 @@ class InformationMilleGrille extends React.Component {
   render() {
     return (
       <div>
-        <Container className='w3-card w3-round w3-white'>
+        <Container className='w3-card w3-round w3-white w3-card_BR'>
           <div className='w3-container w3-padding'>
             <Row><Col><h2><Trans>principale.information.titre</Trans></h2></Col></Row>
             <Row><Col><p><Trans>principale.information.description_1</Trans></p></Col></Row>
           </div>
         </Container>
+
+        {this._renderFormMilleGrille()}
+        {this._renderFormUsager()}
+
       </div>
     );
   }
+
+
+  _renderFormUsager() {
+
+    return (
+      <Container className='w3-card w3-round w3-white w3-card_BR'>
+        <div className='w3-container w3-padding'>
+          <Row><Col><h2><Trans>principale.information.usagerTitre</Trans></h2></Col></Row>
+          <Row><Col><p><Trans>principale.information.descriptionUsager</Trans></p></Col></Row>
+
+          <Form>
+            <Form.Group controlId="formGroupPrenom">
+              <Form.Label><Trans>formulaire.prenom</Trans></Form.Label>
+              <Form.Control type="plaintext" placeholder="Julie" />
+            </Form.Group>
+            <Form.Group controlId="formGroupNomFamille">
+              <Form.Label><Trans>formulaire.nomFamille</Trans></Form.Label>
+              <Form.Control type="plaintext" placeholder="Tremblay" />
+            </Form.Group>
+            <Form.Group controlId="formGroupEmail">
+              <Form.Label><Trans>formulaire.courriel</Trans></Form.Label>
+              <Form.Control type="email" placeholder="julie.tremblay@notgmail.org" />
+            </Form.Group>
+            <Form.Group controlId="formGroupTwitter">
+              <Form.Label><Trans>formulaire.twitter</Trans></Form.Label>
+              <Form.Control type="plaintext" placeholder="@twitter" />
+            </Form.Group>
+            <Form.Group controlId="formGroupFacebook">
+              <Form.Label><Trans>formulaire.facebook</Trans></Form.Label>
+              <Form.Control type="facebook" placeholder="facebook" />
+            </Form.Group>
+          </Form>
+
+        </div>
+      </Container>
+    );
+
+  }
+
+  _renderFormMilleGrille() {
+
+    const languesSupportees = ['fr', 'en'];
+    const optionsLangues = [];
+    languesSupportees.forEach(lang=>{
+      optionsLangues.push(
+        <Translation key={lang}>{t=>(<option value="{lang}">{t('langues.' + lang)}</option>)}</Translation>
+      );
+    })
+
+    return (
+      <Container className='w3-card w3-round w3-white w3-card_BR'>
+        <div className='w3-container w3-padding'>
+          <Row><Col><h2><Trans>principale.information.milleGrilleTitre</Trans></h2></Col></Row>
+          <Row><Col><p><Trans>principale.information.descriptionMilleGrille</Trans></p></Col></Row>
+
+          <Form>
+            <Form.Group controlId="formGroupNomMilleGrille">
+              <Form.Label><Trans>principale.information.nomMilleGrille</Trans></Form.Label>
+              <Form.Control type="plaintext" placeholder="Sans Nom" />
+            </Form.Group>
+            <Form.Group controlId="formGroupLanguagePrincipal">
+              <Form.Label><Trans>principale.information.languagePrincipal</Trans></Form.Label>
+              <Form.Control as="select">
+                {optionsLangues}
+              </Form.Control>
+            </Form.Group>
+          </Form>
+
+        </div>
+      </Container>
+    );
+
+  }
+
 }
 
 class GestionTokens extends React.Component {

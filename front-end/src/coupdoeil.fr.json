@@ -1,10 +1,27 @@
 {
   "translation": {
+    "formulaire": {
+      "prenom": "Prénom :",
+      "nomFamille": "Nom de famille :",
+      "courriel": "Adresse courriel :",
+      "twitter": "Compte Twitter :",
+      "facebook": "Compte Facebook :"
+    },
     "principale": {
       "information": {
         "titre": "Information personnalisée",
-        "description_1": "Personnaliser l'information de la MilleGrille."
+        "description_1": "Personnaliser l'information de la MilleGrille.",
+        "usagerTitre": "Information personnelle de l'usager",
+        "descriptionUsager": "Cette information est inclue dans les fiches d'informations partagées sur des sites webs et d'autres MilleGrilles.",
+        "milleGrilleTitre": "Information sur la MilleGrille",
+        "descriptionMilleGrille": "Cette information est partagée dans les fiches d'informations et affichée sur des sites webs.",
+        "nomMilleGrille": "Nom de la MilleGrille",
+        "languagePrincipal": "Language principal"
       }
+    },
+    "langues": {
+      "fr": "Français",
+      "en": "Anglais"
     }
   }
 }
