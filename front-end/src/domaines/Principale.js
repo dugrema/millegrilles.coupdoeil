@@ -46,6 +46,11 @@ export class InterfacePrincipale extends React.Component {
 
           <ul>
             <li>
+              <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="information">
+                Information usager et MilleGrille
+              </button>
+            </li>
+            <li>
               <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="gestionTokens">
                 Gerer les tokens de securite
               </button>
@@ -59,7 +64,12 @@ export class InterfacePrincipale extends React.Component {
   render() {
 
     let contenu;
-    if(this.state.ecranCourant === 'gestionTokens') {
+    if(this.state.ecranCourant === 'information') {
+      contenu = (
+        <InformationMilleGrille
+          {...this.fonctionsNavigation} />
+      );
+    } else if(this.state.ecranCourant === 'gestionTokens') {
       contenu = (
         <GestionTokens
           {...this.fonctionsNavigation} />
@@ -81,6 +91,15 @@ export class InterfacePrincipale extends React.Component {
         </div>
       </div>
     )
+  }
+}
+
+class InformationMilleGrille extends React.Component {
+
+  render() {
+    return (
+      <div>Information</div>
+    );
   }
 }
 
