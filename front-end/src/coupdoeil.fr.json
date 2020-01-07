@@ -12,9 +12,10 @@
         "titre": "Information personnalisée",
         "description_1": "Personnaliser l'information de la MilleGrille.",
         "usagerTitre": "Information personnelle de l'usager",
-        "descriptionUsager": "Cette information est inclue dans les fiches d'informations partagées sur des sites webs et d'autres MilleGrilles.",
+        "descriptionUsager": "Cette information est inclue dans les fiches d'informations partagées sur des sites webs et d'autres MilleGrilles. Tous les champs sont optionnels.",
         "milleGrilleTitre": "Information sur la MilleGrille",
-        "descriptionMilleGrille": "Cette information est partagée dans les fiches d'informations et affichée sur des sites webs.",
+        "descriptionMilleGrille_1": "Cette information est partagée dans les fiches d'informations et affichée sur des sites webs.",
+        "descriptionMilleGrille_2": "MilleGrilles supporte plusieurs langues à la fois. Si vous parlez plusieurs langues, choisissez votre langue de correspondance préférée dans Language principal et activez l'option multilingue pour ajouter des languages supplémentaires. Ceci va vous permettre de créer des documents dans plusieurs langues à la fois.",
         "nomMilleGrille": "Nom de la MilleGrille",
         "languagePrincipal": "Language principal"
       }

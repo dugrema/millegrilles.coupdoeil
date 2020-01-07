@@ -122,7 +122,11 @@ class InformationMilleGrille extends React.Component {
       <Container className='w3-card w3-round w3-white w3-card_BR'>
         <div className='w3-container w3-padding'>
           <Row><Col><h2><Trans>principale.information.usagerTitre</Trans></h2></Col></Row>
-          <Row><Col><p><Trans>principale.information.descriptionUsager</Trans></p></Col></Row>
+          <Row>
+            <Col>
+              <p><Trans>principale.information.descriptionUsager</Trans></p>
+            </Col>
+          </Row>
 
           <Form>
             <Form.Group controlId="formGroupPrenom">
@@ -167,13 +171,15 @@ class InformationMilleGrille extends React.Component {
       <Container className='w3-card w3-round w3-white w3-card_BR'>
         <div className='w3-container w3-padding'>
           <Row><Col><h2><Trans>principale.information.milleGrilleTitre</Trans></h2></Col></Row>
-          <Row><Col><p><Trans>principale.information.descriptionMilleGrille</Trans></p></Col></Row>
 
           <Form>
+            <p><Trans>principale.information.descriptionMilleGrille_1</Trans></p>
             <Form.Group controlId="formGroupNomMilleGrille">
               <Form.Label><Trans>principale.information.nomMilleGrille</Trans></Form.Label>
               <Form.Control type="plaintext" placeholder="Sans Nom" />
             </Form.Group>
+
+            <p><Trans>principale.information.descriptionMilleGrille_2</Trans></p>
             <Form.Group controlId="formGroupLanguagePrincipal">
               <Form.Label><Trans>principale.information.languagePrincipal</Trans></Form.Label>
               <Form.Control as="select">
