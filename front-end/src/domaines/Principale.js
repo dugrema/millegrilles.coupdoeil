@@ -1,9 +1,11 @@
 import React from 'react';
-import './Principale.css';
+import { Container, Row, Col } from 'react-bootstrap';
 import manifest from '../manifest.build.js';  // App version, build date
-
 import { solveRegistrationChallenge } from '@webauthn/client';
 import webSocketManager from '../WebSocketManager';
+import { Trans } from 'react-i18next';
+
+import './Principale.css';
 
 export class InterfacePrincipale extends React.Component {
 
@@ -98,7 +100,14 @@ class InformationMilleGrille extends React.Component {
 
   render() {
     return (
-      <div>Information</div>
+      <div>
+        <Container className='w3-card w3-round w3-white'>
+          <div className='w3-container w3-padding'>
+            <Row><Col><h2><Trans>principale.information.titre</Trans></h2></Col></Row>
+            <Row><Col><p><Trans>principale.information.description_1</Trans></p></Col></Row>
+          </div>
+        </Container>
+      </div>
     );
   }
 }
