@@ -73,7 +73,7 @@ class EcranApp extends React.Component {
     let requeteDomaines =  {
       'requetes': [{
         'filtre': {
-          '_mg-libelle': 'domaines'
+          '_mg-libelle': {'$in': ['domaines', 'profil.millegrille']}
         }
       }]};
 
@@ -81,9 +81,20 @@ class EcranApp extends React.Component {
       'requete.millegrilles.domaines.Principale', requeteDomaines)
     .then( docInitial => {
       // console.debug("Recu doc");
-      let resultats = docInitial[0][0];
+      let resultats = docInitial[0];
       // console.debug(resultats);
-      this.setState({documentDomaines: resultats});
+      const documentsConfig = {};
+      for(let idx in resultats) {
+        let resultat = resultats[idx];
+
+        if(resultat['_mg-libelle'] === 'domaines') {
+          documentsConfig.documentDomaines = resultat;
+        } else if(resultat['_mg-libelle'] === 'profil.millegrille') {
+          documentsConfig.documentIdMillegrille = resultat;
+        }
+      }
+
+      this.setState(documentsConfig);
     })
     .catch( err=>{
       console.error("Erreur chargement document liste domaines");
@@ -93,11 +104,11 @@ class EcranApp extends React.Component {
     let requeteIdMillegrille =  {
       'requetes': [{
         'filtre': {
-          '_mg-libelle': 'millegrille.id'
+          '_mg-libelle': 'profil.millegrille'
         }
       }]};
     webSocketManager.transmettreRequete(
-      'requete.millegrilles.domaines.Parametres', requeteIdMillegrille)
+      'requete.millegrilles.domaines.Principale', requeteIdMillegrille)
     .then( docInitial => {
       // console.debug("Recu doc");
       let resultats = docInitial[0][0];

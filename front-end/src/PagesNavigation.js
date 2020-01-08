@@ -208,7 +208,7 @@ function MenuGaucheTop(props) {
 
   let nomMilleGrille = '';
   if(props.documentIdMillegrille) {
-    nomMilleGrille = props.documentIdMillegrille.nom_millegrille
+    nomMilleGrille = props.documentIdMillegrille.nomMilleGrille || props.documentIdMillegrille.idmg
   }
 
   return (

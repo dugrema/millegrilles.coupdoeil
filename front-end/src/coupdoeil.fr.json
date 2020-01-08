@@ -33,6 +33,8 @@
         "urlLibelle": "URL",
         "ajouterNoeudBouton": "Ajouter",
         "supprimerNoeudBouton": "Supprimer",
+        "sauvegarder": "Sauvegarder",
+        "renommer": "Renommer",
         "urlTexte": "L'adresse URL doit être exacte - ceci devient la référence pour la configuration."
       }
     }

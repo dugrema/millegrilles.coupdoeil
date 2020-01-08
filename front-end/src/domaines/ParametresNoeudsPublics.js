@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Button, Container, Row, Col } from 'react-bootstrap';
+import { Form, Button, ButtonGroup, Container, Row, Col } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 import webSocketManager from '../WebSocketManager';
 import { GestionEmailSmtp } from './ParametresGestionEmailSmtp';
@@ -53,7 +53,7 @@ export class NoeudsPublics extends React.Component {
 
             <Row>
               <Col>
-                <h2><Trans>parametres.noeudsPublics.ajouterNoeudTitre</Trans></h2>
+                <h3><Trans>parametres.noeudsPublics.ajouterNoeudTitre</Trans></h3>
               </Col>
             </Row>
 
@@ -87,24 +87,32 @@ export class NoeudsPublics extends React.Component {
     let noeuds = [];
     for(let idx in this.state.noeuds) {
       let noeud = this.state.noeuds[idx];
-      noeuds.push(this._renderNoeud(noeud, idx));
+      noeuds.push(this._renderNoeud(noeud));
     }
     return noeuds;
   }
 
-  _renderNoeud(noeud, listIdx) {
+  _renderNoeud(noeud) {
 
     return (
       <Container key={noeud.url} className='w3-card w3-round w3-white w3-card_BR'>
         <Form>
           <div className='w3-container w3-padding'>
-            <Row><Col><h2><Trans values={{url: noeud.url}}>parametres.noeudsPublics.titreNoeud</Trans></h2></Col></Row>
+            <Row><Col><h3><Trans values={{url: noeud.url}}>parametres.noeudsPublics.titreNoeud</Trans></h3></Col></Row>
             <Row>
               <Col>
                 <p>Formulaire</p>
-                <Button onClick={this._supprimerNoeud} value={noeud.url} data-listidx={listIdx}>
-                  <Trans>parametres.noeudsPublics.supprimerNoeudBouton</Trans>
-                </Button>
+                <ButtonGroup aria-label="Basic example">
+                  <Button variant="primary" onClick={this._sauvegarder} value={noeud.url}>
+                    <Trans>parametres.noeudsPublics.sauvegarder</Trans>
+                  </Button>
+                  <Button variant="secondary" onClick={this._renommer} value={noeud.url}>
+                    <Trans>parametres.noeudsPublics.renommer</Trans>
+                  </Button>
+                  <Button variant="danger" onClick={this._supprimerNoeud} value={noeud.url}>
+                    <Trans>parametres.noeudsPublics.supprimerNoeudBouton</Trans>
+                  </Button>
+                </ButtonGroup>
               </Col>
             </Row>
           </div>
