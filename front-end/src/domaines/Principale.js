@@ -98,6 +98,26 @@ export class InterfacePrincipale extends React.Component {
 
 class InformationMilleGrille extends React.Component {
 
+  state = {
+    usager: {
+      nom: '',
+      prenom: '',
+      courriel: '',
+      twitter: '',
+      facebook: '',
+    },
+    milleGrille: {
+      nomMilleGrille: '',
+      langue: '',
+      multilingue: false,
+      languesAdditionnelles: '',
+    },
+  }
+
+  componentDidMount() {
+    this.chargerProfils()
+  }
+
   render() {
     return (
       <div>
@@ -115,7 +135,6 @@ class InformationMilleGrille extends React.Component {
     );
   }
 
-
   _renderFormUsager() {
 
     return (
@@ -131,23 +150,38 @@ class InformationMilleGrille extends React.Component {
           <Form>
             <Form.Group controlId="formGroupPrenom">
               <Form.Label><Trans>formulaire.prenom</Trans></Form.Label>
-              <Form.Control type="plaintext" placeholder="Julie" />
+              <Form.Control type="plaintext" placeholder="Julie"
+                            value={this.state.usager.prenom}
+                            onChange={this.changerPrenom}
+                            onBlur={this.soumettreProfilUsager} />
             </Form.Group>
             <Form.Group controlId="formGroupNomFamille">
               <Form.Label><Trans>formulaire.nomFamille</Trans></Form.Label>
-              <Form.Control type="plaintext" placeholder="Tremblay" />
+              <Form.Control type="plaintext" placeholder="Tremblay"
+                            value={this.state.usager.nom}
+                            onChange={this.changerNomFamille}
+                            onBlur={this.soumettreProfilUsager} />
             </Form.Group>
             <Form.Group controlId="formGroupEmail">
               <Form.Label><Trans>formulaire.courriel</Trans></Form.Label>
-              <Form.Control type="email" placeholder="julie.tremblay@notgmail.org" />
+              <Form.Control type="email" placeholder="julie.tremblay@notgmail.org"
+                            value={this.state.usager.courriel}
+                            onChange={this.changerAdresseCourriel}
+                            onBlur={this.soumettreProfilUsager} />
             </Form.Group>
             <Form.Group controlId="formGroupTwitter">
               <Form.Label><Trans>formulaire.twitter</Trans></Form.Label>
-              <Form.Control type="plaintext" placeholder="@twitter" />
+              <Form.Control type="plaintext" placeholder="@twitter"
+                            value={this.state.usager.twitter}
+                            onChange={this.changerCompteTwitter}
+                            onBlur={this.soumettreProfilUsager} />
             </Form.Group>
             <Form.Group controlId="formGroupFacebook">
               <Form.Label><Trans>formulaire.facebook</Trans></Form.Label>
-              <Form.Control type="facebook" placeholder="facebook" />
+              <Form.Control type="facebook" placeholder="facebook"
+                            value={this.state.usager.facebook}
+                            onChange={this.changerCompteFacebook}
+                            onBlur={this.soumettreProfilUsager} />
             </Form.Group>
           </Form>
 
@@ -176,7 +210,10 @@ class InformationMilleGrille extends React.Component {
             <p><Trans>principale.information.descriptionMilleGrille_1</Trans></p>
             <Form.Group controlId="formGroupNomMilleGrille">
               <Form.Label><Trans>principale.information.nomMilleGrille</Trans></Form.Label>
-              <Form.Control type="plaintext" placeholder="Sans Nom" />
+              <Form.Control type="plaintext" placeholder="Sans Nom"
+                            value={this.state.milleGrille.nomMilleGrille}
+                            onChange={this.changerNomMilleGrille}
+                            onBlur={this.soumettreProfilMilleGrille} />
             </Form.Group>
 
             <p><Trans>principale.information.descriptionMilleGrille_2</Trans></p>
@@ -192,6 +229,121 @@ class InformationMilleGrille extends React.Component {
       </Container>
     );
 
+  }
+
+  chargerProfils() {
+    let routingKey = 'requete.millegrilles.domaines.Principale.profils';
+    let requete = {
+      'filtre': {
+          '_mg-libelle': {'$in': ['profil.usager', 'profil.millegrille']},
+      },
+    };
+    let requetes = {'requetes': [requete]};
+    webSocketManager.transmettreRequete(routingKey, requetes)
+    .then( docsRecu => {
+      console.debug("Docs recus requete");
+      console.debug(docsRecu);
+      return docsRecu[0];
+   })
+   .then(documents => {
+
+     const donnees = {};
+     for(let idx in documents) {
+       let docProfil = documents[idx];
+
+       let docFiltre = {};
+       for(let champ in docProfil) {
+         let valeur = docProfil[champ];
+         if(champ[0] !== '_') {
+           docFiltre[champ] = valeur || '';
+         }
+       }
+
+       if(docProfil['_mg-libelle'] === 'profil.usager') {
+         donnees.usager = docFiltre;
+       } else if(docProfil['_mg-libelle'] === 'profil.millegrille') {
+         donnees.milleGrille = docFiltre;
+       }
+     }
+
+     this.setState(donnees);
+   })
+   .catch(err=>{
+     console.error("Erreur requete documents profils");
+     console.error(err);
+   });
+  }
+
+  changerNomMilleGrille = event => {
+    const valeur = event.currentTarget.value;
+    const milleGrille = {...this.state.milleGrille, nomMilleGrille: valeur};
+    this.setState({milleGrille})
+  }
+
+  changerLanguePrincipale = event => {
+    console.debug(event);
+  }
+
+  changerPrenom = event => {
+    const valeur = event.currentTarget.value;
+    const usager = {...this.state.usager, prenom: valeur};
+    this.setState({usager})
+  }
+
+  changerNomFamille = event => {
+    const valeur = event.currentTarget.value;
+    const usager = {...this.state.usager, nom: valeur};
+    this.setState({usager})
+  }
+
+  changerAdresseCourriel = event => {
+    const valeur = event.currentTarget.value;
+    const usager = {...this.state.usager, courriel: valeur};
+    this.setState({usager})
+  }
+
+  changerCompteTwitter = event => {
+    const valeur = event.currentTarget.value;
+    const usager = {...this.state.usager, twitter: valeur};
+    this.setState({usager})
+  }
+
+  changerCompteFacebook = event => {
+    const valeur = event.currentTarget.value;
+    const usager = {...this.state.usager, facebook: valeur};
+    this.setState({usager})
+  }
+
+  soumettreProfilMilleGrille = event => {
+    let transaction = this.state.milleGrille;
+
+    let domaine = 'millegrilles.domaines.Principale.majProfilMilleGrille';
+    webSocketManager.transmettreTransaction(domaine, transaction)
+    .then(reponse=>{
+      if(reponse.err) {
+        console.error("Erreur transaction");
+      }
+    })
+    .catch(err=>{
+      console.error("Erreur sauvegarde");
+      console.error(err);
+    });
+  }
+
+  soumettreProfilUsager = event => {
+    let transaction = this.state.usager;
+
+    let domaine = 'millegrilles.domaines.Principale.majProfilUsager';
+    webSocketManager.transmettreTransaction(domaine, transaction)
+    .then(reponse=>{
+      if(reponse.err) {
+        console.error("Erreur transaction");
+      }
+    })
+    .catch(err=>{
+      console.error("Erreur sauvegarde");
+      console.error(err);
+    });
   }
 
 }
