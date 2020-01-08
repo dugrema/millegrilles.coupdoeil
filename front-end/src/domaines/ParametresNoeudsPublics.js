@@ -14,17 +14,8 @@ import './Parametres.css';
 const noeudTemplate = {
   "url": "https://localhost",
   "menu": [
-    "blogs",
-    "albums",
     "fichiers",
     "messages",
-    "senseursPassifs",
-    "podcasts",
-    {
-      "type": "autres",
-      "menu": [
-      ]
-    }
   ]
 }
 
@@ -58,9 +49,7 @@ export class NoeudsPublics extends React.Component {
           </div>
         </Container>
 
-        <DndProvider backend={Backend}>
-          {this._renderNoeuds()}
-        </DndProvider>
+        {this._renderNoeuds()}
 
         <Container className='w3-card w3-round w3-white w3-card_BR'>
           <div className='w3-container w3-padding'>
@@ -127,9 +116,12 @@ export class NoeudsPublics extends React.Component {
           let indexDisponible = sectionsDisponibles.indexOf(sousMenu);
           delete sectionsDisponibles[indexDisponible];
           sousMenus.push(
-            <ListGroup.Item key={sousMenu} value={sousMenu}>
-              <Trans>{'parametres.menuVitrine.' + sousMenu}</Trans>
-            </ListGroup.Item>
+            <ListGroupItemDraggable
+              key={sousMenu}
+              menuUrl={noeud.url}
+              menuItem={sousMenu}
+              sousMenu={menuItem.type}
+              deplacerMenu={this._deplacerMenu} />
           );
         }
         sectionsSousMenus.push(
@@ -158,6 +150,7 @@ export class NoeudsPublics extends React.Component {
             key={menuItem}
             menuUrl={noeud.url}
             menuItem={menuItem}
+            sousMenu=''
             deplacerMenu={this._deplacerMenu} />
         )
       }
@@ -167,9 +160,12 @@ export class NoeudsPublics extends React.Component {
     for(let idxDisponible in sectionsDisponibles) {
       let sectionDisponible = sectionsDisponibles[idxDisponible];
       sectionsDisponiblesElem.push(
-        <ListGroup.Item key={sectionDisponible} value={sectionDisponible}>
-          <Trans>{'parametres.menuVitrine.' + sectionDisponible}</Trans>
-        </ListGroup.Item>
+        <ListGroupItemDraggable
+          key={sectionDisponible}
+          menuUrl={noeud.url}
+          menuItem={sectionDisponible}
+          sousMenu='disponible'
+          deplacerMenu={this._deplacerMenu} />
       );
     }
 
@@ -179,44 +175,46 @@ export class NoeudsPublics extends React.Component {
           <div className='w3-container w3-padding'>
             <Row><Col><h3><Trans values={{url: noeud.url}}>parametres.noeudsPublics.titreNoeud</Trans></h3></Col></Row>
 
-            <Row><Col>Menu</Col></Row>
-            <Row>
-              <Col>
-                <ListGroup horizontal>
-                  {menuPrincipal}
-                </ListGroup>
-              </Col>
-            </Row>
+            <DndProvider backend={Backend}>
+              <Row><Col>Menu</Col></Row>
+              <Row>
+                <Col>
+                  <ListGroup horizontal>
+                    {menuPrincipal}
+                  </ListGroup>
+                </Col>
+              </Row>
 
-            {sectionsSousMenus}
+              {sectionsSousMenus}
 
-            <Row>
-              <Col>Sections disponibles</Col>
-            </Row>
+              <Row>
+                <Col>Sections disponibles</Col>
+              </Row>
 
-            <Row>
-              <Col>
-                <ListGroup horizontal>
-                  {sectionsDisponiblesElem}
-                </ListGroup>
-              </Col>
-            </Row>
+              <Row>
+                <Col>
+                  <ListGroup horizontal>
+                    {sectionsDisponiblesElem}
+                  </ListGroup>
+                </Col>
+              </Row>
 
-            <Row>
-              <Col>
-                <ButtonGroup aria-label="Basic example">
-                  <Button variant="primary" onClick={this._sauvegarder} value={noeud.url}>
-                    <Trans>parametres.noeudsPublics.sauvegarder</Trans>
-                  </Button>
-                  <Button variant="secondary" onClick={this._renommer} value={noeud.url}>
-                    <Trans>parametres.noeudsPublics.renommer</Trans>
-                  </Button>
-                  <Button variant="danger" onClick={this._supprimerNoeud} value={noeud.url}>
-                    <Trans>parametres.noeudsPublics.supprimerNoeudBouton</Trans>
-                  </Button>
-                </ButtonGroup>
-              </Col>
-            </Row>
+              <Row>
+                <Col>
+                  <ButtonGroup aria-label="Basic example">
+                    <Button variant="primary" onClick={this._sauvegarder} value={noeud.url}>
+                      <Trans>parametres.noeudsPublics.sauvegarder</Trans>
+                    </Button>
+                    <Button variant="secondary" onClick={this._renommer} value={noeud.url}>
+                      <Trans>parametres.noeudsPublics.renommer</Trans>
+                    </Button>
+                    <Button variant="danger" onClick={this._supprimerNoeud} value={noeud.url}>
+                      <Trans>parametres.noeudsPublics.supprimerNoeudBouton</Trans>
+                    </Button>
+                  </ButtonGroup>
+                </Col>
+              </Row>
+            </DndProvider>
           </div>
         </Form>
       </Container>
@@ -324,14 +322,19 @@ function ListGroupItemDraggable(props) {
     accept: "MENU_VITRINE",
     hover(item) {
       if(item.menuItem !== props.menuItem) {
+        // props.deplacerMenu(props.menuUrl, {menuItem: item.menuItem}, {menuItem: props.menuItem})
       }
       // console.log("Hovering item menu : ", item.menuItem);
       // console.log("Hovered over menu : ", props.menuItem);
     },
     drop(item) {
       console.debug("Drop " + item.menuItem + " sur " + props.menuItem);
-      if(item.menuItem !== props.menuITem) {
-        props.deplacerMenu(props.menuUrl, {menuItem: item.menuItem}, {menuItem: props.menuItem})
+      if(item.menuItem !== props.menuItem) {
+        props.deplacerMenu(
+          props.menuUrl,
+          {sousMenu: item.sousMenu, menuItem: item.menuItem},
+          {sousMenu: props.sousMenu, menuItem: props.menuItem}
+        )
       }
     }
   });
