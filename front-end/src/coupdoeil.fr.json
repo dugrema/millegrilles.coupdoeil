@@ -35,7 +35,18 @@
         "supprimerNoeudBouton": "Supprimer",
         "sauvegarder": "Sauvegarder",
         "renommer": "Renommer",
-        "urlTexte": "L'adresse URL doit être exacte - ceci devient la référence pour la configuration."
+        "urlTexte": "L'adresse URL doit être exacte - ceci devient la référence pour la configuration.",
+        "sousMenu": "Sous menu "
+      },
+      "menuVitrine": {
+        "albums": "Albums",
+        "messages": "Messages",
+        "blogs": "Blog",
+        "podcasts": "Podcasts",
+        "fichiers": "Fichiers",
+        "senseursPassifs": "Senseurs Passifs",
+        "autres": "Autres",
+        "changerLangue": "English"
       }
     }
   }

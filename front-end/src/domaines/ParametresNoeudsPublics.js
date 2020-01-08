@@ -1,5 +1,6 @@
 import React from 'react';
-import { Form, Button, ButtonGroup, Container, Row, Col } from 'react-bootstrap';
+import { Form, Button, ButtonGroup, ListGroup,
+         Container, Row, Col } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 import webSocketManager from '../WebSocketManager';
 import { GestionEmailSmtp } from './ParametresGestionEmailSmtp';
@@ -26,6 +27,11 @@ const noeudTemplate = {
     }
   ]
 }
+
+const sectionsVitrine = [
+  'blogs', 'albums', 'fichiers', 'messages', 'podcasts',
+  'senseursPassifs'
+]
 
 export class NoeudsPublics extends React.Component {
 
@@ -94,14 +100,96 @@ export class NoeudsPublics extends React.Component {
 
   _renderNoeud(noeud) {
 
+    var menuPrincipal = [];
+    var sectionsDisponibles = [...sectionsVitrine];
+    var sectionsSousMenus = [];
+    for(let idx in noeud.menu) {
+      let menuItem = noeud.menu[idx];
+
+      if(menuItem instanceof Object) {
+        console.debug("Object menu");
+        console.debug(menuItem);
+        menuPrincipal.push(
+          <ListGroup.Item>
+            <Trans>{'parametres.menuVitrine.' + menuItem.type}</Trans>
+          </ListGroup.Item>
+        );
+
+        let sousMenus = [];
+        for(let sousMenuIdx in menuItem.menu) {
+          let sousMenu = menuItem.menu[sousMenuIdx];
+          let indexDisponible = sectionsDisponibles.indexOf(sousMenu);
+          delete sectionsDisponibles[indexDisponible];
+          sousMenus.push(
+            <ListGroup.Item key={sousMenu} value={sousMenu}>
+              <Trans>{'parametres.menuVitrine.' + sousMenu}</Trans>
+            </ListGroup.Item>
+          );
+        }
+        sectionsSousMenus.push(
+          <Row key={menuItem.type + '.titre'}>
+            <Col>
+              <Trans>parametres.noeudsPublics.sousMenu</Trans> <Trans>{'parametres.menuVitrine.' + menuItem.type}</Trans>
+            </Col>
+          </Row>
+        );
+        sectionsSousMenus.push(
+          <Row key={menuItem.type + '.liste'}>
+            <Col>
+              <ListGroup horizontal>
+                {sousMenus}
+              </ListGroup>
+            </Col>
+          </Row>
+        )
+      } else {
+        let indexMenu = sectionsDisponibles.indexOf(menuItem);
+        delete sectionsDisponibles[indexMenu];
+        menuPrincipal.push(<ListGroup.Item><Trans>{'parametres.menuVitrine.' + menuItem}</Trans></ListGroup.Item>)
+      }
+    }
+
+    const sectionsDisponiblesElem = [];
+    for(let idxDisponible in sectionsDisponibles) {
+      let sectionDisponible = sectionsDisponibles[idxDisponible];
+      sectionsDisponiblesElem.push(
+        <ListGroup.Item key={sectionDisponible} value={sectionDisponible}>
+          <Trans>{'parametres.menuVitrine.' + sectionDisponible}</Trans>
+        </ListGroup.Item>
+      );
+    }
+
     return (
       <Container key={noeud.url} className='w3-card w3-round w3-white w3-card_BR'>
         <Form>
           <div className='w3-container w3-padding'>
             <Row><Col><h3><Trans values={{url: noeud.url}}>parametres.noeudsPublics.titreNoeud</Trans></h3></Col></Row>
+
+            <Row><Col>Menu</Col></Row>
             <Row>
               <Col>
-                <p>Formulaire</p>
+                <ListGroup horizontal>
+                  {menuPrincipal}
+                </ListGroup>
+              </Col>
+            </Row>
+
+            {sectionsSousMenus}
+
+            <Row>
+              <Col>Sections disponibles</Col>
+            </Row>
+
+            <Row>
+              <Col>
+                <ListGroup horizontal>
+                  {sectionsDisponiblesElem}
+                </ListGroup>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col>
                 <ButtonGroup aria-label="Basic example">
                   <Button variant="primary" onClick={this._sauvegarder} value={noeud.url}>
                     <Trans>parametres.noeudsPublics.sauvegarder</Trans>
