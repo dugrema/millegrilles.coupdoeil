@@ -241,8 +241,6 @@ class InformationMilleGrille extends React.Component {
     let requetes = {'requetes': [requete]};
     webSocketManager.transmettreRequete(routingKey, requetes)
     .then( docsRecu => {
-      console.debug("Docs recus requete");
-      console.debug(docsRecu);
       return docsRecu[0];
    })
    .then(documents => {
