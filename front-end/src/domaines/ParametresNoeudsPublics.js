@@ -49,7 +49,9 @@ export class NoeudsPublics extends React.Component {
           </div>
         </Container>
 
-        {this._renderNoeuds()}
+        <DndProvider backend={Backend}>
+          {this._renderNoeuds()}
+        </DndProvider>
 
         <Container className='w3-card w3-round w3-white w3-card_BR'>
           <div className='w3-container w3-padding'>
@@ -175,46 +177,44 @@ export class NoeudsPublics extends React.Component {
           <div className='w3-container w3-padding'>
             <Row><Col><h3><Trans values={{url: noeud.url}}>parametres.noeudsPublics.titreNoeud</Trans></h3></Col></Row>
 
-            <DndProvider backend={Backend}>
-              <Row><Col>Menu</Col></Row>
-              <Row>
-                <Col>
-                  <ListGroup horizontal>
-                    {menuPrincipal}
-                  </ListGroup>
-                </Col>
-              </Row>
+            <Row><Col>Menu</Col></Row>
+            <Row>
+              <Col>
+                <ListGroup horizontal>
+                  {menuPrincipal}
+                </ListGroup>
+              </Col>
+            </Row>
 
-              {sectionsSousMenus}
+            {sectionsSousMenus}
 
-              <Row>
-                <Col>Sections disponibles</Col>
-              </Row>
+            <Row>
+              <Col>Sections disponibles</Col>
+            </Row>
 
-              <Row>
-                <Col>
-                  <ListGroup horizontal>
-                    {sectionsDisponiblesElem}
-                  </ListGroup>
-                </Col>
-              </Row>
+            <Row>
+              <Col>
+                <ListGroup horizontal>
+                  {sectionsDisponiblesElem}
+                </ListGroup>
+              </Col>
+            </Row>
 
-              <Row>
-                <Col>
-                  <ButtonGroup aria-label="Basic example">
-                    <Button variant="primary" onClick={this._sauvegarder} value={noeud.url}>
-                      <Trans>parametres.noeudsPublics.sauvegarder</Trans>
-                    </Button>
-                    <Button variant="secondary" onClick={this._renommer} value={noeud.url}>
-                      <Trans>parametres.noeudsPublics.renommer</Trans>
-                    </Button>
-                    <Button variant="danger" onClick={this._supprimerNoeud} value={noeud.url}>
-                      <Trans>parametres.noeudsPublics.supprimerNoeudBouton</Trans>
-                    </Button>
-                  </ButtonGroup>
-                </Col>
-              </Row>
-            </DndProvider>
+            <Row>
+              <Col>
+                <ButtonGroup aria-label="Basic example">
+                  <Button variant="primary" onClick={this._sauvegarder} value={noeud.url}>
+                    <Trans>parametres.noeudsPublics.sauvegarder</Trans>
+                  </Button>
+                  <Button variant="secondary" onClick={this._renommer} value={noeud.url}>
+                    <Trans>parametres.noeudsPublics.renommer</Trans>
+                  </Button>
+                  <Button variant="danger" onClick={this._supprimerNoeud} value={noeud.url}>
+                    <Trans>parametres.noeudsPublics.supprimerNoeudBouton</Trans>
+                  </Button>
+                </ButtonGroup>
+              </Col>
+            </Row>
           </div>
         </Form>
       </Container>
