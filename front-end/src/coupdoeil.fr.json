@@ -23,6 +23,18 @@
     "langues": {
       "fr": "Français",
       "en": "Anglais"
+    },
+    "parametres": {
+      "noeudsPublics": {
+        "titre": "Noeuds publics",
+        "description": "Cette section permet d'ajouter et de configurer les paramètres de noeuds publics pour la MilleGrille.",
+        "titreNoeud": "{{url}}",
+        "ajouterNoeudTitre": "Ajouter un nouveau noeud public",
+        "urlLibelle": "URL",
+        "ajouterNoeudBouton": "Ajouter",
+        "supprimerNoeudBouton": "Supprimer",
+        "urlTexte": "L'adresse URL doit être exacte - ceci devient la référence pour la configuration."
+      }
     }
   }
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import './Annuaire.css';
-import webSocketManager from '../WebSocketManager';
+// import webSocketManager from '../WebSocketManager';
 
 export class Annuaire extends React.Component {
 
@@ -25,7 +25,7 @@ export class Annuaire extends React.Component {
         </div>
       </div>
     );
-    
+
   }
 
 }
