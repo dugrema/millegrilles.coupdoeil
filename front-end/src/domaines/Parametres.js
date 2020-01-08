@@ -1,13 +1,11 @@
 import React from 'react';
-import { Form, Container, Row, Col } from 'react-bootstrap';
-import { Trans } from 'react-i18next';
+// import { Form, Container, Row, Col } from 'react-bootstrap';
+// import { Trans } from 'react-i18next';
 import webSocketManager from '../WebSocketManager';
 import { GestionEmailSmtp } from './ParametresGestionEmailSmtp';
 import { GestionDeployeurPublic } from './ParametresGestionDeployeurPublic'
 import { NoeudsPublics } from './ParametresNoeudsPublics'
 import './Parametres.css';
-
-const libelle_publique_configuration = 'publique.configuration';
 
 class ActionsInterdites extends React.Component {
 

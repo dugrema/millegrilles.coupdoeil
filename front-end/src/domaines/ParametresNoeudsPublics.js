@@ -2,13 +2,13 @@ import React from 'react';
 import { Form, Button, ButtonGroup, ListGroup,
          Container, Row, Col } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
-import webSocketManager from '../WebSocketManager';
-import { GestionEmailSmtp } from './ParametresGestionEmailSmtp';
-import { GestionDeployeurPublic } from './ParametresGestionDeployeurPublic'
+import Backend from 'react-dnd-html5-backend'
+import { DndProvider, useDrag, useDrop } from "react-dnd";
+// import webSocketManager from '../WebSocketManager';
 import './Parametres.css';
 
-const domaine = 'millegrilles.domaines.Parametres';
-const libelle_publique_configuration = 'publique.configuration';
+// const domaine = 'millegrilles.domaines.Parametres';
+// const libelle_publique_configuration = 'publique.configuration';
 
 // Modele de la configuration d'un noeud public
 const noeudTemplate = {
@@ -17,21 +17,27 @@ const noeudTemplate = {
     "blogs",
     "albums",
     "fichiers",
+    "messages",
+    "senseursPassifs",
+    "podcasts",
     {
       "type": "autres",
       "menu": [
-        "messages",
-        "senseursPassifs",
-        "podcasts"
       ]
     }
   ]
 }
 
+// Sections de Vitrine
 const sectionsVitrine = [
   'blogs', 'albums', 'fichiers', 'messages', 'podcasts',
   'senseursPassifs'
-]
+];
+
+// Regroupements possibles en sous-menus
+const sousMenus = [
+  'autres'
+];
 
 export class NoeudsPublics extends React.Component {
 
@@ -52,7 +58,9 @@ export class NoeudsPublics extends React.Component {
           </div>
         </Container>
 
-        {this._renderNoeuds()}
+        <DndProvider backend={Backend}>
+          {this._renderNoeuds()}
+        </DndProvider>
 
         <Container className='w3-card w3-round w3-white w3-card_BR'>
           <div className='w3-container w3-padding'>
@@ -107,10 +115,8 @@ export class NoeudsPublics extends React.Component {
       let menuItem = noeud.menu[idx];
 
       if(menuItem instanceof Object) {
-        console.debug("Object menu");
-        console.debug(menuItem);
         menuPrincipal.push(
-          <ListGroup.Item>
+          <ListGroup.Item key={menuItem.type}>
             <Trans>{'parametres.menuVitrine.' + menuItem.type}</Trans>
           </ListGroup.Item>
         );
@@ -145,7 +151,15 @@ export class NoeudsPublics extends React.Component {
       } else {
         let indexMenu = sectionsDisponibles.indexOf(menuItem);
         delete sectionsDisponibles[indexMenu];
-        menuPrincipal.push(<ListGroup.Item><Trans>{'parametres.menuVitrine.' + menuItem}</Trans></ListGroup.Item>)
+
+        console.debug("Ajout Draggable " + menuItem);
+        menuPrincipal.push(
+          <ListGroupItemDraggable
+            key={menuItem}
+            menuUrl={noeud.url}
+            menuItem={menuItem}
+            deplacerMenu={this._deplacerMenu} />
+        )
       }
     }
 
@@ -256,5 +270,79 @@ export class NoeudsPublics extends React.Component {
     let nouveauUrl = event.currentTarget.value;
     this.setState({nouveauUrl});
   }
+
+  // Deplace un element de menu de la source vers destination
+  // source et destinations ont le format {type: str, menuItem: str}
+  // type est optionnel, defaut est menu principal
+  // Pour destination, menuItem est optionnel. Par defaut l'item va a la fin (push)
+  _deplacerMenu = (noeudUrl, source, destination) => {
+    // Trouver le noeud par URL
+    var menuNoeudModifie;
+    for(var idxNoeud in this.state.noeuds) {
+      let noeud = this.state.noeuds[idxNoeud];
+      if(noeud.url === noeudUrl) {
+        menuNoeudModifie = [...noeud.menu]; // On fait une copie du menu pour le modifier
+        break;
+      }
+    }
+
+    if(menuNoeudModifie) {
+      if(source.type === destination.type) {
+        // On travaille dans le meme menu
+        // Il suffit de reconstruire le menu
+        let indexSource = menuNoeudModifie.indexOf(source.menuItem);
+        menuNoeudModifie.splice(indexSource, 1);  // Retrait item source
+        if(destination.menuItem) {
+          let indexDestination = menuNoeudModifie.indexOf(destination.menuItem)
+          menuNoeudModifie.splice(indexDestination, 0, source.menuItem);  // Ajout item source
+        } else {
+          // On fait juste ajouter le menu a la fin
+          menuNoeudModifie.push(source.menuItem);
+        }
+      } else {
+        // Plus tard
+      }
+
+      // Mettre la jour la collection des noeuds avec le nouveau menu.
+      const noeuds = [...this.state.noeuds];
+      noeuds[idxNoeud].menu = menuNoeudModifie;
+      this.setState({noeuds});
+
+    }
+
+  }
+
+}
+
+function ListGroupItemDraggable(props) {
+
+  const ref = React.createRef();
+  const [, connectDrag] = useDrag({
+    item: { menuItem: props.menuItem, type: "MENU_VITRINE", sousMenu: props.sousMenu },
+  });
+  const [, connectDrop] = useDrop({
+    accept: "MENU_VITRINE",
+    hover(item) {
+      if(item.menuItem !== props.menuItem) {
+      }
+      // console.log("Hovering item menu : ", item.menuItem);
+      // console.log("Hovered over menu : ", props.menuItem);
+    },
+    drop(item) {
+      console.debug("Drop " + item.menuItem + " sur " + props.menuItem);
+      if(item.menuItem !== props.menuITem) {
+        props.deplacerMenu(props.menuUrl, {menuItem: item.menuItem}, {menuItem: props.menuItem})
+      }
+    }
+  });
+
+  connectDrag(ref);
+  connectDrop(ref);
+
+  return (
+    <ListGroup.Item ref={ref} className="draggable">
+      <Trans>{'parametres.menuVitrine.' + props.menuItem}</Trans>
+    </ListGroup.Item>
+  );
 
 }
