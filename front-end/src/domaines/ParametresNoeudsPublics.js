@@ -305,6 +305,11 @@ export class NoeudsPublics extends React.Component {
   // type est optionnel, defaut est menu principal
   // Pour destination, menuItem est optionnel. Par defaut l'item va a la fin (push)
   _deplacerMenu = (noeudUrl, source, destination) => {
+
+    // console.debug("Deplacer menu de " + noeudUrl);
+    // console.debug(source);
+    // console.debug(destination);
+
     // Trouver le noeud par URL
     var menuNoeudModifie;
     for(var idxNoeud in this.state.noeuds) {
@@ -316,7 +321,13 @@ export class NoeudsPublics extends React.Component {
     }
 
     if(menuNoeudModifie) {
-      if(source.type === destination.type) {
+      if(source.sousMenu === 'disponible') {
+        let indexDestination = menuNoeudModifie.indexOf(destination.menuItem)
+        menuNoeudModifie.splice(indexDestination, 0, source.menuItem);  // Ajout item source
+      } else if(destination.sousMenu === 'disponible') {
+        let indexSource = menuNoeudModifie.indexOf(source.menuItem);
+        menuNoeudModifie.splice(indexSource, 1);  // Retrait item source
+      } else if(source.sousMenu === destination.sousMenu) {
         // On travaille dans le meme menu
         // Il suffit de reconstruire le menu
         let indexSource = menuNoeudModifie.indexOf(source.menuItem);
@@ -384,13 +395,10 @@ export class NoeudsPublics extends React.Component {
 
   _sauvegarder = event => {
     const url_web = event.currentTarget.value;
-    console.debug("Sauvegarder " + url_web);
 
     for(let idx in this.state.noeuds) {
       var noeudPublic = this.state.noeuds[idx];
       if(noeudPublic.url_web === url_web) {
-        console.debug("Sauvegarder " + url_web + " match");
-        console.debug(noeudPublic);
 
         const noeudTransaction = {
           url_web: url_web,
@@ -432,7 +440,7 @@ function ListGroupItemDraggable(props) {
       // console.log("Hovered over menu : ", props.menuItem);
     },
     drop(item) {
-      console.debug("Drop " + item.menuItem + " sur " + props.menuItem);
+      // console.debug("Drop " + item.menuItem + " sur " + props.menuItem);
       if(item.menuItem !== props.menuItem) {
         props.deplacerMenu(
           props.menuUrl,
