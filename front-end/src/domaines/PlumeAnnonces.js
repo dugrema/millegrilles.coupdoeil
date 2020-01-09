@@ -41,7 +41,37 @@ export class PlumeAnnonces extends React.Component {
 
   actions = {
     publierAnnonce: () => {
-      console.debug("Publier annonce");
+      if(this.state.texteNouvelleAnnonce && this.state.texteNouvelleAnnonce !== '') {
+        console.debug("Publier annonce");
+        const transaction = {
+          texte: this.state.texteNouvelleAnnonce,
+        }
+        if(this.state.sujetNouvelleAnnonce && this.state.sujetNouvelleAnnonce !== '') {
+          transaction.sujet = this.state.sujetNouvelleAnnonce;
+        }
+
+        let domaine = 'millegrilles.domaines.Plume.creerAnnonce';
+        webSocketManager.transmettreTransaction(domaine, transaction)
+        .then(reponse=>{
+          if(reponse.err) {
+            console.error("Erreur transaction");
+          }
+
+          // Reset formulaire
+          this.setState({
+            sujetNouvelleAnnonce: '',
+            texteNouvelleAnnonce: '',
+            compteCharsRestantsSujet: SUJET_CHARS_MAX,
+            compteCharsRestantsTexte: TEXTE_CHARS_MAX,
+          })
+        })
+        .catch(err=>{
+          console.error("Erreur sauvegarde");
+          console.error(err);
+        });
+      } else {
+        console.error("Publier annonce, erreur: texte vide");
+      }
     }
   }
 
