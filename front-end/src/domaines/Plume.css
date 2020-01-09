@@ -21,3 +21,7 @@
 .texte-message {
   display: inline;
 }
+
+div.w3-card_BR {
+  padding-bottom: 1em;
+}
