@@ -58,7 +58,7 @@
       },
       "annonces": {
         "titre": "Annonces",
-        "description": "Les annonces sont de courts messages publics",
+        "description": "Les annonces sont de courts messages publics affichés dans Vitrine.",
         "nouvelleAnnonce": "Nouvelle annonce",
         "descriptionNouvelleAnnonce": "Publier une annonce",
         "recentes": "Annonces récentes",

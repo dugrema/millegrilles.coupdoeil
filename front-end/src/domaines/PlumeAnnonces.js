@@ -6,6 +6,10 @@ import webSocketManager from '../WebSocketManager';
 
 const SUJET_CHARS_MAX = 70, TEXTE_CHARS_MAX = 200;
 
+const subscriptions_annonces = [
+  'noeuds.source.millegrilles_domaines_Plume.documents.annonces.recentes'
+]
+
 export class PlumeAnnonces extends React.Component {
 
   state = {
@@ -13,6 +17,16 @@ export class PlumeAnnonces extends React.Component {
     texteNouvelleAnnonce: '',
     compteCharsRestantsSujet: SUJET_CHARS_MAX,
     compteCharsRestantsTexte: TEXTE_CHARS_MAX,
+    annoncesRecentes: null,
+  }
+
+  componentDidMount() {
+    webSocketManager.subscribe(subscriptions_annonces, this._recevoirMessageAnnoncesRecentes);
+    this.chargerAnnoncesRecentes();
+  }
+
+  componentWillUnmount() {
+    webSocketManager.unsubscribe(subscriptions_annonces);
   }
 
   render() {
@@ -33,7 +47,8 @@ export class PlumeAnnonces extends React.Component {
           update={this.update}
           {...this.state} />
 
-        <RenderAnnoncesRecentes />
+        <RenderAnnoncesRecentes
+          annoncesRecentes={this.state.annoncesRecentes} />
 
       </Row>
     );
@@ -42,7 +57,6 @@ export class PlumeAnnonces extends React.Component {
   actions = {
     publierAnnonce: () => {
       if(this.state.texteNouvelleAnnonce && this.state.texteNouvelleAnnonce !== '') {
-        console.debug("Publier annonce");
         const transaction = {
           texte: this.state.texteNouvelleAnnonce,
         }
@@ -90,6 +104,26 @@ export class PlumeAnnonces extends React.Component {
         this.setState({texteNouvelleAnnonce, compteCharsRestantsTexte});
       }
     }
+  }
+
+  chargerAnnoncesRecentes() {
+    let routingKey = 'requete.millegrilles.domaines.Plume.chargerAnnoncesRecentes';
+    webSocketManager.transmettreRequete(routingKey, {})
+    .then(annoncesRecentes => {
+      console.debug("Message annonces recentes");
+      console.debug(annoncesRecentes);
+      this.setState({annoncesRecentes});
+    })
+    .catch(err=>{
+      console.error("Erreur requete annonces recentes");
+      console.error(err);
+    });
+  }
+
+  _recevoirMessageAnnoncesRecentes = (routingKey, message) => {
+    console.debug("Message annonces recentes");
+    console.debug(message);
+    this.setState({annoncesRecentes: message});
   }
 
 }
@@ -144,6 +178,24 @@ function RenderNouvelleAnnonce(props) {
 
 function RenderAnnoncesRecentes(props) {
 
+  console.debug("Props annonces recentes");
+  console.debug(props);
+
+  const annonces = [];
+  if(props.annoncesRecentes) {
+    for(let idx in props.annoncesRecentes.annonces) {
+      let annonce = props.annoncesRecentes.annonces[idx];
+      annonces.push(
+        <Row key={annonce.uuid}>
+          <Col>
+            Annonce
+            {annonce.texte}
+          </Col>
+        </Row>
+      );
+    }
+  }
+
   return (
     <Container className="w3-card w3-round w3-white w3-card_BR">
       <Row>
@@ -151,6 +203,9 @@ function RenderAnnoncesRecentes(props) {
           <h2 className="w3-opacity"><Trans>plume.annonces.recentes</Trans></h2>
         </Col>
       </Row>
+
+      {annonces}
+
     </Container>
   );
 }
