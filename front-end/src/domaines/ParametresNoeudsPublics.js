@@ -214,7 +214,7 @@ export class NoeudsPublics extends React.Component {
 
             <Row>
               <Col>
-                <ButtonGroup aria-label="Basic example">
+                <ButtonGroup>
                   <Button variant="primary" onClick={this._sauvegarder} value={noeud.url_web}>
                     <Trans>parametres.noeudsPublics.sauvegarder</Trans>
                   </Button>
@@ -266,11 +266,6 @@ export class NoeudsPublics extends React.Component {
       console.error(err);
     });
 
-    // noeuds.push(nouveauNoeud);
-    //
-    // this.setState({noeuds},()=>{
-    //   form.formAjouterNoeudPublic.value = '';
-    // });
   }
 
   _supprimerNoeud = event => {
@@ -353,9 +348,6 @@ export class NoeudsPublics extends React.Component {
       return docsRecu;
    })
    .then(noeudsPublics => {
-     console.debug("Noeuds publics recus");
-     console.debug(noeudsPublics);
-
      const noeuds = [];
      for(let idx in noeudsPublics) {
        let docProfil = noeudsPublics[idx];
@@ -371,15 +363,11 @@ export class NoeudsPublics extends React.Component {
   }
 
   _recevoirMessageNoeuds = (routingKey, message) => {
-    console.debug("Message Noeuds");
-    console.debug(routingKey);
-    console.debug(message);
-
     const url = message.url_web;
     const noeuds = [...this.state.noeuds];
     let noeudTrouve = false;
     for(let idx in this.state.noeuds) {
-      if(this.state.noeuds[idx].web_url === url) {
+      if(this.state.noeuds[idx].url_web === url) {
         noeuds[idx] = message;
         noeudTrouve = true;
         break;
@@ -392,6 +380,38 @@ export class NoeudsPublics extends React.Component {
     }
 
     this.setState({noeuds});
+  }
+
+  _sauvegarder = event => {
+    const url_web = event.currentTarget.value;
+    console.debug("Sauvegarder " + url_web);
+
+    for(let idx in this.state.noeuds) {
+      var noeudPublic = this.state.noeuds[idx];
+      if(noeudPublic.url_web === url_web) {
+        console.debug("Sauvegarder " + url_web + " match");
+        console.debug(noeudPublic);
+
+        const noeudTransaction = {
+          url_web: url_web,
+          menu: noeudPublic.menu,
+        }
+        // Transmettre ce noeud comme transaction
+        let domaine = 'millegrilles.domaines.Parametres.majNoeudPublic';
+        webSocketManager.transmettreTransaction(domaine, noeudTransaction)
+        .then(reponse=>{
+          if(reponse.err) {
+            console.error("Erreur transaction");
+          }
+        })
+        .catch(err=>{
+          console.error("Erreur sauvegarde");
+          console.error(err);
+        });
+
+        break;
+      }
+    }
   }
 
 }
