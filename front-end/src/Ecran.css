@@ -19,6 +19,10 @@ DIV.divtop {
   margin-top:80px;
 }
 
+div.section {
+  width: auto;
+}
+
 div.w3-card_BR {
   margin-bottom: 10px;
 }

@@ -48,6 +48,26 @@
         "autres": "Autres",
         "changerLangue": "English"
       }
+    },
+    "plume": {
+      "pageTitre": {
+        "titre": "Plume",
+        "description": "Plume est un éditeur de documents.",
+        "liensAnnonces": "Annonces",
+        "liensDocuments": "Documents"
+      },
+      "annonces": {
+        "titre": "Annonces",
+        "description": "Les annonces sont de courts messages publics",
+        "nouvelleAnnonce": "Nouvelle annonce",
+        "descriptionNouvelleAnnonce": "Publier une annonce",
+        "recentes": "Annonces récentes",
+        "sujetNouvelleAnnonce": "Sujet (optionnel)",
+        "sujetNouvelleAnnonceInfo": "Disponible : {{restants}} sur 70",
+        "texteNouvelleAnnonce": "Texte",
+        "texteNouvelleAnnonceInfo": "Disponible : {{restants}} sur 200",
+        "nouvelleAnnonceBoutonPublier": "Publier"
+      }
     }
   }
 }

@@ -1,12 +1,82 @@
 import React from 'react';
 import ReactQuill from 'react-quill';
+import { Form, Button, ButtonGroup, ListGroup,
+         Container, Row, Col } from 'react-bootstrap';
+import { Trans } from 'react-i18next';
+import webSocketManager from '../WebSocketManager';
+import {dateformatter} from '../formatters'
+import { PlumeAnnonces } from './PlumeAnnonces'
+
 import 'react-quill/dist/quill.snow.css';
 import './Plume.css';
-import {dateformatter} from '../formatters.js'
 
-import webSocketManager from '../WebSocketManager';
+const SECTIONS = {
+  PlumeAnnonces,
+}
 
 export class Plume extends React.Component {
+
+  state = {
+    sectionCourante: '',
+  }
+
+  render() {
+
+    var page;
+    if(this.state.sectionCourante && this.state.sectionCourante !== '') {
+      let SectionCourante = SECTIONS[this.state.sectionCourante];
+      page = (<SectionCourante />)
+    } else {
+      page = (
+        <Row className="w3-row-padding">
+          <Container className="w3-card w3-round w3-white w3-card_BR">
+            <Row>
+              <Col>
+                <h2 className="w3-opacity"><Trans>plume.pageTitre.titre</Trans></h2>
+                <p><Trans>plume.pageTitre.description</Trans></p>
+              </Col>
+            </Row>
+          </Container>
+          <Container className="w3-card w3-round w3-white w3-card_BR">
+            <Row>
+              <Col>
+                <ul>
+                  <li>
+                    <Button className="aslink" onClick={this._versSectionAnnonces}>
+                      <Trans>plume.pageTitre.liensAnnonces</Trans>
+                    </Button>
+                  </li>
+                  <li>
+                    <Button className="aslink" onClick={this._versSectionDocuments}>
+                      <Trans>plume.pageTitre.liensDocuments</Trans>
+                    </Button>
+                  </li>
+                </ul>
+              </Col>
+            </Row>
+          </Container>
+        </Row>
+      )
+    }
+
+    return (
+      <div>
+        {page}
+      </div>
+    )
+  }
+
+  _versSectionAnnonces = () => {
+    this.setState({sectionCourante: 'PlumeAnnonces'});
+  }
+
+  _versSectionDocuments = () => {
+    this.setState({sectionCourante: 'PlumeDocuments'});
+  }
+
+}
+
+class PlumeDocuments extends React.Component {
 
   state = {
     editionDocument: null,
