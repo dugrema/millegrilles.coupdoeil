@@ -4,7 +4,7 @@ import { Form, Button, ButtonGroup, ListGroup,
 import { Trans } from 'react-i18next';
 import Backend from 'react-dnd-html5-backend'
 import { DndProvider, useDrag, useDrop } from "react-dnd";
-// import webSocketManager from '../WebSocketManager';
+import webSocketManager from '../WebSocketManager';
 import './Parametres.css';
 
 // const domaine = 'millegrilles.domaines.Parametres';
@@ -12,7 +12,7 @@ import './Parametres.css';
 
 // Modele de la configuration d'un noeud public
 const noeudTemplate = {
-  "url": "https://localhost",
+  "url_web": "https://localhost",
   "menu": [
     "fichiers",
     "messages",
@@ -30,11 +30,24 @@ const sousMenus = [
   'autres'
 ];
 
+const subscriptions_noeudsPublics = [
+  'noeuds.source.millegrilles_domaines_Parametres.documents.configuration.noeudPublic'
+]
+
 export class NoeudsPublics extends React.Component {
 
   state = {
     noeuds: [],
     nouveauUrl: '',
+  }
+
+  componentDidMount() {
+    this.chargerNoeudsPublics();
+    webSocketManager.subscribe(subscriptions_noeudsPublics, this._recevoirMessageNoeuds);
+  }
+
+  componentWillUnmount() {
+    webSocketManager.unsubscribe(subscriptions_noeudsPublics);
   }
 
   render() {
@@ -120,7 +133,7 @@ export class NoeudsPublics extends React.Component {
           sousMenus.push(
             <ListGroupItemDraggable
               key={sousMenu}
-              menuUrl={noeud.url}
+              menuUrl={noeud.url_web}
               menuItem={sousMenu}
               sousMenu={menuItem.type}
               deplacerMenu={this._deplacerMenu} />
@@ -150,7 +163,7 @@ export class NoeudsPublics extends React.Component {
         menuPrincipal.push(
           <ListGroupItemDraggable
             key={menuItem}
-            menuUrl={noeud.url}
+            menuUrl={noeud.url_web}
             menuItem={menuItem}
             sousMenu=''
             deplacerMenu={this._deplacerMenu} />
@@ -164,7 +177,7 @@ export class NoeudsPublics extends React.Component {
       sectionsDisponiblesElem.push(
         <ListGroupItemDraggable
           key={sectionDisponible}
-          menuUrl={noeud.url}
+          menuUrl={noeud.url_web}
           menuItem={sectionDisponible}
           sousMenu='disponible'
           deplacerMenu={this._deplacerMenu} />
@@ -172,10 +185,10 @@ export class NoeudsPublics extends React.Component {
     }
 
     return (
-      <Container key={noeud.url} className='w3-card w3-round w3-white w3-card_BR'>
+      <Container key={noeud.url_web} className='w3-card w3-round w3-white w3-card_BR'>
         <Form>
           <div className='w3-container w3-padding'>
-            <Row><Col><h3><Trans values={{url: noeud.url}}>parametres.noeudsPublics.titreNoeud</Trans></h3></Col></Row>
+            <Row><Col><h3><Trans values={{url: noeud.url_web}}>parametres.noeudsPublics.titreNoeud</Trans></h3></Col></Row>
 
             <Row><Col>Menu</Col></Row>
             <Row>
@@ -203,13 +216,13 @@ export class NoeudsPublics extends React.Component {
             <Row>
               <Col>
                 <ButtonGroup aria-label="Basic example">
-                  <Button variant="primary" onClick={this._sauvegarder} value={noeud.url}>
+                  <Button variant="primary" onClick={this._sauvegarder} value={noeud.url_web}>
                     <Trans>parametres.noeudsPublics.sauvegarder</Trans>
                   </Button>
-                  <Button variant="secondary" onClick={this._renommer} value={noeud.url}>
+                  <Button variant="secondary" onClick={this._renommer} value={noeud.url_web}>
                     <Trans>parametres.noeudsPublics.renommer</Trans>
                   </Button>
-                  <Button variant="danger" onClick={this._supprimerNoeud} value={noeud.url}>
+                  <Button variant="danger" onClick={this._supprimerNoeud} value={noeud.url_web}>
                     <Trans>parametres.noeudsPublics.supprimerNoeudBouton</Trans>
                   </Button>
                 </ButtonGroup>
@@ -234,19 +247,31 @@ export class NoeudsPublics extends React.Component {
     // Verifier qu'aucun noeud n'a cet URL
     for(let idx in noeuds) {
       let noeud = noeuds[idx];
-      if(noeud.url === url) {
+      if(noeud.url_web === url) {
         console.error("Un noeud a deja l'url " + url);
         return false;
       }
     }
 
     var nouveauNoeud = {...noeudTemplate};
-    nouveauNoeud.url = url;
-    noeuds.push(nouveauNoeud);
-
-    this.setState({noeuds},()=>{
-      form.formAjouterNoeudPublic.value = '';
+    nouveauNoeud.url_web = url;
+    let domaine = 'millegrilles.domaines.Parametres.majNoeudPublic';
+    webSocketManager.transmettreTransaction(domaine, nouveauNoeud)
+    .then(reponse=>{
+      if(reponse.err) {
+        console.error("Erreur transaction");
+      }
+    })
+    .catch(err=>{
+      console.error("Erreur sauvegarde");
+      console.error(err);
     });
+
+    // noeuds.push(nouveauNoeud);
+    //
+    // this.setState({noeuds},()=>{
+    //   form.formAjouterNoeudPublic.value = '';
+    // });
   }
 
   _supprimerNoeud = event => {
@@ -256,7 +281,7 @@ export class NoeudsPublics extends React.Component {
     // Filtrer le noeud a supprimer de la liste
     for(let idx in this.state.noeuds) {
       let noeud = this.state.noeuds[idx];
-      if(noeud.url !== url) {
+      if(noeud.url_web !== url) {
         noeuds.push(noeud);
       }
     }
@@ -278,7 +303,7 @@ export class NoeudsPublics extends React.Component {
     var menuNoeudModifie;
     for(var idxNoeud in this.state.noeuds) {
       let noeud = this.state.noeuds[idxNoeud];
-      if(noeud.url === noeudUrl) {
+      if(noeud.url_web === noeudUrl) {
         menuNoeudModifie = [...noeud.menu]; // On fait une copie du menu pour le modifier
         break;
       }
@@ -308,6 +333,54 @@ export class NoeudsPublics extends React.Component {
 
     }
 
+  }
+
+  chargerNoeudsPublics() {
+    let routingKey = 'requete.millegrilles.domaines.Parametres.noeudPublic';
+    webSocketManager.transmettreRequete(routingKey, {})
+    .then( docsRecu => {
+      return docsRecu;
+   })
+   .then(noeudsPublics => {
+     console.debug("Noeuds publics recus");
+     console.debug(noeudsPublics);
+
+     const noeuds = [];
+     for(let idx in noeudsPublics) {
+       let docProfil = noeudsPublics[idx];
+       noeuds.push(docProfil)
+     }
+
+     this.setState({noeuds});
+   })
+   .catch(err=>{
+     console.error("Erreur requete documents profils");
+     console.error(err);
+   });
+  }
+
+  _recevoirMessageNoeuds = (routingKey, message) => {
+    console.debug("Message Noeuds");
+    console.debug(routingKey);
+    console.debug(message);
+
+    const url = message.url_web;
+    const noeuds = [...this.state.noeuds];
+    let noeudTrouve = false;
+    for(let idx in this.state.noeuds) {
+      if(this.state.noeuds[idx].web_url === url) {
+        noeuds[idx] = message;
+        noeudTrouve = true;
+        break;
+      }
+    }
+
+    if(!noeudTrouve) {
+      // C'est un nouveau noeud, on l'ajoute a la fin
+      noeuds.push(message);
+    }
+
+    this.setState({noeuds});
   }
 
 }
