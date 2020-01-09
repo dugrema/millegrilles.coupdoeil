@@ -1,5 +1,10 @@
 {
   "translation": {
+    "global": {
+      "dateModifiee": "{{date, D MMM}}",
+      "dateAnneeModifiee": "{{date, D MMM YYYY}}",
+      "heureModifiee": "{{date, HH:mm}}"
+    },
     "formulaire": {
       "prenom": "Prénom :",
       "nomFamille": "Nom de famille :",

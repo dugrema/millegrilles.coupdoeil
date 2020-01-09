@@ -185,11 +185,34 @@ function RenderAnnoncesRecentes(props) {
   if(props.annoncesRecentes) {
     for(let idx in props.annoncesRecentes.annonces) {
       let annonce = props.annoncesRecentes.annonces[idx];
-      annonces.push(
-        <Row key={annonce.uuid}>
-          <Col>
-            Annonce
+
+      var sujet, texte, dateElement;
+      if(annonce.sujet) {
+        sujet = (
+          <h3 className="sujet-message">
+            {annonce.sujet}
+          </h3>
+        );
+      }
+      if(annonce.texte) {
+        texte = (
+          <p className="texte-message">
             {annonce.texte}
+          </p>
+        );
+      }
+      if(annonce['_mg-creation']) {
+        dateElement = renderDateModifiee(annonce['_mg-creation']);
+      }
+
+      annonces.push(
+        <Row key={annonce.uuid} className="message">
+          <Col sm={2}>
+            {dateElement}
+          </Col>
+          <Col sm={10}>
+            {sujet}
+            {texte}
           </Col>
         </Row>
       );
@@ -208,4 +231,28 @@ function RenderAnnoncesRecentes(props) {
 
     </Container>
   );
+}
+
+function renderDateModifiee(dateModifieeEpoch) {
+  const anneeCourante = new Date().getFullYear();
+  const dateModifiee = new Date(dateModifieeEpoch * 1000);
+  let labelDate;
+  if(dateModifiee.getFullYear() === anneeCourante) {
+    labelDate = 'global.dateModifiee';
+  } else {
+    labelDate = 'global.dateAnneeModifiee';
+  }
+
+  var dateElement = (
+    <div className="date-message">
+      <div className="date-modifiee">
+        <Trans values={{date: dateModifiee}}>{labelDate}</Trans>
+      </div>
+      <div className="heure-modifiee">
+        <Trans values={{date: dateModifiee}}>global.heureModifiee</Trans>
+      </div>
+    </div>
+  )
+
+  return dateElement;
 }
