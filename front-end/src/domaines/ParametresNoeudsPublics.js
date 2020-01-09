@@ -159,7 +159,6 @@ export class NoeudsPublics extends React.Component {
         let indexMenu = sectionsDisponibles.indexOf(menuItem);
         delete sectionsDisponibles[indexMenu];
 
-        console.debug("Ajout Draggable " + menuItem);
         menuPrincipal.push(
           <ListGroupItemDraggable
             key={menuItem}
@@ -278,15 +277,27 @@ export class NoeudsPublics extends React.Component {
     const url = event.currentTarget.value;
     const noeuds = [];
 
-    // Filtrer le noeud a supprimer de la liste
-    for(let idx in this.state.noeuds) {
-      let noeud = this.state.noeuds[idx];
-      if(noeud.url_web !== url) {
-        noeuds.push(noeud);
-      }
-    }
+    let domaine = 'millegrilles.domaines.Parametres.supprimerNoeudPublic';
+    webSocketManager.transmettreTransaction(domaine, {url_web: url})
+    .then(reponse=>{
+      if(reponse.err) {
+        console.error("Erreur transaction");
+      } else {
+        // Filtrer le noeud a supprimer de la liste
+        for(let idx in this.state.noeuds) {
+          let noeud = this.state.noeuds[idx];
+          if(noeud.url_web !== url) {
+            noeuds.push(noeud);
+          }
+        }
 
-    this.setState({noeuds});
+        this.setState({noeuds});
+      }
+    })
+    .catch(err=>{
+      console.error("Erreur sauvegarde");
+      console.error(err);
+    });
   }
 
   _changerNouveauUrl = event => {
