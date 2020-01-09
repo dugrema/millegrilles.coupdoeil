@@ -48,7 +48,8 @@ export class PlumeAnnonces extends React.Component {
           {...this.state} />
 
         <RenderAnnoncesRecentes
-          annoncesRecentes={this.state.annoncesRecentes} />
+          annoncesRecentes={this.state.annoncesRecentes}
+          supprimerAnnonce={this.actions.supprimerAnnonce} />
 
       </Row>
     );
@@ -86,6 +87,22 @@ export class PlumeAnnonces extends React.Component {
       } else {
         console.error("Publier annonce, erreur: texte vide");
       }
+    },
+    supprimerAnnonce: event => {
+      const uuid = event.currentTarget.value;
+      let domaine = 'millegrilles.domaines.Plume.supprimerAnnonce';
+
+      let transaction = {uuid};
+      webSocketManager.transmettreTransaction(domaine, transaction)
+      .then(reponse=>{
+        if(reponse.err) {
+          console.error("Erreur transaction");
+        }
+      })
+      .catch(err=>{
+        console.error("Erreur suppression transaction");
+        console.error(err);
+      });
     }
   }
 
@@ -110,8 +127,6 @@ export class PlumeAnnonces extends React.Component {
     let routingKey = 'requete.millegrilles.domaines.Plume.chargerAnnoncesRecentes';
     webSocketManager.transmettreRequete(routingKey, {})
     .then(annoncesRecentes => {
-      console.debug("Message annonces recentes");
-      console.debug(annoncesRecentes);
       this.setState({annoncesRecentes});
     })
     .catch(err=>{
@@ -121,8 +136,6 @@ export class PlumeAnnonces extends React.Component {
   }
 
   _recevoirMessageAnnoncesRecentes = (routingKey, message) => {
-    console.debug("Message annonces recentes");
-    console.debug(message);
     this.setState({annoncesRecentes: message});
   }
 
@@ -178,9 +191,6 @@ function RenderNouvelleAnnonce(props) {
 
 function RenderAnnoncesRecentes(props) {
 
-  console.debug("Props annonces recentes");
-  console.debug(props);
-
   const annonces = [];
   if(props.annoncesRecentes) {
     for(let idx in props.annoncesRecentes.annonces) {
@@ -210,9 +220,14 @@ function RenderAnnoncesRecentes(props) {
           <Col sm={2}>
             {dateElement}
           </Col>
-          <Col sm={10}>
+          <Col sm={9}>
             {sujet}
             {texte}
+          </Col>
+          <Col sm={1}>
+            <Button onClick={props.supprimerAnnonce} value={annonce.uuid} variant="danger">
+              <i className="fa fa-remove" />
+            </Button>
           </Col>
         </Row>
       );
