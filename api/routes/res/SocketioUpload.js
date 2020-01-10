@@ -18,7 +18,7 @@ class SocketIoUpload {
   }
 
   enregistrer(socket) {
-    console.debug("Enregistrer events SocketIoUpload");
+    // console.debug("Enregistrer events SocketIoUpload");
     this.socket = socket;
 
     this.socket.on('upload.nouveauFichier', this.nouveauFichier.bind(this));
@@ -29,14 +29,14 @@ class SocketIoUpload {
   }
 
   nouveauFichier(infoFichier, callback) {
-    console.debug("Demande de preparation d'upload de nouveau fichier");
-    console.debug(infoFichier);
+    // console.debug("Demande de preparation d'upload de nouveau fichier");
+    // console.debug(infoFichier);
     this.infoFichier = infoFichier;
     this.chunkInput = new ChunkInput()
 
     // Ouvrir un streamWriter avec consignation.grosfichiers
     const crypte = infoFichier.cleSecreteCryptee !== undefined;
-    this.creerOutputStream(infoFichier.fuuid, crypte);
+    this.creerOutputStream(infoFichier, crypte);
 
     this.transmettreInformationCle(infoFichier)
     //.then(()=>{
@@ -55,11 +55,11 @@ class SocketIoUpload {
 
   paquet(chunk, callback) {
     if(chunk && chunk.length) {
-      console.debug("Paquet " + chunk.length);
+      // console.debug("Paquet " + chunk.length);
       this.chunkInput.ajouterChunk(chunk)
     } else {
-      console.debug("Paquet vide, on l'ignore");
-      console.debug(chunk);
+      // console.debug("Paquet vide, on l'ignore");
+      // console.debug(chunk);
     }
 
     // Transmettre une notification de paquet sauvegarde
@@ -68,8 +68,8 @@ class SocketIoUpload {
   }
 
   fin(msg) {
-    console.debug("Fin");
-    console.debug(msg);
+    // console.debug("Fin");
+    // console.debug(msg);
 
     this.chunkInput.terminer()
 
@@ -78,7 +78,7 @@ class SocketIoUpload {
     // Transmettre les transactions metadata
     return this.transmettreTransactionMetadata(this.infoFichier, sha256)
     .then(()=>{
-      console.log("Transaction fin complete");
+      // console.debug("Transaction fin complete");
     })
     .catch(err=>{
       console.error("Erreur transmission metadata");
@@ -114,14 +114,20 @@ class SocketIoUpload {
     }
   }
 
-  creerOutputStream(fileUuid, crypte, paquet) {
+  creerOutputStream(infoFichier, crypte, paquet) {
+    let fileuuid = infoFichier.fuuid;
+    let nomfichier = infoFichier.nomFichier;
+    let mimetype = infoFichier.typeFichier;
+    // console.debug(infoFichier);
     let pathServeur = serveurConsignation + '/' +
-      path.join('grosfichiers', 'local', 'nouveauFichier', fileUuid);
+      path.join('grosfichiers', 'local', 'nouveauFichier', fileuuid);
     let options = {
       url: pathServeur,
       headers: {
-        fileuuid: fileUuid,
         encrypte: crypte,
+        fileuuid,
+        nomfichier,
+        mimetype,
       },
       agentOptions: {ca: pki.ca},  // Utilisation certificats SSL internes
     };
@@ -129,11 +135,10 @@ class SocketIoUpload {
     new Promise((resolve, reject)=>{
 
       const outStream = request.put(options, (err, httpResponse, body) =>{
-        console.debug("Upload PUT complete pour " + fileUuid);
+        // console.debug("Upload PUT complete pour " + fileuuid);
         // console.debug(httpResponse);
-        console.debug("Response body");
-        console.debug(body);
-
+        // console.debug("Response body");
+        // console.debug(body);
       });
       this.chunkInput.pipe(outStream);
 
@@ -143,7 +148,7 @@ class SocketIoUpload {
 
     });
 
-    console.debug("Oustream cree + promise");
+    // console.debug("Oustream cree + promise");
   }
 
   transmettreTransactionMetadata(infoFichier, sha256) {
@@ -162,8 +167,8 @@ class SocketIoUpload {
     if(infoFichier.documentuuid) {
       transactionNouvelleVersion.documentuuid = infoFichier.documentuuid;
     }
-    console.debug("Transaction metadata:");
-    console.debug(transactionNouvelleVersion);
+    // console.debug("Transaction metadata:");
+    // console.debug(transactionNouvelleVersion);
 
     let domaine = 'millegrilles.domaines.GrosFichiers.nouvelleVersion.metadata';
 
@@ -182,8 +187,8 @@ class SocketIoUpload {
       securite: infoFichier.securite,
     };
 
-    console.debug("Information fichier cle ");
-    console.debug(transactionInformationCryptee);
+    // console.debug("Information fichier cle ");
+    // console.debug(transactionInformationCryptee);
     let domaine = 'millegrilles.domaines.MaitreDesCles.nouvelleCle.grosFichier';
 
     return this.rabbitMQ.transmettreTransactionFormattee(transactionInformationCryptee, domaine);
@@ -202,7 +207,7 @@ class ChunkInput extends Readable {
 
   ajouterChunk(chunk) {
     if (!this.push(chunk)) {
-      console.debug("Ajout chunk au buffer");
+      // console.debug("Ajout chunk au buffer");
       this.chunks.push(chunk);
     }
   }

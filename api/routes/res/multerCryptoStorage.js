@@ -185,6 +185,7 @@ class MulterCryptoStorage {
   _traiterFichier(pipes, params, cb) {
     params.fileUuid = uuidv1();
     // console.debug("_Traiter fichier " + params.fileUuid);
+    // console.debug(params);
 
     // Pipe caclul du hash (on hash le contenu crypte quand c'est applicable)
     const hashPipe = new HashPipe({});
@@ -200,6 +201,8 @@ class MulterCryptoStorage {
       headers: {
         fileuuid: params.fileUuid,
         encrypte: params.crypte,
+        nomfichier: file.originalname,
+        mimetype: file.mimetype,
       },
       agentOptions: {ca: pki.ca},  // Utilisation certificats SSL internes
     };
