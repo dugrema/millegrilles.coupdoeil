@@ -68,9 +68,9 @@
         "descriptionNouvelleAnnonce": "Publier une annonce",
         "recentes": "Annonces récentes",
         "sujetNouvelleAnnonce": "Sujet (optionnel)",
-        "sujetNouvelleAnnonceInfo": "Disponible : {{restants}} sur 70",
+        "sujetNouvelleAnnonceInfo": "Disponible : {{restants}} sur {{max}}",
         "texteNouvelleAnnonce": "Texte",
-        "texteNouvelleAnnonceInfo": "Disponible : {{restants}} sur 200",
+        "texteNouvelleAnnonceInfo": "Disponible : {{restants}} sur {{max}}",
         "nouvelleAnnonceBoutonPublier": "Publier"
       }
     }

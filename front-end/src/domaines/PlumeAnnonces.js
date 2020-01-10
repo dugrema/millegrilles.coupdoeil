@@ -4,7 +4,7 @@ import { Form, Button, ButtonGroup, ListGroup,
 import { Trans } from 'react-i18next';
 import webSocketManager from '../WebSocketManager';
 
-const SUJET_CHARS_MAX = 70, TEXTE_CHARS_MAX = 200;
+const SUJET_CHARS_MAX = 70, TEXTE_CHARS_MAX = 400;
 
 const subscriptions_annonces = [
   'noeuds.source.millegrilles_domaines_Plume.documents.annonces.recentes'
@@ -161,7 +161,10 @@ function RenderNouvelleAnnonce(props) {
                             value={props.sujetNouvelleAnnonce}
                             onChange={props.update.changerSujetNouvelleAnnonce} />
               <Form.Text className="text-muted">
-                <Trans values={{restants: props.compteCharsRestantsSujet}}>
+                <Trans values={{
+                  restants: props.compteCharsRestantsSujet,
+                  max: SUJET_CHARS_MAX
+                }}>
                   plume.annonces.sujetNouvelleAnnonceInfo
                 </Trans>
               </Form.Text>
@@ -173,7 +176,10 @@ function RenderNouvelleAnnonce(props) {
                             value={props.texteNouvelleAnnonce}
                             onChange={props.update.changerTexteNouvelleAnnonce} />
               <Form.Text className="text-muted">
-                <Trans values={{restants: props.compteCharsRestantsTexte}}>
+                <Trans values={{
+                  restants: props.compteCharsRestantsTexte,
+                  max: TEXTE_CHARS_MAX
+                }}>
                   plume.annonces.texteNouvelleAnnonceInfo
                 </Trans>
               </Form.Text>
