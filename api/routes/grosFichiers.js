@@ -100,6 +100,7 @@ router.post('/local/*', noFileMulter.none(), function(req, res, next) {
 
   let fuuid = req.body.fuuid;
   let securite = req.body.securite;
+  let extension = req.body.extension;
   let fingerprint = req.body.fingerprint;
   console.debug("local fichier: " + req.url + " fuuid: " + fuuid + ", securite: " + securite);
 
@@ -147,12 +148,14 @@ router.post('/local/*', noFileMulter.none(), function(req, res, next) {
 
 function _pipeFileToResult(req, res, pipes, securite) {
   let fuuid = req.body.fuuid;
+  let extension = req.body.extension;
 
   // Connecter au serveur consignation.
   let headers = {
     fuuid: req.body.fuuid,
     contenttype: req.body.contenttype,
     securite: securite,
+    extension,
   }
 
   let targetConsignation = serveurConsignation + '/grosFichiers/local/' + fuuid;

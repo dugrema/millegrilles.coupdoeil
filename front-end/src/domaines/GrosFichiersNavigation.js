@@ -395,6 +395,7 @@ export class GrosFichiersRenderDownloadForm extends React.Component {
           <input type="hidden" name="nomfichier" value="dummynomfichier"/>
           <input type="hidden" name="contenttype" value="dummycontentype"/>
           <input type="hidden" name="securite" value="dummysecurite"/>
+          <input type="hidden" name="extension" value="dummyextension"/>
       </form>
     );
   }

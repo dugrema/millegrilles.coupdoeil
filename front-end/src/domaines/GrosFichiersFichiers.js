@@ -239,6 +239,7 @@ export class AffichageFichier extends React.Component {
                 <button
                   title="Telecharger"
                   value={fichierCourant.uuid}
+                  data-extension={fichierCourant.extension}
                   onClick={this.props.actionsDownload.telechargerEvent}>
                     <i className="fa fa-download"/>
                 </button>
@@ -408,12 +409,14 @@ export class AffichageFichier extends React.Component {
               <button
                 onClick={this.props.actionsDownload.telechargerEvent}
                 value={fichierCourant.uuid}
+                data-extension={fichierCourant.extension}
                 data-fuuid={version.fuuid}>
                   <i className="fa fa-download" />
               </button>
               <button
                 onClick={this.props.actionsDownload.telechargerEvent}
                 value={fichierCourant.uuid}
+                data-extension={fichierCourant.extension}
                 data-fuuid={version.fuuid}
                 data-notarget='true'>
                   <i className="fa fa-download" />
@@ -575,7 +578,8 @@ export class ActiviteFichiers extends React.Component {
                   <i className='fa fa-star-o fa-stack-1x'/>
                 </span>
               </button>
-              <button value={fichier.uuid} onClick={this.props.actionsDownload.telechargerEvent}>
+              <button value={fichier.uuid} data-extension={fichier.extension}
+                onClick={this.props.actionsDownload.telechargerEvent}>
                 <i className="fa fa-download"/>
               </button>
             </div>

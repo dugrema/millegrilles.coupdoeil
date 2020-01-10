@@ -151,6 +151,7 @@ export class ActionsDownload {
       let nomFichier = fichier.nom;
       let contentType = fichier.mimetype;
       let securite = fichier.securite;
+      let extension = fichier.extension;
 
       form.action = downloadUrl + "/" + nomFichier;
       form.fuuid.value = fuuid;
@@ -158,6 +159,7 @@ export class ActionsDownload {
       form.contenttype.value = contentType;
       form.authtoken.value = token;
       form.securite.value = securite;
+      form.extension.value = extension;
 
       if(opts) {
         if(opts.target || opts.target === 'none') {
