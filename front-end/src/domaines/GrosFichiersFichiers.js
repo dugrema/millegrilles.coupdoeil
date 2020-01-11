@@ -173,9 +173,10 @@ export class AffichageFichier extends React.Component {
 
   renderInformationFichier() {
 
-    let fichierCourant = this.props.fichierCourant;
-    let dateFichierCourant = dateformatter.format_datetime(fichierCourant.date_v_courante);
+    const fichierCourant = this.props.fichierCourant;
+    const dateFichierCourant = dateformatter.format_datetime(fichierCourant.date_v_courante);
     // dateFichierCourant.setUTCSeconds(fichierCourant.date_v_courante);
+    const versionCourante = fichierCourant.versions[fichierCourant.fuuid_v_courante];
 
     let fichierSupprime = fichierCourant.supprime;
     let boutonSupprimerRecuperer;
@@ -220,6 +221,15 @@ export class AffichageFichier extends React.Component {
       )
     }
 
+    var thumbnail;
+    if(versionCourante.thumbnail) {
+      thumbnail = (
+        <div className="w3-row-padding">
+          <img src={'data:image/jpeg;base64,' + versionCourante.thumbnail}/>
+        </div>
+      );
+    }
+
     let informationFichier = (
       <div className="w3-card w3-round w3-white">
         <div className="w3-container w3-padding">
@@ -248,6 +258,8 @@ export class AffichageFichier extends React.Component {
                 {boutonSupprimerRecuperer}
               </div>
             </div>
+
+            {thumbnail}
 
             <div className="w3-row-padding">
               <div className="w3-col m3 label">Date :</div>
