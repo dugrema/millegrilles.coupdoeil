@@ -71,7 +71,9 @@ class SocketIoUpload {
       uuidInfoFichier = this.uuidFichierCourant;
     }
 
-    delete this.infoFichier[uuidFichierCourant];
+    if(uuidInfoFichier) {
+      delete this.sha256Client[uuidInfoFichier];
+    }
 
     if(this.socket) {
       this.socket.emit('upload.annule');
@@ -105,22 +107,28 @@ class SocketIoUpload {
         delete this.sha256Client[fileuuid];
 
         if(err) {
-          console.error(err);
-          throw new Error("Erreur traitement PUT fichier " + fileuuid, err);
+          reject(err);
           return;
         }
-        // console.debug("Upload PUT complete pour " + fileuuid);
+        console.debug("Upload PUT complete pour " + fileuuid);
         // console.debug(httpResponse);
-        // console.debug("Response body");
-        // console.debug(body);
+        console.debug("Response status " + httpResponse.statusCode);
+        console.debug("Response body");
+        console.debug(body);
 
+        const responseBody = JSON.parse(body);
+        const sha256consignation = responseBody.sha256Hash;
         const sha256Local = infoFichier.sha256Local; // Place par chunkInput 'end'
 
-        let compMessage = "SHA256 client : " + sha256Client + ", local : " + sha256Local;
+        let compMessage = "SHA256 client : " + sha256Client +
+          ", local : " + sha256Local + ", consignation " + sha256consignation;
         console.debug(compMessage);
 
-        if(sha256Local !== sha256Client) {
-          reject(new Error("SHA256 fichiers ne correspondent pas : " + compMessage))
+        // Verifier le hachage client vs consignation (local n'est pas
+        // important sauf pour diagnostiquer des problemes)
+        if(sha256Client !== sha256consignation) {
+          let err = "SHA256 fichiers ne correspondent pas : " + compMessage;
+          reject(err);
           return;
         }
 
@@ -135,6 +143,7 @@ class SocketIoUpload {
         .catch(err=>{
           console.error("Erreur transmission metadata");
           console.error(err);
+          reject(err);
         })
 
       })
