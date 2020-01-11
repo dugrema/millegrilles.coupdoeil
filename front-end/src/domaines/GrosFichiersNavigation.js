@@ -520,6 +520,8 @@ export class FileUploadSection extends React.Component {
     let securite = '3.protege';  // Par defaut, augmenter a 4.secure lorsque pret
     let documentuuid = this.props.documentuuid;
 
+    console.debug("Upload fichiers dans collection " + documentuuid);
+
     // let repertoire_uuid = this.props.repertoireCourant.repertoire_uuid;
     // let securite = this.props.repertoireCourant.securite;
 

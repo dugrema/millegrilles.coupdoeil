@@ -13,7 +13,8 @@ class SocketIoUpload {
   constructor(rabbitMQ) {
     this.rabbitMQ = rabbitMQ;
     this.socket = null;
-    this.infoFichier = null;
+    this.infoFichier = {};
+    this.uuidFichierCourant = null;
     this.chunkInput = null;
   }
 
@@ -31,7 +32,8 @@ class SocketIoUpload {
   nouveauFichier(infoFichier, callback) {
     // console.debug("Demande de preparation d'upload de nouveau fichier");
     // console.debug(infoFichier);
-    this.infoFichier = infoFichier;
+    this.uuidFichierCourant = infoFichier.fuuid;
+    this.infoFichier[this.uuidFichierCourant] = infoFichier;
     this.chunkInput = new ChunkInput()
 
     // Ouvrir un streamWriter avec consignation.grosfichiers
@@ -71,12 +73,23 @@ class SocketIoUpload {
     // console.debug("Fin");
     // console.debug(msg);
 
-    this.chunkInput.terminer()
+    // Conserver le uuid et l'info du fichier qui vient de terminer
+    // le reste des actions est asynchrone
+    const uuidFichierCourant = this.uuidFichierCourant;
+    // console.debug("InfoFichier charger pour fin de " + uuidFichierCourant);
 
+    this.uuidFichierCourant = null;  // Reset pour prochain upload
+    const infoFichier = this.infoFichier[uuidFichierCourant];
     const sha256 = msg.sha256;
 
+    // console.debug(infoFichier);
+
+    this.chunkInput.terminer()
+
     // Transmettre les transactions metadata
-    return this.transmettreTransactionMetadata(this.infoFichier, sha256)
+    // Cette action est asynchrone, le prochain fichier peut commencer a
+    // uploader immediatement.
+    return this.transmettreTransactionMetadata(infoFichier, sha256)
     .then(()=>{
       // console.debug("Transaction fin complete");
     })
@@ -86,28 +99,26 @@ class SocketIoUpload {
     })
     .finally(()=>{
       // Cleanup
-      this.infoFichier = null;
+      if(uuidFichierCourant) {
+        delete this.infoFichier[uuidFichierCourant];
+      }
     });
 
   }
 
-  annulerTransfert(err) {
+  annulerTransfert(err, uuidInfoFichier) {
     console.error("Annuler transfert fichier");
     if(err) {
       console.error(err);
     }
 
-    // if(this.streamWriter) {
-    //   try {
-    //     this.streamWriter.destroy(err);
-    //   } catch (err2) {
-    //     console.warn("Erreur destroy");
-    //     console.warn(err2);
-    //   }
-    // }
+    this.chunkInput.terminer()
 
-    this.infoFichier = null;
-    // this.streamWriter = null;
+    if(!uuidInfoFichier) {
+      uuidInfoFichier = this.uuidFichierCourant;
+    }
+
+    delete this.infoFichier[uuidFichierCourant];
 
     if(this.socket) {
       this.socket.emit('upload.annule');

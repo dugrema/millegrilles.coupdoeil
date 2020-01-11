@@ -35,13 +35,18 @@ export class UploadFichierSocketio {
         let securite = uploadInfo.securite;
 
         // let cipher = infoCryptage.cipher;
-
-        // console.debug("Debut");
-        socket.emit('upload.nouveauFichier', {
+        const transaction = {
           nomFichier, typeFichier, tailleFichier, fuuid, securite,
           iv: infoCryptage.iv,
           cleSecreteCryptee: infoCryptage.cleSecreteCryptee,
-        },
+        }
+        if(uploadInfo.documentuuid) {
+          transaction.documentuuid = uploadInfo.documentuuid;
+        }
+
+        // console.debug("Debut");
+        // console.debug(transaction);
+        socket.emit('upload.nouveauFichier', transaction,
         reponse=>{
           // console.debug("_executerUploadFichier, reponse serveur");
           // console.debug(reponse);
@@ -94,7 +99,7 @@ export class UploadFichierSocketio {
       function terminer() {
         var hashResult = sha256Calc.digest('hex');
         // console.log("Upload termine, sha256: " + hashResult);
-        socket.emit('upload.fin', {sha256: hashResult});
+        socket.emit('upload.fin', {sha256: hashResult, fuuid: uploadInfo.fuuid});
         resolve();
       };
 
