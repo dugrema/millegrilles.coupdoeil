@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const pki = require('./pki')
 const request = require('request');
+const crypto = require('crypto');
 const { Readable } = require('stream');
 
 const serveurConsignation = process.env.MG_CONSIGNATION_HTTP || 'https://consignationfichiers';
@@ -13,8 +14,7 @@ class SocketIoUpload {
   constructor(rabbitMQ) {
     this.rabbitMQ = rabbitMQ;
     this.socket = null;
-    this.infoFichier = {};
-    this.uuidFichierCourant = null;
+    this.sha256Client = {}; // Dict de resultats SHA256 recus
     this.chunkInput = null;
   }
 
@@ -32,36 +32,20 @@ class SocketIoUpload {
   nouveauFichier(infoFichier, callback) {
     // console.debug("Demande de preparation d'upload de nouveau fichier");
     // console.debug(infoFichier);
-    this.uuidFichierCourant = infoFichier.fuuid;
-    this.infoFichier[this.uuidFichierCourant] = infoFichier;
+    // this.infoFichier[infoFichier.fuuid] = infoFichier;
     this.chunkInput = new ChunkInput()
 
     // Ouvrir un streamWriter avec consignation.grosfichiers
     const crypte = infoFichier.cleSecreteCryptee !== undefined;
     this.creerOutputStream(infoFichier, crypte);
-
-    this.transmettreInformationCle(infoFichier)
-    //.then(()=>{
-      callback({pret: true});
-    // })
-    // .catch(err=>{
-    //   console.error("Erreur transmettreInformationCle, on annule le transfert");
-    //
-    //   // Annuler transfert
-    //   callback({pret: false, erreur: err});
-    //
-    //   this.annulerTransfert();
-    // });
-
+    this.transmettreInformationCle(infoFichier);
+    callback({pret: true});
   }
 
   paquet(chunk, callback) {
     if(chunk && chunk.length) {
       // console.debug("Paquet " + chunk.length);
       this.chunkInput.ajouterChunk(chunk)
-    } else {
-      // console.debug("Paquet vide, on l'ignore");
-      // console.debug(chunk);
     }
 
     // Transmettre une notification de paquet sauvegarde
@@ -70,40 +54,9 @@ class SocketIoUpload {
   }
 
   fin(msg) {
-    // console.debug("Fin");
-    // console.debug(msg);
-
-    // Conserver le uuid et l'info du fichier qui vient de terminer
-    // le reste des actions est asynchrone
-    const uuidFichierCourant = this.uuidFichierCourant;
-    // console.debug("InfoFichier charger pour fin de " + uuidFichierCourant);
-
-    this.uuidFichierCourant = null;  // Reset pour prochain upload
-    const infoFichier = this.infoFichier[uuidFichierCourant];
-    const sha256 = msg.sha256;
-
-    // console.debug(infoFichier);
-
-    this.chunkInput.terminer()
-
-    // Transmettre les transactions metadata
-    // Cette action est asynchrone, le prochain fichier peut commencer a
-    // uploader immediatement.
-    return this.transmettreTransactionMetadata(infoFichier, sha256)
-    .then(()=>{
-      // console.debug("Transaction fin complete");
-    })
-    .catch(err=>{
-      console.error("Erreur transmission metadata");
-      console.error(err);
-    })
-    .finally(()=>{
-      // Cleanup
-      if(uuidFichierCourant) {
-        delete this.infoFichier[uuidFichierCourant];
-      }
-    });
-
+    // Conserver le SHA256, il va etre recupere par la Promise sous creerOutputStream()
+    this.sha256Client[msg.fuuid] = msg.sha256;
+    this.chunkInput.terminer();
   }
 
   annulerTransfert(err, uuidInfoFichier) {
@@ -129,6 +82,7 @@ class SocketIoUpload {
     let fileuuid = infoFichier.fuuid;
     let nomfichier = infoFichier.nomFichier;
     let mimetype = infoFichier.typeFichier;
+
     // console.debug(infoFichier);
     let pathServeur = serveurConsignation + '/' +
       path.join('grosfichiers', 'local', 'nouveauFichier', fileuuid);
@@ -144,18 +98,58 @@ class SocketIoUpload {
     };
 
     new Promise((resolve, reject)=>{
-
+      const sha256Calc = crypto.createHash('sha256');
       const outStream = request.put(options, (err, httpResponse, body) =>{
+        const sha256Client = this.sha256Client[fileuuid]; // infoFichier.sha256Remote;
+        console.debug("Cleanup SHA256 Client pour " + fileuuid);
+        delete this.sha256Client[fileuuid];
+
+        if(err) {
+          console.error(err);
+          throw new Error("Erreur traitement PUT fichier " + fileuuid, err);
+          return;
+        }
         // console.debug("Upload PUT complete pour " + fileuuid);
         // console.debug(httpResponse);
         // console.debug("Response body");
         // console.debug(body);
-      });
+
+        const sha256Local = infoFichier.sha256Local; // Place par chunkInput 'end'
+
+        let compMessage = "SHA256 client : " + sha256Client + ", local : " + sha256Local;
+        console.debug(compMessage);
+
+        if(sha256Local !== sha256Client) {
+          reject(new Error("SHA256 fichiers ne correspondent pas : " + compMessage))
+          return;
+        }
+
+        // Transmettre les transactions metadata
+        // Cette action est asynchrone, le prochain fichier peut commencer a
+        // uploader immediatement.
+        return this.transmettreTransactionMetadata(infoFichier, sha256Client)
+        .then(()=>{
+          // console.debug("Transaction fin complete");
+          resolve();
+        })
+        .catch(err=>{
+          console.error("Erreur transmission metadata");
+          console.error(err);
+        })
+
+      })
+
       this.chunkInput.pipe(outStream);
+      this.chunkInput.on('data', chunk=>{
+        sha256Calc.update(chunk);
+      })
+      this.chunkInput.on('end', chunk=>{
+        var hashResult = sha256Calc.digest('hex');
+        infoFichier.sha256Local = hashResult;
+        // console.debug("Digest SHA256 recalcule " + hashResult);
+      })
 
       outStream.on('error', reject);
-
-      outStream.on('end', resolve);
 
     });
 
