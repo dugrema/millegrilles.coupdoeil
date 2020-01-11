@@ -320,6 +320,25 @@ export class AffichageCollections extends React.Component {
     );
   }
 
+  renderListeImages() {
+    // Verifier si on a au moins une image - active la section thumbnail/preview
+    var sectionImages = [];
+
+    for(let uuid in this.props.collectionCourante.documents) {
+      let doc = this.props.collectionCourante.documents[uuid];
+      if(doc.thumbnail) {
+        // On a une image
+        sectionImages.push(
+          <button className="aslink" onClick={this.props.actionsNavigation.chargeruuid} value={doc.uuid}>
+            <img key={doc.uuid} src={'data:image/jpeg;base64,' + doc.thumbnail}/>
+          </button>
+        );
+      }
+    }
+
+    return sectionImages;
+  }
+
   renderBadgeCarnet() {
     let badgeCarnet = '';
     if(this.props.carnet.taille > 0) {
@@ -539,6 +558,8 @@ export class AffichageCollections extends React.Component {
       <section className="w3-card_liste_BR">
 
         {this.renderCommentaire()}
+
+        {this.renderListeImages()}
 
         {this.renderListeDocuments()}
 
