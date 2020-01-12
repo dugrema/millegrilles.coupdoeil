@@ -98,11 +98,11 @@ export class UploadFichierSocketio {
     return new Promise((resolve, reject)=> {
 
       var compteurPaquets = 0;
-      const batchSize = 10;
+      const batchSize = 15;
 
       function terminer() {
         var hashResult = sha256Calc.digest('hex');
-        console.log("Upload termine, sha256: " + hashResult);
+        // console.log("Upload termine, sha256: " + hashResult);
         socket.emit('upload.fin', {sha256: hashResult, fuuid: uploadInfo.fuuid});
         resolve();
       };
@@ -113,8 +113,7 @@ export class UploadFichierSocketio {
         compteurPaquets++;
         if( compteurPaquets % batchSize === 0 ) {
 
-          console.debug("Paquet sync " + compteurPaquets);
-          // socket.binary(true).emit('upload.paquet', contenuCrypte.buffer);
+          // console.debug("Paquet sync " + compteurPaquets);
           socket.binary(true).emit('upload.sync', {}, read);
           // setTimeout(read, 4000);
         } else {
@@ -153,14 +152,14 @@ export class UploadFichierSocketio {
             sha256Calc.update(contenuCrypte);
 
             // Emettre paquet sans attendre le callback
-            console.debug("Paquet " + compteurPaquets + " taille " + contenuCrypte.length);
+            // console.debug("Paquet " + compteurPaquets + " taille " + contenuCrypte.length);
             socket.binary(true).emit('upload.paquet', contenuCrypte.buffer);
             read();
           })
         };
       }
 
-      console.debug("Demarrer lecture fichier a uploader");
+      // console.debug("Demarrer lecture fichier a uploader");
       read();
     });
 

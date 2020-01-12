@@ -51,17 +51,17 @@ class SocketIoUpload {
       // Transmettre une notification de paquet sauvegarde
       // Permet de synchroniser l'upload (style ACK)
       if(callback) {
-        console.debug('Callback, chunk ' + chunk.length);
+        // console.debug('Callback, chunk ' + chunk.length);
         callback();
       } else {
-        console.debug('Sans callback, chunk ' + chunk.length);
+        // console.debug('Sans callback, chunk ' + chunk.length);
       }
 
     }
   }
 
   sync(chunk, callback) {
-    console.debug('Sync');
+    // console.debug('Sync');
     callback();
   }
 
@@ -123,11 +123,11 @@ class SocketIoUpload {
           reject(err);
           return;
         }
-        console.debug("Upload PUT complete pour " + fileuuid);
+        // console.debug("Upload PUT complete pour " + fileuuid);
         // console.debug(httpResponse);
-        console.debug("Response status " + httpResponse.statusCode);
-        console.debug("Response body");
-        console.debug(body);
+        // console.debug("Response status " + httpResponse.statusCode);
+        // console.debug("Response body");
+        // console.debug(body);
 
         const responseBody = JSON.parse(body);
         const sha256consignation = responseBody.sha256Hash;
@@ -135,7 +135,7 @@ class SocketIoUpload {
 
         let compMessage = "SHA256 client : " + sha256Client +
           ", local : " + sha256Local + ", consignation " + sha256consignation;
-        console.debug(compMessage);
+        // console.debug(compMessage);
 
         // Verifier le hachage client vs consignation (local n'est pas
         // important sauf pour diagnostiquer des problemes)
@@ -236,7 +236,7 @@ class ChunkInput extends Readable {
   }
 
   ajouterChunk(chunk) {
-    console.debug("Ajout chunk sur buffer")
+    // console.debug("Ajout chunk sur buffer")
     this.chunks.push(chunk);
 
     // Essayer push a nouveau
@@ -247,7 +247,7 @@ class ChunkInput extends Readable {
   _push(size) {
     while(this.reading && this.chunks.length > 0) {
       let chunk = this.chunks.shift();
-      console.debug("Push chunk " + chunk.length);
+      // console.debug("Push chunk " + chunk.length);
       if(chunk.length > 0) {
         // this.reading = this.push(chunk);
         this.push(chunk);
@@ -266,10 +266,9 @@ class ChunkInput extends Readable {
 
   // _read() will be called when the stream wants to pull more data in.
   _read(size) {
+    // console.debug("_read invoque");
     this.reading = true;
-    console.debug("_read invoque");
-
-    console.debug("_read push");
+    // console.debug("_read push");
     this._push(size);
 
     if(this.termine) {
