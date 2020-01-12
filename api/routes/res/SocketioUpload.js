@@ -24,6 +24,7 @@ class SocketIoUpload {
 
     this.socket.on('upload.nouveauFichier', this.nouveauFichier.bind(this));
     this.socket.on('upload.paquet', this.paquet.bind(this));
+    this.socket.on('upload.sync', this.sync.bind(this));
     this.socket.on('upload.fin', this.fin.bind(this));
     this.socket.on('upload.annuler', this.annulerTransfert.bind(this));
     this.socket.on('disconnect', this.annulerTransfert.bind(this));
@@ -46,11 +47,22 @@ class SocketIoUpload {
     if(chunk && chunk.length) {
       // console.debug("Paquet " + chunk.length);
       this.chunkInput.ajouterChunk(chunk)
-    }
 
-    // Transmettre une notification de paquet sauvegarde
-    // Permet de synchroniser l'upload (style ACK)
-    if(callback) callback();
+      // Transmettre une notification de paquet sauvegarde
+      // Permet de synchroniser l'upload (style ACK)
+      if(callback) {
+        console.debug('Callback, chunk ' + chunk.length);
+        callback();
+      } else {
+        console.debug('Sans callback, chunk ' + chunk.length);
+      }
+
+    }
+  }
+
+  sync(chunk, callback) {
+    console.debug('Sync');
+    callback();
   }
 
   fin(msg) {
@@ -100,6 +112,7 @@ class SocketIoUpload {
     };
 
     new Promise((resolve, reject)=>{
+      var tailleFichier = 0;
       const sha256Calc = crypto.createHash('sha256');
       const outStream = request.put(options, (err, httpResponse, body) =>{
         const sha256Client = this.sha256Client[fileuuid]; // infoFichier.sha256Remote;
@@ -151,11 +164,13 @@ class SocketIoUpload {
       this.chunkInput.pipe(outStream);
       this.chunkInput.on('data', chunk=>{
         sha256Calc.update(chunk);
+        tailleFichier += chunk.length;
       })
       this.chunkInput.on('end', chunk=>{
         var hashResult = sha256Calc.digest('hex');
         infoFichier.sha256Local = hashResult;
         // console.debug("Digest SHA256 recalcule " + hashResult);
+        console.debug("Taille fichier " + tailleFichier);
       })
 
       outStream.on('error', reject);
@@ -217,12 +232,30 @@ class ChunkInput extends Readable {
     // Buffer de reception pour les chunks, au besoin.
     this.chunks = [];
     this.termine = false;
+    this.reading = false;
   }
 
   ajouterChunk(chunk) {
-    if (!this.push(chunk)) {
-      // console.debug("Ajout chunk au buffer");
-      this.chunks.push(chunk);
+    console.debug("Ajout chunk sur buffer")
+    this.chunks.push(chunk);
+
+    // Essayer push a nouveau
+    this._push();
+
+  }
+
+  _push(size) {
+    while(this.reading && this.chunks.length > 0) {
+      let chunk = this.chunks.shift();
+      console.debug("Push chunk " + chunk.length);
+      if(chunk.length > 0) {
+        // this.reading = this.push(chunk);
+        this.push(chunk);
+        if(!this.reading) {
+          this.chunks.unshift(chunk);
+          break;
+        }
+      }
     }
   }
 
@@ -232,13 +265,15 @@ class ChunkInput extends Readable {
   }
 
   // _read() will be called when the stream wants to pull more data in.
-  // The advisory size argument is ignored in this case.
   _read(size) {
+    this.reading = true;
+    console.debug("_read invoque");
+
+    console.debug("_read push");
+    this._push(size);
+
     if(this.termine) {
       this.push(null);
-    }
-    if(this.chunks.length > 0) {
-      this.push(this.chunks.shift());
     }
   }
 }

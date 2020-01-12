@@ -26,7 +26,7 @@ export class UploadFichierSocketio {
         promise = cryptoHelper.crypterFichier(clePubliqueMaitredescles, fichier);
       }
 
-      promise.then(infoCryptage=>{
+      return promise.then(infoCryptage=>{
 
         let nomFichier = fichier.name;
         let typeFichier = fichier.type;
@@ -46,30 +46,31 @@ export class UploadFichierSocketio {
 
         // console.debug("Debut");
         // console.debug(transaction);
-        socket.emit('upload.nouveauFichier', transaction,
-        reponse=>{
-          // console.debug("_executerUploadFichier, reponse serveur");
-          // console.debug(reponse);
+        return new Promise((resolve, reject) => {
+          socket.emit('upload.nouveauFichier', transaction, reponse=>{
+            // console.debug("_executerUploadFichier, reponse serveur");
+            // console.debug(reponse);
 
-          if(reponse.pret) {
-            // Demarrer upload
-            this._executerUploadFichier(socket, uploadInfo, infoCryptage)
-            .then(()=>{
-              // console.debug("Fin _executerUploadFichier");
-              resolve();
-            })
-            .catch(err=>{
-              console.error("Erreur _executerUploadFichier");
-              reject(err);
-            });
-          } else {
-            throw(reponse.erreur);
-          }
-        });
+            if(reponse.pret) {
+              resolve({infoCryptage});
+            } else {
+              reject(reponse.erreur);
+            }
+          });
+        })
+      })
+      .then(({infoCryptage})=>{
+        // Demarrer upload
+        return this._executerUploadFichier(socket, uploadInfo, infoCryptage)
+      })
+      .then(()=>{
+        // console.debug("Fin _executerUploadFichier");
+        resolve();
       })
       .catch(err=>{
-        reject(err); // Passer l'erreur
-      })
+        console.error("Erreur _executerUploadFichier");
+        reject(err);
+      });
 
     });
 
@@ -96,9 +97,12 @@ export class UploadFichierSocketio {
 
     return new Promise((resolve, reject)=> {
 
+      var compteurPaquets = 0;
+      const batchSize = 10;
+
       function terminer() {
         var hashResult = sha256Calc.digest('hex');
-        // console.log("Upload termine, sha256: " + hashResult);
+        console.log("Upload termine, sha256: " + hashResult);
         socket.emit('upload.fin', {sha256: hashResult, fuuid: uploadInfo.fuuid});
         resolve();
       };
@@ -106,45 +110,57 @@ export class UploadFichierSocketio {
       function read() {
         // console.debug("Read invoque");
 
-        reader.read().then(({value, done})=>{
-          if(done) {
-            // console.debug("Dernier paquet");
-            let contenuCrypte = value;
+        compteurPaquets++;
+        if( compteurPaquets % batchSize === 0 ) {
+
+          console.debug("Paquet sync " + compteurPaquets);
+          // socket.binary(true).emit('upload.paquet', contenuCrypte.buffer);
+          socket.binary(true).emit('upload.sync', {}, read);
+          // setTimeout(read, 4000);
+        } else {
+
+          reader.read().then(({value, done})=>{
+            if(done) {
+              // console.debug("Dernier paquet");
+              let contenuCrypte = value;
+              if(cipher) { // Crypter le contenu
+                contenuCrypte = cipher.final();
+              }
+              if(contenuCrypte && contenuCrypte.length > 0) {
+                socket.emit('upload.paquet', contenuCrypte.buffer);
+                sha256Calc.update(contenuCrypte);
+              }
+              terminer();
+              return;
+            }
+
+            // console.debug("Paquet " + contenuCrypte.length);
+            // console.log("Contenu original");
+            // console.log(value);
+
+            let contenuCrypte;
             if(cipher) { // Crypter le contenu
-              contenuCrypte = cipher.final();
+              let valueString = String.fromCharCode.apply(null, new Uint8Array(value));
+              contenuCrypte = cipher.update(valueString, 'binary');
+            } else { // Contenu deja crypte
+              contenuCrypte = new Uint8Array(value); //{buffer: value};
             }
-            if(contenuCrypte && contenuCrypte.length > 0) {
-              socket.emit('upload.paquet', contenuCrypte.buffer);
-              sha256Calc.update(contenuCrypte);
-            }
-            terminer();
-            return;
-          }
 
-          // console.debug("Paquet");
-          // console.log("Contenu original");
-          // console.log(value);
+            // console.log("Contenu crypte");
+            // console.debug("Paquet " + contenuCrypte.length);
 
-          let contenuCrypte;
-          if(cipher) { // Crypter le contenu
-            let valueString = String.fromCharCode.apply(null, new Uint8Array(value));
-            contenuCrypte = cipher.update(valueString, 'binary');
-          } else { // Contenu deja crypte
-            contenuCrypte = new Uint8Array(value); //{buffer: value};
-          }
+            // console.log("Paquet de " + value.length + " bytes");
+            sha256Calc.update(contenuCrypte);
 
-          // console.log("Contenu crypte");
-          // console.log(contenuCrypte);
-
-          // console.log("Paquet de " + value.length + " bytes");
-          socket.emit('upload.paquet', contenuCrypte.buffer);
-          sha256Calc.update(contenuCrypte);
-
-          read();
-          // return read();
-        });
+            // Emettre paquet sans attendre le callback
+            console.debug("Paquet " + compteurPaquets + " taille " + contenuCrypte.length);
+            socket.binary(true).emit('upload.paquet', contenuCrypte.buffer);
+            read();
+          })
+        };
       }
 
+      console.debug("Demarrer lecture fichier a uploader");
       read();
     });
 
