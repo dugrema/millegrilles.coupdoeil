@@ -4,9 +4,8 @@ import { Form, Button, ButtonGroup, ListGroup,
          Container, Row, Col } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 import {dateformatter} from '../formatters';
-import {IconeFichier} from '../mgcomponents/IconeFichier';
+import { IconeFichier, SectionSecurite } from '../mgcomponents/IconeFichier';
 import { Feuille } from '../mgcomponents/Feuilles'
-import { IconeSecurite } from '../mgcomponents/NiveauSecurite'
 
 export class ActionsCollections {
 
@@ -339,7 +338,7 @@ export class AffichageCollections extends React.Component {
         </Row>
         <Row>
           <Col>
-            <IconeSecurite securite={niveauSecurite} />
+            <SectionSecurite securite={niveauSecurite} />
           </Col>
         </Row>
       </Feuille>

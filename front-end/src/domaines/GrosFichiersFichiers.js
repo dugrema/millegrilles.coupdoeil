@@ -1,8 +1,9 @@
 import React from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
+import { Row, Col } from 'react-bootstrap';
 import {filesizeformatter, dateformatter} from '../formatters'
 import {DateTimeFormatter} from '../mgcomponents/ReactFormatters'
-import {IconeFichier} from '../mgcomponents/IconeFichier'
+import { IconeFichier, SectionSecurite } from '../mgcomponents/IconeFichier'
 import { Feuille } from '../mgcomponents/Feuilles'
 
 export class ActionsFichiers {
@@ -270,13 +271,6 @@ export class AffichageFichier extends React.Component {
             <div className="w3-col m9 champ">{filesizeformatter.format(fichierCourant.taille)} ({fichierCourant.taille} octets)</div>
           </div>
           <div className="w3-row-padding">
-            <div className="w3-col m3 label">Sécurité :</div>
-            <div className="w3-col m9 champ">
-              <IconeFichier securite={fichierCourant.securite} type="fichier"/>
-              {fichierCourant.securite} {boutonDecrypter}
-            </div>
-          </div>
-          <div className="w3-row-padding">
             <div className="w3-col m3 label">UUID permanent :</div>
             <div className="w3-col m9 champ">{fichierCourant.uuid}</div>
           </div>
@@ -284,6 +278,12 @@ export class AffichageFichier extends React.Component {
             <div className="w3-col m3 label">FUUID courant :</div>
             <div className="w3-col m9 champ">{fichierCourant.fuuid_v_courante}</div>
           </div>
+
+          <Row>
+            <Col>
+              <SectionSecurite securite={fichierCourant.securite} />
+            </Col>
+          </Row>
 
           {informationSuppression}
 
