@@ -3,7 +3,13 @@
     "global": {
       "dateModifiee": "{{date, D MMM}}",
       "dateAnneeModifiee": "{{date, D MMM YYYY}}",
-      "heureModifiee": "{{date, HH:mm}}"
+      "heureModifiee": "{{date, HH:mm}}",
+      "securite": {
+        "secure": "Sécure",
+        "protege": "Protégé",
+        "prive": "Privé",
+        "public": "Public"
+      }
     },
     "formulaire": {
       "prenom": "Prénom :",
@@ -73,6 +79,9 @@
         "texteNouvelleAnnonceInfo": "Disponible : {{restants}} sur {{max}}",
         "nouvelleAnnonceBoutonPublier": "Publier"
       }
+    },
+    "grosFichiers": {
+      "niveauSecurite": "Niveau de sécurité"
     }
   }
 }

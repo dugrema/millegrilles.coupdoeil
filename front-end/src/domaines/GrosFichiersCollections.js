@@ -2,9 +2,11 @@ import React from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Form, Button, ButtonGroup, ListGroup,
          Container, Row, Col } from 'react-bootstrap';
+import { Trans } from 'react-i18next';
 import {dateformatter} from '../formatters';
 import {IconeFichier} from '../mgcomponents/IconeFichier';
 import { Feuille } from '../mgcomponents/Feuilles'
+import { IconeSecurite } from '../mgcomponents/NiveauSecurite'
 
 export class ActionsCollections {
 
@@ -321,6 +323,29 @@ export class AffichageCollections extends React.Component {
     );
   }
 
+  renderSecuriteCollection() {
+
+    var niveauSecurite;
+    if(this.props.collectionCourante) {
+      niveauSecurite = this.props.collectionCourante.securite;
+    }
+
+    return (
+      <Feuille>
+        <Row>
+          <Col>
+            <h2><Trans>grosFichiers.niveauSecurite</Trans></h2>
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <IconeSecurite securite={niveauSecurite} />
+          </Col>
+        </Row>
+      </Feuille>
+    )
+  }
+
   renderListeImages() {
     // Verifier si on a au moins une image - active la section thumbnail/preview
     var listeImages = [];
@@ -569,6 +594,8 @@ export class AffichageCollections extends React.Component {
       <section className="w3-card_liste_BR">
 
         {this.renderCommentaire()}
+
+        {this.renderSecuriteCollection()}
 
         {this.renderListeImages()}
 
