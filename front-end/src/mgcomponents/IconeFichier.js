@@ -3,7 +3,7 @@ import { Container, Row, Alert } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'font-awesome/css/font-awesome.min.css';
-import './NiveauSecurite.css';
+import './IconeFichier.css';
 
 export class IconeFichier extends React.Component {
 
@@ -19,23 +19,23 @@ export class IconeFichier extends React.Component {
     if(this.props.type === 'collection') {
       icone = (
         <span className="fa-stack fa-1g">
-          <i className={"fa fa-file fa-stack-1x icone-gauche " + securitecss}/>
-          <i className={"fa fa-file-o fa-stack-1x icone-gauche"}/>
+          <i className={"fa fa-file fa-stack-1x " + securitecss}/>
+          <i className={"fa fa-file-o fa-stack-1x"}/>
         </span>
       );
     } else if(this.props.type === 'collection') {
       icone = (
         <span className="fa-stack fa-1g">
-          <i className={"fa fa-folder fa-stack-1x icone-gauche " + securitecss}/>
-          <i className={"fa fa-folder-o fa-stack-1x icone-gauche"}/>
+          <i className={"fa fa-folder fa-stack-1x " + securitecss}/>
+          <i className={"fa fa-folder-o fa-stack-1x"}/>
         </span>
       );
     } else {
       // Defaut
       icone = (
         <span className="fa-stack fa-1g">
-          <i className={"fa fa-file fa-stack-1x icone-gauche " + securitecss}/>
-          <i className={"fa fa-file-o fa-stack-1x icone-gauche"}/>
+          <i className={"fa fa-file fa-stack-1x " + securitecss}/>
+          <i className={"fa fa-file-o fa-stack-1x"}/>
         </span>
       );
     }
@@ -69,7 +69,7 @@ export class SectionSecurite extends React.Component {
     }
 
     return (
-      <Alert variant={couleur}>
+      <Alert variant={couleur} className="alert">
         <i className={'fa ' + iconeCadenas}/>
         <span>
           <Trans>grosFichiers.niveauSecurite</Trans>
