@@ -2,6 +2,7 @@ import React from 'react';
 import Dropzone from 'react-dropzone';
 import TextareaAutosize from 'react-textarea-autosize';
 import webSocketManager from '../WebSocketManager';
+import { Feuille } from '../mgcomponents/Feuilles'
 
 // import webSocketManager from '../WebSocketManager';
 // import {dateformatter} from '../formatters'
@@ -257,42 +258,40 @@ export class Entete extends React.Component {
     }
 
     return(
-      <div className="w3-card w3-round w3-white w3-card w3-card_BR">
-        <div className="w3-container w3-padding">
+      <Feuille>
 
-          <div className="w3-row-padding">
-            <div className="w3-col m2 bouton-home">
-              <button onClick={this.props.actionsNavigation.navigationArriere}>
-                <i title="Retour" className="fa fa-arrow-left fa-2x"/>
-              </button>
-              <button onClick={this.props.actionsNavigation.retourAccueil}>
-                <i title="Accueil" className="fa fa-home fa-2x"/>
-              </button>
-              <button onClick={this.props.actionsNavigation.afficherRecherche}>
-                <i title="Recherche" className="fa fa-search fa-2x"/>
-              </button>
-              {boutonDownload}
-            </div>
-            <div className="w3-col m8 entete-titre">
-              {elementTitre}
-            </div>
-            <div className="w3-col m1 bouton-home" title="Carnet">
-              <button onClick={this.props.actionsNavigation.afficherCarnet}>
-                <i className="fa fa-clipboard fa-2x">
-                  {this.renderBadgeCarnet()}
-                </i>
-              </button>
-            </div>
-            <div className="w3-col m1">
-              <FileUploadSection
-                actionsUpload={this.props.actionsUpload}
-                documentuuid={this.props.documentuuid}
-                />
-            </div>
+        <div className="w3-row-padding">
+          <div className="w3-col m2 bouton-home">
+            <button onClick={this.props.actionsNavigation.navigationArriere}>
+              <i title="Retour" className="fa fa-arrow-left fa-2x"/>
+            </button>
+            <button onClick={this.props.actionsNavigation.retourAccueil}>
+              <i title="Accueil" className="fa fa-home fa-2x"/>
+            </button>
+            <button onClick={this.props.actionsNavigation.afficherRecherche}>
+              <i title="Recherche" className="fa fa-search fa-2x"/>
+            </button>
+            {boutonDownload}
           </div>
-
+          <div className="w3-col m8 entete-titre">
+            {elementTitre}
+          </div>
+          <div className="w3-col m1 bouton-home" title="Carnet">
+            <button onClick={this.props.actionsNavigation.afficherCarnet}>
+              <i className="fa fa-clipboard fa-2x">
+                {this.renderBadgeCarnet()}
+              </i>
+            </button>
+          </div>
+          <div className="w3-col m1">
+            <FileUploadSection
+              actionsUpload={this.props.actionsUpload}
+              documentuuid={this.props.documentuuid}
+              />
+          </div>
         </div>
-      </div>
+
+      </Feuille>
     );
   }
 }

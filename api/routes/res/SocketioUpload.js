@@ -72,23 +72,25 @@ class SocketIoUpload {
   }
 
   annulerTransfert(err, uuidInfoFichier) {
-    console.error("Annuler transfert fichier");
-    if(err) {
-      console.error(err);
-    }
+    if(this.chunkInput) {
+      console.error("Annuler transfert fichier");
+      if(err) {
+        console.error(err);
+      }
 
-    this.chunkInput.terminer()
+      this.chunkInput.terminer()
 
-    if(!uuidInfoFichier) {
-      uuidInfoFichier = this.uuidFichierCourant;
-    }
+      if(!uuidInfoFichier) {
+        uuidInfoFichier = this.uuidFichierCourant;
+      }
 
-    if(uuidInfoFichier) {
-      delete this.sha256Client[uuidInfoFichier];
-    }
+      if(uuidInfoFichier) {
+        delete this.sha256Client[uuidInfoFichier];
+      }
 
-    if(this.socket) {
-      this.socket.emit('upload.annule');
+      if(this.socket) {
+        this.socket.emit('upload.annule');
+      }
     }
   }
 

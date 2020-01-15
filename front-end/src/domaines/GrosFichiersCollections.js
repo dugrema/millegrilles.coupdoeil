@@ -1,7 +1,10 @@
 import React from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
+import { Form, Button, ButtonGroup, ListGroup,
+         Container, Row, Col } from 'react-bootstrap';
 import {dateformatter} from '../formatters';
 import {IconeFichier} from '../mgcomponents/IconeFichier';
+import { Feuille } from '../mgcomponents/Feuilles'
 
 export class ActionsCollections {
 
@@ -281,59 +284,69 @@ export class AffichageCollections extends React.Component {
     // let uuid = this.props.collectionCourante.uuid;
 
     return(
-      <div className="w3-card w3-round w3-white w3-card">
-        <div className="w3-container w3-padding">
+      <Feuille>
 
-          <div className="w3-rowpadding">
+        <div className="w3-rowpadding">
 
-            <h2 className="w3-col m8">Contenu</h2>
+          <h2 className="w3-col m8">Contenu</h2>
 
-            <div className="w3-col m4 boutons-actions-droite">
-              <span className="bouton-fa">
-                <button title="Figer" onClick={this.figerCollection}>
-                  <i className="fa fa-thumb-tack"/>
-                </button>
-              </span>
-              <span className="bouton-fa">
-                <button title="Coller carnet" onClick={this.ajouterCarnet}>
-                  <i className="fa fa-clipboard">
-                    {this.renderBadgeCarnet()}
-                  </i>
-                </button>
-              </span>
+          <div className="w3-col m4 boutons-actions-droite">
+            <span className="bouton-fa">
+              <button title="Figer" onClick={this.figerCollection}>
+                <i className="fa fa-thumb-tack"/>
+              </button>
+            </span>
+            <span className="bouton-fa">
+              <button title="Coller carnet" onClick={this.ajouterCarnet}>
+                <i className="fa fa-clipboard">
+                  {this.renderBadgeCarnet()}
+                </i>
+              </button>
+            </span>
 
-            </div>
           </div>
-
-          <div className="liste-fichiers">
-            {this.genererListeFichiers()}
-          </div>
-
-          <div className="bas-page">
-            <div className="w3-col m12 boutons-pages">
-              {this.renderBoutonsPages()}
-            </div>
-          </div>
-
         </div>
-      </div>
+
+        <div className="liste-fichiers">
+          {this.genererListeFichiers()}
+        </div>
+
+        <div className="bas-page">
+          <div className="w3-col m12 boutons-pages">
+            {this.renderBoutonsPages()}
+          </div>
+        </div>
+
+      </Feuille>
     );
   }
 
   renderListeImages() {
     // Verifier si on a au moins une image - active la section thumbnail/preview
-    var sectionImages = [];
-
+    var listeImages = [];
     for(let uuid in this.props.collectionCourante.documents) {
       let doc = this.props.collectionCourante.documents[uuid];
       if(doc.thumbnail) {
         // On a une image
-        sectionImages.push(
+        listeImages.push(
           <button className="aslink" onClick={this.props.actionsNavigation.chargeruuid} value={doc.uuid}>
             <img key={doc.uuid} src={'data:image/jpeg;base64,' + doc.thumbnail}/>
           </button>
         );
       }
+    }
+
+    var sectionImages;
+    if(listeImages.length > 0) {
+      sectionImages = (
+        <Feuille>
+          <Row>
+            <Col>
+              {listeImages}
+            </Col>
+          </Row>
+        </Feuille>
+      )
     }
 
     return sectionImages;
@@ -433,23 +446,21 @@ export class AffichageCollections extends React.Component {
     );
 
     return (
-      <div className="w3-card w3-round w3-white w3-card">
-        <div className="w3-container w3-padding">
-          <div className="formulaire">
-            {titre}
+      <Feuille>
+        <div className="formulaire">
+          {titre}
 
-            <div className="w3-rowpadding">
-              <div className="w3-col m12">
-                {etiquettes}
-              </div>
+          <div className="w3-rowpadding">
+            <div className="w3-col m12">
+              {etiquettes}
             </div>
-
-            {ajouterEtiquette}
-
-            {commentaires}
           </div>
+
+          {ajouterEtiquette}
+
+          {commentaires}
         </div>
-      </div>
+      </Feuille>
     );
   }
 
@@ -589,27 +600,23 @@ export class AffichageCollectionFigee extends React.Component {
     // let uuid = this.props.collectionCourante.uuid;
 
     return(
-      <div className="w3-card w3-round w3-white w3-card">
-        <div className="w3-container w3-padding">
+      <Feuille>
+        <div className="w3-rowpadding">
 
-          <div className="w3-rowpadding">
-
-            <h2 className="w3-col m12"><i className="fa fa-thumb-tack"/> Contenu</h2>
-
-          </div>
-
-          <div className="liste-fichiers">
-            {this.genererListeFichiers()}
-          </div>
-
-          <div className="bas-page">
-            <div className="w3-col m12 boutons-pages">
-              {this.renderBoutonsPages()}
-            </div>
-          </div>
+          <h2 className="w3-col m12"><i className="fa fa-thumb-tack"/> Contenu</h2>
 
         </div>
-      </div>
+
+        <div className="liste-fichiers">
+          {this.genererListeFichiers()}
+        </div>
+
+        <div className="bas-page">
+          <div className="w3-col m12 boutons-pages">
+            {this.renderBoutonsPages()}
+          </div>
+        </div>
+      </Feuille>
     );
   }
 
@@ -675,15 +682,13 @@ export class AffichageCollectionFigee extends React.Component {
     );
 
     return (
-      <div className="w3-card w3-round w3-white w3-card">
-        <div className="w3-container w3-padding">
-          <div className="formulaire">
-            {titre}
-            {etiquettes}
-            {commentaires}
-          </div>
+      <Feuille>
+        <div className="formulaire">
+          {titre}
+          {etiquettes}
+          {commentaires}
         </div>
-      </div>
+      </Feuille>
     );
   }
 
@@ -889,17 +894,13 @@ class AffichageListeCollectionsFigees extends React.Component {
 
   render() {
     return (
-      <div className="w3-card w3-round w3-white w3-card">
-        <div className="w3-container w3-padding">
+      <Feuille>
+        <h2><i className="fa fa-thumb-tack"/> Collections figees</h2>
 
-          <h2><i className="fa fa-thumb-tack"/> Collections figees</h2>
-
-          <div>
-            {this.afficherListe()}
-          </div>
-
+        <div>
+          {this.afficherListe()}
         </div>
-      </div>
+      </Feuille>
     );
   }
 }
