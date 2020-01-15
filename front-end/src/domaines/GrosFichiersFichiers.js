@@ -3,6 +3,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 import {filesizeformatter, dateformatter} from '../formatters'
 import {DateTimeFormatter} from '../mgcomponents/ReactFormatters'
 import {IconeFichier} from '../mgcomponents/IconeFichier'
+import { Feuille } from '../mgcomponents/Feuilles'
 
 export class ActionsFichiers {
 
@@ -231,65 +232,63 @@ export class AffichageFichier extends React.Component {
     }
 
     let informationFichier = (
-      <div className="w3-card w3-round w3-white">
-        <div className="w3-container w3-padding">
-          <div className="m3-col m12 formulaire">
+      <Feuille>
+        <div className="m3-col m12 formulaire">
 
-            <div className="row-donnees">
-              <div className="w3-col m9">
-                <h2>Information</h2>
-              </div>
-              <div className="w3-col m2 boutons-actions-droite">
-                <button className="nobutton button-2x" onClick={this.checkEntree}
-                  value={fichierCourant.uuid}
-                  data-nom={fichierCourant.nom}
-                  data-datemodification={fichierCourant['_mg-derniere-modification']}>
-                  {this.renderSelectionCarnet()}
-                </button>
-                <button
-                  title="Telecharger"
-                  value={fichierCourant.uuid}
-                  data-extension={fichierCourant.extension}
-                  onClick={this.props.actionsDownload.telechargerEvent}>
-                    <i className="fa fa-download"/>
-                </button>
-              </div>
-              <div className="w3-col m1 boutons-actions-droite">
-                {boutonSupprimerRecuperer}
-              </div>
+          <div className="row-donnees">
+            <div className="w3-col m9">
+              <h2>Information</h2>
             </div>
-
-            {thumbnail}
-
-            <div className="w3-row-padding">
-              <div className="w3-col m3 label">Date :</div>
-              <div className="w3-col m9 champ">{dateFichierCourant.toString()}</div>
+            <div className="w3-col m2 boutons-actions-droite">
+              <button className="nobutton button-2x" onClick={this.checkEntree}
+                value={fichierCourant.uuid}
+                data-nom={fichierCourant.nom}
+                data-datemodification={fichierCourant['_mg-derniere-modification']}>
+                {this.renderSelectionCarnet()}
+              </button>
+              <button
+                title="Telecharger"
+                value={fichierCourant.uuid}
+                data-extension={fichierCourant.extension}
+                onClick={this.props.actionsDownload.telechargerEvent}>
+                  <i className="fa fa-download"/>
+              </button>
             </div>
-            <div className="w3-row-padding">
-              <div className="w3-col m3 label">Taille : </div>
-              <div className="w3-col m9 champ">{filesizeformatter.format(fichierCourant.taille)} ({fichierCourant.taille} octets)</div>
+            <div className="w3-col m1 boutons-actions-droite">
+              {boutonSupprimerRecuperer}
             </div>
-            <div className="w3-row-padding">
-              <div className="w3-col m3 label">Sécurité :</div>
-              <div className="w3-col m9 champ">
-                <IconeFichier securite={fichierCourant.securite} type="fichier"/>
-                {fichierCourant.securite} {boutonDecrypter}
-              </div>
-            </div>
-            <div className="w3-row-padding">
-              <div className="w3-col m3 label">UUID permanent :</div>
-              <div className="w3-col m9 champ">{fichierCourant.uuid}</div>
-            </div>
-            <div className="w3-row-padding">
-              <div className="w3-col m3 label">FUUID courant :</div>
-              <div className="w3-col m9 champ">{fichierCourant.fuuid_v_courante}</div>
-            </div>
-
-            {informationSuppression}
-
           </div>
+
+          {thumbnail}
+
+          <div className="w3-row-padding">
+            <div className="w3-col m3 label">Date :</div>
+            <div className="w3-col m9 champ">{dateFichierCourant.toString()}</div>
+          </div>
+          <div className="w3-row-padding">
+            <div className="w3-col m3 label">Taille : </div>
+            <div className="w3-col m9 champ">{filesizeformatter.format(fichierCourant.taille)} ({fichierCourant.taille} octets)</div>
+          </div>
+          <div className="w3-row-padding">
+            <div className="w3-col m3 label">Sécurité :</div>
+            <div className="w3-col m9 champ">
+              <IconeFichier securite={fichierCourant.securite} type="fichier"/>
+              {fichierCourant.securite} {boutonDecrypter}
+            </div>
+          </div>
+          <div className="w3-row-padding">
+            <div className="w3-col m3 label">UUID permanent :</div>
+            <div className="w3-col m9 champ">{fichierCourant.uuid}</div>
+          </div>
+          <div className="w3-row-padding">
+            <div className="w3-col m3 label">FUUID courant :</div>
+            <div className="w3-col m9 champ">{fichierCourant.fuuid_v_courante}</div>
+          </div>
+
+          {informationSuppression}
+
         </div>
-      </div>
+      </Feuille>
     );
 
     return informationFichier;
@@ -341,51 +340,49 @@ export class AffichageFichier extends React.Component {
     }
 
     let commentaires = (
-      <div className="w3-card w3-round w3-white">
-        <div className="w3-container w3-padding">
-          <div className="formulaire">
+      <Feuille>
+        <div className="formulaire">
 
-            <div className="w3-rowpadding">
-              <div className="w3-col m11">
-                <h2><i className="fa fa-tags"/> Étiquettes et commentaires</h2>
-              </div>
-              <div className="w3-col m1">
-                {boutonFavori}
-              </div>
+          <div className="w3-rowpadding">
+            <div className="w3-col m11">
+              <h2><i className="fa fa-tags"/> Étiquettes et commentaires</h2>
             </div>
-
-            <div className="w3-rowpadding">
-              <div className="w3-col m12">
-                {etiquettes}
-              </div>
+            <div className="w3-col m1">
+              {boutonFavori}
             </div>
-
-            <div className="w3-rowpadding">
-              <div className="w3-col m12">
-                <label>Ajouter une étiquette : </label>
-                <input type="text" onChange={this.changerNouvelleEtiquette} value={this.state.nouvelleEtiquette}/>
-                <button onClick={this.ajouterNouvelleEtiquette}>
-                  <i className="fa fa-plus"/>
-                </button>
-              </div>
-            </div>
-
-            <div className="w3-rowpadding">
-              <div className="w3-col m12 commentaire">
-                <TextareaAutosize
-                  name="commentaires"
-                  className={"autota-width-max editable " + cssEdition}
-                  onChange={this.editerCommentaire}
-                  onBlur={this.appliquerCommentaire}
-                  value={this.state.commentaires || fichierCourant.commentaires || ''}
-                  placeholder="Ajouter un commentaire ici..."
-                  />
-              </div>
-            </div>
-
           </div>
+
+          <div className="w3-rowpadding">
+            <div className="w3-col m12">
+              {etiquettes}
+            </div>
+          </div>
+
+          <div className="w3-rowpadding">
+            <div className="w3-col m12">
+              <label>Ajouter une étiquette : </label>
+              <input type="text" onChange={this.changerNouvelleEtiquette} value={this.state.nouvelleEtiquette}/>
+              <button onClick={this.ajouterNouvelleEtiquette}>
+                <i className="fa fa-plus"/>
+              </button>
+            </div>
+          </div>
+
+          <div className="w3-rowpadding">
+            <div className="w3-col m12 commentaire">
+              <TextareaAutosize
+                name="commentaires"
+                className={"autota-width-max editable " + cssEdition}
+                onChange={this.editerCommentaire}
+                onBlur={this.appliquerCommentaire}
+                value={this.state.commentaires || fichierCourant.commentaires || ''}
+                placeholder="Ajouter un commentaire ici..."
+                />
+            </div>
+          </div>
+
         </div>
-      </div>
+      </Feuille>
     );
 
     return commentaires;
@@ -456,12 +453,10 @@ export class AffichageFichier extends React.Component {
 
         {this.renderInformationFichier()}
 
-        <div className="w3-card w3-round w3-white">
-          <div className="w3-container w3-padding">
-            <h2 className="w3-opacity">Historique</h2>
-            <ul>{this.renderVersions()}</ul>
-          </div>
-        </div>
+        <Feuille>
+          <h2 className="w3-opacity">Historique</h2>
+          <ul>{this.renderVersions()}</ul>
+        </Feuille>
 
       </div>
     )
