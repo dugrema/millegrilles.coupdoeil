@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Row, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Alert } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'font-awesome/css/font-awesome.min.css';
@@ -68,15 +68,27 @@ export class SectionSecurite extends React.Component {
       transLabel = 'global.securite.public';
     }
 
+    let tailleMilieu = 11;
+    if(this.props.colfin) {
+      tailleMilieu -= this.props.colfin;
+    }
+
     return (
       <Alert variant={couleur} className="alert">
-        <i className={'fa ' + iconeCadenas}/>
-        <span>
-          <Trans>grosFichiers.niveauSecurite</Trans>
-        </span>
-        <span>
-          <Trans>{transLabel}</Trans>
-        </span>
+        <Row>
+          <Col sm={1}>
+            <i className={'fa ' + iconeCadenas}/>
+          </Col>
+          <Col sm={tailleMilieu}>
+            <span className="padright">
+              <Trans>grosFichiers.niveauSecurite</Trans>
+            </span>
+            <span>
+              <Trans>{transLabel}</Trans>
+            </span>
+          </Col>
+          {this.props.children}
+        </Row>
       </Alert>
     );
   }

@@ -329,6 +329,14 @@ export class AffichageCollections extends React.Component {
       niveauSecurite = this.props.collectionCourante.securite;
     }
 
+    let boutons = []
+    if(niveauSecurite !== '2.prive') {
+      boutons.push(<Button variant="dark"><Trans>global.securite.prive</Trans></Button>);
+    }
+    if(niveauSecurite !== '1.public') {
+      boutons.push(<Button variant="danger"><Trans>global.securite.public</Trans></Button>);
+    }
+
     return (
       <Feuille>
         <Row>
@@ -338,7 +346,9 @@ export class AffichageCollections extends React.Component {
         </Row>
         <Row>
           <Col>
-            <SectionSecurite securite={niveauSecurite} />
+            <SectionSecurite securite={niveauSecurite} colfin={5}>
+              <Col sm={5}><ButtonGroup>{boutons}</ButtonGroup></Col>
+            </SectionSecurite>
           </Col>
         </Row>
       </Feuille>

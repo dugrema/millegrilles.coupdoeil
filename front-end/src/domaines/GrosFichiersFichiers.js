@@ -1,6 +1,7 @@
 import React from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import { Row, Col } from 'react-bootstrap';
+import { Row, Col, Button, ButtonGroup } from 'react-bootstrap';
+import { Trans } from 'react-i18next';
 import {filesizeformatter, dateformatter} from '../formatters'
 import {DateTimeFormatter} from '../mgcomponents/ReactFormatters'
 import { IconeFichier, SectionSecurite } from '../mgcomponents/IconeFichier'
@@ -232,6 +233,15 @@ export class AffichageFichier extends React.Component {
       );
     }
 
+    let boutonsSecurite = []
+    if(fichierCourant.securite !== '2.prive') {
+      boutonsSecurite.push(<Button variant="dark"><Trans>global.securite.prive</Trans></Button>);
+    }
+    if(fichierCourant.securite !== '1.public') {
+      boutonsSecurite.push(<Button variant="danger"><Trans>global.securite.public</Trans></Button>);
+    }
+
+
     let informationFichier = (
       <Feuille>
         <div className="m3-col m12 formulaire">
@@ -281,7 +291,9 @@ export class AffichageFichier extends React.Component {
 
           <Row>
             <Col>
-              <SectionSecurite securite={fichierCourant.securite} />
+              <SectionSecurite securite={fichierCourant.securite} colfin={5}>
+                <Col sm={5}><ButtonGroup>{boutonsSecurite}</ButtonGroup></Col>
+              </SectionSecurite>
             </Col>
           </Row>
 
