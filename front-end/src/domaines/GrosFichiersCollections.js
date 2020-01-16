@@ -127,6 +127,15 @@ export class ActionsCollections {
     return this.webSocketManager.transmettreTransaction(domaine, transaction);
   }
 
+  changerNiveauSecurite = (collectionUuid, niveau) => {
+    let domaine = 'millegrilles.domaines.GrosFichiers.changerSecuriteCollection';
+    let transaction = {
+        uuid: collectionUuid,
+        "niveau_securite_destination": niveau,
+    }
+    return this.webSocketManager.transmettreTransaction(domaine, transaction);
+  }
+
   retirerFichiersCollection(collectionUuid, listeUuids) {
     console.debug("Ajouter documents du carnet a collection " + collectionUuid);
     console.debug(listeUuids);
@@ -265,6 +274,12 @@ export class AffichageCollections extends React.Component {
     this.setState({nouvelleEtiquette: ''});
   }
 
+  changerNiveauSecurite = event => {
+    var niveauSecurite = event.currentTarget.value;
+    this.props.actionsCollections.changerNiveauSecurite(
+      this.props.collectionCourante.uuid, niveauSecurite);
+  }
+
   // Verifier si on peut resetter les versions locales des proprietes editees.
   componentDidUpdate(prevProps) {
 
@@ -331,10 +346,18 @@ export class AffichageCollections extends React.Component {
 
     let boutons = []
     if(niveauSecurite !== '2.prive') {
-      boutons.push(<Button variant="dark"><Trans>global.securite.prive</Trans></Button>);
+      boutons.push(
+        <Button variant="dark" onClick={this.changerNiveauSecurite} value="2.prive">
+          <Trans>global.securite.prive</Trans>
+        </Button>
+      );
     }
     if(niveauSecurite !== '1.public') {
-      boutons.push(<Button variant="danger"><Trans>global.securite.public</Trans></Button>);
+      boutons.push(
+        <Button variant="danger" onClick={this.changerNiveauSecurite} value="1.public">
+          <Trans>global.securite.public</Trans>
+        </Button>
+      );
     }
 
     return (
