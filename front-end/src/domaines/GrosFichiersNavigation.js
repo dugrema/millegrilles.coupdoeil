@@ -1,6 +1,7 @@
 import React from 'react';
 import Dropzone from 'react-dropzone';
 import TextareaAutosize from 'react-textarea-autosize';
+import { Container, Row, Col } from 'react-bootstrap';
 import webSocketManager from '../WebSocketManager';
 import { Feuille } from '../mgcomponents/Feuilles'
 
@@ -259,9 +260,8 @@ export class Entete extends React.Component {
 
     return(
       <Feuille>
-
-        <div className="w3-row-padding">
-          <div className="w3-col m2 bouton-home">
+        <Row>
+          <Col md={2} className="bouton-home">
             <button onClick={this.props.actionsNavigation.navigationArriere}>
               <i title="Retour" className="fa fa-arrow-left fa-2x"/>
             </button>
@@ -272,25 +272,25 @@ export class Entete extends React.Component {
               <i title="Recherche" className="fa fa-search fa-2x"/>
             </button>
             {boutonDownload}
-          </div>
-          <div className="w3-col m8 entete-titre">
+          </Col>
+          <Col md={8} className="entete-titre">
             {elementTitre}
-          </div>
-          <div className="w3-col m1 bouton-home" title="Carnet">
+          </Col>
+          <Col md={1} className="bouton-home">
             <button onClick={this.props.actionsNavigation.afficherCarnet}>
               <i className="fa fa-clipboard fa-2x">
                 {this.renderBadgeCarnet()}
               </i>
             </button>
-          </div>
-          <div className="w3-col m1">
+          </Col>
+          <Col md={1}>
             <FileUploadSection
               actionsUpload={this.props.actionsUpload}
               documentuuid={this.props.documentuuid}
+              securite={this.props.securite}
               />
-          </div>
-        </div>
-
+          </Col>
+        </Row>
       </Feuille>
     );
   }
@@ -516,10 +516,10 @@ export class FileUploadSection extends React.Component {
     // Traitement d'un fichier a uploader.
     // console.debug(acceptedFiles);
 
-    let securite = '3.protege';  // Par defaut, augmenter a 4.secure lorsque pret
+    let securite = this.props.securite || '3.protege'; // Defaut protege
     let documentuuid = this.props.documentuuid;
 
-    console.debug("Upload fichiers dans collection " + documentuuid);
+    console.debug("Upload fichiers dans collection " + documentuuid + ", securite " + securite);
 
     // let repertoire_uuid = this.props.repertoireCourant.repertoire_uuid;
     // let securite = this.props.repertoireCourant.securite;

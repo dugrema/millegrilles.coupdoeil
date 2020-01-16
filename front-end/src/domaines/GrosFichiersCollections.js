@@ -3,7 +3,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 import { Form, Button, ButtonGroup, ListGroup,
          Container, Row, Col } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
-import {dateformatter} from '../formatters';
+import { dateformatter } from '../formatters';
 import { IconeFichier, SectionSecurite } from '../mgcomponents/IconeFichier';
 import { Feuille } from '../mgcomponents/Feuilles'
 

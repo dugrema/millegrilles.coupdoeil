@@ -6,8 +6,12 @@ const cryptoHelper = new MilleGrillesCryptoHelper();
 export class UploadFichierSocketio {
 
   uploadFichier(socket, uploadInfo) {
-    // console.debug("Upload fichier avec");
-    // console.debug(uploadInfo);
+    console.debug("Upload fichier avec");
+    console.debug(uploadInfo);
+
+    // Verifier s'il faut chiffrer le telechargement
+    // Si les donnes sont publiques ou privees on ne chiffre pas
+    const chiffrer = uploadInfo.securite !== '1.public' && uploadInfo.securite !== '2.prive';
 
     const clePubliqueMaitredescles = sessionStorage.clePubliqueMaitredescles;
     if(!clePubliqueMaitredescles) {
@@ -19,14 +23,41 @@ export class UploadFichierSocketio {
       const fichier = uploadInfo.acceptedFile;
       var promise;
       if(fichier.stream) {
-        // console.debug("On peut streamer le fichier, on prend crypto");
-        promise = cryptoHelper.creerCipherCrypterCleSecrete(clePubliqueMaitredescles);
+        if(chiffrer) {
+          // console.debug("On peut streamer le fichier, on prend crypto");
+          promise = cryptoHelper.creerCipherCrypterCleSecrete(clePubliqueMaitredescles);
+        } else {
+          // On ne chiffre pas, rien a faire
+          console.debug("Chargement fichier avec streaming, sans chiffrage");
+          promise = Promise.resolve({});
+        }
       } else {
-        // console.debug("On ne peut pas streamer le fichier, on prend subtle");
-        promise = cryptoHelper.crypterFichier(clePubliqueMaitredescles, fichier);
+        // On doit preparer un buffer du fichier en memoire
+        if(chiffrer) {
+          // console.debug("On ne peut pas streamer le fichier, on prend subtle");
+          promise = cryptoHelper.crypterFichier(clePubliqueMaitredescles, fichier);
+        } else {
+          console.debug("Chargement fichier sans streaming, ni chiffrage");
+          // Charger le fichier
+          var reader = new FileReader();
+          promise = new Promise((resolve, reject)=>{
+            reader.onload = () => {
+              var buffer = reader.result;
+              console.debug("Ficher charge dans buffer, taille " + buffer.byteLength);
+              resolve({buffer});
+            }
+            reader.onerror = err => {
+              reject(err);
+            }
+            reader.readAsArrayBuffer(fichier);
+          });
+        }
       }
 
       return promise.then(infoCryptage=>{
+
+        console.debug("InfoCryptage fichier");
+        console.debug(infoCryptage);
 
         let nomFichier = fichier.name;
         let typeFichier = fichier.type;
@@ -37,8 +68,10 @@ export class UploadFichierSocketio {
         // let cipher = infoCryptage.cipher;
         const transaction = {
           nomFichier, typeFichier, tailleFichier, fuuid, securite,
-          iv: infoCryptage.iv,
-          cleSecreteCryptee: infoCryptage.cleSecreteCryptee,
+        }
+        if(chiffrer) {
+          transaction.iv = infoCryptage.iv;
+          transaction.cleSecreteCryptee = infoCryptage.cleSecreteCryptee;
         }
         if(uploadInfo.documentuuid) {
           transaction.documentuuid = uploadInfo.documentuuid;
@@ -89,7 +122,11 @@ export class UploadFichierSocketio {
     let reader;
     if(infoCryptage.bufferCrypte) {
       reader = new BufferReader(infoCryptage.bufferCrypte);
+    } else if(infoCryptage.stream) {
+      // Le fichier a ete charge en memoire - aucun chiffrage
+      reader = new BufferReader(infoCryptage.stream);
     } else {
+      // On fonctionne avec le mode streaming
       reader = fichier.stream().getReader();
     }
 
@@ -141,7 +178,7 @@ export class UploadFichierSocketio {
             if(cipher) { // Crypter le contenu
               let valueString = String.fromCharCode.apply(null, new Uint8Array(value));
               contenuCrypte = cipher.update(valueString, 'binary');
-            } else { // Contenu deja crypte
+            } else { // Contenu deja crypte ou non crypte
               contenuCrypte = new Uint8Array(value); //{buffer: value};
             }
 

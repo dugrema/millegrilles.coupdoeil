@@ -310,6 +310,7 @@ export class GrosFichiers extends React.Component {
 
     let affichagePrincipal, titreEntete;
     var actionRenommer, documentuuid;
+    var securite;
 
     if (this.state.afficherCarnet) {
       titreEntete = 'Carnet';
@@ -336,6 +337,7 @@ export class GrosFichiers extends React.Component {
       actionRenommer = this.actionsFichiers.renommer;
       documentuuid = this.state.fichierCourant.uuid;
       titreEntete = this.state.fichierCourant.nom;
+      securite = this.state.fichierCourant.securite;
 
       affichagePrincipal = (
         <div>
@@ -355,6 +357,8 @@ export class GrosFichiers extends React.Component {
       actionRenommer = this.actionsCollections.renommer;
       documentuuid = this.state.collectionCourante.uuid;
       titreEntete = this.state.collectionCourante.nom;
+      securite = this.state.collectionCourante.securite;
+
       if(!titreEntete) titreEntete = '';
 
       affichagePrincipal = (
@@ -372,7 +376,7 @@ export class GrosFichiers extends React.Component {
 
     } else if(this.state.collectionFigeeCourante){
 
-      documentuuid = this.state.collectionFigeeCourante.uuid;
+      // documentuuid = this.state.collectionFigeeCourante.uuid;
       titreEntete = this.state.collectionFigeeCourante.nom;
       if(!titreEntete) titreEntete = '';
 
@@ -426,6 +430,7 @@ export class GrosFichiers extends React.Component {
               downloadDecrypte={this.state.downloadDecrypte}
               actionRenommer={actionRenommer}
               documentuuid={documentuuid}
+              securite={securite}
               />
             {affichagePrincipal}
           </div>
