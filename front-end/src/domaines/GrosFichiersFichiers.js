@@ -144,9 +144,23 @@ export class AffichageFichier extends React.Component {
     this.setState({nouvelleEtiquette: ''});
   }
 
-  decrypter = event => {
-    let fuuid = event.currentTarget.value;
-    this.props.actionsFichiers.decrypter(fuuid);
+  changerSecurite = event => {
+    let securiteDestination = event.currentTarget.value;
+    let fuuid = this.props.fichierCourant.fuuid_v_courante;
+    let securiteCourante = this.props.fichierCourant.securite;
+
+    let decrypterNecessaire = false;
+    if(securiteCourante === '4.secure' || securiteCourante === '3.protege') {
+      if(securiteDestination === '2.prive' || securiteDestination === '1.public') {
+        decrypterNecessaire = true;
+      }
+    }
+
+    if(decrypterNecessaire) {
+      this.props.actionsFichiers.decrypter(fuuid, securiteDestination);
+    } else {
+      throw new Error("Pas implemente");
+    }
   }
 
   // Verifier si on peut resetter les versions locales des proprietes editees.
@@ -235,11 +249,15 @@ export class AffichageFichier extends React.Component {
 
     let boutonsSecurite = []
     if(fichierCourant.securite !== '2.prive') {
-      boutonsSecurite.push(<Button variant="dark"><Trans>global.securite.prive</Trans></Button>);
+      boutonsSecurite.push(
+        <Button variant="dark" onClick={this.changerSecurite} title="Appliquer securite privee" value="2.prive">
+          <Trans>global.securite.prive</Trans>
+        </Button>
+      );
     }
-    if(fichierCourant.securite !== '1.public') {
-      boutonsSecurite.push(<Button variant="danger"><Trans>global.securite.public</Trans></Button>);
-    }
+    // if(fichierCourant.securite !== '1.public') {
+    //   boutonsSecurite.push(<Button variant="danger"><Trans>global.securite.public</Trans></Button>);
+    // }
 
 
     let informationFichier = (
