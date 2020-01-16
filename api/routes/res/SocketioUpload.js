@@ -39,7 +39,12 @@ class SocketIoUpload {
     // Ouvrir un streamWriter avec consignation.grosfichiers
     const crypte = infoFichier.cleSecreteCryptee !== undefined;
     this.creerOutputStream(infoFichier, crypte);
-    this.transmettreInformationCle(infoFichier);
+
+    if(crypte) {
+      // Transmettre la cle au maitredescles
+      this.transmettreInformationCle(infoFichier);
+    }
+
     callback({pret: true});
   }
 
