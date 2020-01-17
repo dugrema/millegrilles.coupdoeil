@@ -205,9 +205,9 @@ class ProcesseurDownloadCrypte {
           md: forge.md.sha256.create()
         }
       });
-      console.debug("Cle secrete decryptee string " + decryptedSecretKey);
+      // console.debug("Cle secrete decryptee string " + decryptedSecretKey);
       decryptedSecretKey = Buffer.from(forge.util.binary.hex.decode(decryptedSecretKey));
-      console.debug("Cle secrete decryptee (" + decryptedSecretKey.length + ") bytes");
+      // console.debug("Cle secrete decryptee (" + decryptedSecretKey.length + ") bytes");
       console.debug(decryptedSecretKey);
 
       // Creer un decipher stream
