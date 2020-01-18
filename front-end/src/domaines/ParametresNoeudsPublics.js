@@ -264,7 +264,7 @@ export class NoeudsPublics extends React.Component {
      for(let idx in noeudsPublics) {
        let docProfil = noeudsPublics[idx];
        ordreNoeuds.push(docProfil.url_web);
-       noeuds[docProfil.url_web] = docProfil;
+       noeuds[docProfil.url_web] = {awsSecretAccessKey: '', ...docProfil};
      }
 
      this.setState({ordreNoeuds, ...noeuds});
@@ -285,7 +285,7 @@ export class NoeudsPublics extends React.Component {
     }
 
     var stateUpdate = {ordreNoeuds};
-    stateUpdate[url] = message;
+    stateUpdate[url] = {awsSecretAccessKey: '', ...message};
 
     this.setState(stateUpdate);
   }
@@ -305,7 +305,7 @@ export class NoeudsPublics extends React.Component {
         if(noeudPublic[champ] && noeudPublic[champ] !== '') {
           awsSecretAccessKey = {awsSecretAccessKey: noeudPublic[champ]};
         }
-      } else if(champ[0] !== '_') {
+      } else if(champ[0] !== '_' && champ !== 'en-tete' && champ !== 'awsSecretAccessKeyChiffre') {
         noeudTransaction[champ] = noeudPublic[champ];
       }
     }
@@ -569,6 +569,11 @@ class NoeudPublic extends React.Component {
 class FormulaireDeploiementS3 extends React.Component {
 
   render() {
+    var placeholderAwsSecretAccessKey = 'AWS SECRET';
+    if(this.props.awsSecretAccessKeyChiffre) {
+      placeholderAwsSecretAccessKey = 'CHANGER AWS SECRET';
+    }
+
     return (
       <div>
         <Form.Row>
@@ -578,7 +583,8 @@ class FormulaireDeploiementS3 extends React.Component {
           </Form.Group>
           <Form.Group as={Col} md={4} controlId="awsSecretAccessKey" key="awsSecretAccessKey">
             <Form.Label><Trans>parametres.noeudsPublics.awsSecretAccessKey</Trans></Form.Label>
-            <Form.Control type="password" placeholder="Password" value={this.props.awsSecretAccessKey} onChange={this._changerChamp} />
+            <Form.Control type="password" placeholder={placeholderAwsSecretAccessKey}
+              value={this.props.awsSecretAccessKey} onChange={this._changerChamp} />
           </Form.Group>
           <Form.Group as={Col} md={4} controlId="awsCredentialRegion">
             <Form.Label><Trans>parametres.noeudsPublics.awsCredentialRegion</Trans></Form.Label>
