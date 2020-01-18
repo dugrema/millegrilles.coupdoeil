@@ -17,7 +17,8 @@ const noeudTemplate = {
   "menu": [
     "fichiers",
     "messages",
-  ]
+  ],
+  "mode_deploiement": "torrent",
 }
 
 // Sections de Vitrine
@@ -109,6 +110,7 @@ export class NoeudsPublics extends React.Component {
           toggleModeDeploiement={this._toggleModeDeploiement}
           sauvegarder={this._sauvegarder}
           majValeurNoeud={this.majValeurNoeud}
+          deplacerMenu={this._deplacerMenu}
           {...noeud} />
       );
     }
@@ -384,7 +386,7 @@ class NoeudPublic extends React.Component {
               menuUrl={this.props.url_web}
               menuItem={sousMenu}
               sousMenu={menuItem.type}
-              deplacerMenu={this._deplacerMenu} />
+              deplacerMenu={this.props.deplacerMenu} />
           );
         }
         sectionsSousMenus.push(
@@ -413,7 +415,7 @@ class NoeudPublic extends React.Component {
             menuUrl={this.props.url_web}
             menuItem={menuItem}
             sousMenu=''
-            deplacerMenu={this._deplacerMenu} />
+            deplacerMenu={this.props.deplacerMenu} />
         )
       }
     }
@@ -434,7 +436,9 @@ class NoeudPublic extends React.Component {
     var formulaireModeDeploiement;
     if(this.props.mode_deploiement === 's3') {
       formulaireModeDeploiement = (
-        <FormulaireDeploiementS3 changerchamp={this._changerChamp} url_web={this.props.url_web} />
+        <FormulaireDeploiementS3
+          changerchamp={this._changerChamp}
+          {...this.props} />
       );
     }
 
@@ -525,43 +529,43 @@ class FormulaireDeploiementS3 extends React.Component {
     return (
       <div>
         <Form.Row>
-          <Form.Group as={Col} md={4} controlId="awsAccessKeyId" key="awsAccessKeyId" value={this.props.awsAccessKeyId} >
+          <Form.Group as={Col} md={4} controlId="awsAccessKeyId" key="awsAccessKeyId" >
             <Form.Label><Trans>parametres.noeudsPublics.awsAccessKeyId</Trans></Form.Label>
-            <Form.Control placeholder="Ex. AKBCDEFG123456WXYZ" onChange={this._changerChamp} />
+            <Form.Control placeholder="Ex. AKBCDEFG123456WXYZ" value={this.props.awsAccessKeyId} onChange={this._changerChamp} />
           </Form.Group>
-          <Form.Group as={Col} md={4} controlId="awsSecretAccessKey" key="awsSecretAccessKey" value={this.props.awsSecretAccessKey}>
+          <Form.Group as={Col} md={4} controlId="awsSecretAccessKey" key="awsSecretAccessKey">
             <Form.Label><Trans>parametres.noeudsPublics.awsSecretAccessKey</Trans></Form.Label>
-            <Form.Control type="password" placeholder="Password" onChange={this._changerChamp} />
+            <Form.Control type="password" placeholder="Password" value={this.props.awsSecretAccessKey} onChange={this._changerChamp} />
           </Form.Group>
-          <Form.Group as={Col} md={4} controlId="awsCredentialRegion" value={this.props.awsCredentialRegion}>
+          <Form.Group as={Col} md={4} controlId="awsCredentialRegion">
             <Form.Label><Trans>parametres.noeudsPublics.awsCredentialRegion</Trans></Form.Label>
-            <Form.Control placeholder="Ex. us-east-2" onChange={this._changerChamp} />
+            <Form.Control placeholder="Ex. us-east-2" value={this.props.awsCredentialRegion} onChange={this._changerChamp} />
           </Form.Group>
         </Form.Row>
 
         <Form.Row>
-          <Form.Group as={Col} sm={6} controlId="awsBucketName" key="awsBucketName" value={this.props.awsBucketName}>
+          <Form.Group as={Col} sm={6} controlId="awsBucketName" key="awsBucketName">
             <Form.Label><Trans>parametres.noeudsPublics.awsBucketName</Trans></Form.Label>
-            <Form.Control placeholder="Ex. my-bucket" onChange={this._changerChamp} />
+            <Form.Control placeholder="Ex. my-bucket" value={this.props.awsBucketName} onChange={this._changerChamp} />
           </Form.Group>
-          <Form.Group as={Col} sm={6} controlId="awsBucketRegion" key="awsBucketRegion" value={this.props.awsBucketRegion}>
+          <Form.Group as={Col} sm={6} controlId="awsBucketRegion" key="awsBucketRegion">
             <Form.Label><Trans>parametres.noeudsPublics.awsBucketRegion</Trans></Form.Label>
-            <Form.Control placeholder="Ex. us-east-2" onChange={this._changerChamp} />
+            <Form.Control placeholder="Ex. us-east-2" value={this.props.awsBucketRegion} onChange={this._changerChamp} />
           </Form.Group>
         </Form.Row>
 
         <Form.Row>
-          <Form.Group as={Col} md={6} controlId="awsBucketUrl" key="awsBucketUrl" value={this.props.awsBucketUrl}>
+          <Form.Group as={Col} md={6} controlId="awsBucketUrl" key="awsBucketUrl">
             <Form.Label><Trans>parametres.noeudsPublics.awsBucketUrl</Trans></Form.Label>
-            <Form.Control placeholder="Ex. https://monbucket-bucket.s3.us-east-2.amazonaws.com" onChange={this._changerChamp} />
+            <Form.Control placeholder="Ex. https://monbucket-bucket.s3.us-east-2.amazonaws.com" value={this.props.awsBucketUrl} onChange={this._changerChamp} />
           </Form.Group>
-          <Form.Group as={Col} md={6} controlId="awsBucketDir" key="awsBucketDir" value={this.props.awsBucketDir}>
+          <Form.Group as={Col} md={6} controlId="awsBucketDir" key="awsBucketDir">
             <Form.Label><Trans>parametres.noeudsPublics.awsBucketDir</Trans></Form.Label>
             <InputGroup className="mb-3">
               <InputGroup.Prepend>
                 <InputGroup.Text id="awsBucketDir">/</InputGroup.Text>
               </InputGroup.Prepend>
-              <Form.Control placeholder="Ex. mon_sous_repertoire/ (optionnel)" onChange={this._changerChamp} />
+              <Form.Control placeholder="Ex. mon_sous_repertoire/ (optionnel)" value={this.props.awsBucketDir} onChange={this._changerChamp} />
             </InputGroup>
           </Form.Group>
         </Form.Row>
