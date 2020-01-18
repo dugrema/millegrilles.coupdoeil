@@ -38,9 +38,8 @@ const subscriptions_noeudsPublics = [
 export class NoeudsPublics extends React.Component {
 
   state = {
-    noeuds: [],
+    ordreNoeuds: [],
     nouveauUrl: '',
-    modeDeploiement: '',
   }
 
   componentDidMount() {
@@ -101,203 +100,17 @@ export class NoeudsPublics extends React.Component {
 
   _renderNoeuds() {
     let noeuds = [];
-    for(let idx in this.state.noeuds) {
-      let noeud = this.state.noeuds[idx];
-      noeuds.push(this._renderNoeud(noeud));
+    for(let idx in this.state.ordreNoeuds) {
+      let urlNoeud = this.state.ordreNoeuds[idx];
+      let noeud = this.state[urlNoeud];
+      noeuds.push(
+        <NoeudPublic
+          key={noeud.url_web}
+          toggleModeDeploiement={this._toggleModeDeploiement}
+          {...noeud} />
+      );
     }
     return noeuds;
-  }
-
-  _renderNoeud(noeud) {
-
-    var menuPrincipal = [];
-    var sectionsDisponibles = [...sectionsVitrine];
-    var sectionsSousMenus = [];
-    for(let idx in noeud.menu) {
-      let menuItem = noeud.menu[idx];
-
-      if(menuItem instanceof Object) {
-        menuPrincipal.push(
-          <ListGroup.Item key={menuItem.type}>
-            <Trans>{'parametres.menuVitrine.' + menuItem.type}</Trans>
-          </ListGroup.Item>
-        );
-
-        let sousMenus = [];
-        for(let sousMenuIdx in menuItem.menu) {
-          let sousMenu = menuItem.menu[sousMenuIdx];
-          let indexDisponible = sectionsDisponibles.indexOf(sousMenu);
-          delete sectionsDisponibles[indexDisponible];
-          sousMenus.push(
-            <ListGroupItemDraggable
-              key={sousMenu}
-              menuUrl={noeud.url_web}
-              menuItem={sousMenu}
-              sousMenu={menuItem.type}
-              deplacerMenu={this._deplacerMenu} />
-          );
-        }
-        sectionsSousMenus.push(
-          <Row key={menuItem.type + '.titre'}>
-            <Col>
-              <Trans>parametres.noeudsPublics.sousMenu</Trans> <Trans>{'parametres.menuVitrine.' + menuItem.type}</Trans>
-            </Col>
-          </Row>
-        );
-        sectionsSousMenus.push(
-          <Row key={menuItem.type + '.liste'}>
-            <Col>
-              <ListGroup horizontal>
-                {sousMenus}
-              </ListGroup>
-            </Col>
-          </Row>
-        )
-      } else {
-        let indexMenu = sectionsDisponibles.indexOf(menuItem);
-        delete sectionsDisponibles[indexMenu];
-
-        menuPrincipal.push(
-          <ListGroupItemDraggable
-            key={menuItem}
-            menuUrl={noeud.url_web}
-            menuItem={menuItem}
-            sousMenu=''
-            deplacerMenu={this._deplacerMenu} />
-        )
-      }
-    }
-
-    const sectionsDisponiblesElem = [];
-    for(let idxDisponible in sectionsDisponibles) {
-      let sectionDisponible = sectionsDisponibles[idxDisponible];
-      sectionsDisponiblesElem.push(
-        <ListGroupItemDraggable
-          key={sectionDisponible}
-          menuUrl={noeud.url_web}
-          menuItem={sectionDisponible}
-          sousMenu='disponible'
-          deplacerMenu={this._deplacerMenu} />
-      );
-    }
-
-    var formulaireModeDeploiement;
-    if(this.state.modeDeploiement === 's3') {
-      formulaireModeDeploiement = (
-        <div>
-          <Form.Row>
-            <Form.Group as={Col} md={4} controlId="awsAccessKeyId" key="awsAccessKeyId">
-              <Form.Label><Trans>parametres.noeudsPublics.awsAccessKeyId</Trans></Form.Label>
-              <Form.Control placeholder="Ex. AKBCDEFG123456WXYZ" />
-            </Form.Group>
-            <Form.Group as={Col} md={4} controlId="awsSecretAccessKey" key="awsSecretAccessKey">
-              <Form.Label><Trans>parametres.noeudsPublics.awsSecretAccessKey</Trans></Form.Label>
-              <Form.Control type="password" placeholder="Password" />
-            </Form.Group>
-            <Form.Group as={Col} md={4} controlId="awsCredentialRegion">
-              <Form.Label><Trans>parametres.noeudsPublics.awsCredentialRegion</Trans></Form.Label>
-              <Form.Control placeholder="Ex. us-east-2" />
-            </Form.Group>
-          </Form.Row>
-
-          <Form.Row>
-            <Form.Group as={Col} sm={6} controlId="awsBucketName" key="awsBucketName">
-              <Form.Label><Trans>parametres.noeudsPublics.awsBucketName</Trans></Form.Label>
-              <Form.Control placeholder="Ex. my-bucket" />
-            </Form.Group>
-            <Form.Group as={Col} sm={6} controlId="awsBucketRegion" key="awsBucketRegion">
-              <Form.Label><Trans>parametres.noeudsPublics.awsBucketRegion</Trans></Form.Label>
-              <Form.Control placeholder="Ex. us-east-2" />
-            </Form.Group>
-          </Form.Row>
-
-          <Form.Row>
-            <Form.Group as={Col} md={6} controlId="awsBucketUrl" key="awsBucketUrl">
-              <Form.Label><Trans>parametres.noeudsPublics.awsBucketUrl</Trans></Form.Label>
-              <Form.Control placeholder="Ex. https://monbucket-bucket.s3.us-east-2.amazonaws.com" />
-            </Form.Group>
-            <Form.Group as={Col} md={6} controlId="awsBucketDir" key="awsBucketDir">
-              <Form.Label><Trans>parametres.noeudsPublics.awsBucketDir</Trans></Form.Label>
-              <InputGroup className="mb-3">
-                <InputGroup.Prepend>
-                  <InputGroup.Text id="awsBucketDir">/</InputGroup.Text>
-                </InputGroup.Prepend>
-                <Form.Control placeholder="Ex. mon_sous_repertoire/ (optionnel)" />
-              </InputGroup>
-            </Form.Group>
-          </Form.Row>
-        </div>
-      );
-    }
-
-    return (
-      <Feuille key={noeud.url_web}>
-        <Form>
-          <Row><Col><h2><Trans values={{url: noeud.url_web}}>parametres.noeudsPublics.titreNoeud</Trans></h2></Col></Row>
-
-          <Row><Col><h3><Trans>parametres.noeudsPublics.menu</Trans></h3></Col></Row>
-          <Row>
-            <Col>
-              <ListGroup horizontal>
-                {menuPrincipal}
-              </ListGroup>
-            </Col>
-          </Row>
-
-          {sectionsSousMenus}
-
-          <Row>
-            <Col>Sections disponibles</Col>
-          </Row>
-
-          <Row>
-            <Col>
-              <ListGroup horizontal>
-                {sectionsDisponiblesElem}
-              </ListGroup>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col>
-              <h3><Trans>parametres.noeudsPublics.modeDeploiement</Trans></h3>
-              <p><Trans>parametres.noeudsPublics.modeDeploiementExplication</Trans></p>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col>
-              <ButtonToolbar>
-                <ToggleButtonGroup type="radio" name="modeDeploiement"
-                    value={this.state.modeDeploiement}
-                    onChange={this._toggleModeDeploiement}>
-                  <ToggleButton value={'torrent'}>Torrent</ToggleButton>
-                  <ToggleButton value={'s3'}>Amazon S3</ToggleButton>
-                </ToggleButtonGroup>
-              </ButtonToolbar>
-            </Col>
-          </Row>
-
-          {formulaireModeDeploiement}
-
-          <Row>
-            <Col>
-              <ButtonGroup>
-                <Button variant="primary" onClick={this._sauvegarder} value={noeud.url_web}>
-                  <Trans>parametres.noeudsPublics.sauvegarder</Trans>
-                </Button>
-                <Button variant="secondary" onClick={this._renommer} value={noeud.url_web}>
-                  <Trans>parametres.noeudsPublics.renommer</Trans>
-                </Button>
-                <Button variant="danger" onClick={this._supprimerNoeud} value={noeud.url_web}>
-                  <Trans>parametres.noeudsPublics.supprimerNoeudBouton</Trans>
-                </Button>
-              </ButtonGroup>
-            </Col>
-          </Row>
-        </Form>
-      </Feuille>
-    )
   }
 
   _ajouterNoeud = event => {
@@ -378,16 +191,10 @@ export class NoeudsPublics extends React.Component {
     // console.debug(destination);
 
     // Trouver le noeud par URL
-    var menuNoeudModifie;
-    for(var idxNoeud in this.state.noeuds) {
-      let noeud = this.state.noeuds[idxNoeud];
-      if(noeud.url_web === noeudUrl) {
-        menuNoeudModifie = [...noeud.menu]; // On fait une copie du menu pour le modifier
-        break;
-      }
-    }
+    var noeudModifie = this.state[noeudUrl];
 
-    if(menuNoeudModifie) {
+    if(noeudModifie) {
+      var menuNoeudModifie = [...noeudModifie.menu];
       if(source.sousMenu === 'disponible') {
         let indexDestination = menuNoeudModifie.indexOf(destination.menuItem)
         menuNoeudModifie.splice(indexDestination, 0, source.menuItem);  // Ajout item source
@@ -411,9 +218,12 @@ export class NoeudsPublics extends React.Component {
       }
 
       // Mettre la jour la collection des noeuds avec le nouveau menu.
-      const noeuds = [...this.state.noeuds];
-      noeuds[idxNoeud].menu = menuNoeudModifie;
-      this.setState({noeuds});
+      const noeud = Object.assign({}, this.state[noeudUrl]);
+      noeud.menu = menuNoeudModifie;
+
+      let stateUpdate = {};
+      stateUpdate[noeudUrl] = noeud;
+      this.setState(stateUpdate);
 
     }
 
@@ -426,13 +236,14 @@ export class NoeudsPublics extends React.Component {
       return docsRecu;
    })
    .then(noeudsPublics => {
-     const noeuds = [];
+     const ordreNoeuds = [], noeuds = {};
      for(let idx in noeudsPublics) {
        let docProfil = noeudsPublics[idx];
-       noeuds.push(docProfil)
+       ordreNoeuds.push(docProfil.url_web);
+       noeuds[docProfil.url_web] = docProfil;
      }
 
-     this.setState({noeuds});
+     this.setState({ordreNoeuds, ...noeuds});
    })
    .catch(err=>{
      console.error("Erreur requete documents profils");
@@ -442,55 +253,60 @@ export class NoeudsPublics extends React.Component {
 
   _recevoirMessageNoeuds = (routingKey, message) => {
     const url = message.url_web;
-    const noeuds = [...this.state.noeuds];
-    let noeudTrouve = false;
-    for(let idx in this.state.noeuds) {
-      if(this.state.noeuds[idx].url_web === url) {
-        noeuds[idx] = message;
-        noeudTrouve = true;
-        break;
-      }
-    }
+    // const noeuds = [...this.state.noeuds];
+    // let noeudTrouve = false;
+    // for(let idx in this.state.noeuds) {
+    //   if(this.state.noeuds[idx].url_web === url) {
+    //     noeuds[idx] = message;
+    //     noeudTrouve = true;
+    //     break;
+    //   }
+    // }
 
-    if(!noeudTrouve) {
+    var ordreNoeuds = this.state.ordreNoeuds;
+    if(!this.state[url]) {
       // C'est un nouveau noeud, on l'ajoute a la fin
-      noeuds.push(message);
+      ordreNoeuds = [...ordreNoeuds, url];
     }
 
-    this.setState({noeuds});
+    var stateUpdate = {ordreNoeuds};
+    stateUpdate[url] = message;
+
+    this.setState(stateUpdate);
   }
 
   _sauvegarder = event => {
     const url_web = event.currentTarget.value;
 
-    for(let idx in this.state.noeuds) {
-      var noeudPublic = this.state.noeuds[idx];
-      if(noeudPublic.url_web === url_web) {
+    var noeudPublic = this.state[url_web];
 
-        const noeudTransaction = {
-          url_web: url_web,
-          menu: noeudPublic.menu,
-        }
-        // Transmettre ce noeud comme transaction
-        let domaine = 'millegrilles.domaines.Parametres.majNoeudPublic';
-        webSocketManager.transmettreTransaction(domaine, noeudTransaction)
-        .then(reponse=>{
-          if(reponse.err) {
-            console.error("Erreur transaction");
-          }
-        })
-        .catch(err=>{
-          console.error("Erreur sauvegarde");
-          console.error(err);
-        });
-
-        break;
-      }
+    const noeudTransaction = {
+      url_web: url_web,
+      menu: noeudPublic.menu,
     }
+
+    // Transmettre ce noeud comme transaction
+    let domaine = 'millegrilles.domaines.Parametres.majNoeudPublic';
+    webSocketManager.transmettreTransaction(domaine, noeudTransaction)
+    .then(reponse=>{
+      if(reponse.err) {
+        console.error("Erreur transaction");
+      }
+    })
+    .catch(err=>{
+      console.error("Erreur sauvegarde");
+      console.error(err);
+    });
+
   }
 
-  _toggleModeDeploiement = modeDeploiement => {
-    this.setState({modeDeploiement});
+  _toggleModeDeploiement = (urlNoeud, modeDeploiement) => {
+    var noeud = Object.assign({}, this.state[urlNoeud]);
+    noeud.modeDeploiement = modeDeploiement;
+
+    var stateUpdate = {};
+    stateUpdate[urlNoeud] = noeud;
+    this.setState(stateUpdate);
   }
 
 }
@@ -531,4 +347,210 @@ function ListGroupItemDraggable(props) {
     </ListGroup.Item>
   );
 
+}
+
+class NoeudPublic extends React.Component {
+
+  render() {
+    var menuPrincipal = [];
+    var sectionsDisponibles = [...sectionsVitrine];
+    var sectionsSousMenus = [];
+    for(let idx in this.props.menu) {
+      let menuItem = this.props.menu[idx];
+
+      if(menuItem instanceof Object) {
+        menuPrincipal.push(
+          <ListGroup.Item key={menuItem.type}>
+            <Trans>{'parametres.menuVitrine.' + menuItem.type}</Trans>
+          </ListGroup.Item>
+        );
+
+        let sousMenus = [];
+        for(let sousMenuIdx in menuItem.menu) {
+          let sousMenu = menuItem.menu[sousMenuIdx];
+          let indexDisponible = sectionsDisponibles.indexOf(sousMenu);
+          delete sectionsDisponibles[indexDisponible];
+          sousMenus.push(
+            <ListGroupItemDraggable
+              key={sousMenu}
+              menuUrl={this.props.url_web}
+              menuItem={sousMenu}
+              sousMenu={menuItem.type}
+              deplacerMenu={this._deplacerMenu} />
+          );
+        }
+        sectionsSousMenus.push(
+          <Row key={menuItem.type + '.titre'}>
+            <Col>
+              <Trans>parametres.noeudsPublics.sousMenu</Trans> <Trans>{'parametres.menuVitrine.' + menuItem.type}</Trans>
+            </Col>
+          </Row>
+        );
+        sectionsSousMenus.push(
+          <Row key={menuItem.type + '.liste'}>
+            <Col>
+              <ListGroup horizontal>
+                {sousMenus}
+              </ListGroup>
+            </Col>
+          </Row>
+        )
+      } else {
+        let indexMenu = sectionsDisponibles.indexOf(menuItem);
+        delete sectionsDisponibles[indexMenu];
+
+        menuPrincipal.push(
+          <ListGroupItemDraggable
+            key={menuItem}
+            menuUrl={this.props.url_web}
+            menuItem={menuItem}
+            sousMenu=''
+            deplacerMenu={this._deplacerMenu} />
+        )
+      }
+    }
+
+    const sectionsDisponiblesElem = [];
+    for(let idxDisponible in sectionsDisponibles) {
+      let sectionDisponible = sectionsDisponibles[idxDisponible];
+      sectionsDisponiblesElem.push(
+        <ListGroupItemDraggable
+          key={sectionDisponible}
+          menuUrl={this.props.url_web}
+          menuItem={sectionDisponible}
+          sousMenu='disponible'
+          deplacerMenu={this._deplacerMenu} />
+      );
+    }
+
+    var formulaireModeDeploiement;
+    if(this.props.modeDeploiement === 's3') {
+      formulaireModeDeploiement = (
+        <FormulaireDeploiementS3 />
+      );
+    }
+
+    return (
+      <Feuille key={this.props.url_web}>
+        <Form>
+          <Row><Col><h2><Trans values={{url: this.props.url_web}}>parametres.noeudsPublics.titreNoeud</Trans></h2></Col></Row>
+
+          <Row><Col><h3><Trans>parametres.noeudsPublics.menu</Trans></h3></Col></Row>
+          <Row>
+            <Col>
+              <ListGroup horizontal>
+                {menuPrincipal}
+              </ListGroup>
+            </Col>
+          </Row>
+
+          {sectionsSousMenus}
+
+          <Row>
+            <Col>Sections disponibles</Col>
+          </Row>
+
+          <Row>
+            <Col>
+              <ListGroup horizontal>
+                {sectionsDisponiblesElem}
+              </ListGroup>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col>
+              <h3><Trans>parametres.noeudsPublics.modeDeploiement</Trans></h3>
+              <p><Trans>parametres.noeudsPublics.modeDeploiementExplication</Trans></p>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col>
+              <ButtonToolbar>
+                <ToggleButtonGroup type="radio" name="modeDeploiement"
+                    value={this.props.modeDeploiement}
+                    onChange={this._toggleModeDeploiement}>
+                  <ToggleButton value={'torrent'}>Torrent</ToggleButton>
+                  <ToggleButton value={'s3'}>Amazon S3</ToggleButton>
+                </ToggleButtonGroup>
+              </ButtonToolbar>
+            </Col>
+          </Row>
+
+          {formulaireModeDeploiement}
+
+          <Row>
+            <Col>
+              <ButtonGroup>
+                <Button variant="primary" onClick={this._sauvegarder} value={this.props.url_web}>
+                  <Trans>parametres.noeudsPublics.sauvegarder</Trans>
+                </Button>
+                <Button variant="secondary" onClick={this._renommer} value={this.props.url_web}>
+                  <Trans>parametres.noeudsPublics.renommer</Trans>
+                </Button>
+                <Button variant="danger" onClick={this._supprimerNoeud} value={this.props.url_web}>
+                  <Trans>parametres.noeudsPublics.supprimerNoeudBouton</Trans>
+                </Button>
+              </ButtonGroup>
+            </Col>
+          </Row>
+        </Form>
+      </Feuille>
+    );
+  }
+
+  _toggleModeDeploiement = valeur => {
+    var urlNoeud = this.props.url_web;
+    this.props.toggleModeDeploiement(urlNoeud, valeur);
+  }
+}
+
+function FormulaireDeploiementS3(props) {
+
+  return (
+    <div>
+      <Form.Row>
+        <Form.Group as={Col} md={4} controlId="awsAccessKeyId" key="awsAccessKeyId">
+          <Form.Label><Trans>parametres.noeudsPublics.awsAccessKeyId</Trans></Form.Label>
+          <Form.Control placeholder="Ex. AKBCDEFG123456WXYZ" />
+        </Form.Group>
+        <Form.Group as={Col} md={4} controlId="awsSecretAccessKey" key="awsSecretAccessKey">
+          <Form.Label><Trans>parametres.noeudsPublics.awsSecretAccessKey</Trans></Form.Label>
+          <Form.Control type="password" placeholder="Password" />
+        </Form.Group>
+        <Form.Group as={Col} md={4} controlId="awsCredentialRegion">
+          <Form.Label><Trans>parametres.noeudsPublics.awsCredentialRegion</Trans></Form.Label>
+          <Form.Control placeholder="Ex. us-east-2" />
+        </Form.Group>
+      </Form.Row>
+
+      <Form.Row>
+        <Form.Group as={Col} sm={6} controlId="awsBucketName" key="awsBucketName">
+          <Form.Label><Trans>parametres.noeudsPublics.awsBucketName</Trans></Form.Label>
+          <Form.Control placeholder="Ex. my-bucket" />
+        </Form.Group>
+        <Form.Group as={Col} sm={6} controlId="awsBucketRegion" key="awsBucketRegion">
+          <Form.Label><Trans>parametres.noeudsPublics.awsBucketRegion</Trans></Form.Label>
+          <Form.Control placeholder="Ex. us-east-2" />
+        </Form.Group>
+      </Form.Row>
+
+      <Form.Row>
+        <Form.Group as={Col} md={6} controlId="awsBucketUrl" key="awsBucketUrl">
+          <Form.Label><Trans>parametres.noeudsPublics.awsBucketUrl</Trans></Form.Label>
+          <Form.Control placeholder="Ex. https://monbucket-bucket.s3.us-east-2.amazonaws.com" />
+        </Form.Group>
+        <Form.Group as={Col} md={6} controlId="awsBucketDir" key="awsBucketDir">
+          <Form.Label><Trans>parametres.noeudsPublics.awsBucketDir</Trans></Form.Label>
+          <InputGroup className="mb-3">
+            <InputGroup.Prepend>
+              <InputGroup.Text id="awsBucketDir">/</InputGroup.Text>
+            </InputGroup.Prepend>
+            <Form.Control placeholder="Ex. mon_sous_repertoire/ (optionnel)" />
+          </InputGroup>
+        </Form.Group>
+      </Form.Row>
+    </div>
+  )
 }
