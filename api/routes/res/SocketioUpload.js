@@ -123,7 +123,7 @@ class SocketIoUpload {
       const sha256Calc = crypto.createHash('sha256');
       const outStream = request.put(options, (err, httpResponse, body) =>{
         const sha256Client = this.sha256Client[fileuuid]; // infoFichier.sha256Remote;
-        console.debug("Cleanup SHA256 Client pour " + fileuuid);
+        // console.debug("Cleanup SHA256 Client pour " + fileuuid);
         delete this.sha256Client[fileuuid];
 
         if(err) {
@@ -177,7 +177,7 @@ class SocketIoUpload {
         var hashResult = sha256Calc.digest('hex');
         infoFichier.sha256Local = hashResult;
         // console.debug("Digest SHA256 recalcule " + hashResult);
-        console.debug("Taille fichier " + tailleFichier);
+        // console.debug("Taille fichier " + tailleFichier);
       })
 
       outStream.on('error', reject);
