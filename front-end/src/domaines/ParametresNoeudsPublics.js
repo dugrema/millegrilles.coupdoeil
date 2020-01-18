@@ -111,6 +111,7 @@ export class NoeudsPublics extends React.Component {
           sauvegarder={this._sauvegarder}
           majValeurNoeud={this.majValeurNoeud}
           deplacerMenu={this._deplacerMenu}
+          supprimerNoeud={this._supprimerNoeud}
           {...noeud} />
       );
     }
@@ -157,14 +158,15 @@ export class NoeudsPublics extends React.Component {
         console.error("Erreur transaction");
       } else {
         // Filtrer le noeud a supprimer de la liste
-        for(let idx in this.state.noeuds) {
-          let noeud = this.state.noeuds[idx];
-          if(noeud.url_web !== url) {
-            noeuds.push(noeud);
+        const ordreNoeuds = [];
+        for(let idx in this.state.ordreNoeuds) {
+          let url_web_noeud = this.state.ordreNoeuds[idx]
+          if(url_web_noeud !== url) {
+            ordreNoeuds.push(url_web_noeud);
           }
         }
 
-        this.setState({noeuds});
+        this.setState({ordreNoeuds});
       }
     })
     .catch(err=>{
@@ -501,7 +503,7 @@ class NoeudPublic extends React.Component {
                 <Button variant="secondary" onClick={this._renommer} value={this.props.url_web}>
                   <Trans>parametres.noeudsPublics.renommer</Trans>
                 </Button>
-                <Button variant="danger" onClick={this._supprimerNoeud} value={this.props.url_web}>
+                <Button variant="danger" onClick={this.props.supprimerNoeud} value={this.props.url_web}>
                   <Trans>parametres.noeudsPublics.supprimerNoeudBouton</Trans>
                 </Button>
               </ButtonGroup>
