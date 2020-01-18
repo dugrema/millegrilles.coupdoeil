@@ -31,7 +31,7 @@ class SocketSession {
 /* Authentification */
 router.post('/initialiser-empreinte', (req, res) => {
     const { id, email } = req.body;
-    console.debug("initialiser-empreinte: Id " + id + ", email " + email);
+    console.log("initialiser-empreinte: Id " + id + ", email " + email);
 
     // Verifier que la MilleGrille n'a pas deja d'empreinte usager
     let filtre = {"_mg-libelle": "cles"};
@@ -107,7 +107,7 @@ router.post('/effectuer-empreinte', (req, res) => {
 /* Authentification */
 router.post('/initialiser-ajout-token', (req, res) => {
     const { id, email, pin } = req.body;
-    console.debug("initialiser-ajout-token: Id " + id + ", email " + email);
+    console.log("initialiser-ajout-token: Id " + id + ", email " + email);
 
     // Verifier que le pin est correct
     let pinCorrect = sessionManagement.consommerPinTemporaireDevice(pin);
@@ -176,7 +176,7 @@ router.post('/generercertificat', (req, res) => {
   let pinCorrect = sessionManagement.consommerPinTemporaireDevice(pin);
 
   if(pinCorrect) {
-    console.debug("generercertificat: sujet " + sujet + ", cle_publique " + cle_publique);
+    console.log("generercertificat: sujet " + sujet + ", cle_publique " + cle_publique);
 
     // Creer la transaction pour creer le certificat de navigateur
     const transaction = {
@@ -201,7 +201,7 @@ router.post('/generercertificat', (req, res) => {
     });
 
   } else {
-    console.debug("generercertificat pin incorrect: " + pin);
+    console.warning("generercertificat pin incorrect: " + pin);
     res.sendStatus(403);
   }
 

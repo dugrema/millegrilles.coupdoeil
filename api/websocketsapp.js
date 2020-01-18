@@ -120,7 +120,7 @@ class WebSocketApp {
         sessionManagement.addSocketConnection(socket)
       })
       .then(()=>{
-        console.debug("Authentification est completee");
+        // console.debug("Authentification est completee");
         this.saveAuthenticated(socketResources);
         this.registerEvents(socketResources);
       }).catch(err=>{
@@ -260,8 +260,8 @@ class WebSocketApp {
 
     // Expose l'appel aux transactions MQ.
     socket.on('transaction', (message, cb) => {
-      console.log("Message");
-      console.log(message);
+      // console.log("Message");
+      // console.log(message);
       let routingKey = message.routingKey;
       let transaction = message.transaction;
       let opts = message.opts;
@@ -291,12 +291,12 @@ class WebSocketApp {
 function extraireClePubliqueMaitredescles() {
   return rabbitMQ.singleton.demanderCertificatMaitreDesCles()
   .then(certificat=>{
-    console.debug("Certificat maitredescles");
-    console.debug(certificat);
+    // console.debug("Certificat maitredescles");
+    // console.debug(certificat);
 
     const infoCertificat = pki.extraireClePubliqueFingerprint(certificat);
 
-    console.debug(infoCertificat);
+    // console.debug(infoCertificat);
 
     // Enlever le wrapping pour faciliter l'usage pour le navigateur
     return infoCertificat;

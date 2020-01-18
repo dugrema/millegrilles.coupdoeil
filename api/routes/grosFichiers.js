@@ -46,10 +46,10 @@ const bodyParserHandler = bodyParser.urlencoded({ extended: true });
 function authentication(req, res, next) {
   // Pour le transfert de fichiers, il faut fournir un token de connexion
   let authtoken = req.headers.authtoken || req.body.authtoken;
-  console.debug("Headers ");
-  console.debug(req.headers);
-  console.debug(req.body);
-  console.debug("AUTH: Recu token " + authtoken);
+  // console.debug("Headers ");
+  // console.debug(req.headers);
+  // console.debug(req.body);
+  // console.debug("AUTH: Recu token " + authtoken);
   if(sessionManagement.consommerToken(authtoken)) {
     // console.debug("Token consomme: " + authtoken + ", accepte.");
     next();
@@ -72,8 +72,8 @@ router.put(
   '/nouveauFichier',
   uploadNouveauFichier,
   function(req, res, next) {
-    console.debug('*****FICHIERS******');
-    console.debug(req.file);
+    // console.debug('*****FICHIERS******');
+    // console.debug(req.file);
     let fichier = req.file;
     fichierProcesseurUpload.ajouterFichier(req, fichier, serveurConsignation)
     .then(params => {
@@ -92,24 +92,24 @@ router.put(
 const noFileMulter = multer();
 
 router.post('/local/*', noFileMulter.none(), function(req, res, next) {
-  console.debug("local POST " + req.url);
+  // console.debug("local POST " + req.url);
   // console.debug("Headers: ");
   // console.debug(req.headers);
-  console.debug("/local POST Body: ");
-  console.debug(req.body);
+  // console.debug("/local POST Body: ");
+  // console.debug(req.body);
 
   let fuuid = req.body.fuuid;
   let securite = req.body.securite;
   let extension = req.body.extension;
   let fingerprint = req.body.fingerprint;
-  console.debug("local fichier: " + req.url + " fuuid: " + fuuid + ", securite: " + securite);
+  // console.debug("local fichier: " + req.url + " fuuid: " + fuuid + ", securite: " + securite);
 
   let promiseStream = null;
   if(securite === '3.protege' || securite === '4.secure') {
-    console.debug("Le fichier est crypte.");
+    // console.debug("Le fichier est crypte.");
 
     if(fingerprint) {
-      console.debug("Le navigateur est capable de decrypter, on demande la cle secrete cryptee");
+      // console.debug("Le navigateur est capable de decrypter, on demande la cle secrete cryptee");
       promiseStream = fichierProcesseurDownloadCrypte.getCleSecreteCryptee(fuuid, fingerprint)
       .then((cleIv)=>{
         // Ajouter dict de cle et iv au response header
@@ -121,7 +121,7 @@ router.post('/local/*', noFileMulter.none(), function(req, res, next) {
       });
 
     } else {
-      console.debug("Aucun fingerprint de navigateur, on doit demander un pipe de decryptage");
+      // console.debug("Aucun fingerprint de navigateur, on doit demander un pipe de decryptage");
       promiseStream = fichierProcesseurDownloadCrypte.getDecipherPipe4fuuid(fuuid)
       .then(pipeDecipher=>{
         pipeDecipher.pipe(res);
@@ -159,8 +159,8 @@ function _pipeFileToResult(req, res, pipes, securite) {
   }
 
   let targetConsignation = serveurConsignation + '/grosFichiers/local/' + fuuid;
-  console.debug("Transfert vers: " + targetConsignation);
-  console.debug(pki.ca);
+  // console.debug("Transfert vers: " + targetConsignation);
+  // console.debug(pki.ca);
 
   const options = {
     url: targetConsignation,

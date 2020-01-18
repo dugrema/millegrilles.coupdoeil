@@ -28,7 +28,7 @@ class PKIUtils {
   }
 
   chargerPEMs() {
-    console.log("PKI: Chargement cle " + this.keyFile + " et cert " + this.certFile);
+    // console.log("PKI: Chargement cle " + this.keyFile + " et cert " + this.certFile);
     this.cle = fs.readFileSync(this.keyFile);
     this.ca = fs.readFileSync(this.cacertFile);
 
@@ -49,7 +49,7 @@ class PKIUtils {
     // Pour correspondre au format Python, enlever les colons (:) et
     // mettre en lowercase.
     fingerprint = fingerprint.replace(/:/g, '').toLowerCase();
-    console.log("Certificat fingerprint: " + fingerprint);
+    // console.log("Certificat fingerprint: " + fingerprint);
 
     //console.log(parsedCert);
     this.commonName = parsedCert.subject.commonName;
@@ -138,8 +138,8 @@ class PKIUtils {
       let contenuCrypte = cipher.update(contenuString, 'utf8', 'base64');
       contenuCrypte += cipher.final('base64');
 
-      console.debug("Contenu crypte: ");
-      console.debug(contenuCrypte);
+      // console.debug("Contenu crypte: ");
+      // console.debug(contenuCrypte);
 
       return {contenuCrypte, encryptedSecretKey, iv};
     });
@@ -206,7 +206,7 @@ class PKIUtils {
     // fingerprint = fingerprint.replace(/:/g, '').toLowerCase();
 
     const clePubliquePEM = forge.pki.publicKeyToPem(certificat.publicKey);
-    console.debug('Cle publique maitredescles ');
+    // console.debug('Cle publique maitredescles ');
     // console.debug(clePubliquePEM);
 
     var clePublique = clePubliquePEM

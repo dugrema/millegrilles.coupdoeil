@@ -328,8 +328,8 @@ class RabbitMQWrapper {
   _formatterInfoTransaction(domaine, opts) {
     // Ces valeurs n'ont de sens que sur le serveur.
     // Calculer secondes UTC (getTime retourne millisecondes locales)
-    console.debug("Formatter info transaction opts");
-    console.debug(opts);
+    // console.debug("Formatter info transaction opts");
+    // console.debug(opts);
     let version = 6;
     var uuidTransaction;
     if(opts) {
@@ -535,7 +535,7 @@ class RabbitMQWrapper {
       });
     } else {
       let objet_crypto = this;
-      console.debug("Demander certificat MaitreDesCles");
+      // console.debug("Demander certificat MaitreDesCles");
       var requete = {
         '_evenements': 'certMaitreDesCles'
       }
@@ -544,8 +544,8 @@ class RabbitMQWrapper {
       .then(reponse=>{
         let messageContent = decodeURIComponent(escape(reponse.content));
         let json_message = JSON.parse(messageContent);
-        console.debug("Reponse cert maitre des cles");
-        console.debug(messageContent);
+        // console.debug("Reponse cert maitre des cles");
+        // console.debug(messageContent);
         objet_crypto.certificatMaitreDesCles = forge.pki.certificateFromPem(json_message.certificat);
         return objet_crypto.certificatMaitreDesCles;
       })

@@ -45,7 +45,7 @@ export class CryptageAsymetrique {
     return new Promise((resolve, reject)=>{
 
       if(window && window.crypto && window.crypto.subtle) {
-        console.log("SubtleCrypto est disponible, on l'utilise pour generer les cles");
+        // console.log("SubtleCrypto est disponible, on l'utilise pour generer les cles");
 
         window.crypto.subtle.generateKey(
           {
@@ -58,12 +58,12 @@ export class CryptageAsymetrique {
           ["encrypt", "decrypt"]
         )
         .then(keyPair=>{
-          console.debug("Cles generees");
+          // console.debug("Cles generees");
           // console.debug(keyPair);
 
           window.crypto.subtle.exportKey('spki', keyPair.publicKey)
           .then(clePublique=>{
-            console.debug(clePublique);
+            // console.debug(clePublique);
             window.crypto.subtle.exportKey('pkcs8', keyPair.privateKey)
             .then(clePrivee=>{
               // console.warn(clePrivee);
@@ -193,14 +193,14 @@ export class CryptageSymetrique {
       true,
       ['encrypt', 'decrypt']
     ).then(cleSecrete=>{
-      console.debug("Cle secrete generee");
+      // console.debug("Cle secrete generee");
       cleSecreteLocal = cleSecrete;
 
       // Exporter et crypter cle secrete
       return window.crypto.subtle.exportKey('raw', cleSecrete);
     })
     .then(cleSecreteExportee=>{
-      console.debug("Cle secrete exportee");
+      // console.debug("Cle secrete exportee");
       cleSecreteExporteeLocal = cleSecreteExportee;
 
       const iv = new ArrayBuffer(16);
@@ -223,7 +223,7 @@ export class CryptageSymetrique {
       // console.log(clesIv.cleSecrete);
       // console.log('Cle secrete : ' + btoa(String.fromCharCode.apply(null, new Uint8Array(clesIv.cleSecreteExportee))));
       clesIvLocal.ivString =  btoa(String.fromCharCode.apply(null, new Uint8Array(clesIv.iv)));
-      console.log('iv : ' + clesIvLocal.ivString);
+      // console.debug('iv : ' + clesIvLocal.ivString);
 
       return window.crypto.subtle.encrypt(
         {
@@ -235,7 +235,7 @@ export class CryptageSymetrique {
       )
     })
     .then(bufferCrypte=>{
-      console.debug("Fichier crypte dans buffer");
+      // console.debug("Fichier crypte dans buffer");
       return ({...clesIvLocal, bufferCrypte});
     });
   }
@@ -510,11 +510,11 @@ export class MilleGrillesCryptoHelper {
       // console.log("Creer decipher secretKey: " + cleSecreteBuffer.toString('base64') + ", iv: " + ivBuffer.toString('base64'));
       var decipher = crypto.createDecipheriv(this.algorithm, cleSecreteBuffer, ivBuffer);
 
-      console.log("Decrypter " + contenuCrypte.toString('base64'));
+      // console.debug("Decrypter " + contenuCrypte.toString('base64'));
       let contenuDecrypteString = decipher.update(contenuCrypte, 'base64',  'utf8');
       contenuDecrypteString += decipher.final('utf8');
 
-      console.debug("Contenu decrypte :");
+      // console.debug("Contenu decrypte :");
       // console.debug(contenuDecrypteString);
 
       // let dictDecrypte = JSON.parse(contenuDecrypteString);

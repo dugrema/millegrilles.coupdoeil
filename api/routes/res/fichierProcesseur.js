@@ -158,7 +158,7 @@ class ProcesseurDownloadCrypte {
 
     return rabbitMQ.singleton.transmettreRequete(routing, requete)
     .then(reponse=>{
-      console.debug("Recu message pour decrypter fuuid: " + fuuid);
+      // console.debug("Recu message pour decrypter fuuid: " + fuuid);
       let messageContent = decodeURIComponent(escape(reponse.content));
       let json_message = JSON.parse(messageContent);
       if(json_message.acces)  {
@@ -166,7 +166,7 @@ class ProcesseurDownloadCrypte {
           throw new Error("Access refuse au fichier " + fuuid);
         }
       }
-      console.debug(json_message);
+      // console.debug(json_message);
       return {cle: json_message.cle, iv: json_message.iv};
     });
   }
@@ -195,8 +195,8 @@ class ProcesseurDownloadCrypte {
     .then(({cle, iv}) => {
       let cleSecrete = forge.util.decode64(cle);
       let ivBuffer = Buffer.from(iv, 'base64');
-      console.debug("IV (" + ivBuffer.length + "): ");
-      console.debug(ivBuffer);
+      // console.debug("IV (" + ivBuffer.length + "): ");
+      // console.debug(ivBuffer);
 
       // Decrypter la cle secrete avec notre cle privee
       var decryptedSecretKey = this.key.decrypt(cleSecrete, 'RSA-OAEP', {
@@ -208,7 +208,7 @@ class ProcesseurDownloadCrypte {
       // console.debug("Cle secrete decryptee string " + decryptedSecretKey);
       decryptedSecretKey = Buffer.from(forge.util.binary.hex.decode(decryptedSecretKey));
       // console.debug("Cle secrete decryptee (" + decryptedSecretKey.length + ") bytes");
-      console.debug(decryptedSecretKey);
+      // console.debug(decryptedSecretKey);
 
       // Creer un decipher stream
       var decipher = crypto.createDecipheriv('aes256', decryptedSecretKey, ivBuffer);
@@ -224,12 +224,12 @@ class ProcesseurDownloadCrypte {
   }
 
   _charger_key(cb) {
-    console.debug("Chargement cle privee pour traitement fichiers encryptes")
+    // console.debug("Chargement cle privee pour traitement fichiers encryptes")
     var mq_key = process.env.PRIVKEY;
     if(mq_key !== undefined) {
       fs.readFile(mq_key, (err, data)=>{
         var key = forge.pki.privateKeyFromPem(data);
-        console.debug("Cle privee chargee")
+        // console.debug("Cle privee chargee")
         cb(key);
       });
     }

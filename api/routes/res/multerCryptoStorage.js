@@ -207,7 +207,7 @@ class MulterCryptoStorage {
       agentOptions: {ca: pki.ca},  // Utilisation certificats SSL internes
     };
     const outStream = request.put(options, (err, httpResponse, body) =>{
-      console.debug("Upload PUT complete pour " + params.fileUuid);
+      // console.debug("Upload PUT complete pour " + params.fileUuid);
       // Tentative de decryter fichier:
       // var decipher = crypto.createDecipheriv('aes256', key, iv);
       // var readStream = fs.createReadStream(path);
@@ -246,7 +246,7 @@ class MulterCryptoStorage {
       });
     } else {
       let objet_crypto = this;
-      console.debug("Demander certificat MaitreDesCles");
+      // console.debug("Demander certificat MaitreDesCles");
       var requete = {
         '_evenements': 'certMaitreDesCles'
       }
