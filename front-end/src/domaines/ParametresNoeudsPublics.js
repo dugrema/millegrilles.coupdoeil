@@ -1,10 +1,11 @@
 import React from 'react';
-import { Form, Button, ButtonGroup, ListGroup,
-         Container, Row, Col } from 'react-bootstrap';
+import { Form, Button, ButtonGroup, ButtonToolbar, ListGroup, InputGroup,
+         Container, Row, Col, ToggleButtonGroup, ToggleButton } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 import Backend from 'react-dnd-html5-backend'
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import webSocketManager from '../WebSocketManager';
+import { Feuille } from '../mgcomponents/Feuilles';
 import './Parametres.css';
 
 // const domaine = 'millegrilles.domaines.Parametres';
@@ -39,6 +40,7 @@ export class NoeudsPublics extends React.Component {
   state = {
     noeuds: [],
     nouveauUrl: '',
+    modeDeploiement: '',
   }
 
   componentDidMount() {
@@ -53,49 +55,45 @@ export class NoeudsPublics extends React.Component {
   render() {
     return(
       <div>
-        <Container className='w3-card w3-round w3-white w3-card_BR'>
-          <div className='w3-container w3-padding'>
+        <Feuille>
 
-            <Row><Col><h2><Trans>parametres.noeudsPublics.titre</Trans></h2></Col></Row>
-            <Row><Col><p><Trans>parametres.noeudsPublics.description</Trans></p></Col></Row>
+          <Row><Col><h2><Trans>parametres.noeudsPublics.titre</Trans></h2></Col></Row>
+          <Row><Col><p><Trans>parametres.noeudsPublics.description</Trans></p></Col></Row>
 
-          </div>
-        </Container>
+        </Feuille>
 
         <DndProvider backend={Backend}>
           {this._renderNoeuds()}
         </DndProvider>
 
-        <Container className='w3-card w3-round w3-white w3-card_BR'>
-          <div className='w3-container w3-padding'>
+        <Feuille>
 
-            <Row>
-              <Col>
-                <h3><Trans>parametres.noeudsPublics.ajouterNoeudTitre</Trans></h3>
-              </Col>
-            </Row>
+          <Row>
+            <Col>
+              <h3><Trans>parametres.noeudsPublics.ajouterNoeudTitre</Trans></h3>
+            </Col>
+          </Row>
 
-            <Row>
-              <Col>
-                <Form className="formNouveauNoeud">
-                  <Form.Group controlId="formAjouterNoeudPublic">
-                    <Form.Label><Trans>parametres.noeudsPublics.urlLibelle</Trans></Form.Label>
-                    <Form.Control type="plaintext" placeholder="https://www.millegrilles.com"
-                                  value={this.state.nouveauUrl}
-                                  onChange={this._changerNouveauUrl} />
-                    <Form.Text className="text-muted">
-                      <Trans>parametres.noeudsPublics.urlTexte</Trans>
-                    </Form.Text>
-                  </Form.Group>
-                  <Button onClick={this._ajouterNoeud}>
-                    <Trans>parametres.noeudsPublics.ajouterNoeudBouton</Trans>
-                  </Button>
-                </Form>
-              </Col>
-            </Row>
+          <Row>
+            <Col>
+              <Form className="formNouveauNoeud">
+                <Form.Group controlId="formAjouterNoeudPublic">
+                  <Form.Label><Trans>parametres.noeudsPublics.urlLibelle</Trans></Form.Label>
+                  <Form.Control type="plaintext" placeholder="https://www.millegrilles.com"
+                                value={this.state.nouveauUrl}
+                                onChange={this._changerNouveauUrl} />
+                  <Form.Text className="text-muted">
+                    <Trans>parametres.noeudsPublics.urlTexte</Trans>
+                  </Form.Text>
+                </Form.Group>
+                <Button onClick={this._ajouterNoeud}>
+                  <Trans>parametres.noeudsPublics.ajouterNoeudBouton</Trans>
+                </Button>
+              </Form>
+            </Col>
+          </Row>
 
-          </div>
-        </Container>
+        </Feuille>
 
       </div>
     );
@@ -183,53 +181,122 @@ export class NoeudsPublics extends React.Component {
       );
     }
 
+    var formulaireModeDeploiement;
+    if(this.state.modeDeploiement === 's3') {
+      formulaireModeDeploiement = (
+        <div>
+          <Form.Row>
+            <Form.Group as={Col} md={4} controlId="awsAccessKeyId" key="awsAccessKeyId">
+              <Form.Label><Trans>parametres.noeudsPublics.awsAccessKeyId</Trans></Form.Label>
+              <Form.Control placeholder="Ex. AKBCDEFG123456WXYZ" />
+            </Form.Group>
+            <Form.Group as={Col} md={4} controlId="awsSecretAccessKey" key="awsSecretAccessKey">
+              <Form.Label><Trans>parametres.noeudsPublics.awsSecretAccessKey</Trans></Form.Label>
+              <Form.Control type="password" placeholder="Password" />
+            </Form.Group>
+            <Form.Group as={Col} md={4} controlId="awsCredentialRegion">
+              <Form.Label><Trans>parametres.noeudsPublics.awsCredentialRegion</Trans></Form.Label>
+              <Form.Control placeholder="Ex. us-east-2" />
+            </Form.Group>
+          </Form.Row>
+
+          <Form.Row>
+            <Form.Group as={Col} sm={6} controlId="awsBucketName" key="awsBucketName">
+              <Form.Label><Trans>parametres.noeudsPublics.awsBucketName</Trans></Form.Label>
+              <Form.Control placeholder="Ex. my-bucket" />
+            </Form.Group>
+            <Form.Group as={Col} sm={6} controlId="awsBucketRegion" key="awsBucketRegion">
+              <Form.Label><Trans>parametres.noeudsPublics.awsBucketRegion</Trans></Form.Label>
+              <Form.Control placeholder="Ex. us-east-2" />
+            </Form.Group>
+          </Form.Row>
+
+          <Form.Row>
+            <Form.Group as={Col} md={6} controlId="awsBucketUrl" key="awsBucketUrl">
+              <Form.Label><Trans>parametres.noeudsPublics.awsBucketUrl</Trans></Form.Label>
+              <Form.Control placeholder="Ex. https://monbucket-bucket.s3.us-east-2.amazonaws.com" />
+            </Form.Group>
+            <Form.Group as={Col} md={6} controlId="awsBucketDir" key="awsBucketDir">
+              <Form.Label><Trans>parametres.noeudsPublics.awsBucketDir</Trans></Form.Label>
+              <InputGroup className="mb-3">
+                <InputGroup.Prepend>
+                  <InputGroup.Text id="awsBucketDir">/</InputGroup.Text>
+                </InputGroup.Prepend>
+                <Form.Control placeholder="Ex. mon_sous_repertoire/ (optionnel)" />
+              </InputGroup>
+            </Form.Group>
+          </Form.Row>
+        </div>
+      );
+    }
+
     return (
-      <Container key={noeud.url_web} className='w3-card w3-round w3-white w3-card_BR'>
+      <Feuille key={noeud.url_web}>
         <Form>
-          <div className='w3-container w3-padding'>
-            <Row><Col><h3><Trans values={{url: noeud.url_web}}>parametres.noeudsPublics.titreNoeud</Trans></h3></Col></Row>
+          <Row><Col><h2><Trans values={{url: noeud.url_web}}>parametres.noeudsPublics.titreNoeud</Trans></h2></Col></Row>
 
-            <Row><Col>Menu</Col></Row>
-            <Row>
-              <Col>
-                <ListGroup horizontal>
-                  {menuPrincipal}
-                </ListGroup>
-              </Col>
-            </Row>
+          <Row><Col><h3><Trans>parametres.noeudsPublics.menu</Trans></h3></Col></Row>
+          <Row>
+            <Col>
+              <ListGroup horizontal>
+                {menuPrincipal}
+              </ListGroup>
+            </Col>
+          </Row>
 
-            {sectionsSousMenus}
+          {sectionsSousMenus}
 
-            <Row>
-              <Col>Sections disponibles</Col>
-            </Row>
+          <Row>
+            <Col>Sections disponibles</Col>
+          </Row>
 
-            <Row>
-              <Col>
-                <ListGroup horizontal>
-                  {sectionsDisponiblesElem}
-                </ListGroup>
-              </Col>
-            </Row>
+          <Row>
+            <Col>
+              <ListGroup horizontal>
+                {sectionsDisponiblesElem}
+              </ListGroup>
+            </Col>
+          </Row>
 
-            <Row>
-              <Col>
-                <ButtonGroup>
-                  <Button variant="primary" onClick={this._sauvegarder} value={noeud.url_web}>
-                    <Trans>parametres.noeudsPublics.sauvegarder</Trans>
-                  </Button>
-                  <Button variant="secondary" onClick={this._renommer} value={noeud.url_web}>
-                    <Trans>parametres.noeudsPublics.renommer</Trans>
-                  </Button>
-                  <Button variant="danger" onClick={this._supprimerNoeud} value={noeud.url_web}>
-                    <Trans>parametres.noeudsPublics.supprimerNoeudBouton</Trans>
-                  </Button>
-                </ButtonGroup>
-              </Col>
-            </Row>
-          </div>
+          <Row>
+            <Col>
+              <h3><Trans>parametres.noeudsPublics.modeDeploiement</Trans></h3>
+              <p><Trans>parametres.noeudsPublics.modeDeploiementExplication</Trans></p>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col>
+              <ButtonToolbar>
+                <ToggleButtonGroup type="radio" name="modeDeploiement"
+                    value={this.state.modeDeploiement}
+                    onChange={this._toggleModeDeploiement}>
+                  <ToggleButton value={'torrent'}>Torrent</ToggleButton>
+                  <ToggleButton value={'s3'}>Amazon S3</ToggleButton>
+                </ToggleButtonGroup>
+              </ButtonToolbar>
+            </Col>
+          </Row>
+
+          {formulaireModeDeploiement}
+
+          <Row>
+            <Col>
+              <ButtonGroup>
+                <Button variant="primary" onClick={this._sauvegarder} value={noeud.url_web}>
+                  <Trans>parametres.noeudsPublics.sauvegarder</Trans>
+                </Button>
+                <Button variant="secondary" onClick={this._renommer} value={noeud.url_web}>
+                  <Trans>parametres.noeudsPublics.renommer</Trans>
+                </Button>
+                <Button variant="danger" onClick={this._supprimerNoeud} value={noeud.url_web}>
+                  <Trans>parametres.noeudsPublics.supprimerNoeudBouton</Trans>
+                </Button>
+              </ButtonGroup>
+            </Col>
+          </Row>
         </Form>
-      </Container>
+      </Feuille>
     )
   }
 
@@ -420,6 +487,10 @@ export class NoeudsPublics extends React.Component {
         break;
       }
     }
+  }
+
+  _toggleModeDeploiement = modeDeploiement => {
+    this.setState({modeDeploiement});
   }
 
 }

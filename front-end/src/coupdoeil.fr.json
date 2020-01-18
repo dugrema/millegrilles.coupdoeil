@@ -47,7 +47,14 @@
         "sauvegarder": "Sauvegarder",
         "renommer": "Renommer",
         "urlTexte": "L'adresse URL doit être exacte - ceci devient la référence pour la configuration.",
-        "sousMenu": "Sous menu "
+        "sousMenu": "Sous menu ",
+        "awsAccessKeyId": "Access Key ID",
+        "awsSecretAccessKey": "Secret Key",
+        "awsCredentialRegion": "Region Credentials",
+        "awsBucketName": "Nom Bucket",
+        "awsBucketRegion": "Région Bucket",
+        "awsBucketUrl": "URL accès bucket",
+        "awsBucketDir": "Sous-répertoire bucket"
       },
       "menuVitrine": {
         "albums": "Albums",
