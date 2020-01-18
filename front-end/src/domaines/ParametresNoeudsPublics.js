@@ -6,7 +6,10 @@ import Backend from 'react-dnd-html5-backend'
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import webSocketManager from '../WebSocketManager';
 import { Feuille } from '../mgcomponents/Feuilles';
+import { MilleGrillesCryptoHelper, bufferToBase64 } from '../mgcomponents/CryptoSubtle'
 import './Parametres.css';
+
+const cryptoHelper = new MilleGrillesCryptoHelper();
 
 // const domaine = 'millegrilles.domaines.Parametres';
 // const libelle_publique_configuration = 'publique.configuration';
@@ -46,6 +49,18 @@ export class NoeudsPublics extends React.Component {
   componentDidMount() {
     this.chargerNoeudsPublics();
     webSocketManager.subscribe(subscriptions_noeudsPublics, this._recevoirMessageNoeuds);
+
+    // S'assurer que la cle publique du maitre des cles est disponible
+    if(!sessionStorage.clePubliqueMaitredescles) {
+      webSocketManager.emit('demandeClePubliqueMaitredescles', {})
+      .then(clePublique=>{
+        sessionStorage.clePubliqueMaitredescles = clePublique;
+      })
+      .catch(err=>{
+        console.error("Erreur demande cle publique du maitredescles");
+        console.error(err);
+      });
+    }
   }
 
   componentWillUnmount() {
@@ -262,15 +277,6 @@ export class NoeudsPublics extends React.Component {
 
   _recevoirMessageNoeuds = (routingKey, message) => {
     const url = message.url_web;
-    // const noeuds = [...this.state.noeuds];
-    // let noeudTrouve = false;
-    // for(let idx in this.state.noeuds) {
-    //   if(this.state.noeuds[idx].url_web === url) {
-    //     noeuds[idx] = message;
-    //     noeudTrouve = true;
-    //     break;
-    //   }
-    // }
 
     var ordreNoeuds = this.state.ordreNoeuds;
     if(!this.state[url]) {
@@ -291,15 +297,50 @@ export class NoeudsPublics extends React.Component {
 
     // Filtrer champs avec underscore (_)
     const noeudTransaction = {};
+    var awsSecretAccessKey;
     for(let champ in noeudPublic) {
-      if(champ[0] !== '_') {
+      if(champ === 'awsSecretAccessKey') {
+        // Intercepter secret, on doit le chiffrer
+        awsSecretAccessKey = noeudPublic[champ];
+        if(noeudPublic[champ] && noeudPublic[champ] !== '') {
+          awsSecretAccessKey = {awsSecretAccessKey: noeudPublic[champ]};
+        }
+      } else if(champ[0] !== '_') {
         noeudTransaction[champ] = noeudPublic[champ];
       }
     }
 
+    // Verifier si on a un nouveau mot de passe (secret)
+    var promiseChiffrer;
+    if(awsSecretAccessKey) {
+      // Demander cert du maitredescles pour crypter mot de passe
+      let clePubliqueMaitredescles = sessionStorage.clePubliqueMaitredescles;
+      if(!clePubliqueMaitredescles) {
+        throw new Error("Certificat maitre des cles non disponible");
+      }
+      // Chiffrer le mot de passe
+      promiseChiffrer = cryptoHelper.crypter(awsSecretAccessKey, clePubliqueMaitredescles)
+      .then(resultat=>{
+        let awsSecretAccessKeyChiffre = bufferToBase64(resultat.bufferCrypte);
+        noeudTransaction.awsSecretAccessKeyChiffre = awsSecretAccessKeyChiffre;
+
+        let transactionCle = {
+          iv: resultat.iv,
+          cle: resultat.cleSecreteCryptee,
+          securite: "3.protege",
+        }
+        console.debug("Transaction maitredescles");
+        console.debug(transactionCle);
+      });
+    } else {
+      promiseChiffrer = Promise.resolve();
+    }
+
     // Transmettre ce noeud comme transaction
-    let domaine = 'millegrilles.domaines.Parametres.majNoeudPublic';
-    webSocketManager.transmettreTransaction(domaine, noeudTransaction)
+    promiseChiffrer.then(()=>{
+      let domaine = 'millegrilles.domaines.Parametres.majNoeudPublic';
+      return webSocketManager.transmettreTransaction(domaine, noeudTransaction)
+    })
     .then(reponse=>{
       if(reponse.err) {
         console.error("Erreur transaction");

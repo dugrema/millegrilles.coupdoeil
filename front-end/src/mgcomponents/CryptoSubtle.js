@@ -31,6 +31,11 @@ function toByteArray(hexString) {
   return result;
 }
 
+export function bufferToBase64(arrayBuffer) {
+  var base64String = btoa(String.fromCharCode.apply(null, new Uint8Array(arrayBuffer)));
+  return base64String;
+}
+
 export class CryptageAsymetrique {
 
   algorithm = "RSA-OAEP";
@@ -302,43 +307,78 @@ export class MilleGrillesCryptoHelper {
 
   crypter(dictACrypter, clePublique) {
 
+    var resultat = {};
     return new Promise((resolve, reject)=>{
-      let contenuACrypter = JSON.stringify(dictACrypter);
+      let contenuACrypter = str2ab(JSON.stringify(dictACrypter));
+      console.debug("Contenu a crypter");
+      console.debug(dictACrypter);
+      console.debug(contenuACrypter);
 
-      this.creerCipherKey()
-      .then(cipher_key_iv=>{
+      cryptageSymetrique.crypterContenu(contenuACrypter)
+      .then(result=>{
+        console.debug("Contenu crypte charge dans buffer");
+        resultat.iv = result.ivString;
+        console.debug("IV");
+        console.debug(resultat.iv);
+        resultat.bufferCrypte = result.bufferCrypte;
+        console.debug("Buffer crypte");
+        console.debug(resultat.bufferCrypte);
 
-        let {cipher, key, iv} = cipher_key_iv;
-        let keyString = key.toString('base64');
-        let ivString = iv.toString('base64');
-        // console.debug("Secrets key=" + keyString + ", iv=" + ivString);
+        // Preparer format cle secrete
+        let cleSecrete = result.cleSecreteExportee;
+        let cleSecreteHexString = ab2hex(cleSecrete);
 
-        let contenuCrypte = cipher.update(contenuACrypter, 'utf8', 'base64');
-        contenuCrypte += cipher.final('base64');
-        console.debug("Contenu crypte: " + contenuCrypte);
+        // console.warn("Cle secrete hex string");
+        // console.warn(cleSecreteHexString);
 
-        let resultat = {contenu: contenuACrypter, contenuCrypte, cleSecrete: keyString, iv: ivString};
-        if(clePublique) {
-          console.debug("Crypte cle secrete avec cle publique du maitredescles");
-          cryptageAsymetrique.crypterCleSecrete(clePublique, key)
-          .then(cleSecreteCryptee=>{
-              resultat.cleSecreteCryptee = btoa(String.fromCharCode.apply(null, new Uint8Array(cleSecreteCryptee)));
-              resolve(resultat);
-          })
-          .catch(err=>{
-            console.error("Erreur cryptage cle secrete");
-            reject(err);
-          })
-        } else {
-          console.debug("La cle secrete ne sera pas cryptee");
-          resolve(resultat);
-        }
+        return cryptageAsymetrique.crypterCleSecrete(clePublique, cleSecreteHexString);
+      })
+      .then(cleSecreteCryptee=>{
+        console.debug("Cle secrete est cryptee");
+        console.debug(cleSecreteCryptee);
 
+        resultat.cleSecreteCryptee = btoa(String.fromCharCode.apply(null, new Uint8Array(cleSecreteCryptee)));
+        resolve(resultat);
       })
       .catch(err=>{
-        console.error("Erreur creation cipher crypte");
+        console.error("Erreur dans crypterFichier");
         reject(err);
-      });
+      })
+
+      // this.creerCipherKey()
+      // .then(cipher_key_iv=>{
+      //
+      //   let {cipher, key, iv} = cipher_key_iv;
+      //   let keyString = key.toString('base64');
+      //   let ivString = iv.toString('base64');
+      //   // console.debug("Secrets key=" + keyString + ", iv=" + ivString);
+      //
+      //   let contenuCrypte = cipher.update(contenuACrypter, 'utf8', 'base64');
+      //   contenuCrypte += cipher.final('base64');
+      //   console.debug("Contenu crypte: " + contenuCrypte);
+      //
+      //   let resultat = {contenu: contenuACrypter, contenuCrypte, cleSecrete: keyString, iv: ivString};
+      //   if(clePublique) {
+      //     console.debug("Crypte cle secrete avec cle publique du maitredescles");
+      //     cryptageAsymetrique.crypterCleSecrete(clePublique, key)
+      //     .then(cleSecreteCryptee=>{
+      //         resultat.cleSecreteCryptee = btoa(String.fromCharCode.apply(null, new Uint8Array(cleSecreteCryptee)));
+      //         resolve(resultat);
+      //     })
+      //     .catch(err=>{
+      //       console.error("Erreur cryptage cle secrete");
+      //       reject(err);
+      //     })
+      //   } else {
+      //     console.debug("La cle secrete ne sera pas cryptee");
+      //     resolve(resultat);
+      //   }
+      //
+      // })
+      // .catch(err=>{
+      //   console.error("Erreur creation cipher crypte");
+      //   reject(err);
+      // });
     })
   }
 
