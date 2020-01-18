@@ -121,15 +121,9 @@ export class NoeudsPublics extends React.Component {
       console.error("URL invalide");
       return false;
     }
-
-    const noeuds = [...this.state.noeuds];
-    // Verifier qu'aucun noeud n'a cet URL
-    for(let idx in noeuds) {
-      let noeud = noeuds[idx];
-      if(noeud.url_web === url) {
-        console.error("Un noeud a deja l'url " + url);
-        return false;
-      }
+    if(this.state[url]) {
+      console.error("Un noeud a deja l'url " + url);
+      return false;
     }
 
     var nouveauNoeud = {...noeudTemplate};

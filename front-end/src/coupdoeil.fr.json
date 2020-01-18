@@ -54,7 +54,10 @@
         "awsBucketName": "Nom Bucket",
         "awsBucketRegion": "Région Bucket",
         "awsBucketUrl": "URL accès bucket",
-        "awsBucketDir": "Sous-répertoire bucket"
+        "awsBucketDir": "Sous-répertoire bucket",
+        "menu": "Menu de Vitrine",
+        "modeDeploiement": "Mode de déploiement",
+        "modeDeploiementExplication": "Sélectionner le mode de transfert des fichiers vers Vitrine."
       },
       "menuVitrine": {
         "albums": "Albums",
