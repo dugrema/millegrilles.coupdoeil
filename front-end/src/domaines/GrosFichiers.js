@@ -120,8 +120,9 @@ export class GrosFichiers extends React.Component {
     // S'assurer que la cle publique du maitre des cles est disponible
     if(!sessionStorage.clePubliqueMaitredescles) {
       webSocketManager.emit('demandeClePubliqueMaitredescles', {})
-      .then(clePublique=>{
-        sessionStorage.clePubliqueMaitredescles = clePublique;
+      .then(infoCertificat=>{
+        sessionStorage.clePubliqueMaitredescles = infoCertificat.clePublique;
+        sessionStorage.fingerprintMaitredescles = infoCertificat.fingerprint;
       })
       .catch(err=>{
         console.error("Erreur demande cle publique du maitredescles");

@@ -310,19 +310,19 @@ export class MilleGrillesCryptoHelper {
     var resultat = {};
     return new Promise((resolve, reject)=>{
       let contenuACrypter = str2ab(JSON.stringify(dictACrypter));
-      console.debug("Contenu a crypter");
-      console.debug(dictACrypter);
-      console.debug(contenuACrypter);
+      // console.debug("Contenu a crypter");
+      // console.debug(dictACrypter);
+      // console.debug(contenuACrypter);
 
       cryptageSymetrique.crypterContenu(contenuACrypter)
       .then(result=>{
-        console.debug("Contenu crypte charge dans buffer");
+        // console.debug("Contenu crypte charge dans buffer");
         resultat.iv = result.ivString;
-        console.debug("IV");
-        console.debug(resultat.iv);
+        // console.debug("IV");
+        // console.debug(resultat.iv);
         resultat.bufferCrypte = result.bufferCrypte;
-        console.debug("Buffer crypte");
-        console.debug(resultat.bufferCrypte);
+        // console.debug("Buffer crypte");
+        // console.debug(resultat.bufferCrypte);
 
         // Preparer format cle secrete
         let cleSecrete = result.cleSecreteExportee;
@@ -334,8 +334,8 @@ export class MilleGrillesCryptoHelper {
         return cryptageAsymetrique.crypterCleSecrete(clePublique, cleSecreteHexString);
       })
       .then(cleSecreteCryptee=>{
-        console.debug("Cle secrete est cryptee");
-        console.debug(cleSecreteCryptee);
+        // console.debug("Cle secrete est cryptee");
+        // console.debug(cleSecreteCryptee);
 
         resultat.cleSecreteCryptee = btoa(String.fromCharCode.apply(null, new Uint8Array(cleSecreteCryptee)));
         resolve(resultat);

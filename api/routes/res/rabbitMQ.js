@@ -328,9 +328,15 @@ class RabbitMQWrapper {
   _formatterInfoTransaction(domaine, opts) {
     // Ces valeurs n'ont de sens que sur le serveur.
     // Calculer secondes UTC (getTime retourne millisecondes locales)
+    console.debug("Formatter info transaction opts");
+    console.debug(opts);
     let version = 6;
+    var uuidTransaction;
     if(opts) {
       version = opts.version || version;
+      uuidTransaction = opts.uuidTransaction || uuidv4();
+    } else {
+      uuidTransaction = uuidv4();
     }
 
     let dateUTC = (new Date().getTime()/1000) + new Date().getTimezoneOffset()*60;
@@ -340,7 +346,7 @@ class RabbitMQWrapper {
       'domaine': domaine,
       // 'source-systeme': sourceSystem,
       'idmg': this.idmg,
-      'uuid-transaction': uuidv4(),
+      'uuid-transaction': uuidTransaction,
       'estampille': tempsLecture,
       'certificat': pki.getFingerprint(),
       'hachage-contenu': '',  // Doit etre calcule a partir du contenu

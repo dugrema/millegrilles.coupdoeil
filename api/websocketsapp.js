@@ -294,12 +294,12 @@ function extraireClePubliqueMaitredescles() {
     console.debug("Certificat maitredescles");
     console.debug(certificat);
 
-    const clePublique = pki.extraireClePublique(certificat);
+    const infoCertificat = pki.extraireClePubliqueFingerprint(certificat);
 
-    console.debug(clePublique);
+    console.debug(infoCertificat);
 
     // Enlever le wrapping pour faciliter l'usage pour le navigateur
-    return clePublique
+    return infoCertificat;
   })
 }
 

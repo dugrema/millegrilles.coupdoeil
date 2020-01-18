@@ -200,7 +200,11 @@ class PKIUtils {
     });
   }
 
-  extraireClePublique(certificat) {
+  extraireClePubliqueFingerprint(certificat) {
+
+    const fingerprint = forge.md.sha1.create().update(forge.asn1.toDer(forge.pki.certificateToAsn1(certificat)).getBytes()).digest().toHex();
+    // fingerprint = fingerprint.replace(/:/g, '').toLowerCase();
+
     const clePubliquePEM = forge.pki.publicKeyToPem(certificat.publicKey);
     console.debug('Cle publique maitredescles ');
     // console.debug(clePubliquePEM);
@@ -211,7 +215,7 @@ class PKIUtils {
     // Remplacer les \n pour mettre la cle sur une seule ligne
     clePublique = clePublique.split('\n').join('');
 
-    return clePublique;
+    return {clePublique, fingerprint};
   }
 
 };

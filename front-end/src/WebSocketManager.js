@@ -123,11 +123,25 @@ class WebSocketManager {
         // console.log("Reponse dans websocket pour requete");
         // console.log(reponse);
         resolve(reponse);
-        return reponse;
       });
     });
 
     return promise;
+  }
+
+  // Transmet une cle au maitredescles
+  transmettreCle(domaine, correlation, identificateursDocument, cleChiffree, iv, fingerprint) {
+    const routingKeyCle = 'millegrilles.domaines.MaitreDesCles.nouvelleCle.document';
+    let transactionCle = {
+      fingerprint: fingerprint,
+      cle: cleChiffree,
+      iv: iv,
+      domaine,
+      "identificateurs_document": identificateursDocument,
+      'uuid-transaction': correlation,
+    };
+
+    return this.transmettreTransaction(routingKeyCle, transactionCle);
   }
 
   traiterMessageMq(routingKey, message) {
