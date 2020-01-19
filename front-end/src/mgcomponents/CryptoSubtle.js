@@ -217,6 +217,7 @@ export class CryptageSymetrique {
 
   crypterContenu(buffer) {
     var clesIvLocal = null;
+
     return this.genererCleSecreteIv()
     .then(clesIv=>{
       clesIvLocal = clesIv;
@@ -300,6 +301,8 @@ export class CryptageSymetrique {
 const cryptageAsymetrique = new CryptageAsymetrique();
 const cryptageSymetrique = new CryptageSymetrique();
 
+const PADDING_STR = '0123456789012345';  // Remplace par IV
+
 export class MilleGrillesCryptoHelper {
 
   algorithm = 'aes-256-cbc';  // Meme algorithme utilise sur MG en Python
@@ -309,7 +312,7 @@ export class MilleGrillesCryptoHelper {
 
     var resultat = {};
     return new Promise((resolve, reject)=>{
-      let contenuACrypter = str2ab(JSON.stringify(dictACrypter));
+      let contenuACrypter = str2ab(PADDING_STR + JSON.stringify(dictACrypter));
       // console.debug("Contenu a crypter");
       // console.debug(dictACrypter);
       // console.debug(contenuACrypter);
