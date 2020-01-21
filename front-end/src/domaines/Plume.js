@@ -6,12 +6,13 @@ import { Trans } from 'react-i18next';
 import webSocketManager from '../WebSocketManager';
 import {dateformatter} from '../formatters'
 import { PlumeAnnonces } from './PlumeAnnonces'
+import { PlumeVitrine } from './PlumeVitrine'
 
 import 'react-quill/dist/quill.snow.css';
 import './Plume.css';
 
 const SECTIONS = {
-  PlumeAnnonces,
+  PlumeAnnonces, PlumeVitrine
 }
 
 export class Plume extends React.Component {
@@ -40,18 +41,23 @@ export class Plume extends React.Component {
           <Container className="w3-card w3-round w3-white w3-card_BR">
             <Row>
               <Col>
-                <ul>
-                  <li>
+                <ListGroup>
+                  <ListGroup.Item>
                     <Button className="aslink" onClick={this._versSectionAnnonces}>
                       <Trans>plume.pageTitre.liensAnnonces</Trans>
                     </Button>
-                  </li>
-                  <li>
+                  </ListGroup.Item>
+                  <ListGroup.Item>
+                    <Button className="aslink" onClick={this._versSectionVitrine}>
+                      <Trans>plume.pageTitre.liensVitrine</Trans>
+                    </Button>
+                  </ListGroup.Item>
+                  <ListGroup.Item>
                     <Button className="aslink" onClick={this._versSectionDocuments}>
                       <Trans>plume.pageTitre.liensDocuments</Trans>
                     </Button>
-                  </li>
-                </ul>
+                  </ListGroup.Item>
+                </ListGroup>
               </Col>
             </Row>
           </Container>
@@ -72,6 +78,10 @@ export class Plume extends React.Component {
 
   _versSectionDocuments = () => {
     this.setState({sectionCourante: 'PlumeDocuments'});
+  }
+
+  _versSectionVitrine = () => {
+    this.setState({sectionCourante: 'PlumeVitrine'});
   }
 
 }
