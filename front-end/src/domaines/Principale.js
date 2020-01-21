@@ -139,56 +139,54 @@ class InformationMilleGrille extends React.Component {
   _renderFormUsager() {
 
     return (
-      <Container className='w3-card w3-round w3-white w3-card_BR'>
-        <div className='w3-container w3-padding'>
-          <Row><Col><h2><Trans>principale.information.usagerTitre</Trans></h2></Col></Row>
-          <Row>
-            <Col>
-              <p><Trans>principale.information.descriptionUsager</Trans></p>
-            </Col>
-          </Row>
+      <Feuille>
+        <Row><Col><h2><Trans>principale.information.usagerTitre</Trans></h2></Col></Row>
+        <Row>
+          <Col>
+            <p><Trans>principale.information.descriptionUsager</Trans></p>
+          </Col>
+        </Row>
 
-          <Form>
-            <Form.Group controlId="formGroupPrenom">
-              <Form.Label><Trans>formulaire.prenom</Trans></Form.Label>
-              <Form.Control type="plaintext" placeholder="Julie"
-                            value={this.state.usager.prenom}
-                            onChange={this.changerPrenom} />
-            </Form.Group>
-            <Form.Group controlId="formGroupNomFamille">
-              <Form.Label><Trans>formulaire.nomFamille</Trans></Form.Label>
-              <Form.Control type="plaintext" placeholder="Tremblay"
-                            value={this.state.usager.nom}
-                            onChange={this.changerNomFamille} />
-            </Form.Group>
-            <Form.Group controlId="formGroupEmail">
-              <Form.Label><Trans>formulaire.courriel</Trans></Form.Label>
-              <Form.Control type="email" placeholder="julie.tremblay@notgmail.org"
-                            value={this.state.usager.courriel}
-                            onChange={this.changerAdresseCourriel} />
-            </Form.Group>
-            <Form.Group controlId="formGroupTwitter">
-              <Form.Label><Trans>formulaire.twitter</Trans></Form.Label>
-              <Form.Control type="plaintext" placeholder="@twitter"
-                            value={this.state.usager.twitter}
-                            onChange={this.changerCompteTwitter} />
-            </Form.Group>
-            <Form.Group controlId="formGroupFacebook">
-              <Form.Label><Trans>formulaire.facebook</Trans></Form.Label>
-              <Form.Control type="facebook" placeholder="facebook"
-                            value={this.state.usager.facebook}
-                            onChange={this.changerCompteFacebook} />
-            </Form.Group>
+        <Form>
+          <Form.Group controlId="formGroupPrenom">
+            <Form.Label><Trans>formulaire.prenom</Trans></Form.Label>
+            <Form.Control type="plaintext" placeholder="Julie"
+                          value={this.state.usager.prenom}
+                          onChange={this.changerPrenom} />
+          </Form.Group>
+          <Form.Group controlId="formGroupNomFamille">
+            <Form.Label><Trans>formulaire.nomFamille</Trans></Form.Label>
+            <Form.Control type="plaintext" placeholder="Tremblay"
+                          value={this.state.usager.nom}
+                          onChange={this.changerNomFamille} />
+          </Form.Group>
+          <Form.Group controlId="formGroupEmail">
+            <Form.Label><Trans>formulaire.courriel</Trans></Form.Label>
+            <Form.Control type="email" placeholder="julie.tremblay@notgmail.org"
+                          value={this.state.usager.courriel}
+                          onChange={this.changerAdresseCourriel} />
+          </Form.Group>
+          <Form.Group controlId="formGroupTwitter">
+            <Form.Label><Trans>formulaire.twitter</Trans></Form.Label>
+            <Form.Control type="plaintext" placeholder="@twitter"
+                          value={this.state.usager.twitter}
+                          onChange={this.changerCompteTwitter} />
+          </Form.Group>
+          <Form.Group controlId="formGroupFacebook">
+            <Form.Label><Trans>formulaire.facebook</Trans></Form.Label>
+            <Form.Control type="facebook" placeholder="facebook"
+                          value={this.state.usager.facebook}
+                          onChange={this.changerCompteFacebook} />
+          </Form.Group>
 
-            <Form.Group controlId="formGroupFacebook">
-              <Button onClick={this.soumettreProfilUsager}>
-                <Trans>global.appliquer</Trans>
-              </Button>
-            </Form.Group>
-          </Form>
+          <Form.Group controlId="formGroupFacebook">
+            <Button onClick={this.soumettreProfilUsager}>
+              <Trans>global.appliquer</Trans>
+            </Button>
+          </Form.Group>
+        </Form>
 
-        </div>
-      </Container>
+      </Feuille>
     );
 
   }
@@ -216,7 +214,7 @@ class InformationMilleGrille extends React.Component {
           optionsLanguesAdditionnelles.push(
             <Translation key={lang}>{
               t=>(
-                <Form.Check key={lang} id={lang} checked={dictLangueAdditionnelles[lang]} type="checkbox"
+                <Form.Check key={lang} id={lang} defaultChecked={dictLangueAdditionnelles[lang]} type="checkbox"
                             value={lang} label={t('langues.' + lang)}
                             onChange={this.changerLangueAdditionnelle} />
               )}
@@ -426,6 +424,14 @@ class InformationMilleGrille extends React.Component {
     .then(reponse=>{
       if(reponse.err) {
         console.error("Erreur transaction");
+      } else {
+        // Mettre a jour le profil dans la session du navigateur
+        sessionStorage.setItem('langue', transaction.langue);
+        if(transaction.languesAdditionnelles) {
+          sessionStorage.setItem('languesAdditionnelles', JSON.stringify(transaction.languesAdditionnelles));
+        } else {
+          sessionStorage.removeItem('languesAdditionnelles');
+        }
       }
     })
     .catch(err=>{
