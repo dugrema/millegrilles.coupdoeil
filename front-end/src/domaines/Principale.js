@@ -153,36 +153,37 @@ class InformationMilleGrille extends React.Component {
               <Form.Label><Trans>formulaire.prenom</Trans></Form.Label>
               <Form.Control type="plaintext" placeholder="Julie"
                             value={this.state.usager.prenom}
-                            onChange={this.changerPrenom}
-                            onBlur={this.soumettreProfilUsager} />
+                            onChange={this.changerPrenom} />
             </Form.Group>
             <Form.Group controlId="formGroupNomFamille">
               <Form.Label><Trans>formulaire.nomFamille</Trans></Form.Label>
               <Form.Control type="plaintext" placeholder="Tremblay"
                             value={this.state.usager.nom}
-                            onChange={this.changerNomFamille}
-                            onBlur={this.soumettreProfilUsager} />
+                            onChange={this.changerNomFamille} />
             </Form.Group>
             <Form.Group controlId="formGroupEmail">
               <Form.Label><Trans>formulaire.courriel</Trans></Form.Label>
               <Form.Control type="email" placeholder="julie.tremblay@notgmail.org"
                             value={this.state.usager.courriel}
-                            onChange={this.changerAdresseCourriel}
-                            onBlur={this.soumettreProfilUsager} />
+                            onChange={this.changerAdresseCourriel} />
             </Form.Group>
             <Form.Group controlId="formGroupTwitter">
               <Form.Label><Trans>formulaire.twitter</Trans></Form.Label>
               <Form.Control type="plaintext" placeholder="@twitter"
                             value={this.state.usager.twitter}
-                            onChange={this.changerCompteTwitter}
-                            onBlur={this.soumettreProfilUsager} />
+                            onChange={this.changerCompteTwitter} />
             </Form.Group>
             <Form.Group controlId="formGroupFacebook">
               <Form.Label><Trans>formulaire.facebook</Trans></Form.Label>
               <Form.Control type="facebook" placeholder="facebook"
                             value={this.state.usager.facebook}
-                            onChange={this.changerCompteFacebook}
-                            onBlur={this.soumettreProfilUsager} />
+                            onChange={this.changerCompteFacebook} />
+            </Form.Group>
+
+            <Form.Group controlId="formGroupFacebook">
+              <Button onClick={this.soumettreProfilUsager}>
+                <Trans>global.appliquer</Trans>
+              </Button>
             </Form.Group>
           </Form>
 
@@ -198,19 +199,26 @@ class InformationMilleGrille extends React.Component {
     const languesSupportees = ['fr', 'en'];
     const optionsLangues = [];
     const optionsLanguesAdditionnelles = [];
+
+    var dictLangueAdditionnelles = {};
+    if(this.state.milleGrille.languesAdditionnelles) {
+      this.state.milleGrille.languesAdditionnelles.forEach(l=>{
+        dictLangueAdditionnelles[l] = true;
+      })
+    }
+
     languesSupportees.forEach(lang=>{
       optionsLangues.push(
         <Translation key={lang}>{t=>(<option value={lang}>{t('langues.' + lang)}</option>)}</Translation>
       );
       if(this.state.milleGrille) {
         if(this.state.milleGrille.langue !== lang) {
-          // <ToggleButton value={lang}><Translation key={lang}>{t=>t('langues.' + lang)}</Translation></ToggleButton>
           optionsLanguesAdditionnelles.push(
             <Translation key={lang}>{
               t=>(
-                <Form.Check key={lang} id={lang} type="checkbox"
+                <Form.Check key={lang} id={lang} checked={dictLangueAdditionnelles[lang]} type="checkbox"
                             value={lang} label={t('langues.' + lang)}
-                            onClick={this.changerLangueAdditionnelle} />
+                            onChange={this.changerLangueAdditionnelle} />
               )}
             </Translation>
           );
@@ -338,7 +346,6 @@ class InformationMilleGrille extends React.Component {
   changerNomMilleGrille = event => {
     const name = event.currentTarget.name;
     const valeur = event.currentTarget.value;
-    console.debug("Changer " + name + " = " + valeur);
 
     const milleGrille = {...this.state.milleGrille};
     milleGrille[name] = valeur;
@@ -354,7 +361,6 @@ class InformationMilleGrille extends React.Component {
   changerLangueAdditionnelle = event => {
     const valeur = event.currentTarget.value;
     const checked = event.currentTarget.checked;
-    console.debug("Langue additionnelle " + valeur + ", checked: " + checked);
 
     // Mettre a jour les langue additionnelles
     var dictLanguesAdditionnelles = {};
@@ -379,8 +385,6 @@ class InformationMilleGrille extends React.Component {
       ...this.state.milleGrille,
       languesAdditionnelles: Object.keys(dictLanguesAdditionnelles)
     };
-    console.debug("MilleGrille update: ")
-    console.debug(milleGrille);
     this.setState({milleGrille})
   }
 
