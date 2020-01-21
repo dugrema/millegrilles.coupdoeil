@@ -424,14 +424,6 @@ class InformationMilleGrille extends React.Component {
     .then(reponse=>{
       if(reponse.err) {
         console.error("Erreur transaction");
-      } else {
-        // Mettre a jour le profil dans la session du navigateur
-        sessionStorage.setItem('langue', transaction.langue);
-        if(transaction.languesAdditionnelles) {
-          sessionStorage.setItem('languesAdditionnelles', JSON.stringify(transaction.languesAdditionnelles));
-        } else {
-          sessionStorage.removeItem('languesAdditionnelles');
-        }
       }
     })
     .catch(err=>{
