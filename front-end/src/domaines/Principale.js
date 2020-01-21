@@ -1,9 +1,11 @@
 import React from 'react';
-import { Form, Container, Row, Col } from 'react-bootstrap';
+import { Form, Container, Row, Col, ToggleButton, ToggleButtonGroup,
+         Button, ButtonGroup, InputGroup} from 'react-bootstrap';
 import manifest from '../manifest.build.js';  // App version, build date
 import { solveRegistrationChallenge } from '@webauthn/client';
 import webSocketManager from '../WebSocketManager';
 import { Trans, Translation } from 'react-i18next';
+import { Feuille } from '../mgcomponents/Feuilles';
 
 import './Principale.css';
 
@@ -109,8 +111,7 @@ class InformationMilleGrille extends React.Component {
     milleGrille: {
       nomMilleGrille: '',
       langue: '',
-      multilingue: false,
-      languesAdditionnelles: '',
+      languesAdditionnelles: [],
     },
   }
 
@@ -193,40 +194,102 @@ class InformationMilleGrille extends React.Component {
 
   _renderFormMilleGrille() {
 
+    const languePrincipale = this.state.milleGrille?this.state.milleGrille.langue:'';
     const languesSupportees = ['fr', 'en'];
     const optionsLangues = [];
+    const optionsLanguesAdditionnelles = [];
     languesSupportees.forEach(lang=>{
       optionsLangues.push(
-        <Translation key={lang}>{t=>(<option value="{lang}">{t('langues.' + lang)}</option>)}</Translation>
+        <Translation key={lang}>{t=>(<option value={lang}>{t('langues.' + lang)}</option>)}</Translation>
       );
+      if(this.state.milleGrille) {
+        if(this.state.milleGrille.langue !== lang) {
+          // <ToggleButton value={lang}><Translation key={lang}>{t=>t('langues.' + lang)}</Translation></ToggleButton>
+          optionsLanguesAdditionnelles.push(
+            <Translation key={lang}>{
+              t=>(
+                <Form.Check key={lang} id={lang} type="checkbox"
+                            value={lang} label={t('langues.' + lang)}
+                            onClick={this.changerLangueAdditionnelle} />
+              )}
+            </Translation>
+          );
+        }
+      }
     })
+    var languesAdditionnelles;
+    if(this.state.milleGrille) {
+      languesAdditionnelles = this.state.milleGrille.languesAdditionnelles;
+    }
+
+    const nomMilleGrilleLangues = [
+      <Form.Group key={languePrincipale} controlId="formGroupNomMilleGrille">
+        <Form.Label><Trans>principale.information.nomMilleGrille</Trans></Form.Label>
+        <InputGroup className="mb-3">
+          <InputGroup.Prepend>
+            <InputGroup.Text id="basic-addon3">
+              <Trans>{'langues.' + languePrincipale}</Trans>
+            </InputGroup.Text>
+          </InputGroup.Prepend>
+          <Form.Control type="plaintext" placeholder="Sans Nom"
+                        name="nomMilleGrille"
+                        value={this.state.milleGrille.nomMilleGrille}
+                        onChange={this.changerNomMilleGrille} />
+        </InputGroup>
+      </Form.Group>
+    ]
+    if(this.state.milleGrille.languesAdditionnelles) {
+      this.state.milleGrille.languesAdditionnelles.forEach(l=>{
+        nomMilleGrilleLangues.push(
+          <Form.Group key={l} controlId={"formGroupNomMilleGrille_" + l}>
+            <InputGroup className="mb-3">
+              <InputGroup.Prepend>
+                <InputGroup.Text id="basic-addon3">
+                  <Trans>{'langues.' + l}</Trans>
+                </InputGroup.Text>
+              </InputGroup.Prepend>
+              <Form.Control type="plaintext" placeholder={l}
+                            name={"nomMilleGrille_" + l}
+                            value={this.state.milleGrille['nomMilleGrille_' + l]}
+                            onChange={this.changerNomMilleGrille} />
+            </InputGroup>
+          </Form.Group>
+        )
+      });
+    }
 
     return (
-      <Container className='w3-card w3-round w3-white w3-card_BR'>
-        <div className='w3-container w3-padding'>
-          <Row><Col><h2><Trans>principale.information.milleGrilleTitre</Trans></h2></Col></Row>
+      <Feuille>
 
-          <Form>
-            <p><Trans>principale.information.descriptionMilleGrille_1</Trans></p>
-            <Form.Group controlId="formGroupNomMilleGrille">
-              <Form.Label><Trans>principale.information.nomMilleGrille</Trans></Form.Label>
-              <Form.Control type="plaintext" placeholder="Sans Nom"
-                            value={this.state.milleGrille.nomMilleGrille}
-                            onChange={this.changerNomMilleGrille}
-                            onBlur={this.soumettreProfilMilleGrille} />
-            </Form.Group>
+        <Row><Col><h2><Trans>principale.information.milleGrilleTitre</Trans></h2></Col></Row>
 
-            <p><Trans>principale.information.descriptionMilleGrille_2</Trans></p>
-            <Form.Group controlId="formGroupLanguagePrincipal">
-              <Form.Label><Trans>principale.information.languagePrincipal</Trans></Form.Label>
-              <Form.Control as="select">
-                {optionsLangues}
-              </Form.Control>
-            </Form.Group>
-          </Form>
+        <Form>
+          <p><Trans>principale.information.descriptionMilleGrille_2</Trans></p>
+          <Form.Group controlId="formGroupLanguagePrincipal">
+            <Form.Label><Trans>principale.information.languagePrincipal</Trans></Form.Label>
+            <Form.Control as="select" value={languePrincipale} onChange={this.changerLanguePrincipale}>
+              {optionsLangues}
+            </Form.Control>
+          </Form.Group>
 
-        </div>
-      </Container>
+          <Form.Group>
+            <Form.Label><Trans>principale.information.languesAdditionnelles</Trans></Form.Label>
+            {optionsLanguesAdditionnelles}
+          </Form.Group>
+
+          <p><Trans>principale.information.descriptionMilleGrille_1</Trans></p>
+          {nomMilleGrilleLangues}
+
+          <Form.Group>
+            <ButtonGroup>
+              <Button variant="primary" onClick={this.soumettreProfilMilleGrille}>
+                <Trans>global.appliquer</Trans>
+              </Button>
+            </ButtonGroup>
+          </Form.Group>
+        </Form>
+
+      </Feuille>
     );
 
   }
@@ -273,13 +336,52 @@ class InformationMilleGrille extends React.Component {
   }
 
   changerNomMilleGrille = event => {
+    const name = event.currentTarget.name;
     const valeur = event.currentTarget.value;
-    const milleGrille = {...this.state.milleGrille, nomMilleGrille: valeur};
+    console.debug("Changer " + name + " = " + valeur);
+
+    const milleGrille = {...this.state.milleGrille};
+    milleGrille[name] = valeur;
     this.setState({milleGrille})
   }
 
   changerLanguePrincipale = event => {
-    console.debug(event);
+    const valeur = event.currentTarget.value;
+    const milleGrille = {...this.state.milleGrille, langue: valeur, languesAdditionnelles: []};
+    this.setState({milleGrille})
+  }
+
+  changerLangueAdditionnelle = event => {
+    const valeur = event.currentTarget.value;
+    const checked = event.currentTarget.checked;
+    console.debug("Langue additionnelle " + valeur + ", checked: " + checked);
+
+    // Mettre a jour les langue additionnelles
+    var dictLanguesAdditionnelles = {};
+    if(checked) {
+      // Ajouter la nouvelle langue secondaire
+      dictLanguesAdditionnelles[valeur] = true;
+    }
+    var listeLanguesAdditionnelles = this.state.milleGrille.languesAdditionnelles;
+    if(listeLanguesAdditionnelles) {
+      listeLanguesAdditionnelles.forEach(l=>{
+        if(checked) {
+          dictLanguesAdditionnelles[l] = true;
+        } else if(l !== valeur) {
+          // Retirer la langue secondaire
+          dictLanguesAdditionnelles[l] = true;
+        }
+      })
+    }
+
+    // Mettre a jour l'etat
+    const milleGrille = {
+      ...this.state.milleGrille,
+      languesAdditionnelles: Object.keys(dictLanguesAdditionnelles)
+    };
+    console.debug("MilleGrille update: ")
+    console.debug(milleGrille);
+    this.setState({milleGrille})
   }
 
   changerPrenom = event => {
