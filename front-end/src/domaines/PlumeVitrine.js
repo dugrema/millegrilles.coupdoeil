@@ -85,7 +85,7 @@ class SectionAccueil extends React.Component {
       let inputGroupsTitre = [
         <InputGroupColonneTitre key={languePrincipale} col={i} texte={titre}
                            principal langue={languePrincipale}
-                           changerTexteAccueil={this._changerTitreAccueil} />
+                           changerTexteAccueil={this._changerTexteAccueil} />
       ];
       let inputGroupsTexte = [
         <InputGroupColonneTexte key={languePrincipale} col={i} texte={texte}
@@ -99,14 +99,12 @@ class SectionAccueil extends React.Component {
         inputGroupsTitre.push(
           <InputGroupColonneTitre col={i} texte={titre}
                              key={langue} langue={langue}
-                             changerTexteAccueil={this._changerTitreAccueil}
-                             changerTitreAccueil={this._changerTexteAccueil} />
+                             changerTexteAccueil={this._changerTexteAccueil} />
         );
         inputGroupsTexte.push(
           <InputGroupColonneTexte col={i} texte={texte}
                              key={langue} langue={langue}
-                             changerTexteAccueil={this._changerTexteAccueil}
-                             changerTitreAccueil={this._changerTexteAccueil} />
+                             changerTexteAccueil={this._changerTexteAccueil} />
         );
       }
       colonnes.push(
@@ -137,9 +135,6 @@ class SectionAccueil extends React.Component {
   }
 
   soumettre = event => {
-    console.debug("Formulaire a transmettre");
-    console.debug(this.state);
-
     let domaine = 'millegrilles.domaines.Plume.majAccueilVitrine';
     let transaction = {...this.state}; // Cloner l'etat
     delete transaction.colonne; // Colonne est une valeur interne
@@ -174,7 +169,7 @@ function InputGroupColonneTitre(props) {
         </InputGroup.Prepend>
         <Form.Control placeholder="Sans Nom"
                       name={texteColName} value={props.texte}
-                      onChange={props.changerTitreAccueil}/>
+                      onChange={props.changerTexteAccueil}/>
       </InputGroup>
     </Form.Group>
   )
