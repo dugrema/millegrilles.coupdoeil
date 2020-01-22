@@ -26,7 +26,7 @@ export class Plume extends React.Component {
     var page;
     if(this.state.sectionCourante && this.state.sectionCourante !== '') {
       let SectionCourante = SECTIONS[this.state.sectionCourante];
-      page = (<SectionCourante />)
+      page = (<SectionCourante {...this.props} />)
     } else {
       page = (
         <Row className="w3-row-padding">
