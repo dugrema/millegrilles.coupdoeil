@@ -266,7 +266,11 @@ class SectionAccueil extends React.Component {
           {inputGroupsTitre}
           <p><Trans>plume.vitrine.accueilTexte</Trans></p>
           {inputGroupsTexte}
+
           <p><Trans>plume.vitrine.accueilLiens</Trans></p>
+          <ListGroup>
+            {liens}
+          </ListGroup>
           <Row>
             <Col>
               <Button onClick={this.ajouterLien} value={i}>
@@ -275,9 +279,6 @@ class SectionAccueil extends React.Component {
             </Col>
           </Row>
 
-          <ListGroup>
-            {liens}
-          </ListGroup>
         </Tab>
       )
     }
