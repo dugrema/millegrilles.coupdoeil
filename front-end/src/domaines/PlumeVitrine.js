@@ -80,13 +80,19 @@ class SectionAccueil extends React.Component {
 
     let colonnes = [];
     for(let i=1; i<=3; i++) {
+      let texte = this.state['texteCol' + i];
       let inputGroups = [
-        <InputGroupColonne key={languePrincipale} langue={languePrincipale} col={i}/>
+        <InputGroupColonne key={languePrincipale} col={i} texte={texte}
+                           principal langue={languePrincipale}
+                           changerTexteAccueil={this._changerTexteAccueil} />
       ];
       for(let idx in languesAdditionnelles) {
         let langue = languesAdditionnelles[idx];
+        let texte = this.state['texteCol' + i + '_' + langue] || '';
         inputGroups.push(
-          <InputGroupColonne key={langue} langue={langue} col={i}/>
+          <InputGroupColonne col={i} texte={texte}
+                             key={langue} langue={langue}
+                             changerTexteAccueil={this._changerTexteAccueil} />
         );
       }
       colonnes.push(
@@ -103,9 +109,24 @@ class SectionAccueil extends React.Component {
     this.setState({colonne});
   }
 
+  _changerTexteAccueil = event => {
+    let name = event.currentTarget.name;
+    let value = event.currentTarget.value;
+
+    let dictUpdate = {};
+    dictUpdate[name] = value;
+
+    this.setState(dictUpdate);
+  }
+
 }
 
 function InputGroupColonne(props) {
+  let texteColName = 'texteCol' + props.col;
+  if(!props.principal) {
+    texteColName = texteColName + '_' + props.langue;
+  }
+
   return (
     <InputGroup className="mb-3">
       <InputGroup.Prepend>
@@ -114,7 +135,8 @@ function InputGroupColonne(props) {
         </InputGroup.Text>
       </InputGroup.Prepend>
       <Form.Control as="textarea" rows="15" placeholder="Sans Nom"
-                    name={"texteCol" + props.col} />
+                    name={texteColName} value={props.texte}
+                    onChange={props.changerTexteAccueil}/>
     </InputGroup>
   )
 }
