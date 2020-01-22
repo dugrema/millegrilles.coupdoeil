@@ -107,7 +107,7 @@ class SectionAccueil extends React.Component {
       if(l) suffixe = '_' + l;
 
       return (
-        <Form.Group controlId={"formMessageBienvenue" + suffixe}>
+        <Form.Group key={languePrepend} controlId={"formMessageBienvenue" + suffixe}>
           <InputGroup className="mb-3">
             <InputGroup.Prepend>
               <InputGroup.Text>
