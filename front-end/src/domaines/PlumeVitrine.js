@@ -10,6 +10,8 @@ const subscriptions_plumeVitrine = [
   ROUTING_VITRINE_ACCUEIL
 ]
 
+const PREFIX_DATA_URL = 'data:image/jpeg;base64,';
+
 export class PlumeVitrine extends React.Component {
 
   render() {
@@ -95,7 +97,6 @@ class SectionAccueil extends React.Component {
   componentWillUnmount() {
     webSocketManager.unsubscribe(subscriptions_plumeVitrine);
   }
-
 
   render() {
 
@@ -262,8 +263,14 @@ class SectionAccueil extends React.Component {
       const noCol = parseInt(i) + 1;
       colonnes.push(
         <Tab key={i} eventKey={"col" + i} title={"Colonne " + noCol}>
+          <p><Trans>plume.vitrine.accueilImage</Trans></p>
+          <ImageColonne col={i} image={colonne.image}
+            changerImage={this._changerImage}
+            retirerImage={this._retirerImage} />
+
           <p><Trans>plume.vitrine.accueilTitre</Trans></p>
           {inputGroupsTitre}
+
           <p><Trans>plume.vitrine.accueilTexte</Trans></p>
           {inputGroupsTexte}
 
@@ -373,8 +380,8 @@ class SectionAccueil extends React.Component {
     })
     colonne.liens.push(contenuLien);
 
-    console.debug("Lien ajoute");
-    console.debug(colonnes);
+    // console.debug("Lien ajoute");
+    // console.debug(colonnes);
 
     this.setState({colonnes});
   }
@@ -395,14 +402,14 @@ class SectionAccueil extends React.Component {
 
   _supprimerLien = event => {
     const {col, idx} = event.currentTarget.dataset;
-    console.debug("Supprimer lien " + idx + " de colonne " + col);
+    // console.debug("Supprimer lien " + idx + " de colonne " + col);
 
     const colonnes = [...this.state.colonnes];  // Cloner colonnes
     const colonne = colonnes[col];
     const liens = colonne.liens.filter((elem, idxElem) => {
       return ''+idxElem !== idx;
     });
-    console.debug(liens);
+    // console.debug(liens);
 
     if(liens.length > 0) {
       colonne.liens = liens;
@@ -413,6 +420,56 @@ class SectionAccueil extends React.Component {
     this.setState({colonnes});
   }
 
+  _changerImage = event => {
+    const {col} = event.currentTarget.dataset;
+    const form = event.currentTarget.form;
+    const fuuidImage = form['formImage' + col].value;
+
+    if(!fuuidImage || fuuidImage === '') {
+      return;  // Rien a faire, aucun fuuid
+    }
+    // console.debug("fuuid image ");
+    // console.debug(fuuidImage);
+
+    const domaine = 'requete.millegrilles.domaines.GrosFichiers';
+    const requete = {'requetes': [{
+      'filtre': {
+        '_mg-libelle': 'fichier',
+        ['versions.' + fuuidImage]: {'$exists': true},
+        'securite': '1.public',
+      }
+    }]};
+
+    // console.debug("Requete");
+    // console.debug(requete);
+
+    return webSocketManager.transmettreRequete(domaine, requete)
+    .then( docsRecu => {
+      // console.debug("Resultats requete");
+      let documentImage = docsRecu[0][0];
+      const versionImage = documentImage.versions[fuuidImage];
+      // console.debug(versionImage);
+      const {fuuid_preview, mimetype_preview, thumbnail} = versionImage;
+
+      const infoImage = {fuuid_preview, mimetype_preview, thumbnail};
+
+      const colonnes = [...this.state.colonnes];  // Cloner colonnes
+      const colonne = colonnes[col];
+      colonne.image = infoImage;
+
+      this.setState({colonnes});
+    });
+
+  }
+
+  _retirerImage = event => {
+    const {col} = event.currentTarget.dataset;
+    const colonnes = [...this.state.colonnes];  // Cloner colonnes
+    const colonne = colonnes[col];
+    delete colonne.image;
+
+    this.setState({colonnes});
+  }
 
 }
 
@@ -501,4 +558,40 @@ function LiensColonne(props) {
       </Row>
     </ListGroup.Item>
   )
+}
+
+function ImageColonne(props) {
+
+  var fuuid, image;
+  if(props.image) {
+    fuuid = props.image.fuuid;
+    image = (<img src={PREFIX_DATA_URL + props.image.thumbnail} />);
+  }
+
+  return (
+    <div>
+      <Form.Row>
+        <Col sm={8}>
+          <Form.Group controlId={"formImage" +  props.col}>
+          <Form.Label><Trans>plume.vitrine.selectionnerImage</Trans></Form.Label>
+            <Form.Control placeholder="e.g. 90d22a60-3bea-11ea-a889-e7d8115f598f"
+                        name="fuuid" value={fuuid} data-col={props.col}
+                        onChange={props.changerTexteLien} />
+          </Form.Group>
+          <Form.Text>
+            <Button onClick={props.changerImage} data-col={props.col}>
+              <Trans>plume.vitrine.changerImage</Trans>
+            </Button>
+            <Button onClick={props.retirerImage} variant="secondary"
+                data-col={props.col}>
+              <Trans>plume.vitrine.retirerImage</Trans>
+            </Button>
+          </Form.Text>
+        </Col>
+        <Col sm={4}>
+          {image}
+        </Col>
+      </Form.Row>
+    </div>
+  );
 }

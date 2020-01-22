@@ -93,7 +93,21 @@
         "texteNouvelleAnnonce": "Texte",
         "texteNouvelleAnnonceInfo": "Disponible : {{restants}} sur {{max}}",
         "nouvelleAnnonceBoutonPublier": "Publier"
-      }
+      },
+      "vitrine": {
+        "titre": "Vitrine",
+        "sectionAccueil": "Accueil",
+        "messageBienvenue": "Message de bienvenue du Jumbotron",
+        "ajouterColonne": "Ajouter une colonne",
+        "accueilImage": "Image",
+        "selectionnerImage": "Sélectionner une image (fuuid)",
+        "changerImage": "Changer",
+        "retirerImage": "Supprimer",
+        "accueilTitre": "Titre de la colonne",
+        "accueilTexte": "Texte de la colonne",
+        "accueilLiens": "Liens au bas de la colonne",
+        "ajouterLiens": "Ajouter lien"
+      }      
     },
     "grosFichiers": {
       "niveauSecurite": "Niveau de sécurité"
