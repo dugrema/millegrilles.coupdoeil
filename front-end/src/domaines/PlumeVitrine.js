@@ -5,16 +5,12 @@ import { Form, Button, ButtonGroup, ListGroup, InputGroup,
 import { Trans } from 'react-i18next';
 import webSocketManager from '../WebSocketManager';
 
+const ROUTING_VITRINE_ACCUEIL = 'noeuds.source.millegrilles_domaines_Plume.documents.vitrine.accueil';
+const subscriptions_plumeVitrine = [
+  ROUTING_VITRINE_ACCUEIL
+]
+
 export class PlumeVitrine extends React.Component {
-
-  componentDidMount() {
-    // webSocketManager.subscribe(subscriptions_annonces, this._recevoirMessageAnnoncesRecentes);
-    // this.chargerAnnoncesRecentes();
-  }
-
-  componentWillUnmount() {
-    // webSocketManager.unsubscribe(subscriptions_annonces);
-  }
 
   render() {
     return (
@@ -25,6 +21,21 @@ export class PlumeVitrine extends React.Component {
     )
   }
 
+}
+
+function extraireChampMultilingue(champ, suffixe) {
+  // Extraire le nom de champ (e.g. champ_langue)
+  let champStruct = champ.split('_');
+
+  // Ajouter ColN (e.g. texteCol1)
+  let champModif = champStruct[0] + suffixe;
+
+  // Ajouter le language au besoin
+  if(champStruct.length > 1) {
+    champModif = champModif + '_' + champStruct[1];
+  }
+
+  return champModif;
 }
 
 function TitreVitrine(props) {
@@ -41,24 +52,85 @@ function TitreVitrine(props) {
 
 class SectionAccueil extends React.Component {
 
-  state = {
-    colonne: 'col1',
-    texteCol1: '',
-    texteCol2: '',
-    texteCol3: '',
+  constructor(props) {
+    super(props);
+
+    this.languePrincipale = this.props.documentIdMillegrille.langue;
+    const languesAdditionnelles = this.props.documentIdMillegrille.languesAdditionnelles;
+
+    this.languesListHelper = [
+      '', ...languesAdditionnelles
+    ]
+
+    const state = {
+      colonne: 'col1',
+    }
+
+    this.languesListHelper.forEach(l=>{
+      for(let idx=1; idx<=3; idx++) {
+        let suffixe = 'Col' + idx;
+        if(l !== '') suffixe += '_' + l;
+
+        state['texte' + suffixe] = '';
+        state['titre' + suffixe] = '';
+      }
+
+      let suffixe = '';
+      if(l !== '') suffixe += '_' + l;
+      state['messageBienvenue' + suffixe] = '';
+    })
+
+    // console.debug("Init state: ")
+    // console.debug(state);
+
+    this.state = state;
   }
 
+  componentDidMount() {
+    webSocketManager.subscribe(subscriptions_plumeVitrine, this._recevoirMessageAccueil);
+    this.chargerDocumentAccueil();
+  }
+
+  componentWillUnmount() {
+    webSocketManager.unsubscribe(subscriptions_plumeVitrine);
+  }
+
+
   render() {
+
+    const messageBienvenue = this.languesListHelper.map(l=>{
+      let languePrepend = 'langues.' + l;
+      if(l==='') {
+        languePrepend = 'langues.' + this.languePrincipale;
+      }
+      let suffixe = '';
+      if(l) suffixe = '_' + l;
+
+      return (
+        <Form.Group controlId={"formMessageBienvenue" + suffixe}>
+          <InputGroup className="mb-3">
+            <InputGroup.Prepend>
+              <InputGroup.Text>
+                <Trans>{languePrepend}</Trans>
+              </InputGroup.Text>
+            </InputGroup.Prepend>
+            <Form.Control name={'messageBienvenue' + suffixe}
+                          value={this.state['messageBienvenue' + suffixe]}
+                          onChange={this._changerBienvenue}
+                          placeholder="Bienvenue sur Vitrine" />
+          </InputGroup>
+        </Form.Group>
+      );
+    })
 
     return (
       <Feuille>
         <Row><Col><h3><Trans>plume.vitrine.sectionAccueil</Trans></h3></Col></Row>
 
         <Form>
-          <Form.Group controlId="formMessageBienvenue">
-            <Form.Label><Trans>plume.vitrine.messageBienvenue</Trans></Form.Label>
-            <Form.Control type="messageBienvenue" placeholder="Bienvenue sur Vitrine" />
-          </Form.Group>
+
+          <p><Trans>plume.vitrine.messageBienvenue</Trans></p>
+          {messageBienvenue}
 
           <Tabs activeKey={this.state.colonne} onSelect={this._setColonne}>
             {this._renderAccueilColonnes()}
@@ -79,35 +151,96 @@ class SectionAccueil extends React.Component {
     );
   }
 
+  chargerDocumentAccueil() {
+    const domaine = 'requete.millegrilles.domaines.Plume';
+    const requete = {'requetes': [
+      {
+        'filtre': {
+          '_mg-libelle': {'$in': ['vitrine.accueil']},
+        }
+      }
+    ]};
+
+    return webSocketManager.transmettreRequete(domaine, requete)
+    .then( docsRecu => {
+      // console.debug("Resultats requete");
+      // console.debug(docsRecu);
+      let accueilVitrine = docsRecu[0][0];
+      this.extraireContenuAccueilVitrine(accueilVitrine)
+    });
+  }
+
+  _recevoirMessageAccueil = (routingKey, doc) => {
+    // console.debug("Recevoir fichier update");
+    if(routingKey === ROUTING_VITRINE_ACCUEIL) {
+      this.extraireContenuAccueilVitrine(doc)
+    }
+  }
+
+  extraireContenuAccueilVitrine(accueilVitrine) {
+    const majState = {};
+
+    const champsMultilingue = ['messageBienvenue'];
+
+    // Copier les champs multilingues "flat"
+    for(let champ in accueilVitrine) {
+      champsMultilingue.forEach(champMultilingue=>{
+        if(champ.startsWith(champMultilingue)) {
+          majState[champ] = accueilVitrine[champ];
+        }
+      })
+    }
+
+    if(accueilVitrine.portail) {
+      for(let idxPortail in accueilVitrine.portail) {
+        let section = accueilVitrine.portail[idxPortail];
+
+        if(section.type === 'deck') {
+          let colonnes = [];
+          for(let idx in section.cartes) {
+            let col = parseInt(idx) + 1;
+            let carte = section.cartes[idx];
+            for(let champCarte in carte) {
+              let champ = extraireChampMultilingue(champCarte, 'Col' + col);
+              // console.debug("Champ carte " + champCarte + ' = ' + champ);
+              // Conserver la valeur
+              majState[champ] = carte[champCarte];
+            }
+          }
+        }
+      }
+    }
+
+    // console.debug("MAJ state");
+    // console.debug(majState);
+    this.setState({...majState});
+  }
+
   _renderAccueilColonnes() {
     let languePrincipale = this.props.documentIdMillegrille.langue;
     let languesAdditionnelles = this.props.documentIdMillegrille.languesAdditionnelles;
 
     let colonnes = [];
     for(let i=1; i<=3; i++) {
-      let texte = this.state['texteCol' + i];
-      let titre = this.state['titreCol' + i];
       let inputGroupsTitre = [
-        <InputGroupColonneTitre key={languePrincipale} col={i} texte={titre}
+        <InputGroupColonneTitre key={languePrincipale} col={i} texte={this.state['titreCol' + i]}
                            principal langue={languePrincipale}
                            changerTexteAccueil={this._changerTexteAccueil} />
       ];
       let inputGroupsTexte = [
-        <InputGroupColonneTexte key={languePrincipale} col={i} texte={texte}
+        <InputGroupColonneTexte key={languePrincipale} col={i} texte={this.state['texteCol' + i]}
                            principal langue={languePrincipale}
                            changerTexteAccueil={this._changerTexteAccueil} />
       ];
       for(let idx in languesAdditionnelles) {
         let langue = languesAdditionnelles[idx];
-        let titre = this.state['titreCol' + i + '_' + langue] || '';
-        let texte = this.state['texteCol' + i + '_' + langue] || '';
         inputGroupsTitre.push(
-          <InputGroupColonneTitre col={i} texte={titre}
+          <InputGroupColonneTitre col={i} texte={this.state['titreCol' + i + '_' + langue]}
                              key={langue} langue={langue}
                              changerTexteAccueil={this._changerTexteAccueil} />
         );
         inputGroupsTexte.push(
-          <InputGroupColonneTexte col={i} texte={texte}
+          <InputGroupColonneTexte col={i} texte={this.state['texteCol' + i + '_' + langue]}
                              key={langue} langue={langue}
                              changerTexteAccueil={this._changerTexteAccueil} />
         );
@@ -130,6 +263,16 @@ class SectionAccueil extends React.Component {
   }
 
   _changerTexteAccueil = event => {
+    let name = event.currentTarget.name;
+    let value = event.currentTarget.value;
+
+    let dictUpdate = {};
+    dictUpdate[name] = value;
+
+    this.setState(dictUpdate);
+  }
+
+  _changerBienvenue = event => {
     let name = event.currentTarget.name;
     let value = event.currentTarget.value;
 
