@@ -7,12 +7,13 @@ import webSocketManager from '../WebSocketManager';
 import {dateformatter} from '../formatters'
 import { PlumeAnnonces } from './PlumeAnnonces'
 import { PlumeVitrine } from './PlumeVitrine'
+import { PlumeBlogs } from './PlumeBlogs'
 
 import 'react-quill/dist/quill.snow.css';
 import './Plume.css';
 
 const SECTIONS = {
-  PlumeAnnonces, PlumeVitrine
+  PlumeAnnonces, PlumeVitrine, PlumeBlogs,
 }
 
 export class Plume extends React.Component {
@@ -53,6 +54,11 @@ export class Plume extends React.Component {
                     </Button>
                   </ListGroup.Item>
                   <ListGroup.Item>
+                    <Button className="aslink" onClick={this._versSectionBlogs}>
+                      <Trans>plume.pageTitre.liensBlogs</Trans>
+                    </Button>
+                  </ListGroup.Item>
+                  <ListGroup.Item>
                     <Button className="aslink" onClick={this._versSectionDocuments}>
                       <Trans>plume.pageTitre.liensDocuments</Trans>
                     </Button>
@@ -82,6 +88,10 @@ export class Plume extends React.Component {
 
   _versSectionVitrine = () => {
     this.setState({sectionCourante: 'PlumeVitrine'});
+  }
+
+  _versSectionBlogs = () => {
+    this.setState({sectionCourante: 'PlumeBlogs'});
   }
 
 }
