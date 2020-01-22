@@ -59,15 +59,15 @@ class SectionAccueil extends React.Component {
             <Form.Label><Trans>plume.vitrine.messageBienvenue</Trans></Form.Label>
             <Form.Control type="messageBienvenue" placeholder="Bienvenue sur Vitrine" />
           </Form.Group>
-        </Form>
 
-        <Form>
-          <Form.Group controlId="formSecionAccueil">
-            <Form.Label><Trans>plume.vitrine.sectionAccueil</Trans></Form.Label>
-            <Tabs activeKey={this.state.colonne} onSelect={this._setColonne}>
-              {this._renderAccueilColonnes()}
-            </Tabs>
+          <Tabs activeKey={this.state.colonne} onSelect={this._setColonne}>
+            {this._renderAccueilColonnes()}
+          </Tabs>
+
+          <Form.Group controlId="formMessageBienvenue">
+            <Button onClick={this.soumettre}><Trans>global.appliquer</Trans></Button>
           </Form.Group>
+
         </Form>
 
       </Feuille>
@@ -81,23 +81,40 @@ class SectionAccueil extends React.Component {
     let colonnes = [];
     for(let i=1; i<=3; i++) {
       let texte = this.state['texteCol' + i];
-      let inputGroups = [
-        <InputGroupColonne key={languePrincipale} col={i} texte={texte}
+      let titre = this.state['titreCol' + i];
+      let inputGroupsTitre = [
+        <InputGroupColonneTitre key={languePrincipale} col={i} texte={titre}
+                           principal langue={languePrincipale}
+                           changerTexteAccueil={this._changerTitreAccueil} />
+      ];
+      let inputGroupsTexte = [
+        <InputGroupColonneTexte key={languePrincipale} col={i} texte={texte}
                            principal langue={languePrincipale}
                            changerTexteAccueil={this._changerTexteAccueil} />
       ];
       for(let idx in languesAdditionnelles) {
         let langue = languesAdditionnelles[idx];
+        let titre = this.state['titreCol' + i + '_' + langue] || '';
         let texte = this.state['texteCol' + i + '_' + langue] || '';
-        inputGroups.push(
-          <InputGroupColonne col={i} texte={texte}
+        inputGroupsTitre.push(
+          <InputGroupColonneTitre col={i} texte={titre}
                              key={langue} langue={langue}
-                             changerTexteAccueil={this._changerTexteAccueil} />
+                             changerTexteAccueil={this._changerTitreAccueil}
+                             changerTitreAccueil={this._changerTexteAccueil} />
+        );
+        inputGroupsTexte.push(
+          <InputGroupColonneTexte col={i} texte={texte}
+                             key={langue} langue={langue}
+                             changerTexteAccueil={this._changerTexteAccueil}
+                             changerTitreAccueil={this._changerTexteAccueil} />
         );
       }
       colonnes.push(
-        <Tab eventKey={"col" + i} title={"Colonne " + i}>
-          {inputGroups}
+        <Tab key={i} eventKey={"col" + i} title={"Colonne " + i}>
+          <p><Trans>plume.vitrine.accueilTitre</Trans></p>
+          {inputGroupsTitre}
+          <p><Trans>plume.vitrine.accueilTexte</Trans></p>
+          {inputGroupsTexte}
         </Tab>
       )
     }
@@ -119,24 +136,68 @@ class SectionAccueil extends React.Component {
     this.setState(dictUpdate);
   }
 
+  soumettre = event => {
+    console.debug("Formulaire a transmettre");
+    console.debug(this.state);
+
+    let domaine = 'millegrilles.domaines.Plume.majAccueilVitrine';
+    let transaction = {...this.state}; // Cloner l'etat
+    delete transaction.colonne; // Colonne est une valeur interne
+
+    webSocketManager.transmettreTransaction(domaine, transaction)
+    .then(reponse=>{
+      if(reponse.err) {
+        console.error("Erreur transaction majAccueilVitrine");
+      }
+    })
+    .catch(err=>{
+      console.error("Erreur transaction majAccueilVitrine");
+      console.error(err);
+    });
+  }
+
 }
 
-function InputGroupColonne(props) {
+function InputGroupColonneTitre(props) {
+  let texteColName = 'titreCol' + props.col;
+  if(!props.principal) {
+    texteColName = texteColName + '_' + props.langue;
+  }
+
+  return (
+    <Form.Group controlId={"form" + texteColName}>
+      <InputGroup className="mb-3">
+        <InputGroup.Prepend>
+          <InputGroup.Text>
+            <Trans>{'langues.' + props.langue}</Trans>
+          </InputGroup.Text>
+        </InputGroup.Prepend>
+        <Form.Control placeholder="Sans Nom"
+                      name={texteColName} value={props.texte}
+                      onChange={props.changerTitreAccueil}/>
+      </InputGroup>
+    </Form.Group>
+  )
+}
+
+function InputGroupColonneTexte(props) {
   let texteColName = 'texteCol' + props.col;
   if(!props.principal) {
     texteColName = texteColName + '_' + props.langue;
   }
 
   return (
-    <InputGroup className="mb-3">
-      <InputGroup.Prepend>
-        <InputGroup.Text id={"texte-colonne_" + props.col}>
-          <Trans>{'langues.' + props.langue}</Trans>
-        </InputGroup.Text>
-      </InputGroup.Prepend>
-      <Form.Control as="textarea" rows="15" placeholder="Sans Nom"
-                    name={texteColName} value={props.texte}
-                    onChange={props.changerTexteAccueil}/>
-    </InputGroup>
+    <Form.Group controlId={"form" + texteColName}>
+      <InputGroup className="mb-3">
+        <InputGroup.Prepend>
+          <InputGroup.Text>
+            <Trans>{'langues.' + props.langue}</Trans>
+          </InputGroup.Text>
+        </InputGroup.Prepend>
+        <Form.Control as="textarea" rows="15" placeholder="Sans Nom"
+                      name={texteColName} value={props.texte}
+                      onChange={props.changerTexteAccueil}/>
+      </InputGroup>
+    </Form.Group>
   )
 }
