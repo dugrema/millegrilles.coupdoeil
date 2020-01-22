@@ -56,10 +56,10 @@ class SectionAccueil extends React.Component {
     super(props);
 
     this.languePrincipale = this.props.documentIdMillegrille.langue;
-    const languesAdditionnelles = this.props.documentIdMillegrille.languesAdditionnelles;
+    this.languesAdditionnelles = this.props.documentIdMillegrille.languesAdditionnelles;
 
     this.languesListHelper = [
-      '', ...languesAdditionnelles
+      '', ...this.languesAdditionnelles
     ]
 
     const state = {
@@ -245,6 +245,20 @@ class SectionAccueil extends React.Component {
         );
       })
 
+      var liens = null;
+      if(colonne.liens) {
+        liens = colonne.liens.map((lien, idx)=>{
+          return (
+            <LiensColonne key={idx} idx={idx} col={i} lien={lien}
+              languePrincipale={this.languePrincipale}
+              languesAdditionnelles={this.languesAdditionnelles}
+              changerTexteLien={this._changerTexteLien}
+              supprimerLien={this._supprimerLien}
+              />
+          )
+        });
+      }
+
       const noCol = parseInt(i) + 1;
       colonnes.push(
         <Tab key={i} eventKey={"col" + i} title={"Colonne " + noCol}>
@@ -252,6 +266,18 @@ class SectionAccueil extends React.Component {
           {inputGroupsTitre}
           <p><Trans>plume.vitrine.accueilTexte</Trans></p>
           {inputGroupsTexte}
+          <p><Trans>plume.vitrine.accueilLiens</Trans></p>
+          <Row>
+            <Col>
+              <Button onClick={this.ajouterLien} value={i}>
+                <Trans>plume.vitrine.ajouterLien</Trans>
+              </Button>
+            </Col>
+          </Row>
+
+          <ListGroup>
+            {liens}
+          </ListGroup>
         </Tab>
       )
     }
@@ -326,6 +352,67 @@ class SectionAccueil extends React.Component {
     this.setState(colonnes);
   }
 
+  ajouterLien = event => {
+    var col = event.currentTarget.value;
+
+    const colonnes = [...this.state.colonnes];  // Cloner colonnes
+    var colonne = colonnes[col];
+
+    if(!colonne.liens) {
+      colonne.liens = [];
+    }
+
+    const contenuLien = {
+      'url': ''
+    };
+    const champs = ['texte'];
+    this.languesListHelper.forEach(l=>{
+      if(l !== '') l = '_' + l;
+      champs.forEach(champ => contenuLien[champ + l] = '' )
+    })
+    colonne.liens.push(contenuLien);
+
+    console.debug("Lien ajoute");
+    console.debug(colonnes);
+
+    this.setState({colonnes});
+  }
+
+  _changerTexteLien = event => {
+    const {name, value} = event.currentTarget;
+    const {col, idx} = event.currentTarget.dataset;
+
+    // console.debug("Changer texte lien " + name + ", col " + col + " no " + idx + " = " + value);
+
+    const colonnes = [...this.state.colonnes];  // Cloner colonnes
+    const colonne = colonnes[col];
+    const lien = colonne.liens[idx];
+    lien[name] = value;
+
+    this.setState({colonnes});
+  }
+
+  _supprimerLien = event => {
+    const {col, idx} = event.currentTarget.dataset;
+    console.debug("Supprimer lien " + idx + " de colonne " + col);
+
+    const colonnes = [...this.state.colonnes];  // Cloner colonnes
+    const colonne = colonnes[col];
+    const liens = colonne.liens.filter((elem, idxElem) => {
+      return ''+idxElem !== idx;
+    });
+    console.debug(liens);
+
+    if(liens.length > 0) {
+      colonne.liens = liens;
+    } else {
+      delete colonne.liens
+    }
+
+    this.setState({colonnes});
+  }
+
+
 }
 
 function InputGroupColonneTexte(props) {
@@ -360,5 +447,57 @@ function InputGroupColonneTexte(props) {
         {formControl}
       </InputGroup>
     </Form.Group>
+  )
+}
+
+function LiensColonne(props) {
+  const listeLangues = [props.languePrincipale, ...props.languesAdditionnelles]
+
+  const listeTexte = listeLangues.map(l=>{
+    let suffixe = l===props.languePrincipale?'':'_'+l;
+    return (
+      <Form.Group key={l} controlId={"formLienTexteCol" + props.col + '_' + l + "No" + props.idx}>
+        <InputGroup className="mb-3">
+          <InputGroup.Prepend>
+            <InputGroup.Text>
+              <Trans>{'langues.' + l}</Trans>
+            </InputGroup.Text>
+          </InputGroup.Prepend>
+          <Form.Control placeholder="Description lien"
+                      name={'texte' + suffixe} value={props.lien['texte'+suffixe]}
+                      data-col={props.col} data-idx={props.idx}
+                      onChange={props.changerTexteLien} />
+        </InputGroup>
+      </Form.Group>
+    )
+  })
+
+  return (
+    <ListGroup.Item>
+      <Row>
+        <Col sm={10}>
+          {listeTexte}
+          <Form.Group controlId={"formLienUrl" +  props.col + "No" + props.idx}>
+            <InputGroup className="mb-3">
+              <InputGroup.Prepend>
+                <InputGroup.Text>
+                  <Trans>global.url</Trans>
+                </InputGroup.Text>
+              </InputGroup.Prepend>
+              <Form.Control placeholder="https://millegrilles.com"
+                          name="url" value={props.lien.url}
+                          data-col={props.col} data-idx={props.idx}
+                          onChange={props.changerTexteLien} />
+            </InputGroup>
+          </Form.Group>
+        </Col>
+        <Col sm={1}>
+          <Button variant="danger" onClick={props.supprimerLien}
+              data-col={props.col} data-idx={props.idx}>
+            <i className="fa fa-close"/>
+          </Button>
+        </Col>
+      </Row>
+    </ListGroup.Item>
   )
 }
