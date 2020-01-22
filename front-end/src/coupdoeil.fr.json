@@ -10,7 +10,9 @@
         "prive": "Privé",
         "public": "Public"
       },
-      "appliquer": "Appliquer"
+      "appliquer": "Appliquer",
+      "sauvegarder": "Sauvegarder",
+      "publier": "Publier"
     },
     "formulaire": {
       "prenom": "Prénom :",

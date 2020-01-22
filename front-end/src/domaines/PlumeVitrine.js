@@ -65,7 +65,12 @@ class SectionAccueil extends React.Component {
           </Tabs>
 
           <Form.Group controlId="formMessageBienvenue">
-            <Button onClick={this.soumettre}><Trans>global.appliquer</Trans></Button>
+            <Button onClick={this.soumettre} value="sauvegarder">
+              <Trans>global.sauvegarder</Trans>
+            </Button>
+            <Button onClick={this.soumettre} variant="danger" value="publier">
+              <Trans>global.publier</Trans>
+            </Button>
           </Form.Group>
 
         </Form>
@@ -135,8 +140,9 @@ class SectionAccueil extends React.Component {
   }
 
   soumettre = event => {
+    let operation = event.currentTarget.value;
     let domaine = 'millegrilles.domaines.Plume.majAccueilVitrine';
-    let transaction = {...this.state}; // Cloner l'etat
+    let transaction = {...this.state, operation}; // Cloner l'etat
     delete transaction.colonne; // Colonne est une valeur interne
 
     webSocketManager.transmettreTransaction(domaine, transaction)
