@@ -198,12 +198,11 @@ class BlogPost extends React.Component {
         // console.debug(docsRecu);
         var blogpostIn = docsRecu[0][0];
         const blogpost = {};
-        const datePublication = blogpostIn.datePublication;
 
         console.debug("Blogpost filtrer")
         if(blogpostIn) {
           var champs = [
-            'uuid', 'texte', 'titre', 'image'
+            'uuid', 'texte', 'titre', 'image', 'datePublication'
           ];
           for(let champ in blogpostIn) {
             var inclu = false;
@@ -218,7 +217,7 @@ class BlogPost extends React.Component {
           }
         }
 
-        this.setState({...blogpost, datePublication});
+        this.setState({...blogpost});
       });
     }
   }
@@ -249,7 +248,7 @@ class BlogPost extends React.Component {
           <Row>
             Publication:
             <DateTimeFormatter date={this.state.datePublication}/>
-            <Button onClick={this.publier} variant='danger'>
+            <Button onClick={this.sauvegarder} variant='danger' value='publier'>
               <Trans>global.publier</Trans>
             </Button>
           </Row>
@@ -279,12 +278,14 @@ class BlogPost extends React.Component {
   }
 
   sauvegarder = event => {
-    console.debug("Sauvegarder")
-    console.debug(this.state);
+    // console.debug("Sauvegarder")
+    // console.debug(this.state);
 
     let operation = event.currentTarget.value;
     let domaine = 'millegrilles.domaines.Plume.majBlogpostVitrine';
     let transaction = {...this.state, operation}; // Cloner l'etat
+
+    // console.debug(transaction);
 
     webSocketManager.transmettreTransaction(domaine, transaction)
     .then(reponse=>{
@@ -292,9 +293,15 @@ class BlogPost extends React.Component {
         console.error("Erreur transaction majBlogpostVitrine");
       } else {
         if(!this.state.uuid) {
-          console.debug("Sauvegarder nouveau uuid");
-          console.debug(reponse);
+          // console.debug("Sauvegarder nouveau uuid");
+          // console.debug(reponse);
           this.setUuidBlogpost(reponse['uuid-transaction']);
+        }
+
+        if(operation === 'publier') {
+          // console.debug("Reponse publication")
+          // console.debug(reponse);
+          this.setState({datePublication: reponse.datePublication})
         }
       }
     })
@@ -302,11 +309,6 @@ class BlogPost extends React.Component {
       console.error("Erreur transaction majBlogpostVitrine");
       console.error(err);
     });
-  }
-
-  publier = event => {
-    console.debug("Publier");
-    console.debug(this.state);
   }
 
   setUuidBlogpost = uuid => {
