@@ -6,6 +6,7 @@ import { solveRegistrationChallenge } from '@webauthn/client';
 import webSocketManager from '../WebSocketManager';
 import { Trans, Translation } from 'react-i18next';
 import { Feuille } from '../mgcomponents/Feuilles';
+import { InputTextMultilingue } from '../mgcomponents/InputMultilingue';
 
 import './Principale.css';
 
@@ -284,7 +285,14 @@ class InformationMilleGrille extends React.Component {
           </Form.Group>
 
           <p><Trans>principale.information.descriptionMilleGrille_1</Trans></p>
-          {nomMilleGrilleLangues}
+          <InputTextMultilingue
+            controlId="nomMilleGrille" valuePrefix='nomMilleGrille'
+            onChange={this.changerNomMilleGrille}
+            languePrincipale={languePrincipale}
+            languesAdditionnelles={this.state.milleGrille.languesAdditionnelles}
+            placeholder='Nom millegrille'
+            contenu={this.state.milleGrille}
+            />
 
           <Form.Group>
             <ButtonGroup>
