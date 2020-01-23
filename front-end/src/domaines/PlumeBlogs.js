@@ -10,12 +10,35 @@ const PREFIX_DATA_URL = 'data:image/jpeg;base64,';
 
 export class PlumeBlogs extends React.Component {
 
+  state = {
+    uuidBlogpost: null,
+  }
+
   render() {
-    return (
-      <div>
-        <ListeBlogposts />
-      </div>
-    )
+    if(this.state.uuidBlogpost) {
+      return (
+        <BlogPost uuidBlogpost={this.state.uuidBlogpost} retour={this._retour}/>
+      )
+    } else {
+      return (
+        <ListeBlogposts
+          nouveau={this._nouveauBlogpost}
+          chargerBlogpost={this._chargerBlogpost} />
+      );
+    }
+  }
+
+  _nouveauBlogpost = event => {
+    this.setState({uuidBlogpost: 'PLACEHOLDER'});
+  }
+
+  _chargerBlogpost = event => {
+    const uuidBlogpost = event.currentTarget.value;
+    this.setState({uuidBlogpost});
+  }
+
+  _retour = event => {
+    this.setState({uuidBlogpost: null});
   }
 
 }
@@ -40,11 +63,19 @@ class ListeBlogposts extends React.Component {
               <h2 className="w3-opacity"><Trans>plume.blogs.titre</Trans></h2>
             </Col>
           </Row>
+          <Row>
+            <Col>
+              <Button onClick={this.props.nouveau}>
+                <Trans>plume.blogs.nouveauBlogpost</Trans>
+              </Button>
+            </Col>
+          </Row>
         </Feuille>
 
         <ListeBlogpostsDetail
           chargerListeBlogposts={this.chargerListeBlogposts}
-          blogposts={this.state.blogposts} />
+          blogposts={this.state.blogposts}
+          chargerBlogpost={this.props.chargerBlogpost} />
 
       </div>
     )
@@ -76,8 +107,8 @@ class ListeBlogposts extends React.Component {
 
     return webSocketManager.transmettreRequete(domaine, requete)
     .then( docsRecu => {
-      console.debug("Resultats requete");
-      console.debug(docsRecu);
+      // console.debug("Resultats requete");
+      // console.debug(docsRecu);
       let resultBlogposts = docsRecu[0];
       let startingIndex = resultBlogposts.length + currentIndex;
 
@@ -99,7 +130,7 @@ function ListeBlogpostsDetail(props) {
               <DateTimeFormatter date={bp['_mg-derniere-modification']}/>
             </Col>
             <Col sm={9}>
-              <Button variant="link">
+              <Button variant="link" onClick={props.chargerBlogpost} value={bp.uuid}>
                 {bp.titre}
               </Button>
             </Col>
@@ -109,8 +140,8 @@ function ListeBlogpostsDetail(props) {
     })
   }
 
-  console.debug('Liste');
-  console.debug(liste);
+  // console.debug('Liste');
+  // console.debug(liste);
 
   return (
     <Feuille>
@@ -132,4 +163,27 @@ function ListeBlogpostsDetail(props) {
 
 class BlogPost extends React.Component {
 
+  render() {
+    return (
+      <div>
+        <Feuille>
+
+          <Row>
+            <Col><h2>Blogpost {this.props.uuidBlogpost}</h2></Col>
+          </Row>
+
+          <Row>
+            <Col>
+              <Button onClick={this.props.retour}>
+                <Trans>global.retour</Trans>
+              </Button>
+            </Col>
+          </Row>
+
+        </Feuille>
+
+
+      </div>
+    )
+  }
 }
