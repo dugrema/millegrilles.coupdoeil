@@ -383,7 +383,7 @@ class EntreeBlog extends React.Component {
                 onChange={this.props.onTextChange}
                 placeholder='Texte'
                 contenu={blogpost}
-                rows={30}
+                rows={15}
                 />
 
               <AfficherImage controlId="image"

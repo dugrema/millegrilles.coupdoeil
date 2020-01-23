@@ -14,12 +14,15 @@ export class ActionsFichiers {
     this.webSocketManager = webSocketManager;
   }
 
-  renommer = (uuid, nouveauNom) => {
+  renommer = (uuid, nouveauNom, champ) => {
     let domaine = 'millegrilles.domaines.GrosFichiers.renommerFichier';
     let transaction = {
         uuid: uuid,
-        nom: nouveauNom,
     }
+    transaction[champ] = nouveauNom;
+    console.log("Transaction de fichier")
+    console.log(transaction);
+
     return this.webSocketManager.transmettreTransaction(domaine, transaction);
   }
 

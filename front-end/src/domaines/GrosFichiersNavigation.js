@@ -4,6 +4,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 import { Container, Row, Col } from 'react-bootstrap';
 import webSocketManager from '../WebSocketManager';
 import { Feuille } from '../mgcomponents/Feuilles'
+import { InputTextAreaMultilingueAutoSubmit } from '../mgcomponents/InputMultilingue'
 
 // import webSocketManager from '../WebSocketManager';
 // import {dateformatter} from '../formatters'
@@ -116,6 +117,9 @@ export class ActionsNavigation {
       ...this._resetNavigation(),
     };
 
+    console.log("Document charge");
+    console.debug(documentCharge)
+
     if(documentCharge && documentCharge['_mg-libelle'] === 'fichier') {
       etat['fichierCourant'] = documentCharge;
       etat.stackNavigation.push(documentCharge.uuid);
@@ -171,32 +175,41 @@ export class Entete extends React.Component {
   }
 
   editerTitre = event => {
-    let titre = event.currentTarget.value;
-    this.setState({titre});
+    const {name, value} = event.currentTarget;
+    const maj = {};
+    maj[name] = value;
+    this.setState(maj);
   }
 
   actionRenommer = event => {
-    let titre = event.currentTarget.value;
 
-    if(titre !== this.props.titre) {
+    // Preparer le champ pour
+    let champ = event.currentTarget.name;
+    const maj = {};
+    maj[champ] = null;
 
-      this.props.actionRenommer(this.props.documentuuid, titre)
+    var titre = this.state[champ];
+
+    if(titre && titre !== this.props[champ]) {
+
+      this.props.actionRenommer(this.props.documentuuid, titre, champ)
       .then(msg=>{
-        // console.debug("Reponse renommer fichier");
-        // console.debug(msg);
-        // Le titre sera resette a null a la reception du message de maj du fichier
+        console.debug("Reponse renommer fichier");
+        console.debug(msg);
+        // Le titre sera resette a null (componentDidUpdate) a la reception
+        // du message de maj du fichier
       })
       .catch(err=>{
         console.error("Erreur changement de titre");
         console.error(err);
         // Remet le pour qu'il vienne du parent
-        this.setState({titre: null});
-      });
+        this.setState(maj);
+      })
 
     } else {
       // Rien a faire, le titre n'a pas change
       // Reset l'etat d'edition
-      this.setState({titre: null});
+      this.setState(maj);
     }
 
   }
@@ -214,15 +227,33 @@ export class Entete extends React.Component {
   componentDidUpdate(prevProps) {
     var resetEtats = {};
 
-    if(this.props.titre !== prevProps.titre) {
-      // Edition du titre en cours
-      if(this.state.titre === this.props.titre) {
-        // Les modifications sont deja faites, on annule l'edition du titre
-        resetEtats.titre = null;
+    const sourceTitreEntete = this.props.sourceTitreEntete;
+    const prevSourceTitreEntete = prevProps.sourceTitreEntete;
+
+    // console.debug("Source Titre Entete update")
+    // console.debug(sourceTitreEntete);
+    // console.debug(prevSourceTitreEntete);
+
+    var changementRequis = false;
+    if(sourceTitreEntete && prevSourceTitreEntete) {
+      for(let champ in sourceTitreEntete) {
+        if(champ.startsWith('nom')) {
+          // console.debug("Champ nom: " + champ);
+          if(sourceTitreEntete[champ] !== prevSourceTitreEntete[champ]) {
+            // console.debug("Champ !== prevProps")
+            if(this.state[champ] === sourceTitreEntete[champ]) {
+              // console.debug("Reset champ state : " + champ);
+              resetEtats[champ] = null;
+              changementRequis = true;
+            }
+          }
+        }
       }
     }
 
-    if(Object.keys(resetEtats).length > 0) {
+    // console.debug(resetEtats);
+    if(changementRequis){
+      // console.debug("Reset etats");
       this.setState(resetEtats);
     }
   }
@@ -236,12 +267,28 @@ export class Entete extends React.Component {
     }
     if(this.props.actionRenommer && this.props.documentuuid) {
       elementTitre = (
-        <TextareaAutosize name="titre"
-          className={"titre-autota-width-max editable " + cssEdition}
-          value={this.state.titre || this.props.titre}
-          onChange={this.editerTitre}
-          onBlur={this.actionRenommer} />
-      );
+        <InputTextAreaMultilingueAutoSubmit
+          controlId="nom" valuePrefix="nom"
+          contenu={this.props.sourceTitreEntete} contenuEdit={this.state}
+          onChange={this.editerTitre} onBlur={this.actionRenommer}
+          languePrincipale={this.props.documentIdMillegrille.langue}
+          languesAdditionnelles={this.props.documentIdMillegrille.languesAdditionnelles}
+          />
+      )
+
+      // const languePrincipale = props.languePrincipale;
+      // const languesAdditionnelles = props.languesAdditionnelles;
+      // const controlId = props.controlId;
+      // const valuePrefix = props.valuePrefix;
+
+
+      // elementTitre = (
+      //   <TextareaAutosize name="titre"
+      //     className={"titre-autota-width-max editable " + cssEdition}
+      //     value={this.state.titre || this.props.titre}
+      //     onChange={this.editerTitre}
+      //     onBlur={this.actionRenommer} />
+      // );
     } else {
       elementTitre = (
         <h1>{this.props.titre}</h1>

@@ -14,12 +14,15 @@ export class ActionsCollections {
     this.webSocketManager = webSocketManager;
   }
 
-  renommer = (uuid, nouveauNom) => {
+  renommer = (uuid, nouveauNom, champ) => {
     let domaine = 'millegrilles.domaines.GrosFichiers.renommerCollection';
     let transaction = {
         uuid: uuid,
-        nom: nouveauNom,
     }
+    transaction[champ] = nouveauNom;
+    console.log("Transaction de collection")
+    console.log(transaction);
+
     return this.webSocketManager.transmettreTransaction(domaine, transaction);
   }
 
@@ -162,8 +165,8 @@ export class ActionsCollections {
   requeteTorrents(listeHashstrings) {
     return this.webSocketManager.transmettreRequete('requete.torrent.etat', {hashstrings: listeHashstrings})
     .then( docsRecu => {
-      console.log("Etat torrents:");
-      console.log(docsRecu);
+      // console.log("Etat torrents:");
+      // console.log(docsRecu);
 
       return docsRecu.torrents;
     })
@@ -347,14 +350,14 @@ export class AffichageCollections extends React.Component {
     let boutons = []
     if(niveauSecurite !== '2.prive') {
       boutons.push(
-        <Button variant="dark" onClick={this.changerNiveauSecurite} value="2.prive">
+        <Button key="2.prive" variant="dark" onClick={this.changerNiveauSecurite} value="2.prive">
           <Trans>global.securite.prive</Trans>
         </Button>
       );
     }
     if(niveauSecurite !== '1.public') {
       boutons.push(
-        <Button variant="danger" onClick={this.changerNiveauSecurite} value="1.public">
+        <Button key="1.public" variant="danger" onClick={this.changerNiveauSecurite} value="1.public">
           <Trans>global.securite.public</Trans>
         </Button>
       );

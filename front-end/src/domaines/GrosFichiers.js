@@ -199,37 +199,6 @@ export class GrosFichiers extends React.Component {
       this.setState({popupRenommerCollectionValeurs: null})
     },
 
-    // Changer le nom d'un fichier
-    soumettreChangerNomFichier: (event) => {
-      let formulaire = event.currentTarget.form;
-      let nouveauNom = formulaire.nouveauNom.value;
-      let ancienNom = this.state.popupProps.popupRenommerFichierValeurs.nom;
-      let uuidFichier = this.state.popupProps.popupRenommerFichierValeurs.uuidFichier;
-
-      console.debug("Renommer fichier " + ancienNom + " a " + nouveauNom + ", uuid=" + uuidFichier);
-
-      if(nouveauNom !== ancienNom) {
-        // Transmettre message a MQ pour renommer le fichier
-        let transaction = {
-          "uuid": uuidFichier,
-          "nom": nouveauNom,
-        }
-        webSocketManager.transmettreTransaction(
-          'millegrilles.domaines.GrosFichiers.renommerFichier', transaction);
-      }
-
-      this.setState({
-        ...this.state.popupProps,
-        popupProps: {popupRenommerFichierValeurs: null}
-      });
-    },
-    annulerChangerNomFichier: (event) => {
-      this.setState({
-        ...this.state.popupProps,
-        popupProps: {popupRenommerFichierValeurs: null}
-      });
-    },
-
     supprimerFichier: (event) => {
       let uuidFichier = event.currentTarget.value;
 
@@ -309,7 +278,7 @@ export class GrosFichiers extends React.Component {
   // Affichage global pour GrosFichiers
   render() {
 
-    let affichagePrincipal, titreEntete;
+    let affichagePrincipal, titreEntete, sourceTitreEntete;
     var actionRenommer, documentuuid;
     var securite;
 
@@ -337,7 +306,7 @@ export class GrosFichiers extends React.Component {
       // AFficher un fichier
       actionRenommer = this.actionsFichiers.renommer;
       documentuuid = this.state.fichierCourant.uuid;
-      titreEntete = this.state.fichierCourant.nom;
+      sourceTitreEntete = this.state.fichierCourant;
       securite = this.state.fichierCourant.securite;
 
       affichagePrincipal = (
@@ -357,10 +326,8 @@ export class GrosFichiers extends React.Component {
       // Afficher une collection
       actionRenommer = this.actionsCollections.renommer;
       documentuuid = this.state.collectionCourante.uuid;
-      titreEntete = this.state.collectionCourante.nom;
+      sourceTitreEntete = this.state.collectionCourante;
       securite = this.state.collectionCourante.securite;
-
-      if(!titreEntete) titreEntete = '';
 
       affichagePrincipal = (
         <AffichageCollections
@@ -378,8 +345,7 @@ export class GrosFichiers extends React.Component {
     } else if(this.state.collectionFigeeCourante){
 
       // documentuuid = this.state.collectionFigeeCourante.uuid;
-      titreEntete = this.state.collectionFigeeCourante.nom;
-      if(!titreEntete) titreEntete = '';
+      sourceTitreEntete = this.state.collectionFigeeCourante;
 
       affichagePrincipal = (
         <AffichageCollectionFigee
@@ -425,6 +391,7 @@ export class GrosFichiers extends React.Component {
           <div className="w3-col m12">
             <Entete
               titre={titreEntete}
+              sourceTitreEntete={sourceTitreEntete}
               carnet={this.state.carnet}
               actionsNavigation={this.actionsNavigation}
               actionsUpload={this.actionsUpload}
@@ -432,6 +399,7 @@ export class GrosFichiers extends React.Component {
               actionRenommer={actionRenommer}
               documentuuid={documentuuid}
               securite={securite}
+              {...this.props}
               />
             {affichagePrincipal}
           </div>
