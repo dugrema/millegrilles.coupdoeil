@@ -5,6 +5,7 @@ import { Form, Button, ButtonGroup, ListGroup, InputGroup,
 import { Trans } from 'react-i18next';
 import webSocketManager from '../WebSocketManager';
 import { DateTimeFormatter } from '../mgcomponents/ReactFormatters';
+import { InputTextMultilingue } from '../mgcomponents/InputMultilingue';
 
 const PREFIX_DATA_URL = 'data:image/jpeg;base64,';
 
@@ -17,13 +18,16 @@ export class PlumeBlogs extends React.Component {
   render() {
     if(this.state.uuidBlogpost) {
       return (
-        <BlogPost uuidBlogpost={this.state.uuidBlogpost} retour={this._retour}/>
+        <BlogPost uuidBlogpost={this.state.uuidBlogpost}
+          retour={this._retour}
+          {...this.props} />
       )
     } else {
       return (
         <ListeBlogposts
           nouveau={this._nouveauBlogpost}
-          chargerBlogpost={this._chargerBlogpost} />
+          chargerBlogpost={this._chargerBlogpost}
+          {...this.props} />
       );
     }
   }
@@ -163,13 +167,36 @@ function ListeBlogpostsDetail(props) {
 
 class BlogPost extends React.Component {
 
+  state = {
+    blogpost: null,
+  }
+
+  componentDidMount() {
+    const domaine = 'requete.millegrilles.domaines.Plume';
+    const requete = {'requetes': [{
+      'filtre': {
+        '_mg-libelle': 'blogpost',
+        'uuid': this.props.uuidBlogpost,
+      },
+      'hint': [{'uuid': 1}]
+    }]};
+
+    return webSocketManager.transmettreRequete(domaine, requete)
+    .then( docsRecu => {
+      console.debug("Resultats requete");
+      console.debug(docsRecu);
+      const blogpost = docsRecu[0][0];
+      this.setState({...blogpost});
+    });
+  }
+
   render() {
     return (
       <div>
         <Feuille>
 
           <Row>
-            <Col><h2>Blogpost {this.props.uuidBlogpost}</h2></Col>
+            <Col><h2>Blogpost</h2></Col>
           </Row>
 
           <Row>
@@ -182,8 +209,58 @@ class BlogPost extends React.Component {
 
         </Feuille>
 
+        <EntreeBlog blogpost={this.state}
+          documentIdMillegrille={this.props.documentIdMillegrille}
+          onTextChange={this._changerTexte} />
 
       </div>
     )
   }
+
+  _changerTexte = event => {
+    const {name, value} = event.currentTarget;
+    const maj = {};
+    maj[name] = value;
+    this.setState(maj);
+  }
+
+}
+
+class EntreeBlog extends React.Component {
+
+  render() {
+    const blogpost = this.props.blogpost;
+    const languePrincipale = this.props.documentIdMillegrille.langue;
+    const languesAdditionnelles = this.props.documentIdMillegrille.languesAdditionnelles;
+
+    console.debug("Blogpost")
+    console.debug(blogpost);
+
+    return (
+      <Feuille>
+        <Form>
+
+          <InputTextMultilingue
+            controlId="titre" valuePrefix='titre'
+            onChange={this.props.onTextChange}
+            languePrincipale={languePrincipale}
+            languesAdditionnelles={languesAdditionnelles}
+            placeholder='Sans titre'
+            contenu={blogpost}
+            />
+
+            <InputTextMultilingue
+              controlId="texte" valuePrefix='texte'
+              languePrincipale={languePrincipale}
+              languesAdditionnelles={languesAdditionnelles}
+              onChange={this.props.onTextChange}
+              placeholder='Texte'
+              contenu={blogpost}
+              />
+
+        </Form>
+      </Feuille>
+    )
+  }
+
 }
