@@ -20,8 +20,8 @@ export class ActionsFichiers {
         uuid: uuid,
     }
     transaction[champ] = nouveauNom;
-    console.log("Transaction de fichier")
-    console.log(transaction);
+    // console.log("Transaction de fichier")
+    // console.log(transaction);
 
     return this.webSocketManager.transmettreTransaction(domaine, transaction);
   }
@@ -116,7 +116,7 @@ export class AffichageFichier extends React.Component {
   checkEntree = event => {
     let uuid = event.currentTarget.value;
     let dataset = event.currentTarget.dataset;
-    console.debug("Toggle selection " + uuid);
+    // console.debug("Toggle selection " + uuid);
     this.props.actionsCarnet.toggle(uuid, {...dataset});
   }
 
@@ -513,7 +513,7 @@ export class ActiviteFichiers extends React.Component {
     let uuid = event.currentTarget.value;
     let dataset = event.currentTarget.dataset;
     // let etat = !this.state.selection[uuid];
-    console.debug("Selection " + uuid);
+    // console.debug("Selection " + uuid);
     this.props.actionsCarnet.toggle(uuid, {...dataset});
   }
 

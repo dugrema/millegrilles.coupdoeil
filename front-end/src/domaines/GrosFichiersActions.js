@@ -168,7 +168,7 @@ export class ActionsDownload {
         }
       }
 
-      console.debug("2. Submit preparation, download " + form.action + ", recu token " + form.authtoken.value);
+      //console.debug("2. Submit preparation, download " + form.action + ", recu token " + form.authtoken.value);
       form.submit(); // Token pret, submit.
     })
   }
@@ -289,7 +289,7 @@ export class ActionsUpload {
   uploadProgress = event => {
     let loaded = event.loaded, total = event.total;
     let pourcent = (Math.ceil(loaded/total*100));
-    console.debug("Progres upload: " + pourcent + '%');
+    // console.debug("Progres upload: " + pourcent + '%');
 
     let uploadCourant = {...this.reactModule.state.uploadsCourants[0]};
     uploadCourant.loaded = event.loaded;
@@ -316,7 +316,7 @@ export class ActionsUpload {
     this.reactModule.setState({uploadsCompletes, uploadsCourants}, ()=>{
       // Enchainer le prochain upload (si applicable)
       if(uploadsCourants.length > 0) {
-        console.debug("Prochain upload: " + uploadsCourants[0].path);
+        // console.debug("Prochain upload: " + uploadsCourants[0].path);
         this.uploaderProchainFichier();
       }
     });
@@ -341,7 +341,7 @@ export class ActionsUpload {
 
       this.webSocketManager.uploadFichier(uploadInfo)
       .then(confirmation=>{
-        console.debug("Upload fichier termine");
+        // console.debug("Upload fichier termine");
         this.uploadEnCours = false;
         this.uploadTermine({
           status: 'succes',
@@ -360,7 +360,7 @@ export class ActionsUpload {
 
     } else {
       this.uploadEnCours = false;
-      console.debug("Il n'y a rien a uploader.");
+      // console.debug("Il n'y a rien a uploader.");
     }
 
   }

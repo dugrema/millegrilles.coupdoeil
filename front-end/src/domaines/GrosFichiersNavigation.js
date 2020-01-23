@@ -117,8 +117,8 @@ export class ActionsNavigation {
       ...this._resetNavigation(),
     };
 
-    console.log("Document charge");
-    console.debug(documentCharge)
+    // console.log("Document charge");
+    // console.debug(documentCharge)
 
     if(documentCharge && documentCharge['_mg-libelle'] === 'fichier') {
       etat['fichierCourant'] = documentCharge;
@@ -148,7 +148,7 @@ export class ActionsNavigation {
       // Mettre a jour la stack, la page va etre remise au chargement
       this.reactModule.setState({stackNavigation}, ()=>{
 
-        console.debug("Revenir a " + revenirA);
+        // console.debug("Revenir a " + revenirA);
 
         if(revenirA === 'Accueil') {
           this.retourAccueil();
@@ -194,8 +194,8 @@ export class Entete extends React.Component {
 
       this.props.actionRenommer(this.props.documentuuid, titre, champ)
       .then(msg=>{
-        console.debug("Reponse renommer fichier");
-        console.debug(msg);
+        // console.debug("Reponse renommer fichier");
+        // console.debug(msg);
         // Le titre sera resette a null (componentDidUpdate) a la reception
         // du message de maj du fichier
       })

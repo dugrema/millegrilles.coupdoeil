@@ -148,7 +148,7 @@ export class GrosFichiers extends React.Component {
       // Il est possible d'ajouter a une collection a la creation
       let uuidSuperCollection = formulaire.uuidsupercoll.value;
 
-      console.debug("Creer collection " + nomCollection + ". Ajouter a collection? " + uuidSuperCollection);
+      // console.debug("Creer collection " + nomCollection + ". Ajouter a collection? " + uuidSuperCollection);
 
       // Transmettre message a MQ pour creer la collection
       let transaction = {
@@ -162,7 +162,7 @@ export class GrosFichiers extends React.Component {
         'millegrilles.domaines.GrosFichiers.creerCollection', transaction)
       .then(msg=>{
         // Mettre en evidence la nouvelle collection lorsqu'elle arrivera a l'ecran.
-        console.debug("Nouvelle collection cree: " + nomCollection);
+        // console.debug("Nouvelle collection cree: " + nomCollection);
       }).catch(err=>{
         console.error("Erreur creation collection");
         console.error(err);
@@ -181,7 +181,7 @@ export class GrosFichiers extends React.Component {
       let ancienNom = this.state.popupProps.popupRenommerCollectionValeurs.nom;
       let uuidCollection = this.state.popupProps.popupRenommerCollectionValeurs.uuidCollection;
 
-      console.debug("Renommer collection " + ancienNom + " a " + nouveauNom + ", uuid=" + uuidCollection);
+      // console.debug("Renommer collection " + ancienNom + " a " + nouveauNom + ", uuid=" + uuidCollection);
 
       if(nouveauNom !== ancienNom) {
         // Transmettre message a MQ pour renommer la collection
@@ -209,7 +209,7 @@ export class GrosFichiers extends React.Component {
       webSocketManager.transmettreTransaction(
         'millegrilles.domaines.GrosFichiers.supprimerFichier', transaction)
       .then(msg=>{
-        console.debug("Fichier supprime: " + uuidFichier);
+        // console.debug("Fichier supprime: " + uuidFichier);
       }).catch(err=>{
         console.error("Erreur suppression fichier");
         console.error(err);

@@ -20,15 +20,15 @@ export class ActionsCollections {
         uuid: uuid,
     }
     transaction[champ] = nouveauNom;
-    console.log("Transaction de collection")
-    console.log(transaction);
+    // console.log("Transaction de collection")
+    // console.log(transaction);
 
     return this.webSocketManager.transmettreTransaction(domaine, transaction);
   }
 
   creerCollection = listeDocuments => {
-    console.debug("Creer nouvelle collection avec documents: ");
-    console.debug(listeDocuments);
+    // console.debug("Creer nouvelle collection avec documents: ");
+    // console.debug(listeDocuments);
 
     // Fabriquer un stub pour la collection.
     // Permet de charger a l'ecran avant de recevoir la nouvelle information
@@ -54,15 +54,15 @@ export class ActionsCollections {
       documents: listeDocumentsPlate,
     }
 
-    console.debug(transaction);
+    // console.debug(transaction);
 
     this.webSocketManager.transmettreTransaction(
       'millegrilles.domaines.GrosFichiers.nouvelleCollection', transaction)
     .then(msg=>{
 
       let uuid = msg.uuid_collection;
-      console.debug("Collection ajoutee: " + uuid);
-      console.debug(msg);
+      // console.debug("Collection ajoutee: " + uuid);
+      // console.debug(msg);
       // Configure la collection courante, va permettre de charger
       // la page et de capturer le document une fois cree sur le serveur.
       this.reactModule.actionsNavigation.afficherDocument({
@@ -84,7 +84,7 @@ export class ActionsCollections {
     this.webSocketManager.transmettreTransaction(
       'millegrilles.domaines.GrosFichiers.supprimerCollection', transaction)
     .then(msg=>{
-      console.debug("Collection supprime " + uuidCollection);
+      // console.debug("Collection supprime " + uuidCollection);
       let collectionCourante = this.state.collectionCourante;
       if(collectionCourante.uuid === uuidCollection) {
         // On va popper vers la liste globale
@@ -106,8 +106,8 @@ export class ActionsCollections {
   }
 
   ajouterDocuments(collectionuuid, listeDocuments) {
-    console.debug("Ajouter documents du carnet a collection " + collectionuuid);
-    console.debug(listeDocuments);
+    // console.debug("Ajouter documents du carnet a collection " + collectionuuid);
+    // console.debug(listeDocuments);
 
     let listeUuids = Object.keys(listeDocuments);
 
@@ -140,8 +140,8 @@ export class ActionsCollections {
   }
 
   retirerFichiersCollection(collectionUuid, listeUuids) {
-    console.debug("Ajouter documents du carnet a collection " + collectionUuid);
-    console.debug(listeUuids);
+    // console.debug("Ajouter documents du carnet a collection " + collectionUuid);
+    // console.debug(listeUuids);
 
     if(listeUuids.length > 0) {
       let domaine = 'millegrilles.domaines.GrosFichiers.retirerFichiersCollection';
@@ -154,7 +154,7 @@ export class ActionsCollections {
   }
 
   figerCollection(collectionUuid) {
-    console.debug("Figer la collection " + collectionUuid);
+    // console.debug("Figer la collection " + collectionUuid);
     let domaine = 'millegrilles.domaines.GrosFichiers.figerCollection';
     let transaction = {
         uuid: collectionUuid,
@@ -863,7 +863,7 @@ class AffichageListeCollectionsFigees extends React.Component {
   }
 
   rafraichirTorrents = () => {
-    console.log("Tenter de rafraichir info torrents")
+    // console.log("Tenter de rafraichir info torrents")
     if(this.props.collectionCourante && this.props.collectionCourante.figees) {
       const collectionsFigees = this.props.collectionCourante.figees;
 
@@ -877,8 +877,8 @@ class AffichageListeCollectionsFigees extends React.Component {
 
       this.props.actionsCollections.requeteTorrents(listeHashstrings)
       .then(reponse=>{
-        console.log("Reponse torrents demandes");
-        console.log(reponse);
+        // console.log("Reponse torrents demandes");
+        // console.log(reponse);
 
         // Indexer par hashstring
         const torrentsActifs = {};
@@ -893,13 +893,13 @@ class AffichageListeCollectionsFigees extends React.Component {
   }
 
   componentDidMount() {
-    console.debug("componentDidMount collections figees");
+    // console.debug("componentDidMount collections figees");
     this.rafraichirTorrents();  // Rafraichir immediatement
     this.intervalRefresh = setInterval(this.rafraichirTorrents, 10000);
   }
 
   componentWillUnmount() {
-    console.debug("componentWillUnmount collections figees");
+    // console.debug("componentWillUnmount collections figees");
     clearInterval(this.intervalRefresh);
   }
 
