@@ -80,7 +80,9 @@
         "titre": "Plume",
         "description": "Plume est un éditeur de documents.",
         "liensAnnonces": "Annonces",
-        "liensDocuments": "Documents"
+        "liensDocuments": "Documents",
+        "liensVitrine": "Vitrine",
+        "liensBlogs": "Blogs"
       },
       "annonces": {
         "titre": "Annonces",
@@ -107,7 +109,7 @@
         "accueilTexte": "Texte de la colonne",
         "accueilLiens": "Liens au bas de la colonne",
         "ajouterLiens": "Ajouter lien"
-      }      
+      }
     },
     "grosFichiers": {
       "niveauSecurite": "Niveau de sécurité"
