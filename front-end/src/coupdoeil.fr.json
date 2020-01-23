@@ -13,6 +13,7 @@
       "appliquer": "Appliquer",
       "sauvegarder": "Sauvegarder",
       "publier": "Publier",
+      "retour": "Retour",
       "url": "URL"
     },
     "formulaire": {
@@ -109,6 +110,11 @@
         "accueilTexte": "Texte de la colonne",
         "accueilLiens": "Liens au bas de la colonne",
         "ajouterLiens": "Ajouter lien"
+      },
+      "blogs": {
+        "titre": "Blogs",
+        "nouveauBlogpost": "Nouveau",
+        "chargerBlogposts": "Suivant"
       }
     },
     "grosFichiers": {
