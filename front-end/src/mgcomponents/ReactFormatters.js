@@ -7,6 +7,11 @@ export class DateTimeFormatter extends React.Component {
   renderDernierChangement() {
     let date = this.props.date;
 
+    if(!date || date === '') {
+      // Date vide
+      return (<span title=""></span>);
+    }
+
     var maintenant = Math.floor(Date.now()/1000);
     let dateChangement = dateformatter.format_datetime(date);
     let dernierChangementDepuis = maintenant - date;

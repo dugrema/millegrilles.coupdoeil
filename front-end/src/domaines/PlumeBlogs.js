@@ -8,6 +8,7 @@ import { DateTimeFormatter } from '../mgcomponents/ReactFormatters';
 import { InputTextMultilingue } from '../mgcomponents/InputMultilingue';
 
 const PREFIX_DATA_URL = 'data:image/jpeg;base64,';
+const UUID_PLACEHOLDER = 'PLACEHOLDER';
 
 export class PlumeBlogs extends React.Component {
 
@@ -18,7 +19,9 @@ export class PlumeBlogs extends React.Component {
   render() {
     if(this.state.uuidBlogpost) {
       return (
-        <BlogPost uuidBlogpost={this.state.uuidBlogpost}
+        <BlogPost
+          uuidBlogpost={this.state.uuidBlogpost}
+          setUuidBlogpost={this._setUuidBlogpost}
           retour={this._retour}
           {...this.props} />
       )
@@ -33,11 +36,15 @@ export class PlumeBlogs extends React.Component {
   }
 
   _nouveauBlogpost = event => {
-    this.setState({uuidBlogpost: 'PLACEHOLDER'});
+    this.setState({uuidBlogpost: UUID_PLACEHOLDER});
   }
 
   _chargerBlogpost = event => {
     const uuidBlogpost = event.currentTarget.value;
+    this.setState({uuidBlogpost});
+  }
+
+  _setUuidBlogpost = uuidBlogpost => {
     this.setState({uuidBlogpost});
   }
 
@@ -168,29 +175,61 @@ function ListeBlogpostsDetail(props) {
 class BlogPost extends React.Component {
 
   state = {
-    blogpost: null,
   }
 
   componentDidMount() {
-    const domaine = 'requete.millegrilles.domaines.Plume';
-    const requete = {'requetes': [{
-      'filtre': {
-        '_mg-libelle': 'blogpost',
-        'uuid': this.props.uuidBlogpost,
-      },
-      'hint': [{'uuid': 1}]
-    }]};
+    this.chargerBlogpost();
+  }
 
-    return webSocketManager.transmettreRequete(domaine, requete)
-    .then( docsRecu => {
-      console.debug("Resultats requete");
-      console.debug(docsRecu);
-      const blogpost = docsRecu[0][0];
-      this.setState({...blogpost});
-    });
+  chargerBlogpost() {
+    if(this.props.uuidBlogpost !== UUID_PLACEHOLDER) {
+      const domaine = 'requete.millegrilles.domaines.Plume';
+      const requete = {'requetes': [{
+        'filtre': {
+          '_mg-libelle': 'blogpost',
+          'uuid': this.props.uuidBlogpost,
+        },
+        'hint': [{'uuid': 1}]
+      }]};
+
+      return webSocketManager.transmettreRequete(domaine, requete)
+      .then( docsRecu => {
+        // console.debug("Resultats requete");
+        // console.debug(docsRecu);
+        var blogpostIn = docsRecu[0][0];
+        const blogpost = {};
+        const datePublication = blogpostIn.datePublication;
+
+        console.debug("Blogpost filtrer")
+        if(blogpostIn) {
+          var champs = [
+            'uuid', 'texte', 'titre', 'image'
+          ];
+          for(let champ in blogpostIn) {
+            var inclu = false;
+            champs.forEach(c=>{
+              if(champ.startsWith(c)) {
+                inclu = true;
+              }
+            })
+            if(inclu) {
+              blogpost[champ] = blogpostIn[champ];
+            }
+          }
+        }
+
+        this.setState({...blogpost, datePublication});
+      });
+    }
   }
 
   render() {
+
+    var datePublication = null;
+    if(this.state.blogpost && this.state.blogpost.datePublication) {
+
+    }
+
     return (
       <div>
         <Feuille>
@@ -207,11 +246,22 @@ class BlogPost extends React.Component {
             </Col>
           </Row>
 
+          <Row>
+            Publication:
+            <DateTimeFormatter date={this.state.datePublication}/>
+            <Button onClick={this.publier} variant='danger'>
+              <Trans>global.publier</Trans>
+            </Button>
+          </Row>
+
         </Feuille>
 
         <EntreeBlog blogpost={this.state}
           documentIdMillegrille={this.props.documentIdMillegrille}
-          onTextChange={this._changerTexte} />
+          image={this.state.image}
+          onTextChange={this._changerTexte}
+          sauvegarder={this.sauvegarder}
+          changerImage={this._changerImage} retirerImage={this._retirerImage}/>
 
       </div>
     )
@@ -224,6 +274,82 @@ class BlogPost extends React.Component {
     this.setState(maj);
   }
 
+  _retirerImage = event => {
+    this.setState({image: null});
+  }
+
+  sauvegarder = event => {
+    console.debug("Sauvegarder")
+    console.debug(this.state);
+
+    let operation = event.currentTarget.value;
+    let domaine = 'millegrilles.domaines.Plume.majBlogpostVitrine';
+    let transaction = {...this.state, operation}; // Cloner l'etat
+
+    webSocketManager.transmettreTransaction(domaine, transaction)
+    .then(reponse=>{
+      if(reponse.err) {
+        console.error("Erreur transaction majBlogpostVitrine");
+      } else {
+        if(!this.state.uuid) {
+          console.debug("Sauvegarder nouveau uuid");
+          console.debug(reponse);
+          this.setUuidBlogpost(reponse['uuid-transaction']);
+        }
+      }
+    })
+    .catch(err=>{
+      console.error("Erreur transaction majBlogpostVitrine");
+      console.error(err);
+    });
+  }
+
+  publier = event => {
+    console.debug("Publier");
+    console.debug(this.state);
+  }
+
+  setUuidBlogpost = uuid => {
+    this.setState({uuid})
+  }
+
+  _changerImage = event => {
+    const form = event.currentTarget.form;
+    const fuuidImage = form['image'].value;
+
+    if(!fuuidImage || fuuidImage === '') {
+      return;  // Rien a faire, aucun fuuid
+    }
+    // console.debug("fuuid image ");
+    // console.debug(fuuidImage);
+
+    const domaine = 'requete.millegrilles.domaines.GrosFichiers';
+    const requete = {'requetes': [{
+      'filtre': {
+        '_mg-libelle': 'fichier',
+        ['versions.' + fuuidImage]: {'$exists': true},
+        'securite': '1.public',
+      }
+    }]};
+
+    // console.debug("Requete");
+    // console.debug(requete);
+
+    return webSocketManager.transmettreRequete(domaine, requete)
+    .then( docsRecu => {
+      // console.debug("Resultats requete");
+      let documentImage = docsRecu[0][0];
+      const versionImage = documentImage.versions[fuuidImage];
+      // console.debug(versionImage);
+      const {fuuid_preview, mimetype_preview, thumbnail} = versionImage;
+
+      const image = {fuuid_preview, mimetype_preview, thumbnail};
+
+      this.setState({image});
+    });
+
+  }
+
 }
 
 class EntreeBlog extends React.Component {
@@ -233,34 +359,88 @@ class EntreeBlog extends React.Component {
     const languePrincipale = this.props.documentIdMillegrille.langue;
     const languesAdditionnelles = this.props.documentIdMillegrille.languesAdditionnelles;
 
-    console.debug("Blogpost")
-    console.debug(blogpost);
-
     return (
       <Feuille>
-        <Form>
+        <Row>
+          <Col>
+            <Form>
 
-          <InputTextMultilingue
-            controlId="titre" valuePrefix='titre'
-            onChange={this.props.onTextChange}
-            languePrincipale={languePrincipale}
-            languesAdditionnelles={languesAdditionnelles}
-            placeholder='Sans titre'
-            contenu={blogpost}
-            />
+              <InputTextMultilingue
+                controlId="titre" valuePrefix='titre'
+                onChange={this.props.onTextChange}
+                languePrincipale={languePrincipale}
+                languesAdditionnelles={languesAdditionnelles}
+                placeholder='Sans titre'
+                contenu={blogpost}
+                />
 
-            <InputTextMultilingue
-              controlId="texte" valuePrefix='texte'
-              languePrincipale={languePrincipale}
-              languesAdditionnelles={languesAdditionnelles}
-              onChange={this.props.onTextChange}
-              placeholder='Texte'
-              contenu={blogpost}
-              />
+              <InputTextMultilingue
+                controlId="texte" valuePrefix='texte'
+                languePrincipale={languePrincipale}
+                languesAdditionnelles={languesAdditionnelles}
+                onChange={this.props.onTextChange}
+                placeholder='Texte'
+                contenu={blogpost}
+                rows={30}
+                />
 
-        </Form>
+              <AfficherImage controlId="image"
+                image={this.props.image}
+                changerImage={this.props.changerImage}
+                retirerImage={this.props.retirerImage} />
+
+              <Form.Row>
+                <Col>
+                  <Button onClick={this.props.sauvegarder}>
+                    <Trans>global.sauvegarder</Trans>
+                  </Button>
+                </Col>
+              </Form.Row>
+
+            </Form>
+          </Col>
+        </Row>
       </Feuille>
     )
   }
 
+}
+
+// props :
+//  - image
+//  - controlId
+//  - changerImage
+//  - retirerImage
+function AfficherImage(props) {
+
+  var fuuid, image;
+  if(props.image) {
+    fuuid = props.image.fuuid;
+    image = (<img src={PREFIX_DATA_URL + props.image.thumbnail} />);
+  }
+
+  return (
+    <div>
+      <Form.Row>
+        <Col sm={8}>
+          <Form.Group controlId={props.controlId}>
+          <Form.Label><Trans>plume.vitrine.selectionnerImage</Trans></Form.Label>
+            <Form.Control name="fuuid_image"
+              placeholder="e.g. 90d22a60-3bea-11ea-a889-e7d8115f598f" />
+          </Form.Group>
+          <Form.Text>
+            <Button onClick={props.changerImage}>
+              <Trans>plume.vitrine.changerImage</Trans>
+            </Button>
+            <Button onClick={props.retirerImage} variant="secondary">
+              <Trans>plume.vitrine.retirerImage</Trans>
+            </Button>
+          </Form.Text>
+        </Col>
+        <Col sm={4}>
+          {image}
+        </Col>
+      </Form.Row>
+    </div>
+  );
 }
