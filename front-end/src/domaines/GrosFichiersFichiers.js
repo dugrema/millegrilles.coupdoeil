@@ -253,7 +253,7 @@ export class AffichageFichier extends React.Component {
     let boutonsSecurite = []
     if(fichierCourant.securite !== '2.prive') {
       boutonsSecurite.push(
-        <Button variant="dark" onClick={this.changerSecurite} title="Appliquer securite privee" value="2.prive">
+        <Button key="2.prive" variant="dark" onClick={this.changerSecurite} title="Appliquer securite privee" value="2.prive">
           <Trans>global.securite.prive</Trans>
         </Button>
       );
