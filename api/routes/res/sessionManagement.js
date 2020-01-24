@@ -38,7 +38,7 @@ class SessionManagement {
     };
 
     tempsCourant.forEach(tokenKey=>{
-      console.debug("Expiration token transfert " + tokenKey);
+      // console.debug("Expiration token transfert " + tokenKey);
       delete this.transferTokens[tokenKey];
     });
   }
@@ -79,15 +79,15 @@ class SessionManagement {
     var infoPin = this.pinTemporaireDevice;
     this.pinTemporaireDevice = null; // On enleve le PIN a la premiere tentative
     if(infoPin && pin === infoPin.pin && infoPin.expiration>=(new Date()).getTime())  {
-      console.info("PIN Temporaire Device correct");
+      // console.info("PIN Temporaire Device correct");
       return true;
     }
     return false;
   }
 
   authentifier(socket, params) {
-    console.debug("Authentification");
-    console.debug(params);
+    // console.debug("Authentification");
+    // console.debug(params);
 
     if(params.methode === 'certificatLocal') {
       let fingerprint = params.fingerprint;
@@ -122,8 +122,8 @@ class SessionManagement {
 
       return new Promise((resolve, reject) => {
         socket.emit('challengeTokenUSB', challenge_genere, reply => {
-          console.log("/login-challenge appele");
-          console.log(reply);
+          // console.log("/login-challenge appele");
+          // console.log(reply);
 
           const { challenge, keyId } = parseLoginRequest(reply);
           if (!challenge) {
@@ -183,34 +183,35 @@ class SessionManagement {
   }
 
   recevoirReponseChallengeCertificat(socket, challenge, reponse) {
-    console.debug("Reponse challenge certificat");
-    console.debug(reponse);
+    // console.debug("Reponse challenge certificat");
+    // console.debug(reponse);
     const bufferReponse = new Buffer(reponse.reponseChallenge, 'base64');
-    console.debug(bufferReponse.toString('utf-8'));
-    console.debug("Challenge original")
-    console.debug(challenge);
-    console.debug(challenge.toString('hex'));
+    // console.debug(bufferReponse.toString('utf-8'));
+    // console.debug("Challenge original")
+    // console.debug(challenge);
+    // console.debug(challenge.toString('hex'));
 
     const challengeOriginalHex = challenge.toString('hex');
     const reponseHex = bufferReponse.toString('utf-8');
 
     if(challengeOriginalHex === reponseHex) {
       // Ok
-      console.debug("Reponse challenge ok");
-      socket.emit('login', true);
+      // console.debug("Reponse challenge ok");
+      return true;
     } else {
       console.warn("Challenge et reponse differents");
+      return false;
     }
   }
 
   creerChallengeCertificat(socket, fingerprint) {
-    console.debug("Requete verification " + fingerprint);
+    // console.debug("Requete verification " + fingerprint);
 
     let requete = {'fingerprint': fingerprint};
-    rabbitMQ.singleton.transmettreRequete(
+    return rabbitMQ.singleton.transmettreRequete(
       'requete.millegrilles.domaines.Pki.confirmerCertificat', requete)
     .then( reponseCertVerif => {
-      console.debug("Response verification certificat");
+      // console.debug("Response verification certificat");
       const contenuResponseCertVerif = JSON.parse(reponseCertVerif.content.toString('utf-8'));
       // console.debug(contenuResponseCertVerif);
 
@@ -231,35 +232,40 @@ class SessionManagement {
           const certificat = pki.chargerCertificatPEM(pemCertificat);
           // console.log(certificat);
 
-          pki.genererKeyAndIV((err, randVal)=>{
-            if(err) {
-              console.error("Erreur creation challenge random");
-              socket.emit('erreur.login', {'erreur': 'Generation random secret'});
-              socket.disconnect();
-              return;
-            }
-            // Crypter un challenge pour le navigateur
-            const challenge = randVal.key;
-            let challengeCrypte = pki.crypterContenuAsymetric(certificat.publicKey, challenge);
-            socket.emit('challengeCertificat',
-              {challengeCrypte},
-              reponse => {this.recevoirReponseChallengeCertificat(socket, challenge, reponse)}
-            )
+          return new Promise((resolve, reject) => {
+            pki.genererKeyAndIV((err, randVal)=>{
+              if(err) {
+                return reject('Erreur generation random secret')
+              }
+
+              // Crypter un challenge pour le navigateur
+              const challenge = randVal.key;
+              let challengeCrypte = pki.crypterContenuAsymetric(certificat.publicKey, challenge);
+              socket.emit('challengeCertificat', {challengeCrypte}, reponse => {
+                const loggedIn = this.recevoirReponseChallengeCertificat(socket, challenge, reponse);
+                socket.emit('login', loggedIn);
+                if(loggedIn) {
+                  resolve();
+                } else {
+                  reject("Not logged in");
+                }
+              });
+            });
           });
 
         } else {
-          socket.emit('erreur.login', {'erreur': 'Role certificat doit inclure coupdoeil.navigateur'});
-          socket.disconnect();
+          throw new Error('Role certificat doit inclure coupdoeil.navigateur');
         }
 
       } else {
-        socket.emit('erreur.login', {'erreur': 'Certificat invalide'});
-        socket.disconnect();
+        throw new Error('Certificat invalide');
       }
     })
     .catch(err=>{
       console.error("Erreur authentification par certificat");
       console.error(err);
+      socket.emit('erreur.login', {'erreur': ''+err});
+      socket.disconnect();
     });
 
   }
