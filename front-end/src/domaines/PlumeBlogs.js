@@ -86,7 +86,10 @@ class ListeBlogposts extends React.Component {
         <ListeBlogpostsDetail
           chargerListeBlogposts={this.chargerListeBlogposts}
           blogposts={this.state.blogposts}
-          chargerBlogpost={this.props.chargerBlogpost} />
+          chargerBlogpost={this.props.chargerBlogpost}
+          retirerBlogpost={this.retirerBlogpost}
+          supprimerBlogpost={this.supprimerBlogpost}
+          publierBlogpost={this.publierBlogpost} />
 
       </div>
     )
@@ -104,7 +107,7 @@ class ListeBlogposts extends React.Component {
           '_mg-libelle': 'blogpost',
         },
         'projection': {
-          "uuid": 1, "_mg-derniere-modification": 1,
+          "uuid": 1, "_mg-derniere-modification": 1, "datePublication": 1,
           "titre": 1, "titre_fr": 1, "titre_en": 1
         },
         'hint': [
@@ -118,8 +121,8 @@ class ListeBlogposts extends React.Component {
 
     return webSocketManager.transmettreRequete(domaine, requete)
     .then( docsRecu => {
-      // console.debug("Resultats requete");
-      // console.debug(docsRecu);
+      console.debug("Resultats requete");
+      console.debug(docsRecu);
       let resultBlogposts = docsRecu[0];
       let startingIndex = resultBlogposts.length + currentIndex;
 
@@ -127,6 +130,99 @@ class ListeBlogposts extends React.Component {
       this.setState({startingIndex, blogposts});
     });
   }
+
+  publierBlogpost = event => {
+    let uuidBlogpost = event.currentTarget.value;
+    console.debug("Publier blogpost " + uuidBlogpost);
+    const transaction = {
+      uuid: uuidBlogpost
+    }
+    const domaine = 'millegrilles.domaines.Plume.publierBlogpostVitrine';
+    webSocketManager.transmettreTransaction(domaine, transaction)
+    .then(reponse=>{
+      if(reponse.err) {
+        console.error("Erreur transaction");
+      } else {
+        const blogposts = this.state.blogposts.map(bp=>{
+          // Enlever la date de publication du blogpost
+          if(bp.uuid === uuidBlogpost) {
+            let bpUpdated = Object.assign({}, bp);
+            bpUpdated.datePublication = new Date().getTime();
+            return bpUpdated;
+          }
+          return bp;
+        })
+
+        // Reset formulaire
+        this.setState({blogposts});
+      }
+    })
+    .catch(err=>{
+      console.error("Erreur sauvegarde");
+      console.error(err);
+    });
+  }
+
+  retirerBlogpost = event => {
+    let uuidBlogpost = event.currentTarget.value;
+    console.debug("Retirer blogpost " + uuidBlogpost);
+    const transaction = {
+      uuid: uuidBlogpost
+    }
+    const domaine = 'millegrilles.domaines.Plume.retirerBlogpostVitrine';
+    webSocketManager.transmettreTransaction(domaine, transaction)
+    .then(reponse=>{
+      if(reponse.err) {
+        console.error("Erreur transaction");
+      } else {
+        const blogposts = this.state.blogposts.map(bp=>{
+          // Enlever la date de publication du blogpost
+          if(bp.uuid === uuidBlogpost) {
+            let bpUpdated = Object.assign({}, bp);
+            bpUpdated.datePublication = null;
+            return bpUpdated;
+          }
+          return bp;
+        })
+
+        // Reset formulaire
+        this.setState({blogposts});
+      }
+    })
+    .catch(err=>{
+      console.error("Erreur sauvegarde");
+      console.error(err);
+    });
+  }
+
+  supprimerBlogpost = event => {
+    let uuidBlogpost = event.currentTarget.value;
+    console.debug("Supprimer blogpost " + uuidBlogpost);
+
+    const transaction = {
+      uuid: uuidBlogpost
+    }
+    const domaine = 'millegrilles.domaines.Plume.supprimerBlogpostVitrine';
+    webSocketManager.transmettreTransaction(domaine, transaction)
+    .then(reponse=>{
+      if(reponse.err) {
+        console.error("Erreur transaction");
+      } else {
+        const blogposts = this.state.blogposts.filter(bp=>{
+          return bp.uuid !== uuidBlogpost
+        })
+
+        // Reset formulaire
+        this.setState({blogposts});
+      }
+    })
+    .catch(err=>{
+      console.error("Erreur sauvegarde");
+      console.error(err);
+    });
+
+  }
+
 }
 
 function ListeBlogpostsDetail(props) {
@@ -134,15 +230,39 @@ function ListeBlogpostsDetail(props) {
   var liste = null;
   if(props.blogposts) {
     liste = props.blogposts.map(bp=>{
+
+      let boutonPublierRetirer;
+      if(bp.datePublication) {
+        // Deja publie, on affiche le bouton retirer
+        boutonPublierRetirer = (
+          <Button onClick={props.retirerBlogpost} value={bp.uuid}>
+            <i className="fa fa-remove"/>
+          </Button>
+        );
+      } else {
+        // Pas publie, on affiche le bouton publier
+        boutonPublierRetirer = (
+          <Button onClick={props.publierBlogpost} value={bp.uuid}>
+            <i className="fa fa-cloud-upload"/>
+          </Button>
+        );
+      }
+
       return (
         <ListGroup.Item key={bp.uuid}>
           <Row>
-            <Col sm={3}>
+            <Col sm={3} md={2}>
               <DateTimeFormatter date={bp['_mg-derniere-modification']}/>
             </Col>
-            <Col sm={9}>
+            <Col sm={7} md={9}>
               <Button variant="link" onClick={props.chargerBlogpost} value={bp.uuid}>
                 {bp.titre}
+              </Button>
+            </Col>
+            <Col sm={2} md={1}>
+              {boutonPublierRetirer}
+              <Button variant="danger" onClick={props.supprimerBlogpost} value={bp.uuid}>
+                <i className="fa fa-trash"/>
               </Button>
             </Col>
           </Row>
