@@ -234,7 +234,10 @@ export class AffichageCollections extends React.Component {
     const maj = {};
     maj[champ] = null;
 
-    if(commentaires !== this.props.collectionCourante[champ]) {
+    if(commentaires && commentaires !== this.props.collectionCourante[champ]) {
+      console.debug("Changer commentaire " + champ);
+      console.debug(commentaires);
+
       this.props.actionsCollections.modifierCommentaire(
         this.props.collectionCourante.uuid, commentaires, champ)
       .catch(err=>{
@@ -405,7 +408,7 @@ export class AffichageCollections extends React.Component {
       if(doc.thumbnail) {
         // On a une image
         listeImages.push(
-          <button className="aslink" onClick={this.props.actionsNavigation.chargeruuid} value={doc.uuid}>
+          <button key={doc.uuid} className="aslink" onClick={this.props.actionsNavigation.chargeruuid} value={doc.uuid}>
             <img key={doc.uuid} src={'data:image/jpeg;base64,' + doc.thumbnail}/>
           </button>
         );
@@ -439,11 +442,7 @@ export class AffichageCollections extends React.Component {
   }
 
   renderCommentaire() {
-    let collectionCourante = this.props.collectionCourante;
-    let cssEdition = '';
-    if(this.state.commentaires) {
-      cssEdition = 'edition-en-cours'
-    }
+    const collectionCourante = this.props.collectionCourante;
 
     let boutonFavori;
     if(this.props.favorisParUuid[collectionCourante.uuid]) {
@@ -518,18 +517,10 @@ export class AffichageCollections extends React.Component {
             languesAdditionnelles={this.props.documentIdMillegrille.languesAdditionnelles}
             placeholder="Ajouter un commentaire ici..."
             />
+
         </div>
       </div>
     );
-
-    // <TextareaAutosize
-    //   name="commentaires"
-    //   className={"autota-width-max editable " + cssEdition}
-    //   onChange={this.editerCommentaire}
-    //   onBlur={this.appliquerCommentaire}
-    //   value={this.state.commentaires || collectionCourante.commentaires || ''}
-    //   placeholder="Ajouter un commentaire ici..."
-    //   />
 
     return (
       <Feuille>
