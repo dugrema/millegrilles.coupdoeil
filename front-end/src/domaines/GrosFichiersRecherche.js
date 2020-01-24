@@ -11,25 +11,41 @@ export class ActionsRecherche {
   }
 
   chercher = (parametres) => {
-    let texteString = parametres.texte;
+    let texteString = parametres.texte.split(' ');
 
     // Split texte en mots
-    texteString = texteString.split(' ');
+    let regexString = texteString.map(ts=>{
+      return {'nom': {'$regex': '.*' + ts + '.*'}};
+    })
+    let etiquettes = texteString.map(ts=>{
+      return ts.toLowerCase();
+    })
 
     const domaine = 'requete.millegrilles.domaines.GrosFichiers';
     const requete = {'requetes': [
       {
         'filtre': {
           '_mg-libelle': {'$in': ['fichier', 'collection', 'collection.figee',]},
-          'etiquettes': {'$all': texteString},
-        }
+          '$or': [
+            {'etiquettes': {'$all': etiquettes}},
+            {'$and': regexString},
+          ],
+        },
+        'hint': [
+          {'_mg-libelle': 1},
+          {'etiquettes': 1},
+          {'nom': 1},
+        ]
       }
     ]};
 
+    // console.debug("Requete");
+    // console.debug(requete);
+
     return this.webSocketManager.transmettreRequete(domaine, requete)
     .then( docsRecu => {
-      console.log("Resultats requete");
-      console.log(docsRecu);
+      // console.log("Resultats requete");
+      // console.log(docsRecu);
       return docsRecu[0];
     });
   }
