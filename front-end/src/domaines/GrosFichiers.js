@@ -290,6 +290,7 @@ export class GrosFichiers extends React.Component {
           actionsCarnet={this.actionsCarnet}
           actionsNavigation={this.actionsNavigation}
           actionsCollections={this.actionsCollections}
+          {...this.props}
           />
       );
     } else if(this.state.afficherRecherche) {
@@ -300,6 +301,7 @@ export class GrosFichiers extends React.Component {
           actionsCarnet={this.actionsCarnet}
           actionsNavigation={this.actionsNavigation}
           actionsRecherche={this.actionsRecherche}
+          {...this.props}
           />
       );
     } else if (this.state.fichierCourant) {
@@ -319,6 +321,7 @@ export class GrosFichiers extends React.Component {
             actionsDownload={this.actionsDownload}
             actionsFavoris={this.actionsFavoris}
             actionsCarnet={this.actionsCarnet}
+            {...this.props}
             />
         </div>
       );
@@ -339,6 +342,7 @@ export class GrosFichiers extends React.Component {
           actionsDownload={this.actionsDownload}
           actionsFavoris={this.actionsFavoris}
           actionsNavigation={this.actionsNavigation}
+          {...this.props}
          />
       );
 
@@ -355,6 +359,7 @@ export class GrosFichiers extends React.Component {
           actionsDownload={this.actionsDownload}
           actionsFavoris={this.actionsFavoris}
           actionsNavigation={this.actionsNavigation}
+          {...this.props}
          />
       );
 
@@ -378,6 +383,7 @@ export class GrosFichiers extends React.Component {
           actionsUpload={this.actionsUpload}
           actionsDownload={this.actionsDownload}
           actionsCarnet={this.actionsCarnet}
+          {...this.props}
           />);
     }
 

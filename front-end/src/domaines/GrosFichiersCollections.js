@@ -6,6 +6,7 @@ import { Trans } from 'react-i18next';
 import { dateformatter } from '../formatters';
 import { IconeFichier, SectionSecurite } from '../mgcomponents/IconeFichier';
 import { Feuille } from '../mgcomponents/Feuilles'
+import { InputTextAreaMultilingueAutoSubmit } from '../mgcomponents/InputMultilingue'
 
 export class ActionsCollections {
 
@@ -96,12 +97,12 @@ export class ActionsCollections {
     });
   }
 
-  modifierCommentaire = (uuid, commentaires) => {
+  modifierCommentaire = (uuid, commentaires, champ) => {
     let domaine = 'millegrilles.domaines.GrosFichiers.commenterCollection';
     let transaction = {
         uuid: uuid,
-        commentaires: commentaires,
     }
+    transaction[champ] = commentaires;
     return this.webSocketManager.transmettreTransaction(domaine, transaction);
   }
 
@@ -216,8 +217,10 @@ export class AffichageCollections extends React.Component {
   }
 
   editerCommentaire = event => {
-    let commentaires = event.currentTarget.value;
-    this.setState({commentaires});
+    const {name, value} = event.currentTarget;
+    const maj = {};
+    maj[name] = value;
+    this.setState(maj);
   }
 
   changerPage = event => {
@@ -226,19 +229,23 @@ export class AffichageCollections extends React.Component {
   }
 
   appliquerCommentaire = event => {
-    let commentaires = event.currentTarget.value;
-    if(commentaires !== this.props.collectionCourante.commentaires) {
+    const champ = event.currentTarget.name;
+    const commentaires = this.state[champ];
+    const maj = {};
+    maj[champ] = null;
+
+    if(commentaires !== this.props.collectionCourante[champ]) {
       this.props.actionsCollections.modifierCommentaire(
-        this.props.collectionCourante.uuid, commentaires)
+        this.props.collectionCourante.uuid, commentaires, champ)
       .catch(err=>{
         console.error("Erreur ajout commentaire");
         console.error(err);
         // Reset commentaire.
-        this.setState({commentaires: null});
+        this.setState(maj);
       })
     } else {
       // Rien a faire. Reset commentaire.
-      this.setState({commentaires: null});
+      this.setState(maj);
     }
   }
 
@@ -285,16 +292,25 @@ export class AffichageCollections extends React.Component {
 
   // Verifier si on peut resetter les versions locales des proprietes editees.
   componentDidUpdate(prevProps) {
+    const source = this.props.collectionCourante;
+    const prevSource = prevProps.collectionCourante;
 
-    let resetState = {};
-    if(this.state.commentaires) {
-      if(this.state.commentaires === this.props.collectionCourante.commentaires) {
-        resetState.commentaires = null;
+    const resetEtats = {};
+    var changementRequis = false;
+    if(source && prevSource) {
+      for(let champ in source) {
+        if(champ.startsWith('commentaires') &&
+           source[champ] !== prevSource[champ] &&
+           this.state[champ] === source[champ]) {
+          // console.debug("Reset champ state : " + champ);
+          resetEtats[champ] = null;
+          changementRequis = true;
+        }
       }
     }
 
-    if(Object.keys(resetState).length > 0) {
-      this.setState(resetState);
+    if(changementRequis){
+      this.setState(resetEtats);
     }
   }
 
@@ -493,17 +509,27 @@ export class AffichageCollections extends React.Component {
     let commentaires = (
       <div className="w3-rowpadding">
         <div className="w3-col m12 commentaire">
-          <TextareaAutosize
-            name="commentaires"
-            className={"autota-width-max editable " + cssEdition}
-            onChange={this.editerCommentaire}
-            onBlur={this.appliquerCommentaire}
-            value={this.state.commentaires || collectionCourante.commentaires || ''}
+
+          <InputTextAreaMultilingueAutoSubmit
+            controlId="commentaires" valuePrefix="commentaires"
+            contenu={collectionCourante} contenuEdit={this.state}
+            onChange={this.editerCommentaire} onBlur={this.appliquerCommentaire}
+            languePrincipale={this.props.documentIdMillegrille.langue}
+            languesAdditionnelles={this.props.documentIdMillegrille.languesAdditionnelles}
             placeholder="Ajouter un commentaire ici..."
             />
         </div>
       </div>
     );
+
+    // <TextareaAutosize
+    //   name="commentaires"
+    //   className={"autota-width-max editable " + cssEdition}
+    //   onChange={this.editerCommentaire}
+    //   onBlur={this.appliquerCommentaire}
+    //   value={this.state.commentaires || collectionCourante.commentaires || ''}
+    //   placeholder="Ajouter un commentaire ici..."
+    //   />
 
     return (
       <Feuille>
@@ -552,26 +578,6 @@ export class AffichageCollections extends React.Component {
         let fichier = fichiers[idx];
 
         let icone = <IconeFichier type={fichier['_mg-libelle']} securite={fichier.securite} />
-
-        // fichier.securite.split('.')[1];
-        //
-        // let icone;
-        // if(fichier['_mg-libelle'] === 'collection') {
-        //   icone = (
-        //     <span className="fa-stack fa-1g">
-        //       <i className={"fa fa-file fa-stack-1x icone-gauche " + securitecss}/>
-        //       <i className={"fa fa-file-o fa-stack-1x icone-gauche"}/>
-        //     </span>
-        //   );
-        // } else if(fichier['_mg-libelle'] === 'collection') {
-        //   icone = (
-        //     <span className="fa-stack fa-1g">
-        //       <i className={"fa fa-folder fa-stack-1x icone-gauche " + securitecss}/>
-        //       <i className={"fa fa-folder-o fa-stack-1x icone-gauche"}/>
-        //     </span>
-        //   );
-        // }
-
 
         fichiersRendered.push(
           <div key={fichier.uuid} className="w3-row-padding tableau-fichiers">
