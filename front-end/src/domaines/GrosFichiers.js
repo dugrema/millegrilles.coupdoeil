@@ -82,32 +82,49 @@ export class GrosFichiers extends React.Component {
     // Charger les documents pour les repertoires speciaux.
     this.chargerDocument({
       requetes: [
-        {'filtre': {'_mg-libelle': {'$in': [
-          'rapport.activite', 'favoris',
-        ]}}},
-    ]
+        {
+          'filtre': {'_mg-libelle': {'$in': ['favoris']}}
+        },
+        { // Charger les 10 plus recentes modifications
+          'filtre': {'_mg-libelle': {'$in': ['collection', 'fichier']}},
+          'projection': {
+            "_mg-libelle": 1, "uuid": 1, "_mg-derniere-modification": 1,
+            "securite": 1, "extension": 1,
+            "nom": 1, "nom_fr": 1, "nom_en": 1
+          },
+          'hint': [
+            {'_mg-derniere-modification': -1}
+          ],
+          'limit': 10,
+        }
+      ]
     })
     .then(docs=>{
-      // console.debug("Documents speciaux");
+      // console.debug("Documents initiaux");
       // console.debug(docs);
 
       // On recoit une liste de resultats, avec une liste de documents.
-      let resultatDocs = docs[0];
+      const favoris = docs[0][0];
+      const documentsParInfodoc = {
+        favoris,
+        activiteRecente: docs[1],
+      };
 
-      var documentsParInfodoc = {};
-      for(let idx in resultatDocs) {
-        let un_doc = resultatDocs[idx];
+      documentsParInfodoc.favorisParUuid = this.indexerFavoris(favoris);
 
-        // Filtrer les libelles au besoin
-        let typeDoc = un_doc['_mg-libelle'];
-        if(typeDoc === 'rapport.activite') {
-          typeDoc = 'rapportActivite';
-        } else if(typeDoc === 'favoris') {
-          documentsParInfodoc['favorisParUuid'] = this.indexerFavoris(un_doc);
-        }
-
-        documentsParInfodoc[typeDoc] = un_doc;
-      }
+      // for(let idx in resultatDocs) {
+      //   let un_doc = resultatDocs[idx];
+      //
+      //   // Filtrer les libelles au besoin
+      //   let typeDoc = un_doc['_mg-libelle'];
+      //   if(typeDoc === 'rapport.activite') {
+      //     typeDoc = 'rapportActivite';
+      //   } else if(typeDoc === 'favoris') {
+      //     documentsParInfodoc['favorisParUuid'] = this.indexerFavoris(un_doc);
+      //   }
+      //
+      //   documentsParInfodoc[typeDoc] = un_doc;
+      // }
 
       this.setState(documentsParInfodoc);
     })
@@ -372,7 +389,7 @@ export class GrosFichiers extends React.Component {
 
       affichagePrincipal = (
         <Accueil
-          rapportActivite={this.state.rapportActivite}
+          activiteRecente={this.state.activiteRecente}
           favoris={this.state.favoris}
           uploadsCourants={this.state.uploadsCourants}
           uploadsCompletes={this.state.uploadsCompletes}

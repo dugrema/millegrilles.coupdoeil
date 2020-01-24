@@ -368,7 +368,7 @@ export class Accueil extends React.Component {
           />
         {this.renderUploadProgress()}
         <ActiviteFichiers
-          rapportActivite={this.props.rapportActivite}
+          activiteRecente={this.props.activiteRecente}
           favorisParUuid={this.props.favorisParUuid}
           carnet={this.props.carnet}
           actionsNavigation={this.props.actionsNavigation}

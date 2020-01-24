@@ -546,7 +546,7 @@ export class ActiviteFichiers extends React.Component {
   renderBoutonsPages() {
     let boutonsPages = [];
     if(this.props.rapportActivite) {
-      let activites = this.props.rapportActivite.activites;
+      let activites = this.props.activiteRecente;
       if(activites) {
         let nbPages = Math.ceil(activites.length / this.state.elementsParPage);
 
@@ -569,15 +569,14 @@ export class ActiviteFichiers extends React.Component {
   renderFichiers() {
     let fichiersRendered = [];
 
-    if( this.props.rapportActivite ) {
+    if( this.props.activiteRecente ) {
       let premierElem = (this.state.pageCourante-1) * this.state.elementsParPage;
       let dernierElem = premierElem + this.state.elementsParPage; // (+1)
 
-      let activites = this.props.rapportActivite.activites;
+      let activites = this.props.activiteRecente;
 
       if(activites) for(let idx = premierElem; idx < dernierElem && idx < activites.length; idx++) {
-        let activite = activites[idx];
-        let fichier = activite.sujet;
+        let fichier = activites[idx];
 
         let check;
         if(this.props.carnet.selection[fichier.uuid]) {
@@ -619,7 +618,7 @@ export class ActiviteFichiers extends React.Component {
         }
 
         fichiersRendered.push(
-          <div key={activite.uuid_activite} className="w3-row-padding tableau-fichiers">
+          <div key={fichier.uuid} className="w3-row-padding tableau-fichiers">
 
             <div className="w3-col m6">
               <button className="nobutton" onClick={this.checkEntree}
@@ -634,7 +633,7 @@ export class ActiviteFichiers extends React.Component {
             </div>
 
             <div className="w3-col m2">
-              {activite.type_activite}
+              {fichier['_mg-libelle']}
             </div>
 
             <div className="w3-col m2 boutons-actions-droite">
