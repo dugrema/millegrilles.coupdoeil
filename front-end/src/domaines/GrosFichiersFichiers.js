@@ -530,9 +530,8 @@ export class ActiviteFichiers extends React.Component {
     selection: {},
   }
 
-  changerPage = event => {
-    let page = event.currentTarget.value;
-    this.setState({pageCourante: page});
+  chargerPlusRecents = event => {
+    this.props.chargerPlusRecents(true);
   }
 
   checkEntree = event => {
@@ -544,40 +543,19 @@ export class ActiviteFichiers extends React.Component {
   }
 
   renderBoutonsPages() {
-    let boutonsPages = [];
-    if(this.props.rapportActivite) {
-      let activites = this.props.activiteRecente;
-      if(activites) {
-        let nbPages = Math.ceil(activites.length / this.state.elementsParPage);
-
-        for(let page=1; page<=nbPages; page++) {
-          let cssCourante = '';
-          if(this.state.pageCourante === ''+page) {
-            cssCourante = 'courante';
-          }
-          boutonsPages.push(
-            <button key={page} onClick={this.changerPage} value={page} className={cssCourante}>
-              {page}
-            </button>
-          );
-        }
-      }
-    }
-    return boutonsPages;
+    return (
+      <Button onClick={this.chargerPlusRecents}>
+        Suivants
+      </Button>
+    );
   }
 
   renderFichiers() {
     let fichiersRendered = [];
 
     if( this.props.activiteRecente ) {
-      let premierElem = (this.state.pageCourante-1) * this.state.elementsParPage;
-      let dernierElem = premierElem + this.state.elementsParPage; // (+1)
-
       let activites = this.props.activiteRecente;
-
-      if(activites) for(let idx = premierElem; idx < dernierElem && idx < activites.length; idx++) {
-        let fichier = activites[idx];
-
+      if(activites) fichiersRendered = activites.map((fichier, idx) => {
         let check;
         if(this.props.carnet.selection[fichier.uuid]) {
           check = ((<i className="fa fa-check-square-o"/>));
@@ -617,7 +595,7 @@ export class ActiviteFichiers extends React.Component {
           )
         }
 
-        fichiersRendered.push(
+        return (
           <div key={fichier.uuid} className="w3-row-padding tableau-fichiers">
 
             <div className="w3-col m6">
@@ -653,7 +631,7 @@ export class ActiviteFichiers extends React.Component {
             </div>
           </div>
         );
-      }
+      });
     }
 
     return fichiersRendered;

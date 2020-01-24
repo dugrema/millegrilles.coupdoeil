@@ -375,6 +375,7 @@ export class Accueil extends React.Component {
           actionsFavoris={this.props.actionsFavoris}
           actionsDownload={this.props.actionsDownload}
           actionsCarnet={this.props.actionsCarnet}
+          chargerPlusRecents={this.props.chargerPlusRecents}
           />
         <SectionSommaireTorrent />
       </div>

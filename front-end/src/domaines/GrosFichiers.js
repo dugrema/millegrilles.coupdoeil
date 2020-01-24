@@ -111,21 +111,6 @@ export class GrosFichiers extends React.Component {
       };
 
       documentsParInfodoc.favorisParUuid = this.indexerFavoris(favoris);
-
-      // for(let idx in resultatDocs) {
-      //   let un_doc = resultatDocs[idx];
-      //
-      //   // Filtrer les libelles au besoin
-      //   let typeDoc = un_doc['_mg-libelle'];
-      //   if(typeDoc === 'rapport.activite') {
-      //     typeDoc = 'rapportActivite';
-      //   } else if(typeDoc === 'favoris') {
-      //     documentsParInfodoc['favorisParUuid'] = this.indexerFavoris(un_doc);
-      //   }
-      //
-      //   documentsParInfodoc[typeDoc] = un_doc;
-      // }
-
       this.setState(documentsParInfodoc);
     })
     .catch(err=>{
@@ -252,9 +237,8 @@ export class GrosFichiers extends React.Component {
     // console.debug("Message de MQ: " + routingKey);
 
     if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.rapport.activite') {
-      this.setState({
-        rapportActivite: doc
-      })
+      // Utiliser ce trigger pour rafraichir les plus recents fichiers
+      this.chargerPlusRecents();
     } else if(routingKey === 'noeuds.source.millegrilles_domaines_GrosFichiers.favoris') {
       let favorisParUuid = this.indexerFavoris(doc);
       this.setState({
@@ -278,6 +262,48 @@ export class GrosFichiers extends React.Component {
         this.setState({collectionCourante: doc});
       }
     }
+  }
+
+  chargerPlusRecents = (ajout) => {
+    let limit = 50, skip = 0;
+    if(ajout) {
+      skip = this.state.activiteRecente.length;
+    } else if(this.state.activiteRecente) {
+      limit = this.state.activiteRecente.length;
+    }
+
+    return this.chargerDocument({
+      requetes: [
+        { // Charger les 10 plus recentes modifications
+          'filtre': {'_mg-libelle': {'$in': ['collection', 'fichier']}},
+          'projection': {
+            "_mg-libelle": 1, "uuid": 1, "_mg-derniere-modification": 1,
+            "securite": 1, "extension": 1,
+            "nom": 1, "nom_fr": 1, "nom_en": 1
+          },
+          'hint': [
+            {'_mg-derniere-modification': -1}
+          ],
+          'limit': limit,
+          'skip': skip,
+        }
+      ]
+    })
+    .then(docs=>{
+      // console.debug("Documents plus recents");
+      // console.debug(docs);
+
+      // On recoit une liste de resultats, avec une liste de documents.
+      const documentsParInfodoc = {
+        activiteRecente: [...this.state.activiteRecente, ...docs[0]],
+      };
+
+      this.setState(documentsParInfodoc);
+    })
+    .catch(err=>{
+      console.error("Erreur chargement document racine");
+      console.error(err);
+    });
   }
 
   // Fabrique un index des favoris par UUID.
@@ -400,6 +426,7 @@ export class GrosFichiers extends React.Component {
           actionsUpload={this.actionsUpload}
           actionsDownload={this.actionsDownload}
           actionsCarnet={this.actionsCarnet}
+          chargerPlusRecents={this.chargerPlusRecents}
           {...this.props}
           />);
     }
