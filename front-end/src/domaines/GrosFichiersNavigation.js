@@ -49,7 +49,7 @@ export class ActionsNavigation {
   }
 
   afficherRecherche = () => {
-    console.debug("Afficher Recherche");
+    // console.debug("Afficher Recherche");
 
     this.reactModule.setState({
       ...this._resetNavigation('Recherche'),
@@ -58,7 +58,7 @@ export class ActionsNavigation {
   }
 
   afficherCarnet = () => {
-    console.debug("Afficher Carnet");
+    // console.debug("Afficher Carnet");
 
     this.reactModule.setState({
       ...this._resetNavigation('Carnet'),
@@ -68,7 +68,7 @@ export class ActionsNavigation {
 
   afficherCollection = event => {
     let uuid = event.currentTarget.value;
-    console.debug("Afficher Collection " + uuid);
+    // console.debug("Afficher Collection " + uuid);
 
     this.reactModule.setState({
       ...this._resetNavigation(uuid),
@@ -77,7 +77,7 @@ export class ActionsNavigation {
 
   afficherCollectionFigee = event => {
     let uuid = event.currentTarget.value;
-    console.debug("Afficher Collection Figee " + uuid);
+    // console.debug("Afficher Collection Figee " + uuid);
 
     this.reactModule.setState({
       ...this._resetNavigation(uuid),
@@ -567,7 +567,7 @@ export class FileUploadSection extends React.Component {
     let securite = this.props.securite || '3.protege'; // Defaut protege
     let documentuuid = this.props.documentuuid;
 
-    console.debug("Upload fichiers dans collection " + documentuuid + ", securite " + securite);
+    // console.debug("Upload fichiers dans collection " + documentuuid + ", securite " + securite);
 
     // let repertoire_uuid = this.props.repertoireCourant.repertoire_uuid;
     // let securite = this.props.repertoireCourant.securite;
@@ -582,7 +582,7 @@ export class FileUploadSection extends React.Component {
   }
 
   uploadSuccess(response) {
-    console.debug("Upload is successful");
+    // console.debug("Upload is successful");
   }
 
   uploadFail(error) {
