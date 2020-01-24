@@ -6,6 +6,7 @@ import {filesizeformatter, dateformatter} from '../formatters'
 import {DateTimeFormatter} from '../mgcomponents/ReactFormatters'
 import { IconeFichier, SectionSecurite } from '../mgcomponents/IconeFichier'
 import { Feuille } from '../mgcomponents/Feuilles'
+import { InputTextAreaMultilingueAutoSubmit } from '../mgcomponents/InputMultilingue'
 
 export class ActionsFichiers {
 
@@ -42,12 +43,12 @@ export class ActionsFichiers {
     return this.webSocketManager.transmettreTransaction(domaine, transaction);
   }
 
-  modifierCommentaire = (uuid, commentaires) => {
+  modifierCommentaire = (uuid, commentaires, champ) => {
     let domaine = 'millegrilles.domaines.GrosFichiers.commenterFichier';
     let transaction = {
         uuid: uuid,
-        commentaires: commentaires,
     }
+    transaction[champ] = commentaires;
     return this.webSocketManager.transmettreTransaction(domaine, transaction);
   }
 
@@ -89,15 +90,19 @@ export class AffichageFichier extends React.Component {
   }
 
   editerCommentaire = event => {
-    let commentaires = event.currentTarget.value;
-    this.setState({commentaires});
+    const {name, value} = event.currentTarget;
+    const maj = {};
+    maj[name] = value;
+    this.setState(maj);
   }
 
   appliquerCommentaire = event => {
-    let commentaires = event.currentTarget.value;
-    if(commentaires !== this.props.fichierCourant.commentaires) {
+    const champ = event.currentTarget.name;
+    const commentaires = this.state[champ];
+
+    if(commentaires && commentaires !== this.props.fichierCourant[champ]) {
       this.props.actionsFichiers.modifierCommentaire(
-        this.props.fichierCourant.uuid, commentaires)
+        this.props.fichierCourant.uuid, commentaires, champ)
       .then(msg=>{
         // Rien a faire.
       })
@@ -168,16 +173,25 @@ export class AffichageFichier extends React.Component {
 
   // Verifier si on peut resetter les versions locales des proprietes editees.
   componentDidUpdate(prevProps) {
+    const source = this.props.fichierCourant;
+    const prevSource = prevProps.fichierCourant;
 
-    let resetState = {};
-    if(this.state.commentaires) {
-      if(this.state.commentaires === this.props.fichierCourant.commentaires) {
-        resetState.commentaires = null;
+    const resetEtats = {};
+    var changementRequis = false;
+    if(source && prevSource) {
+      for(let champ in source) {
+        if(champ.startsWith('commentaires') &&
+           source[champ] !== prevSource[champ] &&
+           this.state[champ] === source[champ]) {
+          // console.debug("Reset champ state : " + champ);
+          resetEtats[champ] = null;
+          changementRequis = true;
+        }
       }
     }
 
-    if(Object.keys(resetState).length > 0) {
-      this.setState(resetState);
+    if(changementRequis){
+      this.setState(resetEtats);
     }
   }
 
@@ -403,20 +417,32 @@ export class AffichageFichier extends React.Component {
 
           <div className="w3-rowpadding">
             <div className="w3-col m12 commentaire">
-              <TextareaAutosize
-                name="commentaires"
-                className={"autota-width-max editable " + cssEdition}
-                onChange={this.editerCommentaire}
-                onBlur={this.appliquerCommentaire}
-                value={this.state.commentaires || fichierCourant.commentaires || ''}
+
+              <InputTextAreaMultilingueAutoSubmit
+                controlId="commentaires" valuePrefix="commentaires"
+                contenu={fichierCourant} contenuEdit={this.state}
+                onChange={this.editerCommentaire} onBlur={this.appliquerCommentaire}
+                languePrincipale={this.props.documentIdMillegrille.langue}
+                languesAdditionnelles={this.props.documentIdMillegrille.languesAdditionnelles}
                 placeholder="Ajouter un commentaire ici..."
                 />
+
             </div>
           </div>
 
         </div>
       </Feuille>
     );
+
+    // <TextareaAutosize
+    //   name="commentaires"
+    //   className={"autota-width-max editable " + cssEdition}
+    //   onChange={this.editerCommentaire}
+    //   onBlur={this.appliquerCommentaire}
+    //   value={this.state.commentaires || fichierCourant.commentaires || ''}
+    //   placeholder="Ajouter un commentaire ici..."
+    //   />
+
 
     return commentaires;
   }
