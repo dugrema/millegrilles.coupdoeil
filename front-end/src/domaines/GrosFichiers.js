@@ -294,9 +294,12 @@ export class GrosFichiers extends React.Component {
       // console.debug(docs);
 
       // On recoit une liste de resultats, avec une liste de documents.
-      const documentsParInfodoc = {
-        activiteRecente: [...this.state.activiteRecente, ...docs[0]],
-      };
+      var documentsParInfodoc = null;
+      if(ajout) {
+        documentsParInfodoc = {activiteRecente: [...this.state.activiteRecente, ...docs[0]]};
+      } else {
+        documentsParInfodoc = {activiteRecente: docs[0]};
+      }
 
       this.setState(documentsParInfodoc);
     })
