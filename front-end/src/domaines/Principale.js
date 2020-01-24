@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Container, Row, Col, ToggleButton, ToggleButtonGroup,
+import { Form, Container, Row, Col,
          Button, ButtonGroup, InputGroup} from 'react-bootstrap';
 import manifest from '../manifest.build.js';  // App version, build date
 import { solveRegistrationChallenge } from '@webauthn/client';
@@ -224,10 +224,6 @@ class InformationMilleGrille extends React.Component {
         }
       }
     })
-    var languesAdditionnelles;
-    if(this.state.milleGrille) {
-      languesAdditionnelles = this.state.milleGrille.languesAdditionnelles;
-    }
 
     const nomMilleGrilleLangues = [
       <Form.Group key={languePrincipale} controlId="formGroupNomMilleGrille">

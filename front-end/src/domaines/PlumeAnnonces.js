@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Button, ButtonGroup, ListGroup,
+import { Form, Button,
          Container, Row, Col } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 import webSocketManager from '../WebSocketManager';

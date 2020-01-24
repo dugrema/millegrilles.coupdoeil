@@ -1,6 +1,5 @@
 import React from 'react';
-import { Form, FormControl, InputGroup, Row, Col} from 'react-bootstrap';
-import TextareaAutosize from 'react-textarea-autosize';
+import { Form, FormControl, InputGroup} from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 
 //
@@ -20,7 +19,6 @@ export function InputTextMultilingue(props) {
   const onChange = props.onChange;
   const languePrincipale = props.languePrincipale;
   const languesAdditionnelles = props.languesAdditionnelles;
-  const controlId = props.controlId;
   const valuePrefix = props.valuePrefix;
   const placeholder = props.placeholder;
   const rows = props.rows;
@@ -86,7 +84,6 @@ export function InputTextAreaMultilingueAutoSubmit(props) {
 
   const languePrincipale = props.languePrincipale;
   const languesAdditionnelles = props.languesAdditionnelles;
-  const controlId = props.controlId;
   const valuePrefix = props.valuePrefix;
 
   const listeLangues = [languePrincipale, ...languesAdditionnelles];

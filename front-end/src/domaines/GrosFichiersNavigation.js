@@ -1,7 +1,6 @@
 import React from 'react';
 import Dropzone from 'react-dropzone';
-import TextareaAutosize from 'react-textarea-autosize';
-import { Container, Row, Col } from 'react-bootstrap';
+import { Row, Col } from 'react-bootstrap';
 import webSocketManager from '../WebSocketManager';
 import { Feuille } from '../mgcomponents/Feuilles'
 import { InputTextAreaMultilingueAutoSubmit } from '../mgcomponents/InputMultilingue'
@@ -261,10 +260,6 @@ export class Entete extends React.Component {
   render() {
 
     let elementTitre;
-    var cssEdition = '';
-    if(this.state.titre) {
-      cssEdition = ' edition-en-cours';
-    }
     if(this.props.actionRenommer && this.props.documentuuid) {
       elementTitre = (
         <InputTextAreaMultilingueAutoSubmit

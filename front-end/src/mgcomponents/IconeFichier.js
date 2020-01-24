@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Row, Col, Alert } from 'react-bootstrap';
+import { Row, Col, Alert } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'font-awesome/css/font-awesome.min.css';

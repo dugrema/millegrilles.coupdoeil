@@ -1,7 +1,7 @@
 import React from 'react';
 import { Feuille } from '../mgcomponents/Feuilles'
-import { Form, Button, ButtonGroup, ListGroup, InputGroup,
-         Container, Row, Col, Tabs, Tab } from 'react-bootstrap';
+import { Form, Button, ListGroup, InputGroup,
+         Row, Col, Tabs, Tab } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 import webSocketManager from '../WebSocketManager';
 
@@ -23,21 +23,6 @@ export class PlumeVitrine extends React.Component {
     )
   }
 
-}
-
-function extraireChampMultilingue(champ, suffixe) {
-  // Extraire le nom de champ (e.g. champ_langue)
-  let champStruct = champ.split('_');
-
-  // Ajouter ColN (e.g. texteCol1)
-  let champModif = champStruct[0] + suffixe;
-
-  // Ajouter le language au besoin
-  if(champStruct.length > 1) {
-    champModif = champModif + '_' + champStruct[1];
-  }
-
-  return champModif;
 }
 
 function TitreVitrine(props) {
@@ -221,9 +206,6 @@ class SectionAccueil extends React.Component {
   }
 
   _renderAccueilColonnes() {
-    let languePrincipale = this.props.documentIdMillegrille.langue;
-    let languesAdditionnelles = this.props.documentIdMillegrille.languesAdditionnelles;
-
     const colonnes = [];
     for(let i in this.state.colonnes) {
       const colonne = this.state.colonnes[i];
@@ -565,7 +547,7 @@ function ImageColonne(props) {
   var fuuid, image;
   if(props.image) {
     fuuid = props.image.fuuid;
-    image = (<img src={PREFIX_DATA_URL + props.image.thumbnail} />);
+    image = (<img src={PREFIX_DATA_URL + props.image.thumbnail} alt="Thumbnail" />);
   }
 
   return (

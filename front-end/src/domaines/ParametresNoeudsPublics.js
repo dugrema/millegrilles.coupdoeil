@@ -1,6 +1,6 @@
 import React from 'react';
 import { Form, Button, ButtonGroup, ButtonToolbar, ListGroup, InputGroup,
-         Container, Row, Col, ToggleButtonGroup, ToggleButton } from 'react-bootstrap';
+         Row, Col, ToggleButtonGroup, ToggleButton } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 import Backend from 'react-dnd-html5-backend'
 import { DndProvider, useDrag, useDrop } from "react-dnd";
@@ -30,11 +30,6 @@ const noeudTemplate = {
 const sectionsVitrine = [
   'blogs', 'albums', 'fichiers', 'messages', 'podcasts',
   'senseursPassifs'
-];
-
-// Regroupements possibles en sous-menus
-const sousMenus = [
-  'autres'
 ];
 
 const subscriptions_noeudsPublics = [
@@ -167,7 +162,6 @@ export class NoeudsPublics extends React.Component {
 
   _supprimerNoeud = event => {
     const url = event.currentTarget.value;
-    const noeuds = [];
 
     let domaine = 'millegrilles.domaines.Parametres.supprimerNoeudPublic';
     webSocketManager.transmettreTransaction(domaine, {url_web: url})
@@ -314,7 +308,7 @@ export class NoeudsPublics extends React.Component {
     }
 
     // Verifier si on a un nouveau mot de passe (secret)
-    var promiseChiffrer, transactionCle, uuidTransaction;
+    var promiseChiffrer, uuidTransaction;
     if(awsSecretAccessKey) {
       // Demander cert du maitredescles pour crypter mot de passe
       let clePubliqueMaitredescles = sessionStorage.clePubliqueMaitredescles;

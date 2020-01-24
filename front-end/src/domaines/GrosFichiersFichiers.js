@@ -1,5 +1,4 @@
 import React from 'react';
-import TextareaAutosize from 'react-textarea-autosize';
 import { Row, Col, Button, ButtonGroup } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 import {filesizeformatter, dateformatter} from '../formatters'
@@ -243,23 +242,11 @@ export class AffichageFichier extends React.Component {
       )
     }
 
-    var boutonDecrypter = null;
-    if(fichierCourant.securite === '3.protege') {
-      boutonDecrypter = (
-        <button onClick={this.decrypter} value={fichierCourant.fuuid_v_courante} title="Decrypter">
-          <span className="fa-stack fa-1g">
-            <i className="fa fa-lock fa-stack-1x"/>
-            <i className="fa fa-ban fa-stack-2x"/>
-          </span>
-        </button>
-      )
-    }
-
     var thumbnail;
     if(versionCourante.thumbnail) {
       thumbnail = (
         <div className="w3-row-padding">
-          <img src={'data:image/jpeg;base64,' + versionCourante.thumbnail}/>
+          <img src={'data:image/jpeg;base64,' + versionCourante.thumbnail} alt={fichierCourant.nom}/>
         </div>
       );
     }
@@ -343,10 +330,6 @@ export class AffichageFichier extends React.Component {
 
   renderCommentaire() {
     let fichierCourant = this.props.fichierCourant;
-    let cssEdition = '';
-    if(this.state.commentaires) {
-      cssEdition = 'edition-en-cours'
-    }
 
     let boutonFavori;
     if(this.props.favorisParUuid[fichierCourant.uuid]) {

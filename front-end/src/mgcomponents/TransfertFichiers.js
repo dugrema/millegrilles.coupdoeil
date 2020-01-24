@@ -6,8 +6,8 @@ const cryptoHelper = new MilleGrillesCryptoHelper();
 export class UploadFichierSocketio {
 
   uploadFichier(socket, uploadInfo) {
-    console.debug("Upload fichier avec");
-    console.debug(uploadInfo);
+    // console.debug("Upload fichier avec");
+    // console.debug(uploadInfo);
 
     // Verifier s'il faut chiffrer le telechargement
     // Si les donnes sont publiques ou privees on ne chiffre pas
@@ -56,8 +56,8 @@ export class UploadFichierSocketio {
 
       return promise.then(infoCryptage=>{
 
-        console.debug("InfoCryptage fichier");
-        console.debug(infoCryptage);
+        // console.debug("InfoCryptage fichier");
+        // console.debug(infoCryptage);
 
         let nomFichier = fichier.name;
         let typeFichier = fichier.type;

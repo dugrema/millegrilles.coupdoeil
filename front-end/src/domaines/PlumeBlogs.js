@@ -1,7 +1,6 @@
 import React from 'react';
 import { Feuille } from '../mgcomponents/Feuilles'
-import { Form, Button, ButtonGroup, ListGroup, InputGroup,
-         Container, Row, Col, Tabs, Tab } from 'react-bootstrap';
+import { Form, Button, ListGroup, Row, Col } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 import webSocketManager from '../WebSocketManager';
 import { DateTimeFormatter } from '../mgcomponents/ReactFormatters';
@@ -344,11 +343,6 @@ class BlogPost extends React.Component {
 
   render() {
 
-    var datePublication = null;
-    if(this.state.blogpost && this.state.blogpost.datePublication) {
-
-    }
-
     return (
       <div>
         <Feuille>
@@ -535,10 +529,9 @@ class EntreeBlog extends React.Component {
 //  - retirerImage
 function AfficherImage(props) {
 
-  var fuuid, image;
+  var image;
   if(props.image) {
-    fuuid = props.image.fuuid;
-    image = (<img src={PREFIX_DATA_URL + props.image.thumbnail} />);
+    image = (<img src={PREFIX_DATA_URL + props.image.thumbnail} alt="Thumbnail" />);
   }
 
   return (

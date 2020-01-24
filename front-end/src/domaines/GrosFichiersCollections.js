@@ -1,7 +1,5 @@
 import React from 'react';
-import TextareaAutosize from 'react-textarea-autosize';
-import { Form, Button, ButtonGroup, ListGroup,
-         Container, Row, Col } from 'react-bootstrap';
+import { Button, ButtonGroup, Row, Col } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 import { dateformatter } from '../formatters';
 import { IconeFichier, SectionSecurite } from '../mgcomponents/IconeFichier';
@@ -409,7 +407,7 @@ export class AffichageCollections extends React.Component {
         // On a une image
         listeImages.push(
           <button key={doc.uuid} className="aslink" onClick={this.props.actionsNavigation.chargeruuid} value={doc.uuid}>
-            <img key={doc.uuid} src={'data:image/jpeg;base64,' + doc.thumbnail}/>
+            <img key={doc.uuid} src={'data:image/jpeg;base64,' + doc.thumbnail} alt={doc.nom}/>
           </button>
         );
       }
