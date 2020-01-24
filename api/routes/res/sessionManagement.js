@@ -91,51 +91,48 @@ class SessionManagement {
 
     if(params.methode === 'certificatLocal') {
       let fingerprint = params.fingerprint;
-      this.creerChallengeCertificat(socket, fingerprint);
+      return this.creerChallengeCertificat(socket, fingerprint);
     } else if (params.methode === 'tokenUSB') {
-      this.creerChallengeUSB(socket);
+      return this.creerChallengeUSB(socket);
     } else {
       // Erreur d'Authentification
-      console.error("Erreur d'authentification, methode inconnue: " + params.methode);
       socket.emit('erreur.login', {'erreur': 'methode inconnue', 'methode': params.methode});
       socket.disconnect();
+      throw new Error("Erreur d'authentification, methode inconnue: " + params.methode);
     }
   }
 
   creerChallengeUSB(socket) {
     // Authentifier le socket
     let filtre = {"_mg-libelle": "cles"};
-    rabbitMQ.singleton.get_document(
+
+    return rabbitMQ.singleton.get_document(
       'millegrilles.domaines.Principale', filtre)
     .then( doc => {
       // console.log(doc);
       if (!doc || doc.empreinte_absente) {
           socket.emit('challenge', {'erreur': 'empreinte_absente'});
           socket.disconnect();
-          reject();
           return;
       }
-
-      let challenge_genere = generateLoginChallenge(doc.cles);
+      return generateLoginChallenge(doc.cles);
+    })
+    .then(challenge_genere=>{
       // console.log("Challenge login");
 
-      socket.emit('challengeTokenUSB', challenge_genere, reply => {
-        // console.log("/login-challenge appele");
-        // console.log(reply);
+      return new Promise((resolve, reject) => {
+        socket.emit('challengeTokenUSB', challenge_genere, reply => {
+          console.log("/login-challenge appele");
+          console.log(reply);
 
           const { challenge, keyId } = parseLoginRequest(reply);
           if (!challenge) {
             // console.debug("Challenge pas recu")
-            socket.emit('erreur.login', {'erreur': 'Challenge pas initialise'});
-            socket.disconnect();
-            return;
+            return reject('Challenge pas initialise');
           }
 
           if (challenge_genere.challenge !== challenge) {
-            console.warn("Challenge ne match pas");
-            socket.emit('erreur.login', {'erreur': 'Challenge mismatch'});
-            socket.disconnect();
-            return;
+            return reject('Challenge mismatch');
           }
 
           let filtre = {"_mg-libelle": "cles"};
@@ -144,10 +141,7 @@ class SessionManagement {
           .then( doc => {
             // console.log(doc);
             if (!doc || doc.empreinte_absente) {
-              console.warn("Doc absent ou empreinte_absente trouvee");
-              socket.emit('erreur.login', {'erreur': 'Doc absent ou empreinte_absente==true'});
-              socket.disconnect();
-              return;
+              return reject('Doc absent ou empreinte_absente==true');
             }
 
             // Trouve la bonne cle a verifier dans la collection de toutes les cles
@@ -167,29 +161,25 @@ class SessionManagement {
             }
 
             if(!cle_match) {
-              console.error("Cle inconnue: " + cle_id_utilisee);
-              console.error(cle_id_utilisee);
-              socket.emit('erreur.login', {'erreur': 'Cle inconnue'});
-              socket.disconnect();
-              return;
+              return reject("Cle inconnue: " + cle_id_utilisee);
             }
 
             const loggedIn = verifyAuthenticatorAssertion(reply, cle_match);
 
             socket.emit('login', loggedIn);
-          }).catch( err => {
-            console.error("Erreur login")
-            console.error(err);
-            socket.emit('erreur.login', {'erreur': 'Erreur login generique'});
-            socket.disconnect();
-          });
+            if(loggedIn) {
+              resolve();
+            } else {
+              reject('Invalid authenticator assertion');
+            }
+          })
+        });
+      })
+      .catch( err => {
+        reject(err);
+        socket.emit('erreur.login', {'erreur': ''+err});
+        socket.disconnect();
       });
-
-    }).catch( err => {
-      console.error("Erreur login")
-      console.error(err);
-      socket.emit('erreur.login', {'erreur': 'Erreur login - timeout MQ'});
-      socket.disconnect();
     });
   }
 
@@ -277,7 +267,17 @@ class SessionManagement {
 
   // Ajoute un socket et attend l'evenement d'authentification
   addSocketConnection(socket) {
-    socket.on('authentification', params=>{this.authentifier(socket, params)});
+    return new Promise((resolve, reject)=>{
+      socket.on('authentification', params=>{
+        this.authentifier(socket, params)
+        .then(()=>{
+          resolve();
+        })
+        .catch(err=>{
+          reject(err);
+        })
+      });
+    });
   }
 
 }
