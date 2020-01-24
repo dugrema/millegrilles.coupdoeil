@@ -120,8 +120,8 @@ class ListeBlogposts extends React.Component {
 
     return webSocketManager.transmettreRequete(domaine, requete)
     .then( docsRecu => {
-      console.debug("Resultats requete");
-      console.debug(docsRecu);
+      // console.debug("Resultats requete");
+      // console.debug(docsRecu);
       let resultBlogposts = docsRecu[0];
       let startingIndex = resultBlogposts.length + currentIndex;
 
@@ -132,7 +132,7 @@ class ListeBlogposts extends React.Component {
 
   publierBlogpost = event => {
     let uuidBlogpost = event.currentTarget.value;
-    console.debug("Publier blogpost " + uuidBlogpost);
+    // console.debug("Publier blogpost " + uuidBlogpost);
     const transaction = {
       uuid: uuidBlogpost
     }
@@ -164,7 +164,7 @@ class ListeBlogposts extends React.Component {
 
   retirerBlogpost = event => {
     let uuidBlogpost = event.currentTarget.value;
-    console.debug("Retirer blogpost " + uuidBlogpost);
+    // console.debug("Retirer blogpost " + uuidBlogpost);
     const transaction = {
       uuid: uuidBlogpost
     }
@@ -318,19 +318,16 @@ class BlogPost extends React.Component {
         var blogpostIn = docsRecu[0][0];
         const blogpost = {};
 
-        console.debug("Blogpost filtrer")
+        // console.debug("Blogpost filtrer")
         if(blogpostIn) {
           var champs = [
             'uuid', 'texte', 'titre', 'image', 'datePublication'
           ];
           for(let champ in blogpostIn) {
-            var inclu = false;
-            champs.forEach(c=>{
-              if(champ.startsWith(c)) {
-                inclu = true;
-              }
+            var champsInclus = champs.filter(c=>{
+              return champ.startsWith(c);
             })
-            if(inclu) {
+            if(champsInclus.length > 0) {
               blogpost[champ] = blogpostIn[champ];
             }
           }
