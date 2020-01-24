@@ -185,7 +185,7 @@ class SessionManagement {
   recevoirReponseChallengeCertificat(socket, challenge, reponse) {
     // console.debug("Reponse challenge certificat");
     // console.debug(reponse);
-    const bufferReponse = new Buffer(reponse.reponseChallenge, 'base64');
+    const bufferReponse = Buffer.from(reponse.reponseChallenge, 'base64');
     // console.debug(bufferReponse.toString('utf-8'));
     // console.debug("Challenge original")
     // console.debug(challenge);

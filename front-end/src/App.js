@@ -30,12 +30,12 @@ const fakeAuth = {
       cb(err);
     });
 
-    console.log("Challenge recu");
-    console.log(challenge);
+    // console.log("Challenge recu");
+    // console.log(challenge);
     const credentials = await solveRegistrationChallenge(challenge);
 
-    console.log("Transmission de la reponse au challenge");
-    console.log(credentials);
+    // console.log("Transmission de la reponse au challenge");
+    // console.log(credentials);
     const { loggedIn } = await fetch(
         urlApi + '/api/effectuer-empreinte',
         {
@@ -53,7 +53,7 @@ const fakeAuth = {
     });
 
     if (loggedIn) {
-        console.log('registration successful');
+        // console.log('registration successful');
         this.isAuthenticated = true;
     } else {
       console.error('registration failed');
@@ -102,11 +102,11 @@ class Login extends React.Component {
     }).then(response => {
       if(response.status === 200) {
         response.json().then(challenge => {
-          console.debug("Challenge recu");
-          console.debug(challenge);
+          // console.debug("Challenge recu");
+          // console.debug(challenge);
           solveRegistrationChallenge(challenge).then(credentials => {
-            console.debug("Transmission de la reponse au challenge");
-            console.debug(credentials);
+            // console.debug("Transmission de la reponse au challenge");
+            // console.debug(credentials);
             fetch(
                 urlApi + '/api/effectuer-ajout-token',
                 {
@@ -395,7 +395,7 @@ class App extends React.Component {
 
         // Ouvrir un socket avec certificat local.
         // Peut se reconnecter automatiquement
-        socket = openSocket('/', {reconnection: true});
+        socket = openSocket('/', {reconnection: false});
         this.enregistrerEvenementsGeneriques(socket);
 
         socket.emit('authentification', {

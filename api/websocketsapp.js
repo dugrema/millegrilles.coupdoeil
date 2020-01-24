@@ -117,11 +117,11 @@ class WebSocketApp {
       // Ouvrir Channel MQ
       rabbitMQ.singleton.createChannel(socketResources)
       .then(()=>{
-        console.debug("Debut de l'authentification");
+        // console.debug("Debut de l'authentification");
         return sessionManagement.addSocketConnection(socket)
       })
       .then(()=>{
-        console.debug("Authentification est completee");
+        // console.debug("Authentification est completee");
         this.saveAuthenticated(socketResources);
         this.registerEvents(socketResources);
       }).catch(err=>{
