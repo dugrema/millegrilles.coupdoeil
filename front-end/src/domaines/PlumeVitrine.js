@@ -218,12 +218,12 @@ class SectionAccueil extends React.Component {
         }
         inputGroupsTitre.push(
           <InputGroupColonneTexte key={langue} col={i} texte={colonne['titre' + suffix]}
-                             colname="titre" key={langue} langue={langue} suffix={l}
+                             colname="titre" langue={langue} suffix={l}
                              changerTexteAccueil={this._changerTexteAccueil} />
         );
         inputGroupsTexte.push(
           <InputGroupColonneTexte key={langue} col={i} texte={colonne['texte' + suffix]}
-                             key={langue} langue={langue} suffix={l} rows={15}
+                             langue={langue} suffix={l} rows={15}
                              changerTexteAccueil={this._changerTexteAccueil} />
         );
       })
