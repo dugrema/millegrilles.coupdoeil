@@ -176,7 +176,6 @@ class SessionManagement {
         });
       })
       .catch( err => {
-        reject(err);
         socket.emit('erreur.login', {'erreur': ''+err});
         socket.disconnect();
       });
