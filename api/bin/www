@@ -7,10 +7,11 @@
 const app = require('../app');
 const websocketsapp = require('../websocketsapp');
 const debug = require('debug')('api:server');
-//var http = require('http');
+const https = require('https');
 const FS = require("fs");
 const Path = require('path');
-const Spdy = require('spdy');
+// const Spdy = require('spdy');
+// const http2 = require('http2');
 const io = require('socket.io');
 const rabbitMQ = require('../routes/res/rabbitMQ')
 
@@ -35,7 +36,7 @@ const config = {
 };
 
 const wss_server = io();
-const server = Spdy.createServer(config, app).listen(port, () => {
+const server = https.createServer(config, app).listen(port, () => {
   wss_server.listen(server);
   wss_server.on('connection', (socket) => {
     console.info("Connexion WSS id: " + socket.id + ", remoteAddress: " + socket.conn.remoteAddress);
