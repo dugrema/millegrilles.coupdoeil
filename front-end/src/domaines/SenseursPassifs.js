@@ -751,7 +751,7 @@ class SenseurPassifAppareil extends React.Component {
       </form>
     );
 
-    if( this.props.rapports ) {
+    if( this.props.rapports && this.props.rapports[this.state.granularite] ) {
       let rapport = this.props.rapports[this.state.granularite].appareils[this.props.cleAppareil];
 
       // Permet de trouver container de la charte - donne la largeur du graph
