@@ -396,23 +396,27 @@ class App extends React.Component {
         // Ouvrir un socket avec certificat local.
         // Peut se reconnecter automatiquement
         socket = openSocket('/', {reconnection: false});
-        this.enregistrerEvenementsGeneriques(socket);
+        socket.on("authentifier", ()=>{
+          socket.emit('authentification', {
+            methode: 'certificatLocal',
+            fingerprint: localStorage.getItem('certificat.fingerprint'),
+          });
+        })
 
-        socket.emit('authentification', {
-          methode: 'certificatLocal',
-          fingerprint: localStorage.getItem('certificat.fingerprint'),
-        });
+        this.enregistrerEvenementsGeneriques(socket);
 
       } else {
 
         // Le certificat local est absent ou invalide
         // On va se connecter avec Token USB
         socket = openSocket('/', {reconnection: false});
-        this.enregistrerEvenementsGeneriques(socket);
+        socket.on("authentifier", ()=>{
+          socket.emit('authentification', {
+            methode: 'tokenUSB',
+          });
+        })
 
-        socket.emit('authentification', {
-          methode: 'tokenUSB',
-        });
+        this.enregistrerEvenementsGeneriques(socket);
 
       }
 

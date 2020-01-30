@@ -86,10 +86,10 @@ class SessionManagement {
   }
 
   authentifier(socket, params) {
-    console.debug("Authentification");
-    console.debug(params);
+    // console.debug(params);
 
     if(params.methode === 'certificatLocal') {
+      console.debug("Authentification par certificat");
       let fingerprint = params.fingerprint;
       return this.creerChallengeCertificat(socket, fingerprint)
       .catch(err=>{
@@ -97,6 +97,7 @@ class SessionManagement {
         return this.creerChallengeUSB(socket);
       });
     } else if (params.methode === 'tokenUSB') {
+      console.debug("Authentification par securityKey USB");
       return this.creerChallengeUSB(socket);
     } else {
       // Erreur d'Authentification
@@ -287,6 +288,8 @@ class SessionManagement {
           reject(err);
         })
       });
+
+      socket.emit("authentifier", {});
     });
   }
 
