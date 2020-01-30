@@ -86,12 +86,16 @@ class SessionManagement {
   }
 
   authentifier(socket, params) {
-    // console.debug("Authentification");
-    // console.debug(params);
+    console.debug("Authentification");
+    console.debug(params);
 
     if(params.methode === 'certificatLocal') {
       let fingerprint = params.fingerprint;
-      return this.creerChallengeCertificat(socket, fingerprint);
+      return this.creerChallengeCertificat(socket, fingerprint)
+      .catch(err=>{
+        console.warn("Erreur challenge certificat, essayer USB");
+        return this.creerChallengeUSB(socket);
+      });
     } else if (params.methode === 'tokenUSB') {
       return this.creerChallengeUSB(socket);
     } else {
@@ -211,7 +215,7 @@ class SessionManagement {
     return rabbitMQ.singleton.transmettreRequete(
       'requete.millegrilles.domaines.Pki.confirmerCertificat', requete)
     .then( reponseCertVerif => {
-      // console.debug("Response verification certificat");
+      console.debug("Response verification certificat");
       const contenuResponseCertVerif = JSON.parse(reponseCertVerif.content.toString('utf-8'));
       // console.debug(contenuResponseCertVerif);
 
@@ -262,10 +266,11 @@ class SessionManagement {
       }
     })
     .catch(err=>{
-      console.error("Erreur authentification par certificat");
-      console.error(err);
-      socket.emit('erreur.login', {'erreur': ''+err});
-      socket.disconnect();
+      console.info("Erreur authentification par certificat");
+      console.info(err);
+      // socket.emit('erreur.login', {'erreur': ''+err});
+      // socket.disconnect();
+      throw new Error("Erreur authentification par certificat");
     });
 
   }
