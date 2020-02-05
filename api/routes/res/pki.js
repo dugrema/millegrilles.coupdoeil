@@ -17,6 +17,7 @@ class PKIUtils {
     this.keyFile = mq_key;
 
     this.cle = null;
+    this.certPEM = null;
     this.cert = null;
     this.ca = null;
 
@@ -46,6 +47,7 @@ class PKIUtils {
         if(err) {
           return reject(err);
         }
+        this.certPEM = data;
         let parsedCert = this.chargerCertificatPEM(data);
         // console.debug(parsedCert);
 

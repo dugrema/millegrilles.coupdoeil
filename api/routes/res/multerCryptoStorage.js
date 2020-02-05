@@ -204,7 +204,12 @@ class MulterCryptoStorage {
         nomfichier: file.originalname,
         mimetype: file.mimetype,
       },
-      agentOptions: {ca: pki.ca},  // Utilisation certificats SSL internes
+      agentOptions: {
+        ca: pki.ca,
+      },  // Utilisation certificats SSL internes
+      ca: pki.ca,
+      key: pki.cle,
+      cert: pki.certPEM,
     };
     const outStream = request.put(options, (err, httpResponse, body) =>{
       // console.debug("Upload PUT complete pour " + params.fileUuid);

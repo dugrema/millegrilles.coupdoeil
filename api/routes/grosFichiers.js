@@ -165,7 +165,11 @@ function _pipeFileToResult(req, res, pipes, securite) {
   const options = {
     url: targetConsignation,
     headers: headers,
-    agentOptions: {ca: pki.ca},  // Utilisation certificats SSL internes
+    agentOptions: {
+      ca: pki.ca,
+      key: pki.cle,
+      cert: pki.certPEM,
+    },  // Utilisation certificats SSL internes
   }
   try {
     request(options).pipe(pipes);

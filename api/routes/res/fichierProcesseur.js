@@ -24,15 +24,6 @@ class ProcesseurUpload {
       // let fuuide = this.formatterPath(fileUuid, 'dat');
       let crypte = (fichier.encryptedSecretKey)?true:false;
 
-      let options = {
-        url: pathServeur,
-        headers: {
-          fileuuid: fileUuid,
-          encrypte: crypte,
-        },
-        agentOptions: {ca: pki.ca},  // Utilisation certificats SSL internes
-      };
-
       try {
         // console.debug("Put complete, sending record to MQ");
         let transactionNouvelleVersion = {
