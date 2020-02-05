@@ -872,6 +872,7 @@ class GenerateurRapports extends React.Component {
       periode: 'days',
       debut: '',
       fin: '',
+      uuidFichierRapport: null,
     }
   }
 
@@ -987,7 +988,7 @@ class GenerateurRapports extends React.Component {
             </Col>
           </Row>
 
-          <Row><Col><Button>Generer</Button></Col></Row>
+          <Row><Col><Button onClick={this._genererRapport}>Generer</Button></Col></Row>
         </Form>
       </Feuille>
     )
@@ -1012,6 +1013,44 @@ class GenerateurRapports extends React.Component {
     var senseursSelectionnes = {...this.state.senseursSelectionnes}
     senseursSelectionnes[name] = !senseursSelectionnes[name];
     this.setState({senseursSelectionnes});
+  }
+
+  _genererRapport = event => {
+    // Filtre dict de mesures, accumulateurs et senseurs pour faire des listes
+    const mesures = Object.keys(this.state.mesures).reduce((result, val)=>{
+      if(this.state.mesures[val]) { result.push(val); }
+      return result;
+    }, []);
+
+    const accumulateurs = Object.keys(this.state.accumulateurs).reduce((result, val)=>{
+      if(this.state.accumulateurs[val]) { result.push(val); }
+      return result;
+    }, []);
+
+    const senseurs = Object.keys(this.state.senseursSelectionnes).reduce((result, val)=>{
+      if(this.state.senseursSelectionnes[val]) { result.push(val); }
+      return result;
+    }, []);
+
+    var transaction = {
+      mesures, accumulateurs, senseurs,
+    }
+    console.debug(transaction);
+
+    const domaine = 'millegrilles.domaines.SenseursPassifs.genererRapport';
+    webSocketManager.transmettreTransaction(domaine, transaction)
+    .then(reponse=>{
+      if(reponse.err) {
+        console.error("Erreur transaction");
+      } else {
+        console.debug("Fichier rapport: " + reponse.fuuid)
+        this.setState({uuidFichierRapport: reponse.fuuid});
+      }
+    })
+    .catch(err=>{
+      console.error("Erreur sauvegarde");
+      console.error(err);
+    });
   }
 }
 
