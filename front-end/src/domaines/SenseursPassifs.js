@@ -1,10 +1,10 @@
 import React from 'react';
+import { Form, Button, Row, Col } from 'react-bootstrap';
 import './SenseursPassifs.css';
 import webSocketManager from '../WebSocketManager';
 import {dateformatter, numberformatter} from '../formatters';
 import { GraphiqueCharte2D } from '../chart.js';
 import { Feuille } from '../mgcomponents/Feuilles'
-import { Button, Row, Col } from 'react-bootstrap';
 
 export class SenseursPassifs extends React.Component {
 
@@ -857,16 +857,136 @@ class SenseurPassifAppareil extends React.Component {
 
 class GenerateurRapports extends React.Component {
 
-  componentDidMount() {
+  constructor(props) {
+    super(props);
 
+    this.ACCUMULATEURS = ['avg', 'max', 'min'];
+    this.MESURES = ['temperature', 'humidite', 'pression', 'millivolt', 'reserve'];
+    this.PERIODE = ['days', 'hours'];
+
+    this.state = {
+      listeSenseurs: [],
+      mesures: [...this.MESURES],
+      accumulateurs: [...this.ACCUMULATEURS],
+      periode: 'days',
+      debut: '',
+      fin: '',
+    }
+  }
+
+  componentDidMount() {
+    this.chargerListeSenseurs();
+  }
+
+  chargerListeSenseurs() {
+
+    let limit = 200;
+
+    const currentIndex = this.state.startingIndex;
+    const domaine = 'requete.millegrilles.domaines.SenseursPassifs';
+    const requete = {'requetes': [
+      {
+        'filtre': {
+          '_mg-libelle': 'senseur.individuel',
+        },
+        'projection': {
+          "uuid_senseur": 1, "noeud": 1, "location": 1
+        },
+        'hint': [
+          {'_mg-libelle': 1}
+        ],
+        'limit': limit
+      }
+    ]};
+
+    return webSocketManager.transmettreRequete(domaine, requete)
+    .then( docsRecu => {
+      // console.debug("Resultats requete");
+      // console.debug(docsRecu);
+      const listeSenseurs = docsRecu[0];
+      this.setState({listeSenseurs});
+    });
   }
 
   render() {
     return (
+      <div>
+        <Feuille>
+          <Row>
+            <Col><h2>Generateur de rapports</h2></Col>
+          </Row>
+          <Row>
+            <Col>
+              <Button onClick={this.props.versPageListeNoeuds}>Retour</Button>
+            </Col>
+          </Row>
+        </Feuille>
+
+        {this.renderParametres()}
+
+      </div>
+    )
+  }
+
+  renderParametres() {
+    // Extraire et trier la liste des senseurs
+    var listeSenseurs = [...this.state.listeSenseurs];
+    listeSenseurs.sort((a,b)=>{
+      if(a===b) return 0;
+      let nomA = a.location || a.uuid_senseur;
+      let nomB = b.location || b.uuid_senseur;
+      return nomA.localeCompare(nomB);
+    })
+    listeSenseurs = listeSenseurs.map(val=>{
+      return <Form.Check
+        key={val.uuid_senseur}
+        type='checkbox'
+        id={val.uuid_senseur}
+        label={val.location || val.uuid_senseur}
+      />
+
+    })
+
+    // Generer liste accumulateurs et mesures
+    const listeAccumulateurs = this.ACCUMULATEURS.map(val=>{
+      return <Form.Check
+        key={val}
+        type='checkbox'
+        id={val}
+        label={val}
+      />
+    })
+    const listeMesures = this.MESURES.map(val=>{
+      return <Form.Check
+        key={val}
+        type='checkbox'
+        id={val}
+        label={val}
+      />
+    })
+
+    return (
       <Feuille>
-        <Row>
-          <Col><h2>Generateur de rapports</h2></Col>
-        </Row>
+        <Form>
+          <Row>
+            <Col>
+              <Form.Group controlId="senseurs">
+                <Form.Label>Senseurs</Form.Label>
+                {listeSenseurs}
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group controlId="mesures">
+                <Form.Label>Mesures</Form.Label>
+                {listeMesures}
+              </Form.Group>
+              <Form.Group controlId="accumulateurs">
+                <Form.Label>Accumulateurs</Form.Label>
+                {listeAccumulateurs}
+              </Form.Group>
+            </Col>
+          </Row>
+        </Form>
       </Feuille>
     )
   }
