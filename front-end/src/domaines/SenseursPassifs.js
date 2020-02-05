@@ -866,8 +866,9 @@ class GenerateurRapports extends React.Component {
 
     this.state = {
       listeSenseurs: [],
-      mesures: [...this.MESURES],
-      accumulateurs: [...this.ACCUMULATEURS],
+      senseursSelectionnes: {},
+      mesures: this.MESURES.reduce((result, mesure)=>{result[mesure] = false; return result}, {}),
+      accumulateurs: this.ACCUMULATEURS.reduce((result, mesure)=>{result[mesure] = false; return result}, {}),
       periode: 'days',
       debut: '',
       fin: '',
@@ -904,7 +905,8 @@ class GenerateurRapports extends React.Component {
       // console.debug("Resultats requete");
       // console.debug(docsRecu);
       const listeSenseurs = docsRecu[0];
-      this.setState({listeSenseurs});
+      const senseursSelectionnes = listeSenseurs.reduce((result, val)=>{result[val.uuid_senseur] = false; return result}, {});
+      this.setState({listeSenseurs, senseursSelectionnes});
     });
   }
 
@@ -938,30 +940,28 @@ class GenerateurRapports extends React.Component {
       return nomA.localeCompare(nomB);
     })
     listeSenseurs = listeSenseurs.map(val=>{
-      return <Form.Check
-        key={val.uuid_senseur}
-        type='checkbox'
-        id={val.uuid_senseur}
+      return <Form.Check key={val.uuid_senseur} type='checkbox'
+        id={val.uuid_senseur} name={val.uuid_senseur}
         label={val.location || val.uuid_senseur}
+        checked={this.state.senseursSelectionnes[val]}
+        onChange={this._changerSenseur}
       />
 
     })
 
     // Generer liste accumulateurs et mesures
     const listeAccumulateurs = this.ACCUMULATEURS.map(val=>{
-      return <Form.Check
-        key={val}
-        type='checkbox'
-        id={val}
-        label={val}
+      return <Form.Check key={val} type='checkbox'
+        id={val} name={val} label={val}
+        checked={this.state.accumulateurs[val]}
+        onChange={this._changerAccumulateur}
       />
     })
     const listeMesures = this.MESURES.map(val=>{
-      return <Form.Check
-        key={val}
-        type='checkbox'
-        id={val}
-        label={val}
+      return <Form.Check key={val} type='checkbox'
+        id={val} name={val} label={val}
+        checked={this.state.mesures[val]}
+        onChange={this._changerMesure}
       />
     })
 
@@ -969,13 +969,13 @@ class GenerateurRapports extends React.Component {
       <Feuille>
         <Form>
           <Row>
-            <Col>
+            <Col md={8}>
               <Form.Group controlId="senseurs">
                 <Form.Label>Senseurs</Form.Label>
                 {listeSenseurs}
               </Form.Group>
             </Col>
-            <Col>
+            <Col md={4}>
               <Form.Group controlId="mesures">
                 <Form.Label>Mesures</Form.Label>
                 {listeMesures}
@@ -986,9 +986,32 @@ class GenerateurRapports extends React.Component {
               </Form.Group>
             </Col>
           </Row>
+
+          <Row><Col><Button>Generer</Button></Col></Row>
         </Form>
       </Feuille>
     )
+  }
+
+  _changerMesure = event => {
+    var name = event.currentTarget.name;
+    var mesures = {...this.state.mesures}
+    mesures[name] = !mesures[name];
+    this.setState({mesures});
+  }
+
+  _changerAccumulateur = event => {
+    var name = event.currentTarget.name;
+    var accumulateurs = {...this.state.accumulateurs}
+    accumulateurs[name] = !accumulateurs[name];
+    this.setState({accumulateurs});
+  }
+
+  _changerSenseur = event => {
+    var name = event.currentTarget.name;
+    var senseursSelectionnes = {...this.state.senseursSelectionnes}
+    senseursSelectionnes[name] = !senseursSelectionnes[name];
+    this.setState({senseursSelectionnes});
   }
 }
 
