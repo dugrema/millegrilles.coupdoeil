@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Button, Row, Col } from 'react-bootstrap';
+import { Form, Button, Row, Col, Alert } from 'react-bootstrap';
 import './SenseursPassifs.css';
 import webSocketManager from '../WebSocketManager';
 import {dateformatter, numberformatter} from '../formatters';
@@ -912,6 +912,16 @@ class GenerateurRapports extends React.Component {
   }
 
   render() {
+    var sectionFichierRapport = null;
+    if(this.state.uuidFichierRapport) {
+      sectionFichierRapport = (
+        <Alert variant='success'>
+          Fichier de rapport genere.
+          <Button>Afficher</Button>
+        </Alert>
+      )
+    }
+
     return (
       <div>
         <Feuille>
@@ -923,6 +933,8 @@ class GenerateurRapports extends React.Component {
               <Button onClick={this.props.versPageListeNoeuds}>Retour</Button>
             </Col>
           </Row>
+
+          {sectionFichierRapport}
         </Feuille>
 
         {this.renderParametres()}
