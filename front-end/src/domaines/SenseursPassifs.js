@@ -3,6 +3,8 @@ import './SenseursPassifs.css';
 import webSocketManager from '../WebSocketManager';
 import {dateformatter, numberformatter} from '../formatters';
 import { GraphiqueCharte2D } from '../chart.js';
+import { Feuille } from '../mgcomponents/Feuilles'
+import { Button, Row, Col } from 'react-bootstrap';
 
 export class SenseursPassifs extends React.Component {
 
@@ -11,6 +13,7 @@ export class SenseursPassifs extends React.Component {
     uuid_senseur: null,
     editionEnCours: {},
     editionSoumise: false,
+    generateurRapports: false,
   };
 
   // Configuration statique du composant:
@@ -27,13 +30,13 @@ export class SenseursPassifs extends React.Component {
   // Fonctions de navigation
   fonctionsNavigation = {
     retourSenseurs: event => {
-      this.setState({uuid_senseur: null});
+      this.setState({uuid_senseur: null, generateurRapports: false});
     },
     versPageListeNoeuds: event => {
-      this.setState({uuid_senseur: null});
+      this.setState({uuid_senseur: null, generateurRapports: false});
     },
     versPageSenseur: event => {
-      this.setState({uuid_senseur: event.currentTarget.value});
+      this.setState({uuid_senseur: event.currentTarget.value, generateurRapports: false});
     },
     setEditionEnCours: event => {
       var editionEnCours = {...this.state.editionEnCours};
@@ -53,6 +56,9 @@ export class SenseursPassifs extends React.Component {
     setEditionSoumise: event => {
       this.setState({editionSoumise: true});
     },
+    afficherGenerateurRapports: event => {
+      this.setState({generateurRapports: true})
+    }
   }
 
   processMessage = (routingKey, doc) => {
@@ -192,7 +198,12 @@ export class SenseursPassifs extends React.Component {
     //  - Si on a un uuid_senseur, on l'affiche.
     //  - Sinon si on a un noeud, on l'affiche.
     //  - Sinon on affiche la liste des noeuds.
-    if(this.state.uuid_senseur) {
+    if(this.state.generateurRapports) {
+      contenu = (
+        <GenerateurRapports
+          {...this.fonctionsNavigation} />
+      )
+    } else if(this.state.uuid_senseur) {
       // Afficher la page du senseur
       contenu = (
         <SenseurPassifIndividuel
@@ -275,7 +286,7 @@ function AfficherNoeuds(props) {
 
       var date_derniere_modification = dateformatter.format_monthhour(noeud['_mg-derniere-modification']);
       liste.push(
-        <div key={noeud.noeud} className="w3-card w3-round w3-white w3-card_BR">
+        <Feuille key={noeud.noeud}>
           <div className="w3-container w3-padding">
             <h6 className="w3-opacity">Noeud {noeud.noeud}</h6>
             <div>
@@ -294,7 +305,7 @@ function AfficherNoeuds(props) {
               {senseurs}
             </div>
           </div>
-        </div>
+        </Feuille>
       );
 
       return liste;
@@ -303,11 +314,18 @@ function AfficherNoeuds(props) {
   }
 
   return (
-    <div className="w3-col m9">
+    <div className="w3-col m9 w3-row-padding">
       <div className="w3-row-padding">
-        <div className="w3-col m12">
-          {liste}
-        </div>
+        <Feuille>
+          <Row><Col><h2>Senseurs passifs</h2></Col></Row>
+          <Row>
+            <Col>
+              <Button onClick={props.afficherGenerateurRapports}>Generer rapport</Button>
+            </Col>
+          </Row>
+        </Feuille>
+
+        {liste}
       </div>
     </div>
   )
@@ -835,6 +853,23 @@ class SenseurPassifAppareil extends React.Component {
     );
   }
 
+}
+
+class GenerateurRapports extends React.Component {
+
+  componentDidMount() {
+
+  }
+
+  render() {
+    return (
+      <Feuille>
+        <Row>
+          <Col><h2>Generateur de rapports</h2></Col>
+        </Row>
+      </Feuille>
+    )
+  }
 }
 
 function getBatterieIcon(documentSenseur) {
