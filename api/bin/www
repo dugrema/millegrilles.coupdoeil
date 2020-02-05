@@ -23,7 +23,7 @@ var port = normalizePort(process.env.PORT || '443');
 const hostIp = process.env.HOST || 'dev2.maple.mdugre.info';
 const key_path = process.env.PRIVKEY;
 const cert_path = process.env.CERT;
-const nomMilleGrille = process.env.MG_NOM_MILLEGRILLE;
+// const idmg = process.env.MG_IDMG;
 
 /**
  * Create SPDY/http2 server.
