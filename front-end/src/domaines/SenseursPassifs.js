@@ -1086,7 +1086,7 @@ class GenerateurRapports extends React.Component {
       }
     }
 
-    console.debug(transaction);
+    // console.debug(transaction);
 
     const domaine = 'millegrilles.domaines.SenseursPassifs.genererRapport';
     webSocketManager.transmettreTransaction(domaine, transaction)
@@ -1094,7 +1094,7 @@ class GenerateurRapports extends React.Component {
       if(reponse.err) {
         console.error("Erreur transaction");
       } else {
-        console.debug("Fichier rapport: " + reponse.fuuid)
+        // console.debug("Fichier rapport: " + reponse.fuuid)
         this.setState({uuidFichierRapport: reponse.fuuid});
       }
     })
