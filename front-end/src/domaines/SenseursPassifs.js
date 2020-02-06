@@ -1,5 +1,7 @@
 import React from 'react';
 import { Form, Button, Row, Col, Alert } from 'react-bootstrap';
+import moment from 'moment-timezone';
+import DateRangePicker from '@wojtekmaj/react-daterange-picker'
 import './SenseursPassifs.css';
 import webSocketManager from '../WebSocketManager';
 import {dateformatter, numberformatter} from '../formatters';
@@ -864,14 +866,20 @@ class GenerateurRapports extends React.Component {
     this.MESURES = ['temperature', 'humidite', 'pression', 'millivolt', 'reserve'];
     this.GROUPETEMPS = ['days', 'hours'];
 
+    var dateRangeInitial = [
+      moment().add(-90, 'days').toDate(),
+      new Date(),
+    ]
+
+    console.debug(dateRangeInitial)
+
     this.state = {
       listeSenseurs: [],
       senseursSelectionnes: {},
       mesures: this.MESURES.reduce((result, mesure)=>{result[mesure] = false; return result}, {}),
       accumulateurs: this.ACCUMULATEURS.reduce((result, mesure)=>{result[mesure] = false; return result}, {}),
       groupeTemps: 'days',
-      debut: '',
-      fin: '',
+      dateRange: dateRangeInitial,
       uuidFichierRapport: null,
     }
   }
@@ -988,13 +996,13 @@ class GenerateurRapports extends React.Component {
       <Feuille>
         <Form>
           <Row>
-            <Col md={8}>
+            <Col lg={7}>
               <Form.Group controlId="senseurs">
                 <Form.Label>Senseurs</Form.Label>
                 {listeSenseurs}
               </Form.Group>
             </Col>
-            <Col md={4}>
+            <Col lg={5}>
               <Form.Group controlId="mesures">
                 <Form.Label>Mesures</Form.Label>
                 {listeMesures}
@@ -1007,6 +1015,10 @@ class GenerateurRapports extends React.Component {
                 <Form.Label>Groupement Temporel</Form.Label>
                 {listeGroupeTemps}
               </Form.Group>
+              <div>Intervalle de temps du rapport</div>
+              <DateRangePicker
+                value={this.state.dateRange}
+                onChange={this._changerDateRange} />
             </Col>
           </Row>
 
@@ -1042,6 +1054,11 @@ class GenerateurRapports extends React.Component {
     this.setState({groupeTemps: value});
   }
 
+  _changerDateRange = dateRange => {
+    console.debug(dateRange)
+    this.setState({dateRange})
+  }
+
   _genererRapport = event => {
     // Filtre dict de mesures, accumulateurs et senseurs pour faire des listes
     const mesures = Object.keys(this.state.mesures).reduce((result, val)=>{
@@ -1063,6 +1080,14 @@ class GenerateurRapports extends React.Component {
       mesures, accumulateurs, senseurs,
       'groupe_temps': this.state.groupeTemps,
     }
+
+    if(this.state.dateRange && this.state.dateRange[0] && this.state.dateRange[1]) {
+      transaction.periode = {
+        debut: this.state.dateRange[0].getTime()/1000,
+        fin: this.state.dateRange[1].getTime()/1000,
+      }
+    }
+
     console.debug(transaction);
 
     const domaine = 'millegrilles.domaines.SenseursPassifs.genererRapport';
