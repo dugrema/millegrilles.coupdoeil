@@ -890,7 +890,7 @@ class GenerateurRapports extends React.Component {
 
     let limit = 200;
 
-    const currentIndex = this.state.startingIndex;
+    // const currentIndex = this.state.startingIndex;
     const domaine = 'requete.millegrilles.domaines.SenseursPassifs';
     const requete = {'requetes': [
       {

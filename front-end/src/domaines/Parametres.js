@@ -5,6 +5,7 @@ import webSocketManager from '../WebSocketManager';
 import { GestionEmailSmtp } from './ParametresGestionEmailSmtp';
 import { GestionDeployeurPublic } from './ParametresGestionDeployeurPublic'
 import { NoeudsPublics } from './ParametresNoeudsPublics'
+import { ParametresErreurs } from './ParametresErreurs'
 import './Parametres.css';
 
 class ActionsInterdites extends React.Component {
@@ -67,7 +68,7 @@ export class Parametres extends React.Component {
     'GestionEmailSmtp': GestionEmailSmtp,
     'GestionDeployeurPublic': GestionDeployeurPublic,
     'ActionsInterdites': ActionsInterdites,
-    NoeudsPublics: NoeudsPublics,
+    NoeudsPublics, ParametresErreurs,
   }
 
   fonctionsNavigation = {
@@ -107,6 +108,11 @@ export class Parametres extends React.Component {
             <li>
               <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="ActionsInterdites">
                 Actions interdites
+              </button>
+            </li>
+            <li>
+              <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="ParametresErreurs">
+                Erreurs systeme
               </button>
             </li>
           </ul>
