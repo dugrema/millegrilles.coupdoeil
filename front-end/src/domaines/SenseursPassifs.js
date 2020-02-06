@@ -871,8 +871,6 @@ class GenerateurRapports extends React.Component {
       new Date(),
     ]
 
-    console.debug(dateRangeInitial)
-
     this.state = {
       listeSenseurs: [],
       senseursSelectionnes: {},
