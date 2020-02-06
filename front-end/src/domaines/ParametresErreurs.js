@@ -109,10 +109,17 @@ function AfficherErreur(props) {
   var messageErreur = props.erreur.message_original;
 
   // Enlever wrapping b''
-  messageErreur = messageErreur.slice(2, messageErreur.length -1);
-  // console.debug("Message erreur")
-  // console.debug(messageErreur)
-  messageErreur = JSON.stringify(JSON.parse(messageErreur), null, 2);
+  if(messageErreur) {
+    try {
+      messageErreur = messageErreur.slice(2, messageErreur.length -1);
+      // console.debug("Message erreur")
+      // console.debug(messageErreur)
+      messageErreur = JSON.stringify(JSON.parse(messageErreur), null, 2);
+    } catch (e) {
+      console.warn("Erreur affichage messageErreur")
+      console.info(messageErreur);
+    }
+  }
 
   var stackTrace = props.erreur.stacktrace.reduce((result, valeur)=>{
     valeur = valeur.replace(/\\n/g, '');
