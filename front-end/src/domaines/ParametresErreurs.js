@@ -1,7 +1,6 @@
 import React from 'react';
 import { Feuille } from '../mgcomponents/Feuilles';
-import { Form, Button, ButtonGroup, ButtonToolbar, ListGroup, InputGroup,
-         Row, Col, ToggleButtonGroup, ToggleButton } from 'react-bootstrap';
+import { Button, Row, Col } from 'react-bootstrap';
 import webSocketManager from '../WebSocketManager';
 import { Trans } from 'react-i18next';
 import { DateTimeFormatter } from '../mgcomponents/ReactFormatters';
@@ -19,9 +18,6 @@ export class ParametresErreurs extends React.Component {
   }
 
   requeteErreurs = () => {
-    let limit = 200;
-
-    // const currentIndex = this.state.startingIndex;
     const domaine = 'requete.millegrilles.domaines.Parametres.erreurs';
     const requete = {};
 
