@@ -862,14 +862,14 @@ class GenerateurRapports extends React.Component {
 
     this.ACCUMULATEURS = ['avg', 'max', 'min'];
     this.MESURES = ['temperature', 'humidite', 'pression', 'millivolt', 'reserve'];
-    this.PERIODE = ['days', 'hours'];
+    this.GROUPETEMPS = ['days', 'hours'];
 
     this.state = {
       listeSenseurs: [],
       senseursSelectionnes: {},
       mesures: this.MESURES.reduce((result, mesure)=>{result[mesure] = false; return result}, {}),
       accumulateurs: this.ACCUMULATEURS.reduce((result, mesure)=>{result[mesure] = false; return result}, {}),
-      periode: 'days',
+      groupeTemps: 'days',
       debut: '',
       fin: '',
       uuidFichierRapport: null,
@@ -916,8 +916,7 @@ class GenerateurRapports extends React.Component {
     if(this.state.uuidFichierRapport) {
       sectionFichierRapport = (
         <Alert variant='success'>
-          Fichier de rapport genere.
-          <Button>Afficher</Button>
+          Fichier de rapport genere sous GrosFichiers.
         </Alert>
       )
     }
@@ -977,6 +976,13 @@ class GenerateurRapports extends React.Component {
         onChange={this._changerMesure}
       />
     })
+    const listeGroupeTemps = this.GROUPETEMPS.map(val=>{
+      return <Form.Check key={val} type='radio'
+        id={val} name='listeGroupeTemps' label={val}
+        value={val} checked={this.state.groupeTemps === val}
+        onChange={this._changerGroupeTemps}
+      />
+    })
 
     return (
       <Feuille>
@@ -996,6 +1002,10 @@ class GenerateurRapports extends React.Component {
               <Form.Group controlId="accumulateurs">
                 <Form.Label>Accumulateurs</Form.Label>
                 {listeAccumulateurs}
+              </Form.Group>
+              <Form.Group controlId="groupetemps">
+                <Form.Label>Groupement Temporel</Form.Label>
+                {listeGroupeTemps}
               </Form.Group>
             </Col>
           </Row>
@@ -1027,6 +1037,11 @@ class GenerateurRapports extends React.Component {
     this.setState({senseursSelectionnes});
   }
 
+  _changerGroupeTemps = event => {
+    var value = event.currentTarget.value;
+    this.setState({groupeTemps: value});
+  }
+
   _genererRapport = event => {
     // Filtre dict de mesures, accumulateurs et senseurs pour faire des listes
     const mesures = Object.keys(this.state.mesures).reduce((result, val)=>{
@@ -1046,6 +1061,7 @@ class GenerateurRapports extends React.Component {
 
     var transaction = {
       mesures, accumulateurs, senseurs,
+      'groupe_temps': this.state.groupeTemps,
     }
     console.debug(transaction);
 
