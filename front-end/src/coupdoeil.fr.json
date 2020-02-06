@@ -15,7 +15,8 @@
       "sauvegarder": "Sauvegarder",
       "publier": "Publier",
       "retour": "Retour",
-      "url": "URL"
+      "url": "URL",
+      "rafraichir": "Rafraichir"
     },
     "formulaire": {
       "prenom": "Prénom :",
@@ -77,7 +78,12 @@
         "changerLangue": "English"
       },
       "erreurs": {
-        "titre": "Erreurs"
+        "titre": "Erreurs",
+        "date": "Date :",
+        "erreur": "Erreur :",
+        "routingKey": "Routing Key :",
+        "messageOriginal": "Message original",
+        "traceback": "StackTrace / TraceBack"
       }
     },
     "plume": {

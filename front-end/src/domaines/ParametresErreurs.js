@@ -18,7 +18,7 @@ export class ParametresErreurs extends React.Component {
     this.requeteErreurs();
   }
 
-  requeteErreurs() {
+  requeteErreurs = () => {
     let limit = 200;
 
     // const currentIndex = this.state.startingIndex;
@@ -41,13 +41,48 @@ export class ParametresErreurs extends React.Component {
 
           <Feuille>
             <Row><Col><h2><Trans>parametres.erreurs.titre</Trans></h2></Col></Row>
+            <Row>
+              <Col>
+                <Button onClick={this.requeteErreurs}>
+                  <Trans>global.rafraichir</Trans>
+                </Button>
+              </Col>
+            </Row>
           </Feuille>
 
-          <ListeErreurs erreurs={this.state.listeErreurs}/>
+          <ListeErreurs
+            erreurs={this.state.listeErreurs}
+            supprimerErreur={this.supprimerErreur} />
 
         </div>
       </div>
     );
+  }
+
+  supprimerErreur = event => {
+    const value = event.currentTarget.value;
+    // console.debug("Supprimer " + value);
+
+    const commande = {
+      'id_erreur': value
+    }
+
+    // Note : normalement ce serait une transaction ou une commande
+    //        mais le traitement d'erreur fait partie de l'admin systeme
+    //        L'operation se fait au travers d'une requete protegee
+    const domaine = 'requete.millegrilles.domaines.Parametres.supprimerErreur';
+    return webSocketManager.transmettreCommande(domaine, commande)
+    .then( result => {
+      // console.debug("Resultats commande");
+      // console.debug(result);
+
+      // Retirer l'erreur de la liste
+      const listeErreurs = this.state.listeErreurs.filter(erreur=>{
+        return erreur['_id'] !== value;
+      })
+      this.setState({listeErreurs});
+    });
+
   }
 
 }
@@ -60,6 +95,7 @@ function ListeErreurs(props) {
       return (
         <AfficherErreur
           key={erreur['_id']}
+          supprimerErreur={props.supprimerErreur}
           {...erreur} />
       );
     })
@@ -92,24 +128,26 @@ function AfficherErreur(props) {
     <Feuille>
 
       <Row>
-        <Col lg={3}>Date</Col>
+        <Col lg={3}><Trans>parametres.erreurs.date</Trans></Col>
         <Col lg={8}>
           <Trans values={{date: new Date(props['_mg-creation']*1000)}}>global.dateHeure</Trans>
           <span> </span>
           (<DateTimeFormatter date={props['_mg-creation']}/>)
         </Col>
         <Col lg={1}>
-          <Button variant="danger"><i className="fa fa-close"/></Button>
+          <Button variant="danger" onClick={props.supprimerErreur} value={props['_id']}>
+            <i className="fa fa-close"/>
+          </Button>
         </Col>
       </Row>
 
       <Row>
-        <Col lg={3}>Routing key</Col>
+        <Col lg={3}>parametres.</Col>
         <Col lg={9}>{props.routing_key}</Col>
       </Row>
 
       <Row>
-        <Col lg={3}>Erreur :</Col>
+        <Col lg={3}><Trans>parametres.erreurs.erreur</Trans></Col>
         <Col lg={9}>
           {descriptionErreur}
         </Col>
@@ -117,7 +155,7 @@ function AfficherErreur(props) {
 
       <Row>
         <Col>
-          Message original
+          <Trans>parametres.erreurs.messageOriginal</Trans>
         </Col>
       </Row>
       <Row>
@@ -128,7 +166,7 @@ function AfficherErreur(props) {
 
       <Row>
         <Col>
-          Stacktrace / Traceback
+          <Trans>parametres.erreurs.traceback</Trans>
         </Col>
       </Row>
       <Row>
