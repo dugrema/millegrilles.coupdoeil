@@ -91,6 +91,8 @@ export class UploadFichierSocketio {
             });
           }
 
+          // Verifier si le socket est connecte ou si on a attendre une
+          // reconnexion.
           if(socket.connected) {
             uploadFunction();
           } else {
@@ -100,17 +102,6 @@ export class UploadFichierSocketio {
             }, 2000);
           }
 
-          // Tenter de transmettre upload
-          // socket.emit('upload.nouveauFichier', transaction, reponse=>{
-          //   // console.debug("_executerUploadFichier, reponse serveur");
-          //   // console.debug(reponse);
-          //
-          //   if(reponse.pret) {
-          //     resolve({infoCryptage});
-          //   } else {
-          //     reject(reponse.erreur);
-          //   }
-          // });
         })
       })
       .then(({infoCryptage})=>{

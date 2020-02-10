@@ -579,9 +579,9 @@ export class ActiviteFichiers extends React.Component {
         }
 
         return (
-          <div key={fichier.uuid} className="w3-row-padding tableau-fichiers">
+          <Row key={fichier.uuid} className="tableau-fichiers">
 
-            <div className="w3-col m6">
+            <Col sm={12} xl={8} className="nom-fichier">
               <button className="nobutton" onClick={this.checkEntree}
                 value={fichier.uuid}
                 data-nom={fichier.nom}
@@ -591,13 +591,9 @@ export class ActiviteFichiers extends React.Component {
 
               {lienFichier}
 
-            </div>
+            </Col>
 
-            <div className="w3-col m2">
-              {fichier['_mg-libelle']}
-            </div>
-
-            <div className="w3-col m2 boutons-actions-droite">
+            <Col sm={6} xl={2} className="boutons-actions-droite">
               <button value={fichier.uuid} onClick={actionFavori}>
                 <span className={"fa-stack " + cssFavori}>
                   <i className='fa fa-star fa-stack-1x fond'/>
@@ -608,11 +604,13 @@ export class ActiviteFichiers extends React.Component {
                 onClick={this.props.actionsDownload.telechargerEvent}>
                 <i className="fa fa-download"/>
               </button>
-            </div>
-            <div className="w3-col m2">
+            </Col>
+
+            <Col sm={6} xl={2}>
               {dernierChangementRendered}
-            </div>
-          </div>
+            </Col>
+
+          </Row>
         );
       });
     }
