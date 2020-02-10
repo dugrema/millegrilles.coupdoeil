@@ -358,15 +358,6 @@ class App extends React.Component {
       console.error(erreur);
     })
 
-    socket.on('disconnect', () => {
-      if(this.state.wss_socket === socket) {
-        console.warn("Socket " + socket.id + " disconnected");
-        this.setState({wss_socket: null, loggedIn: false});
-      } else {
-        console.info("Dangling socket closed: " + socket.id);
-      }
-    });
-
     // Gerer l'authentification:
     socket.on(
       'challengeTokenUSB',
@@ -395,12 +386,22 @@ class App extends React.Component {
 
         // Ouvrir un socket avec certificat local.
         // Peut se reconnecter automatiquement
-        socket = openSocket('/', {reconnection: false});
+        socket = openSocket('/', {
+          reconnection: true,
+          reconnectionAttempts: 30,
+          reconnectionDelay: 500,
+          reconnectionDelayMax: 30000,
+          randomizationFactor: 0.5
+        });
         socket.on("authentifier", ()=>{
           socket.emit('authentification', {
             methode: 'certificatLocal',
             fingerprint: localStorage.getItem('certificat.fingerprint'),
           });
+        })
+
+        socket.on("reconnect", ()=>{
+          console.debug("Reconnexion");
         })
 
         this.enregistrerEvenementsGeneriques(socket);
@@ -415,6 +416,15 @@ class App extends React.Component {
             methode: 'tokenUSB',
           });
         })
+
+        socket.on('disconnect', () => {
+          if(this.state.wss_socket === socket) {
+            console.warn("Socket " + socket.id + " disconnected");
+            this.setState({wss_socket: null, loggedIn: false});
+          } else {
+            console.info("Dangling socket closed: " + socket.id);
+          }
+        });
 
         this.enregistrerEvenementsGeneriques(socket);
 
