@@ -81,8 +81,7 @@ export class UploadFichierSocketio {
         // console.debug(transaction);
         return new Promise((resolve, reject) => {
 
-          setTimeout(()=>{
-            console.debug("Uploader avec delai de reconnexion");
+          const uploadFunction = () => {
             socket.emit('upload.nouveauFichier', transaction, reponse=>{
               if(reponse.pret) {
                 resolve({infoCryptage});
@@ -90,7 +89,16 @@ export class UploadFichierSocketio {
                 reject(reponse.erreur);
               }
             });
-          }, 2000);
+          }
+
+          if(socket.connected) {
+            uploadFunction();
+          } else {
+            console.debug("Uploader avec delai de reconnexion");
+            setTimeout(()=>{
+              uploadFunction();
+            }, 2000);
+          }
 
           // Tenter de transmettre upload
           // socket.emit('upload.nouveauFichier', transaction, reponse=>{
