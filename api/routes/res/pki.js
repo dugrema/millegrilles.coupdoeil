@@ -366,7 +366,50 @@ class PKIUtils {
 
   async verifierSignatureMessage(message) {
     let fingerprint = message['en-tete']['certificat'];
+    let signatureBase64 = message['_signature'];
+    let signature = Buffer.from(signatureBase64, 'base64');
     let certificat = await this.getCertificate(fingerprint);
+    if( ! certificat ) {
+      console.debug("Certificat inconnu : " + fingerprint);
+      return;
+    }
+    const publicKey = certificat.publicKey;
+
+    let messageFiltre = {};
+    console.debug("Message")
+    console.debug(message);
+    for(let cle in message) {
+      if( ! cle.startsWith('_') ) {
+        messageFiltre[cle] = message[cle];
+      }
+    }
+    // Stringify en ordre (stable)
+    messageFiltre = stringify(messageFiltre);
+
+    let saltLength = (2048-512)/8-2;
+    console.debug("Salt length: " + saltLength);
+    console.debug("Signature : " + signatureBase64);
+    console.debug("Message filtre : ");
+    console.debug(messageFiltre);
+
+    var pss = forge.pss.create({
+      md: forge.md.sha512.create(),
+      mgf: forge.mgf.mgf1.create(forge.md.sha512.create()),
+      saltLength,
+      // optionally pass 'prng' with a custom PRNG implementation
+    });
+    var md = forge.md.sha512.create();
+    md.update(messageFiltre, 'utf8');
+
+    try {
+      let valide = publicKey.verify(md.digest().getBytes(), signature, pss);
+      console.debug("Signature valide (interne) ? " + valide);
+      return valide;
+    } catch (err) {
+      console.debug("Erreur verification signature");
+      console.debug(err);
+      return false;
+    }
 
   }
 

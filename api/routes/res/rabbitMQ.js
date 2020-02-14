@@ -190,7 +190,17 @@ class RabbitMQWrapper {
 
                 if( certificat ) {
                   // Le certificat est connu et valide
-                  callback(msg);
+                  pki.verifierSignatureMessage(json_message)
+                  .then(signatureValide=>{
+                    console.debug("Signature valide ? " + signatureValide);
+
+                    callback(msg);
+                  })
+                  .catch(err=>{
+                    console.error("Erreur verification signature message, message dropped");
+                    console.error(err);
+                  });
+
                 } else {
                   console.error("Message rejete, certificat inconnu " + fingerprintCertificat);
                 }
