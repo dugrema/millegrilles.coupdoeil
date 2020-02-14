@@ -192,9 +192,11 @@ class RabbitMQWrapper {
                   // Le certificat est connu et valide
                   pki.verifierSignatureMessage(json_message)
                   .then(signatureValide=>{
-                    console.debug("Signature valide ? " + signatureValide);
-
-                    callback(msg);
+                    if(signatureValide) {
+                      callback(msg);
+                    } else {
+                      console.warn("Signature invalide, message dropped");
+                    }
                   })
                   .catch(err=>{
                     console.error("Erreur verification signature message, message dropped");

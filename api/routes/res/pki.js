@@ -376,8 +376,6 @@ class PKIUtils {
     const publicKey = certificat.publicKey;
 
     let messageFiltre = {};
-    console.debug("Message")
-    console.debug(message);
     for(let cle in message) {
       if( ! cle.startsWith('_') ) {
         messageFiltre[cle] = message[cle];
@@ -388,9 +386,6 @@ class PKIUtils {
 
     let saltLength = (2048-512)/8-2;
     console.debug("Salt length: " + saltLength);
-    console.debug("Signature : " + signatureBase64);
-    console.debug("Message filtre : ");
-    console.debug(messageFiltre);
 
     var pss = forge.pss.create({
       md: forge.md.sha512.create(),
@@ -403,7 +398,6 @@ class PKIUtils {
 
     try {
       let valide = publicKey.verify(md.digest().getBytes(), signature, pss);
-      console.debug("Signature valide (interne) ? " + valide);
       return valide;
     } catch (err) {
       console.debug("Erreur verification signature");
