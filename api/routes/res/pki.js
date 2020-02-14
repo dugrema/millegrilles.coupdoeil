@@ -3,6 +3,9 @@ const forge = require('node-forge');
 // const x509 = require('x509');
 const stringify = require('json-stable-stringify');
 const fs = require('fs');
+const path = require('path');
+
+const REPERTOIRE_CERTS_TMP = '/tmp/coupdoeil.certs';
 
 class PKIUtils {
   // Classe qui supporte des operations avec certificats et cles privees.
@@ -20,6 +23,8 @@ class PKIUtils {
     this.certPEM = null;
     this.cert = null;
     this.ca = null;
+    this.caStore = null;
+    this.cacheCertsParFingerprint = {};
 
     this.algorithm = 'aes256';
     this.rsaAlgorithm = 'RSA-OAEP';
@@ -29,19 +34,28 @@ class PKIUtils {
   }
 
   chargerPEMs() {
+    // Preparer repertoire pour sauvegarder PEMS
+    fs.mkdir(REPERTOIRE_CERTS_TMP, {recursive: true, mode: 0o700}, e=>{
+      if(e) {
+        throw new Error(e);
+      }
+    });
+
     // console.log("PKI: Chargement cle " + this.keyFile + " et cert " + this.certFile);
     this.cle = fs.readFileSync(this.keyFile);
     this.ca = fs.readFileSync(this.cacertFile);
 
     // Charger le certificat pour conserver commonName, fingerprint
-    this.chargerCertificat();
+    this.chargerCertificats();
   }
 
   _verifierCertificat() {
     this.getFingerprint();
   }
 
-  async chargerCertificat() {
+  async chargerCertificats() {
+
+    // Charger certificat local
     await new Promise((resolve, reject) => {
       fs.readFile(this.certFile, (err, data)=>{
         if(err) {
@@ -57,12 +71,19 @@ class PKIUtils {
 
         // console.log("Certificat du noeud. Sujet CN: " +
         //   this.commonName + ", fingerprint: " + this.fingerprint);
-
+        resolve();
       })
     })
     .catch(err=>{
       throw new Error(err);
     })
+
+    // Creer le CA store pour verifier les certificats.
+    let parsedCACert = this.chargerCertificatPEM(this.ca);
+    this.caStore = forge.pki.createCaStore([parsedCACert]);
+    // console.debug("CA store");
+    // console.debug(this.caStore);
+
   }
 
   chargerCertificatPEM(pem) {
@@ -224,6 +245,64 @@ class PKIUtils {
     clePublique = clePublique.split('\n').join('');
 
     return {clePublique, fingerprint};
+  }
+
+  async sauvegarderMessageCertificat(message, fingerprint) {
+    let fichierExiste = fingerprint && await new Promise((resolve, reject)=>{
+      if(fingerprint) {
+        // Verifier si le fichier existe deja
+        let fichier = path.join(REPERTOIRE_CERTS_TMP, fingerprint + '.json');
+        fs.access(fichier, fs.constants.F_OK, (err) => {
+          let existe = ! err;
+          console.debug("Fichier existe ? " + existe);
+          resolve(existe);
+        });
+      } else {
+        resolve(false);
+      }
+    });
+
+    if( ! fichierExiste ) {
+      let json_message = JSON.parse(message);
+      let certificat_pem = json_message.certificat_pem;
+
+      let certificat = this.chargerCertificatPEM(certificat_pem);
+      let fingerprintCalcule = getCertificateFingerprint(certificat);
+      let fichier = path.join(REPERTOIRE_CERTS_TMP, fingerprintCalcule + '.json');
+
+      // Sauvegarder sur disque
+      fs.writeFile(fichier, message, ()=>{
+        console.debug("Fichier certificat " + fingerprintCalcule + ".json sauvegarde");
+      });
+    } else {
+      console.debug("Fichier certificat existe deja : " + fingerprint + ".json");
+    }
+  }
+
+  // Charge la chaine de certificat pour ce fingerprint
+  async getCertificate(fingerprint) {
+    let certificat = this.cacheCertsParFingerprint[fingerprint];
+    if( ! certificat ) {
+      // Verifier si le certificat existe sur le disque
+      let certificat = await new Promise((resolve, reject)=>{
+        let fichier = path.join(REPERTOIRE_CERTS_TMP, fingerprintCalcule + '.pem');
+        let pem = fs.readFile(fichier, (err, data)=>{
+          if(err) {
+            reject(err);
+          }
+
+          let certificat = this.chargerCertificatPEM(pem);
+          resolve(certificat);
+        });
+      });
+    }
+    return certificat;
+  }
+
+  async verifierSignatureMessage(message) {
+    let fingerprint = message['en-tete']['certificat'];
+    let certificat = await this.getCertificate(fingerprint);
+
   }
 
 };

@@ -87,6 +87,7 @@ class RabbitMQWrapper {
         this.routingKeyCertificat = 'pki.requete.' + fingerprint;
         console.debug("Enregistrer routing key: " + fingerprint)
         this.channel.bindQueue(this.reply_q.queue, 'millegrilles.noeuds', this.routingKeyCertificat);
+        this.channel.bindQueue(this.reply_q.queue, 'millegrilles.noeuds', 'pki.certificat.#');
 
         // console.debug("Certificat transmis");
       }).catch(err => {
@@ -160,10 +161,16 @@ class RabbitMQWrapper {
             let correlationId = msg.properties.correlationId;
             let messageContent = msg.content.toString('utf-8');
             let routingKey = msg.fields.routingKey;
-
-            // Valider le contenu du message - hachage et signature
             let json_message = JSON.parse(messageContent);
             // console.debug(json_message);
+
+            if(routingKey && routingKey.startsWith('pki.certificat.')) {
+              // Sauvegarder le certificat localement pour usage futur
+              pki.sauvegarderMessageCertificat(messageContent, json_message.fingerprint);
+              return; // Ce message ne correspond pas au format standard
+            }
+
+            // Valider le contenu du message - hachage et signature
             let hashTransactionCalcule = pki.hacherTransaction(json_message);
             let hashTransactionRecu = json_message['en-tete']['hachage-contenu'];
             if(hashTransactionCalcule !== hashTransactionRecu) {
@@ -171,8 +178,12 @@ class RabbitMQWrapper {
             }
 
             if(correlationId) {
+              // Relayer le message
               let callback = this.pendingResponses[correlationId];
               if(callback) {
+
+                // Verifier la signature du message
+
                 callback(msg);
               }
             } else if(routingKey) {
