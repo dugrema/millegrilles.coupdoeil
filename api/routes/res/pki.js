@@ -105,7 +105,7 @@ class PKIUtils {
     // Copier transaction sans l'entete
     let copie_transaction = {};
     for(let elem in transaction) {
-      if (elem != 'en-tete') {
+      if (elem !== 'en-tete' && !elem.startsWith('_')) {
         copie_transaction[elem] = transaction[elem];
       }
     }

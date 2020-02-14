@@ -155,10 +155,20 @@ class RabbitMQWrapper {
         this.channel.consume(
           q.queue,
           (msg) => {
-            // console.log('1. Message recu');
+            // console.debug('1. Message recu');
+            // console.debug(msg);
             let correlationId = msg.properties.correlationId;
             let messageContent = msg.content.toString('utf-8');
             let routingKey = msg.fields.routingKey;
+
+            // Valider le contenu du message - hachage et signature
+            let json_message = JSON.parse(messageContent);
+            // console.debug(json_message);
+            let hashTransactionCalcule = pki.hacherTransaction(json_message);
+            let hashTransactionRecu = json_message['en-tete']['hachage-contenu'];
+            if(hashTransactionCalcule !== hashTransactionRecu) {
+              throw new Error("Erreur hachage incorrect : " + hashTransactionCalcule);
+            }
 
             if(correlationId) {
               let callback = this.pendingResponses[correlationId];
