@@ -373,7 +373,6 @@ class PKIUtils {
       console.debug("Certificat inconnu : " + fingerprint);
       return;
     }
-    const publicKey = certificat.publicKey;
 
     let messageFiltre = {};
     for(let cle in message) {
@@ -384,8 +383,11 @@ class PKIUtils {
     // Stringify en ordre (stable)
     messageFiltre = stringify(messageFiltre);
 
-    let saltLength = (2048-512)/8-2;
-    console.debug("Salt length: " + saltLength);
+    let keyLength = certificat.publicKey.n.bitLength();
+    // Calcul taille salt:
+    // http://bouncy-castle.1462172.n4.nabble.com/Is-Bouncy-Castle-SHA256withRSA-PSS-compatible-with-OpenSSL-RSA-PSS-padding-with-SHA256-digest-td4656843.html
+    let saltLength = (keyLength - 512) / 8 - 2;
+    // console.debug("Salt length: " + saltLength);
 
     var pss = forge.pss.create({
       md: forge.md.sha512.create(),
@@ -397,6 +399,7 @@ class PKIUtils {
     md.update(messageFiltre, 'utf8');
 
     try {
+      var publicKey = certificat.publicKey;
       let valide = publicKey.verify(md.digest().getBytes(), signature, pss);
       return valide;
     } catch (err) {
