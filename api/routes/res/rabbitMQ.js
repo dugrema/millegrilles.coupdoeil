@@ -155,69 +155,7 @@ class RabbitMQWrapper {
 
         this.channel.consume(
           q.queue,
-          (msg) => {
-            // console.debug('1. Message recu');
-            // console.debug(msg);
-            let correlationId = msg.properties.correlationId;
-            let messageContent = msg.content.toString('utf-8');
-            let routingKey = msg.fields.routingKey;
-            let json_message = JSON.parse(messageContent);
-            // console.debug(json_message);
-
-            if(routingKey && routingKey.startsWith('pki.certificat.')) {
-              // Sauvegarder le certificat localement pour usage futur
-              pki.sauvegarderMessageCertificat(messageContent, json_message.fingerprint);
-              return; // Ce message ne correspond pas au format standard
-            }
-
-            // Valider le contenu du message - hachage et signature
-            let hashTransactionCalcule = pki.hacherTransaction(json_message);
-            let hashTransactionRecu = json_message['en-tete']['hachage-contenu'];
-            if(hashTransactionCalcule !== hashTransactionRecu) {
-              console.warn("Erreur hachage incorrect : " + hashTransactionCalcule);
-            }
-
-            if(correlationId) {
-              // Relayer le message
-              let callback = this.pendingResponses[correlationId];
-              if(callback) {
-
-                // Verifier la signature du message
-                let fingerprintCertificat = json_message['en-tete'].certificat;
-                let certificat = pki.getCertificate(fingerprintCertificat);
-                // console.debug("Certificat");
-                // console.debug(certificat);
-
-                if( certificat ) {
-                  // Le certificat est connu et valide
-                  pki.verifierSignatureMessage(json_message)
-                  .then(signatureValide=>{
-                    if(signatureValide) {
-                      callback(msg);
-                    } else {
-                      console.warn("Signature invalide, message dropped");
-                    }
-                  })
-                  .catch(err=>{
-                    console.error("Erreur verification signature message, message dropped");
-                    console.error(err);
-                  });
-
-                } else {
-                  console.error("Message rejete, certificat inconnu " + fingerprintCertificat);
-                }
-              }
-            } else if(routingKey) {
-              if(routingKey === this.routingKeyCertificat) {
-                this.transmettreCertificat();
-              } else {
-                console.error("Message avec routing key recu sur Q API global: " + routingKey + ". Message rejete");
-              }
-            } else {
-              console.debug("Recu message sans correlation Id ou routing key");
-              console.warn(msg);
-            }
-          },
+          msg => {this.traiterMessage(msg)},
           {noAck: true}
         );
 
@@ -231,6 +169,71 @@ class RabbitMQWrapper {
 
     return promise;
 
+  }
+
+  traiterMessage(msg) {
+    // console.debug('1. Message recu');
+    // console.debug(msg);
+    let correlationId = msg.properties.correlationId;
+    let messageContent = msg.content.toString('utf-8');
+    let routingKey = msg.fields.routingKey;
+    let json_message = JSON.parse(messageContent);
+    // console.debug(json_message);
+
+    if(routingKey && routingKey.startsWith('pki.certificat.')) {
+      // Sauvegarder le certificat localement pour usage futur
+      pki.sauvegarderMessageCertificat(messageContent, json_message.fingerprint);
+      return; // Ce message ne correspond pas au format standard
+    }
+
+    // Valider le contenu du message - hachage et signature
+    let hashTransactionCalcule = pki.hacherTransaction(json_message);
+    let hashTransactionRecu = json_message['en-tete']['hachage-contenu'];
+    if(hashTransactionCalcule !== hashTransactionRecu) {
+      console.warn("Erreur hachage incorrect : " + hashTransactionCalcule + ", message dropped");
+      return;
+    }
+
+    if(correlationId) {
+      // Relayer le message
+      let callback = this.pendingResponses[correlationId];
+      if(callback) {
+
+        // Verifier la signature du message
+        let fingerprintCertificat = json_message['en-tete'].certificat;
+        let certificat = pki.getCertificate(fingerprintCertificat);
+        // console.debug("Certificat");
+        // console.debug(certificat);
+
+        if( certificat ) {
+          // Le certificat est connu et valide
+          pki.verifierSignatureMessage(json_message)
+          .then(signatureValide=>{
+            if(signatureValide) {
+              callback(msg);
+            } else {
+              console.warn("Signature invalide, message dropped");
+            }
+          })
+          .catch(err=>{
+            console.error("Erreur verification signature message, message dropped");
+            console.error(err);
+          });
+
+        } else {
+          console.error("Message rejete, certificat inconnu " + fingerprintCertificat);
+        }
+      }
+    } else if(routingKey) {
+      if(routingKey === this.routingKeyCertificat) {
+        this.transmettreCertificat();
+      } else {
+        console.error("Message avec routing key recu sur Q API global: " + routingKey + ". Message rejete");
+      }
+    } else {
+      console.debug("Recu message sans correlation Id ou routing key");
+      console.warn(msg);
+    }
   }
 
   transmettreCertificat() {

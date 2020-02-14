@@ -364,6 +364,8 @@ class PKIUtils {
     return certificat;
   }
 
+  // Verifie la signature d'un message
+  // Retourne vrai si le message est valide, faux si invalide.
   async verifierSignatureMessage(message) {
     let fingerprint = message['en-tete']['certificat'];
     let signatureBase64 = message['_signature'];
