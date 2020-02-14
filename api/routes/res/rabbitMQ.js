@@ -174,7 +174,7 @@ class RabbitMQWrapper {
             let hashTransactionCalcule = pki.hacherTransaction(json_message);
             let hashTransactionRecu = json_message['en-tete']['hachage-contenu'];
             if(hashTransactionCalcule !== hashTransactionRecu) {
-              throw new Error("Erreur hachage incorrect : " + hashTransactionCalcule);
+              console.warn("Erreur hachage incorrect : " + hashTransactionCalcule);
             }
 
             if(correlationId) {
@@ -183,8 +183,17 @@ class RabbitMQWrapper {
               if(callback) {
 
                 // Verifier la signature du message
+                let fingerprintCertificat = json_message['en-tete'].certificat;
+                let certificat = pki.getCertificate(fingerprintCertificat);
+                // console.debug("Certificat");
+                // console.debug(certificat);
 
-                callback(msg);
+                if( certificat ) {
+                  // Le certificat est connu et valide
+                  callback(msg);
+                } else {
+                  console.error("Message rejete, certificat inconnu " + fingerprintCertificat);
+                }
               }
             } else if(routingKey) {
               if(routingKey === this.routingKeyCertificat) {

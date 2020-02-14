@@ -7,6 +7,9 @@ const path = require('path');
 
 const REPERTOIRE_CERTS_TMP = '/tmp/coupdoeil.certs';
 
+const PEM_CERT_DEBUT = '-----BEGIN CERTIFICATE-----';
+const PEM_CERT_FIN = '-----END CERTIFICATE-----';
+
 class PKIUtils {
   // Classe qui supporte des operations avec certificats et cles privees.
 
@@ -24,6 +27,7 @@ class PKIUtils {
     this.cert = null;
     this.ca = null;
     this.caStore = null;
+    this.caIntermediaires = [];
     this.cacheCertsParFingerprint = {};
 
     this.algorithm = 'aes256';
@@ -61,13 +65,23 @@ class PKIUtils {
         if(err) {
           return reject(err);
         }
-        this.certPEM = data;
-        let parsedCert = this.chargerCertificatPEM(data);
+
+        console.debug("CERT PEM DATA")
+        var certs = splitPEMCerts(data.toString('utf8'));
+        // console.debug(certs);
+
+        this.certPEM = certs[0];
+        // console.debug(this.certPEM);
+        let parsedCert = this.chargerCertificatPEM(this.certPEM);
         // console.debug(parsedCert);
 
         this.fingerprint = getCertificateFingerprint(parsedCert);
         this.cert = parsedCert;
         this.commonName = parsedCert.subject.getField('CN').value;
+
+        // Sauvegarder certificats intermediaires
+        let intermediaire = this.chargerCertificatPEM(certs[1]);
+        this.caIntermediaires = [intermediaire];
 
         // console.log("Certificat du noeud. Sujet CN: " +
         //   this.commonName + ", fingerprint: " + this.fingerprint);
@@ -247,6 +261,7 @@ class PKIUtils {
     return {clePublique, fingerprint};
   }
 
+  // Sauvegarde un message de certificat en format JSON
   async sauvegarderMessageCertificat(message, fingerprint) {
     let fichierExiste = fingerprint && await new Promise((resolve, reject)=>{
       if(fingerprint) {
@@ -284,16 +299,66 @@ class PKIUtils {
     let certificat = this.cacheCertsParFingerprint[fingerprint];
     if( ! certificat ) {
       // Verifier si le certificat existe sur le disque
-      let certificat = await new Promise((resolve, reject)=>{
-        let fichier = path.join(REPERTOIRE_CERTS_TMP, fingerprintCalcule + '.pem');
+      certificat = await new Promise((resolve, reject)=>{
+        let fichier = path.join(REPERTOIRE_CERTS_TMP, fingerprint + '.json');
         let pem = fs.readFile(fichier, (err, data)=>{
           if(err) {
-            reject(err);
+            return reject(err);
+          }
+
+          if(!data) {
+            return resolve(); // No data
+          }
+
+          let messageJson = JSON.parse(data.toString());
+          let pem = messageJson.certificat_pem;
+          let intermediaires = messageJson.certificats_intermediaires;
+
+          if( ! intermediaires ) {
+            // On va tenter d'introduire le certificat de MilleGrille local
+            intermediaires = this.caIntermediaires;
           }
 
           let certificat = this.chargerCertificatPEM(pem);
+
+          let chaine = [certificat, ...intermediaires];
+          // console.debug("CHAINE");
+          // console.debug(chaine);
+
+          let fingerprintCalcule = getCertificateFingerprint(certificat);
+          if(fingerprintCalcule !== fingerprint) {
+            // Supprimer fichier invalide
+            fs.unlink(fichier, ()=>{});
+            return reject('Fingerprint ' + fingerprintCalcule + ' ne correspond pas au fichier : ' + fingerprint + '.json. Fichier supprime.');
+          }
+
+          // Valider le certificat avec le store
+          let valide = true;
+          try {
+            forge.pki.verifyCertificateChain(this.caStore, chaine);
+          } catch (err) {
+            valide = false;
+            console.log('Certificate verification failure: ' +
+              JSON.stringify(err, null, 2));
+          }
+
+          if(valide) {
+            this.cacheCertsParFingerprint[fingerprintCalcule] = certificat;
+          } else {
+            certificat = null;
+          }
+
           resolve(certificat);
+
         });
+      })
+      .catch(err=>{
+        if(err.code === 'ENOENT') {
+          // Fichier non trouve, ok.
+        } else {
+          console.error("Erreur acces fichier cert");
+          console.error(err);
+        }
       });
     }
     return certificat;
@@ -313,6 +378,13 @@ function getCertificateFingerprint(cert) {
     .digest()
     .toHex();
   return fingerprint;
+}
+
+function splitPEMCerts(certs) {
+  var splitCerts = certs.split(PEM_CERT_DEBUT).map(c=>{
+    return PEM_CERT_DEBUT + c;
+  });
+  return splitCerts.slice(1);
 }
 
 const pki = new PKIUtils();
