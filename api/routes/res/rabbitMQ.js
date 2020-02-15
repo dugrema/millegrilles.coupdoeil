@@ -200,29 +200,60 @@ class RabbitMQWrapper {
       if(callback) {
 
         // Verifier la signature du message
-        let fingerprintCertificat = json_message['en-tete'].certificat;
-        let certificat = pki.getCertificate(fingerprintCertificat);
-        // console.debug("Certificat");
-        // console.debug(certificat);
-
-        if( certificat ) {
-          // Le certificat est connu et valide
-          pki.verifierSignatureMessage(json_message)
-          .then(signatureValide=>{
-            if(signatureValide) {
+        pki.verifierSignatureMessage(json_message)
+        .then(signatureValide=>{
+          if(signatureValide) {
+            callback(msg);
+          } else {
+            console.warn("Signature invalide, message dropped");
+          }
+        })
+        .catch(err=>{
+          if(err.inconnu) {
+            // Message inconnu, on va verifier si c'est une reponse de
+            // certificat.
+            if(json_message.resultats && json_message.resultats.certificat_pem) {
+              // On laisse le message passer, c'est un certificat
+              // console.debug("Certificat recu");
               callback(msg);
             } else {
-              console.warn("Signature invalide, message dropped");
+              // On tente de charger le certificat
+              let fingerprint = json_message['en-tete'].certificat;
+              console.warn("Certificat inconnu, on fait une demande : " + fingerprint);
+              this.demanderCertificat(fingerprint)
+              .then(reponse=>{
+
+                // console.debug("Reponse demande certificat");
+                // console.debug(reponse);
+
+                // Sauvegarder le certificat et tenter de valider le message en attente
+                pki.sauvegarderMessageCertificat(JSON.stringify(reponse.resultats))
+                .then(()=>pki.verifierSignatureMessage(json_message))
+                .then(signatureValide=>{
+                  if(signatureValide) {
+                    callback(msg);
+                  } else {
+                    console.warn("Signature invalide, message dropped");
+                  }
+                })
+                .catch(err=>{
+                  console.warn("Message non valide apres reception du certificat, message dropped");
+                });
+
+              })
+              .catch(err=>{
+                console.warn("Certificat non charge, message dropped");
+                console.debug(err);
+              })
             }
-          })
-          .catch(err=>{
+
+          } else {
             console.error("Erreur verification signature message, message dropped");
             console.error(err);
-          });
+          }
 
-        } else {
-          console.error("Message rejete, certificat inconnu " + fingerprintCertificat);
-        }
+        });
+
       }
     } else if(routingKey) {
       if(routingKey === this.routingKeyCertificat) {
@@ -595,6 +626,17 @@ class RabbitMQWrapper {
         return objet_crypto.certificatMaitreDesCles;
       })
     }
+  }
+
+  demanderCertificat(fingerprint) {
+    var requete = {fingerprint}
+    var routingKey = 'requete.millegrilles.domaines.Pki.certificat';
+    return this.transmettreRequete(routingKey, requete)
+    .then(reponse=>{
+      let messageContent = decodeURIComponent(escape(reponse.content));
+      let json_message = JSON.parse(messageContent);
+      return json_message;
+    })
   }
 
 }

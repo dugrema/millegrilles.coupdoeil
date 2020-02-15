@@ -294,7 +294,7 @@ class PKIUtils {
     }
   }
 
-  // Charge la chaine de certificat pour ce fingerprint
+  // Charge la chaine de certificats pour ce fingerprint
   async getCertificate(fingerprint) {
     let certificat = this.cacheCertsParFingerprint[fingerprint];
     if( ! certificat ) {
@@ -343,12 +343,12 @@ class PKIUtils {
           }
 
           if(valide) {
-            this.cacheCertsParFingerprint[fingerprintCalcule] = certificat;
+            this.cacheCertsParFingerprint[fingerprintCalcule] = chaine;
           } else {
             certificat = null;
           }
 
-          resolve(certificat);
+          resolve(chaine);
 
         });
       })
@@ -370,11 +370,12 @@ class PKIUtils {
     let fingerprint = message['en-tete']['certificat'];
     let signatureBase64 = message['_signature'];
     let signature = Buffer.from(signatureBase64, 'base64');
-    let certificat = await this.getCertificate(fingerprint);
-    if( ! certificat ) {
+    let certificatChaine = await this.getCertificate(fingerprint);
+    if( ! certificatChaine ) {
       console.debug("Certificat inconnu : " + fingerprint);
-      return;
+      throw new CertificatInconnu("Certificat inconnu : " + fingerprint);
     }
+    const certificat = certificatChaine[0];
 
     let messageFiltre = {};
     for(let cle in message) {
@@ -427,6 +428,13 @@ function splitPEMCerts(certs) {
     return PEM_CERT_DEBUT + c;
   });
   return splitCerts.slice(1);
+}
+
+class CertificatInconnu extends Error {
+  constructor(message) {
+    super(message);
+    this.inconnu = true;
+  }
 }
 
 const pki = new PKIUtils();
