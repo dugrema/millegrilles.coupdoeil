@@ -91,7 +91,8 @@ class SessionManagement {
     if(params.methode === 'certificatLocal') {
       console.debug("Authentification par certificat");
       let fingerprint = params.fingerprint;
-      return this.creerChallengeCertificat(socket, fingerprint)
+      let certificat = params.certificat;
+      return this.creerChallengeCertificat(socket, fingerprint, certificat)
       .catch(err=>{
         console.warn("Erreur challenge certificat, essayer USB");
         return this.creerChallengeUSB(socket);
@@ -209,16 +210,16 @@ class SessionManagement {
     }
   }
 
-  creerChallengeCertificat(socket, fingerprint) {
+  creerChallengeCertificat(socket, fingerprint, pemCertificat) {
     // console.debug("Requete verification " + fingerprint);
 
     let requete = {'fingerprint': fingerprint};
     return rabbitMQ.singleton.transmettreRequete(
       'requete.millegrilles.domaines.Pki.confirmerCertificat', requete)
     .then( reponseCertVerif => {
-      console.debug("Response verification certificat");
+      console.debug("Reponse verification certificat");
       const contenuResponseCertVerif = JSON.parse(reponseCertVerif.content.toString('utf-8'));
-      // console.debug(contenuResponseCertVerif);
+      console.debug(contenuResponseCertVerif);
 
       if(contenuResponseCertVerif.valide && contenuResponseCertVerif.roles) {
         // Certificat est valide, on verifie que c'est bien un certificat de navigateur
@@ -233,7 +234,6 @@ class SessionManagement {
         if(estRoleNavigateur === true) {
           // C'est bien un certificat de navigateur. On genere un challenge
           // avec la cle publique.
-          let pemCertificat = contenuResponseCertVerif.certificat;
           const certificat = pki.chargerCertificatPEM(pemCertificat);
           // console.log(certificat);
 

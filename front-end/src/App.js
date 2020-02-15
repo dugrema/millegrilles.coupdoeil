@@ -397,6 +397,7 @@ class App extends React.Component {
           socket.emit('authentification', {
             methode: 'certificatLocal',
             fingerprint: localStorage.getItem('certificat.fingerprint'),
+            certificat: localStorage.getItem('certificat.fullchain'),
           });
         })
 
