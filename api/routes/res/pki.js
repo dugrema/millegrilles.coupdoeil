@@ -1,6 +1,5 @@
 const crypto = require('crypto');
 const forge = require('node-forge');
-// const x509 = require('x509');
 const stringify = require('json-stable-stringify');
 const fs = require('fs');
 const path = require('path');

@@ -198,6 +198,7 @@ class RabbitMQWrapper {
       // Relayer le message
       let callback = this.pendingResponses[correlationId];
       if(callback) {
+        delete this.pendingResponses[correlationId]; // Message recu
 
         // Verifier la signature du message
         pki.verifierSignatureMessage(json_message)
