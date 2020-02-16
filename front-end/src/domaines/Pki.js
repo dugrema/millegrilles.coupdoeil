@@ -1,5 +1,5 @@
 import React from 'react';
-import { Row, Col } from 'react-bootstrap';
+import { Row, Col, Button } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 
 import Checkbox from "../mgcomponents/Checkbox";
@@ -219,14 +219,16 @@ export class RenouvellerCertificats extends React.Component {
   }
 
   createCheckbox = option => (
-      <div key={option} className="w3-col m12">
+    <Row key={option}>
+      <Col>
         <Checkbox
           label={option}
           isSelected={this.state.checkboxes[option]}
           onCheckboxChange={this.handleCheckboxChange}
         />
-      </div>
-    );
+      </Col>
+    </Row>
+  );
 
   createCheckboxes = () => this.LISTE_MIDDLEWARE.map(this.createCheckbox);
 
@@ -281,11 +283,9 @@ export class RenouvellerCertificats extends React.Component {
 
   feuilleEntete() {
     return (
-      <div className="w3-card w3-round w3-white">
-        <div className="w3-container w3-padding">
-          <h2 className="w3-col m12 w3-opacity">Renouveller des certificats</h2>
-        </div>
-      </div>
+      <Feuille>
+        <h2 className="w3-col m12 w3-opacity">Renouveller des certificats</h2>
+      </Feuille>
     );
   }
 
@@ -303,22 +303,21 @@ export class RenouvellerCertificats extends React.Component {
     }
 
     return (
-      <div className="w3-card w3-round w3-white">
-        <div className="w3-container w3-padding formulaire">
-          <div>
-            <h3 className="w3-col m12 w3-opacity">Middleware</h3>
-          </div>
-          <div>
-            {this.createCheckboxes()}
-          </div>
-          {message}
-          <div>
-            <div className="w3-col m12 w3-center boutons buttonBar">
-              <button onClick={this.renouvellerMiddleware} value="Soumettre">Sauvegarder</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Feuille>
+        <Row>
+          <h3 className="w3-col m12 w3-opacity">Middleware</h3>
+        </Row>
+
+        {this.createCheckboxes()}
+
+        {message}
+
+        <Row>
+          <Col className="w3-col m12 w3-center boutons buttonBar">
+            <Button onClick={this.renouvellerMiddleware} value="Soumettre">Sauvegarder</Button>
+          </Col>
+        </Row>
+      </Feuille>
     );
   }
 
