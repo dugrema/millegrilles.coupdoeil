@@ -74,6 +74,12 @@ class Login extends React.Component {
     certificatsNavigateurExiste: localStorage.getItem('certificat.expiration'),
   };
 
+  componentWillUnmount() {
+    if(this.timerResetAuthentification) {
+      clearTimeout(this.timerResetAuthentification);
+    }
+  }
+
   register = () => {
     this.setState({operationEnCours: true});
     fakeAuth.register(err => {
