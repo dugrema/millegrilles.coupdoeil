@@ -14,6 +14,20 @@ export class InterfacePrincipale extends React.Component {
 
   state = {
     ecranCourant: null,
+    milleGrille: {},
+  }
+
+  componentDidMount() {
+    chargerProfils()
+    .then(donnees=>{
+      if(donnees && donnees.milleGrille) {
+        this.setState({milleGrille: donnees.milleGrille});
+      }
+    })
+    .catch(err=> {
+      console.error("Erreur chargement profil");
+      console.error(err);
+    });
   }
 
   fonctionsNavigation = {
@@ -36,6 +50,9 @@ export class InterfacePrincipale extends React.Component {
           <ul>
             <li>
               Version de Coup D&apos;Oeil: <span title={manifest.date}>{manifest.version}</span>
+            </li>
+            <li>
+              IDMG : {this.state.milleGrille.idmg}
             </li>
           </ul>
         </div>
@@ -117,7 +134,12 @@ class InformationMilleGrille extends React.Component {
   }
 
   componentDidMount() {
-    this.chargerProfils()
+    chargerProfils()
+    .then(donnees=>{this.setState(donnees);})
+    .catch(err=> {
+      console.error("Erreur chargement profil");
+      console.error(err);
+    });
   }
 
   render() {
@@ -302,47 +324,6 @@ class InformationMilleGrille extends React.Component {
       </Feuille>
     );
 
-  }
-
-  chargerProfils() {
-    let routingKey = 'requete.millegrilles.domaines.Principale.profils';
-    let requete = {
-      'filtre': {
-          '_mg-libelle': {'$in': ['profil.usager', 'profil.millegrille']},
-      },
-    };
-    let requetes = {'requetes': [requete]};
-    webSocketManager.transmettreRequete(routingKey, requetes)
-    .then( docsRecu => {
-      return docsRecu[0];
-   })
-   .then(documents => {
-
-     const donnees = {};
-     for(let idx in documents) {
-       let docProfil = documents[idx];
-
-       let docFiltre = {};
-       for(let champ in docProfil) {
-         let valeur = docProfil[champ];
-         if(champ[0] !== '_') {
-           docFiltre[champ] = valeur || '';
-         }
-       }
-
-       if(docProfil['_mg-libelle'] === 'profil.usager') {
-         donnees.usager = docFiltre;
-       } else if(docProfil['_mg-libelle'] === 'profil.millegrille') {
-         donnees.milleGrille = docFiltre;
-       }
-     }
-
-     this.setState(donnees);
-   })
-   .catch(err=>{
-     console.error("Erreur requete documents profils");
-     console.error(err);
-   });
   }
 
   changerNomMilleGrille = event => {
@@ -531,3 +512,44 @@ class GestionTokens extends React.Component {
   }
 
 }
+
+function chargerProfils() {
+  let routingKey = 'requete.millegrilles.domaines.Principale.profils';
+  let requete = {
+    'filtre': {
+        '_mg-libelle': {'$in': ['profil.usager', 'profil.millegrille']},
+    },
+  };
+  let requetes = {'requetes': [requete]};
+  return webSocketManager.transmettreRequete(routingKey, requetes)
+  .then( docsRecu => {
+    return docsRecu[0];
+   })
+   .then(documents => {
+
+     const donnees = {};
+     for(let idx in documents) {
+       let docProfil = documents[idx];
+
+       let docFiltre = {};
+       for(let champ in docProfil) {
+         let valeur = docProfil[champ];
+         if(champ[0] !== '_') {
+           docFiltre[champ] = valeur || '';
+         }
+       }
+
+       if(docProfil['_mg-libelle'] === 'profil.usager') {
+         donnees.usager = docFiltre;
+       } else if(docProfil['_mg-libelle'] === 'profil.millegrille') {
+         donnees.milleGrille = docFiltre;
+       }
+     }
+
+     return donnees;
+   })
+   .catch(err=>{
+     console.error("Erreur requete documents profils");
+     console.error(err);
+   });
+  }
