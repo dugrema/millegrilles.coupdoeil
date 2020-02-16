@@ -199,10 +199,6 @@ export class NoeudsPublics extends React.Component {
   // Pour destination, menuItem est optionnel. Par defaut l'item va a la fin (push)
   _deplacerMenu = (noeudUrl, source, destination) => {
 
-    // console.debug("Deplacer menu de " + noeudUrl);
-    // console.debug(source);
-    // console.debug(destination);
-
     // Trouver le noeud par URL
     var noeudModifie = this.state[noeudUrl];
 
@@ -376,7 +372,7 @@ export class NoeudsPublics extends React.Component {
 function ListGroupItemDraggable(props) {
 
   const deplacerMenu = props.deplacerMenu;
-  console.debug(deplacerMenu);
+  // console.debug(deplacerMenu);
 
   const ref = React.createRef();
   const [, connectDrag] = useDrag({
@@ -403,12 +399,17 @@ function ListGroupItemDraggable(props) {
     }
   });
 
-  connectDrag(ref);
+  var label = <Trans>{'parametres.menuVitrine.' + props.menuItem}</Trans>;
+  if(props.menuItem  === 'poubelle') {
+    label = <i className="fa fa-trash-o" />
+  } else {
+    connectDrag(ref);
+  }
   connectDrop(ref);
 
   return (
     <ListGroup.Item ref={ref} className="draggable">
-      <Trans>{'parametres.menuVitrine.' + props.menuItem}</Trans>
+      {label}
     </ListGroup.Item>
   );
 
@@ -487,6 +488,15 @@ class NoeudPublic extends React.Component {
           deplacerMenu={this.props.deplacerMenu} />
       );
     }
+
+    sectionsDisponiblesElem.push(
+      <ListGroupItemDraggable
+        key="poubelle"
+        menuUrl={this.props.url_web}
+        menuItem="poubelle"
+        sousMenu='disponible'
+        deplacerMenu={this.props.deplacerMenu} />
+    );
 
     var formulaireModeDeploiement;
     if(this.props.mode_deploiement === 's3') {
