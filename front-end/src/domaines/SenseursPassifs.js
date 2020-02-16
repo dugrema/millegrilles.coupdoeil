@@ -424,107 +424,6 @@ class SenseurPassifIndividuel extends React.Component {
 
   }
 
-  afficherTableauHoraire = () => {
-    // Toggle etat
-    const toggle = !this.state.afficherTableauHoraire;
-    this.setState({afficherTableauHoraire: toggle});
-  };
-
-  afficherTableauQuotidien = () => {
-    // Toggle etat
-    const toggle = !this.state.afficherTableauQuotidien;
-    this.setState({afficherTableauQuotidien: toggle});
-  };
-
-  renderTableauHoraire() {
-
-    var contenu;
-    if(this.state.afficherTableauHoraire) {
-      const listeSenseurs = this.props.documentSenseur;
-      const documentSenseur = listeSenseurs[0];
-      const moyennesDernierJour = documentSenseur.moyennes_dernier_jour;
-
-      const rows = [];
-
-      for(var idx in moyennesDernierJour) {
-        var moyenne = moyennesDernierJour[idx];
-        rows.push((
-          <tr key={moyenne.periode}>
-            <td>{dateformatter.format_monthhour(moyenne.periode)}</td>
-            <td className="numerique temperature">{numberformatter.format_numberdecimals(moyenne['temperature-moyenne'], 1)}&deg;C</td>
-            <td className="numerique humidite">{numberformatter.format_numberdecimals(moyenne['humidite-moyenne'], 1)}%</td>
-            <td className="numerique pression">{numberformatter.format_numberdecimals(moyenne['pression-moyenne'], 1)}kPa</td>
-          </tr>
-        ));
-      }
-
-      contenu = (
-        <table className="tableauDonnees tableauDonneesMoyennes">
-          <thead>
-            <tr>
-              <th>Date</th><th>Temperature</th><th>Humidite</th><th>Pression</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows}
-          </tbody>
-        </table>
-      )
-    }
-
-    return contenu;
-  }
-
-  renderTableauQuotidien() {
-
-    var contenu;
-    if(this.state.afficherTableauQuotidien && this.props.donnees) {
-      const listeSenseurs = this.props.documentSenseur;
-      const documentSenseur = listeSenseurs[0];
-      const extremesDernierMois = documentSenseur.extremes_dernier_mois;
-
-      const rows = [];
-
-      for(var idx in extremesDernierMois) {
-        var extremes = extremesDernierMois[idx];
-        rows.push((
-          <tr key={extremes.periode}>
-            <td>{dateformatter.format_monthhour(extremes.periode)}</td>
-            <td className="numerique temperature">{numberformatter.format_numberdecimals(extremes['temperature-maximum'], 1)}&deg;C</td>
-            <td className="numerique temperature">{numberformatter.format_numberdecimals(extremes['temperature-minimum'], 1)}&deg;C</td>
-            <td className="numerique humidite">{numberformatter.format_numberdecimals(extremes['humidite-maximum'], 1)}%</td>
-            <td className="numerique humidite">{numberformatter.format_numberdecimals(extremes['humidite-minimum'], 1)}%</td>
-            <td className="numerique pression">{numberformatter.format_numberdecimals(extremes['pression-maximum'], 1)}kPa</td>
-            <td className="numerique pression">{numberformatter.format_numberdecimals(extremes['pression-minimum'], 1)}kPa</td>
-          </tr>
-        ));
-      }
-
-      contenu = (
-        <table className="tableauDonnees tableauDonneesExtremes">
-          <thead>
-            <tr>
-              <th rowSpan="2">Date</th>
-              <th colSpan="2">Temperature</th>
-              <th colSpan="2">Humidite</th>
-              <th colSpan="2">Pression</th>
-            </tr>
-            <tr>
-              <th>Max</th><th>Min</th>
-              <th>Max</th><th>Min</th>
-              <th>Max</th><th>Min</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows}
-          </tbody>
-        </table>
-      )
-    }
-
-    return contenu;
-  }
-
   render() {
 
     const listeSenseurs = this.props.documentSenseur;
@@ -771,11 +670,25 @@ class SenseurPassifAppareil extends React.Component {
       </form>
     );
 
+    var typesDonneesCharte = {};
     if( this.props.rapports && this.props.rapports[this.state.granularite] ) {
-      let rapport = this.props.rapports[this.state.granularite].appareils[this.props.cleAppareil];
+      let idAppareil = this.props.cleAppareil;
+      if(idAppareil.startsWith('1W')) {
+        idAppareil = idAppareil.slice(2);  // Enlever 1W, c'est un prefixe de type
+      }
+      let rapport = this.props.rapports[this.state.granularite].appareils[idAppareil];
+
+      // Extraire d'un exemple du rapport les types de donnees presentes
+      if(rapport) {
+        if(rapport[0]) {
+          for(let typeLecture in rapport[0]) {
+            typesDonneesCharte[typeLecture.split('_')[0]] = true;
+          }
+        }
+      }
 
       // Permet de trouver container de la charte - donne la largeur du graph
-      var containerId = "container_charte_" + this.props.cleAppareil;
+      var containerId = "container_charte_" + idAppareil;
 
       var typeLecture = this.state.typeLecture;
 
@@ -810,6 +723,24 @@ class SenseurPassifAppareil extends React.Component {
         )
       }
 
+      console.debug(typesDonneesCharte);
+      var optionsTypeLecture = [<option value="">Choisir un type de lecture</option>];
+      if(typesDonneesCharte.temperature) {
+        optionsTypeLecture.push(<option key="temperature" value="temperature">Température</option>);
+      }
+      if(typesDonneesCharte.humidite) {
+        optionsTypeLecture.push(<option key="humidite" value="humidite">Humidité</option>);
+      }
+      if(typesDonneesCharte.pression) {
+        optionsTypeLecture.push(<option key="pression" value="pression">Pression</option>);
+      }
+      if(typesDonneesCharte.millivolt) {
+        optionsTypeLecture.push(<option key="millivolt" value="millivolt">Millivolt</option>);
+      }
+      if(typesDonneesCharte.reserve) {
+        optionsTypeLecture.push(<option key="reserve" value="reserve">Réserve batterie</option>);
+      }
+
       charteAppareil = (
         <form>
           <div className="w3-container w3-padding formulaire">
@@ -817,12 +748,7 @@ class SenseurPassifAppareil extends React.Component {
               <div className="w3-col m4 label">Type de lecture</div>
               <div className="w3-col m8">
                 <select onChange={this.choisirTypeLecture}>
-                  <option value="">Choisir un type de lecture</option>
-                  <option value="temperature">Température</option>
-                  <option value="humidite">Humidité</option>
-                  <option value="pression">Pression</option>
-                  <option value="millivolt">Millivolt</option>
-                  <option value="reserve">Réserve batterie</option>
+                  {optionsTypeLecture}
                 </select>
               </div>
             </div>
