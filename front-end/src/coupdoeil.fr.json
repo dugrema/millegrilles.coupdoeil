@@ -129,6 +129,12 @@
     },
     "grosFichiers": {
       "niveauSecurite": "Niveau de sécurité"
+    },
+    "pki": {
+      "afficher": {
+        "titre": "Référence des certificats d'autorité de la MilleGrille",
+        "description_1": "Le certificat racine représente l'identité de la MilleGrille."
+      }
     }
   }
 }

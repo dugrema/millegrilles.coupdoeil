@@ -1,10 +1,14 @@
 import React from 'react';
-import Checkbox from "../mgcomponents/Checkbox";
+import { Row, Col } from 'react-bootstrap';
+import { Trans } from 'react-i18next';
 
+import Checkbox from "../mgcomponents/Checkbox";
 import webSocketManager from '../WebSocketManager';
+import {dateformatter} from '../formatters';
+import { Feuille } from '../mgcomponents/Feuilles';
+
 // import {dateformatter} from '../formatters'
 import './Pki.css';
-import {dateformatter} from '../formatters';
 
 // const domaine = 'millegrilles.domaines.Pki';
 // const libelle_signerNoeud = 'signer.noeud';
@@ -139,29 +143,25 @@ export class SignerNoeud extends React.Component {
       )
     } else {
       contenu = (
-        <div className="w3-card w3-round w3-white">
-          <div className="w3-container w3-padding">
+        <Feuille>
             {this.renderFormulaire()}
-          </div>
-        </div>
+        </Feuille>
       )
     }
 
     return (
-      <div className="w3-col m12">
+      <div className="w3-col m12 w3-row-padding">
         <div className="w3-row-padding">
 
-          <div className="w3-card w3-round w3-white">
-            <div className="w3-container w3-padding">
-              <h2 className="w3-opacity">Signer un certificat de noeud</h2>
+          <Feuille>
+            <h2 className="w3-opacity">Signer un certificat de noeud</h2>
 
-              <p>
-                Cette page permet de signer une requête de certificat générée
-                sur un noeud qui doit se connecter à la MilleGrille
-              </p>
+            <p>
+              Cette page permet de signer une requête de certificat générée
+              sur un noeud qui doit se connecter à la MilleGrille
+            </p>
 
-            </div>
-          </div>
+          </Feuille>
 
           {this.renderErreur()}
 
@@ -369,40 +369,22 @@ export class AfficherCertificatsRoot extends React.Component {
       ]};
 
     // Requete pour charger certificats root du domaine
-    let domaine = 'requete.millegrilles.domaines.Pki.certificatsRoot';
+    let domaine = 'requete.millegrilles.domaines.Pki.certificatsCA';
 
     // Enregistrer les routingKeys, demander le document initial.
     webSocketManager.transmettreRequete(domaine, requeteCerts)
-    .then( docInitial => {
-      let certificatsRoot = docInitial[0];
-      let certificatsMillegrille = docInitial[1];
+    .then( certificats => {
+      console.debug("Reponse certificats");
+      console.debug(certificats);
+      let certificatsRoot = certificats[0];
+      let certificatsMillegrille = certificats[1];
       this.setState({certificatsRoot, certificatsMillegrille});
     })
     .catch( err=>{
-      console.error("Erreur chargement document initial");
+      console.error("Erreur chargement certificats CA");
       console.error(err);
     });
 
-    // Aller chercher le URL public de la millegrille
-    let requeteParametres =  {
-      'requetes': [{
-          'filtre': {
-            '_mg-libelle': 'publique.configuration',
-          }
-      }]};
-    // Requete pour charger certificats root du domaine
-    let domaineParametres = 'requete.millegrilles.domaines.Parametres.publique.configuration';
-
-    // Enregistrer les routingKeys, demander le document initial.
-    webSocketManager.transmettreRequete(domaineParametres, requeteParametres)
-    .then( docParametres => {
-      let parametresPublics = docParametres[0][0];
-      this.setState({parametresPublics});
-    })
-    .catch( err=>{
-      console.error("Erreur chargement parametres publics");
-      console.error(err);
-    });
   }
 
   genererListeRoots() {
@@ -427,41 +409,41 @@ export class AfficherCertificatsRoot extends React.Component {
     for(let idx in liste) {
       let certRoot = liste[idx];
       certificats.push(
-        <div key={certRoot.fingerprint} className="w3-card w3-round w3-white">
-          <div className="w3-container w3-padding formulaire">
-            <div>
-              <div className="w3-col m4 label">MilleGrille</div>
-              <div className="w3-col m8">{certRoot.sujet.organizationName}</div>
-            </div>
-            <div>
-              <div className="w3-col m4 label">Fingerprint</div>
-              <div className="w3-col m8">{certRoot.fingerprint}</div>
-            </div>
-            <div>
-              <div className="w3-col m4 label">Authority key</div>
-              <div className="w3-col m8">{certRoot.authority_key}</div>
-            </div>
-            <div>
-              <div className="w3-col m4 label">Subject key</div>
-              <div className="w3-col m8">{certRoot.subject_key}</div>
-            </div>
-            <div>
-              <div className="w3-col m4 label">Not valid before</div>
-              <div className="w3-col m8">{dateformatter.format_datetime(certRoot.not_valid_before)}</div>
-            </div>
-            <div>
-              <div className="w3-col m4 label">Not valid after</div>
-              <div className="w3-col m8">{dateformatter.format_datetime(certRoot.not_valid_after)}</div>
-            </div>
-            <div>
-              <div className="w3-col m12">
-                <pre>
-                  {certRoot.certificat_pem}
-                </pre>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Feuille key={certRoot.fingerprint}>
+
+          <Row>
+            <Col lg={3}>MilleGrille</Col>
+            <Col lg={9}>{certRoot.idmg}</Col>
+          </Row>
+          <Row>
+            <Col lg={3}>Fingerprint</Col>
+            <Col lg={9}>{certRoot.fingerprint}</Col>
+          </Row>
+          <Row>
+            <Col lg={3}>Authority key</Col>
+            <Col lg={9}>{certRoot.authority_key}</Col>
+          </Row>
+          <Row>
+            <Col lg={3}>Subject key</Col>
+            <Col lg={9}>{certRoot.subject_key}</Col>
+          </Row>
+          <Row>
+            <Col lg={3}>Not valid before</Col>
+            <Col lg={9}>{dateformatter.format_datetime(certRoot.not_valid_before)}</Col>
+          </Row>
+          <Row>
+            <Col lg={3}>Not valid after</Col>
+            <Col lg={9}>{dateformatter.format_datetime(certRoot.not_valid_after)}</Col>
+          </Row>
+          <Row>
+            <Col>
+              <pre>
+                {certRoot.certificat_pem}
+              </pre>
+            </Col>
+          </Row>
+
+        </Feuille>
       );
     }
 
@@ -469,57 +451,37 @@ export class AfficherCertificatsRoot extends React.Component {
   }
 
   contenu() {
-    let nomMilleGrille = this.props.documentIdMillegrille.nom_millegrille;
-    let urlBase = this.props.documentIdMillegrille.adresse_url_base;
-    var urlLocal = null;
-
-    if(this.state.parametresPublics && this.state.parametresPublics['url_web']) {
-      urlLocal = (<span>(<a href={'https://'+ urlBase + '/certs/' + nomMilleGrille + '.CA.cert.pem'}>local</a>)</span>);
-      urlBase = this.state.parametresPublics['url_web'];
-    }
-    let lienCAs = 'https://'+ urlBase + '/certs/' + nomMilleGrille + '.CA.cert.pem';
-
     let entete = (
-      <div className="w3-card w3-round w3-white">
-        <div className="w3-container w3-padding">
-          <h2 className="w3-col m12 w3-opacity">Liste de référence des certificats de la MilleGrille</h2>
+      <Feuille>
+        <h2 className="w3-col m12 w3-opacity"><Trans>pki.afficher.titre</Trans></h2>
 
-          <p>
-            Les certificats racines (premiers dans la liste) sont ceux qui doivent
-            être utilisés pour valider les chaines.
-          </p>
-
-          <div className="w3-col m12">
-            <p>
-              Noter que les fichiers de certificats racines sont disponibles via lien web :<br/>
-              <a href={lienCAs}>{lienCAs}</a> {urlLocal}
-            </p>
-          </div>
-        </div>
-      </div>
+        <p>
+          <Trans>pki.afficher.description_1</Trans>
+        </p>
+      </Feuille>
     );
 
     let enteteCertsMilleGrilles = (
-      <div className="w3-card w3-round w3-white">
-        <div className="w3-container w3-padding">
-          <h2 className="w3-col m12 w3-opacity">Certificats intermédiaires</h2>
+      <Feuille>
+        <h2 className="w3-col m12 w3-opacity">Certificats intermédiaires</h2>
 
-          <p>
-            Les certificats suivants sont des certificats intermédiaires
-            fournis en référence.
-          </p>
+        <p>
+          Les certificats suivants sont des certificats intermédiaires
+          fournis en référence.
+        </p>
 
-        </div>
-      </div>
+      </Feuille>
     );
 
     return (
-      <div className="w3-col m12">
-        {entete}
-        {this.genererListeRoots()}
+      <div className="w3-col m12 w3-row-padding">
+        <div className="w3-row-padding">
+          {entete}
+          {this.genererListeRoots()}
 
-        {enteteCertsMilleGrilles}
-        {this.genererListeCertificatsMilleGrille()}
+          {enteteCertsMilleGrilles}
+          {this.genererListeCertificatsMilleGrille()}
+        </div>
       </div>
     );
 
