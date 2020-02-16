@@ -67,47 +67,48 @@ export class NoeudsPublics extends React.Component {
 
   render() {
     return(
-      <div>
-        <Feuille>
+      <div className="w3-col m12 w3-row-padding">
+        <div className="w3-row-padding">
+          <Feuille>
 
-          <Row><Col><h2><Trans>parametres.noeudsPublics.titre</Trans></h2></Col></Row>
-          <Row><Col><p><Trans>parametres.noeudsPublics.description</Trans></p></Col></Row>
+            <Row><Col><h2><Trans>parametres.noeudsPublics.titre</Trans></h2></Col></Row>
+            <Row><Col><p><Trans>parametres.noeudsPublics.description</Trans></p></Col></Row>
 
-        </Feuille>
+          </Feuille>
 
-        <DndProvider backend={Backend}>
-          {this._renderNoeuds()}
-        </DndProvider>
+          <DndProvider backend={Backend}>
+            {this._renderNoeuds()}
+          </DndProvider>
 
-        <Feuille>
+          <Feuille>
 
-          <Row>
-            <Col>
-              <h3><Trans>parametres.noeudsPublics.ajouterNoeudTitre</Trans></h3>
-            </Col>
-          </Row>
+            <Row>
+              <Col>
+                <h3><Trans>parametres.noeudsPublics.ajouterNoeudTitre</Trans></h3>
+              </Col>
+            </Row>
 
-          <Row>
-            <Col>
-              <Form className="formNouveauNoeud">
-                <Form.Group controlId="formAjouterNoeudPublic">
-                  <Form.Label><Trans>parametres.noeudsPublics.urlLibelle</Trans></Form.Label>
-                  <Form.Control type="plaintext" placeholder="https://www.millegrilles.com"
-                                value={this.state.nouveauUrl}
-                                onChange={this._changerNouveauUrl} />
-                  <Form.Text className="text-muted">
-                    <Trans>parametres.noeudsPublics.urlTexte</Trans>
-                  </Form.Text>
-                </Form.Group>
-                <Button onClick={this._ajouterNoeud}>
-                  <Trans>parametres.noeudsPublics.ajouterNoeudBouton</Trans>
-                </Button>
-              </Form>
-            </Col>
-          </Row>
+            <Row>
+              <Col>
+                <Form className="formNouveauNoeud">
+                  <Form.Group controlId="formAjouterNoeudPublic">
+                    <Form.Label><Trans>parametres.noeudsPublics.urlLibelle</Trans></Form.Label>
+                    <Form.Control type="plaintext" placeholder="https://www.millegrilles.com"
+                                  value={this.state.nouveauUrl}
+                                  onChange={this._changerNouveauUrl} />
+                    <Form.Text className="text-muted">
+                      <Trans>parametres.noeudsPublics.urlTexte</Trans>
+                    </Form.Text>
+                  </Form.Group>
+                  <Button onClick={this._ajouterNoeud}>
+                    <Trans>parametres.noeudsPublics.ajouterNoeudBouton</Trans>
+                  </Button>
+                </Form>
+              </Col>
+            </Row>
 
-        </Feuille>
-
+          </Feuille>
+        </div>
       </div>
     );
   }

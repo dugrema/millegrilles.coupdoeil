@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Container, Row, Col,
+import { Alert, Form, Container, Row, Col,
          Button, ButtonGroup, InputGroup} from 'react-bootstrap';
 import manifest from '../manifest.build.js';  // App version, build date
 import { solveRegistrationChallenge } from '@webauthn/client';
@@ -68,14 +68,14 @@ export class InterfacePrincipale extends React.Component {
 
           <ul>
             <li>
-              <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="information">
+              <Button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="information">
                 Information usager et MilleGrille
-              </button>
+              </Button>
             </li>
             <li>
-              <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="gestionTokens">
+              <Button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="gestionTokens">
                 Gerer les tokens de securite
-              </button>
+              </Button>
             </li>
           </ul>
         </div>
@@ -480,32 +480,39 @@ class GestionTokens extends React.Component {
   }
 
   render() {
+
+    var pinSection = null;
+    if(this.state.pin) {
+      pinSection = (
+        <Alert variant="success">
+          PIN genere : {this.state.pin}
+        </Alert>
+      )
+    }
+
     return(
-      <div className="w3-col m12">
-        <div className="w3-card w3-round w3-white">
-          <div className="w3-container w3-padding">
-            <div>
-              <h1>Gestion tokens</h1>
-              <ul>
-                <li>
-                  <button onClick={this.ajouterToken}>
-                    Ajouter token
-                  </button>
-                </li>
-                <li>
-                  <button onClick={this.genererPinTemporaireAjoutDevice}>
-                    Generer un PIN
-                  </button> temporaire pour connecter un nouveau token.
-                  PIN actuel: {this.state.pin}
-                </li>
-                <li>
-                  <button className="aslink" onClick={this.props.retourPrincipale}>
-                    Retour
-                  </button>
-                </li>
-              </ul>
-            </div>
-          </div>
+      <div className="w3-col m9">
+        <div className="w3-row-padding">
+          <Feuille>
+            <h1>Gestion tokens</h1>
+
+            {pinSection}
+
+            <Row>
+              <Col>
+                <Button className="aslink" onClick={this.ajouterToken}>
+                  Ajouter token
+                </Button>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <Button className="aslink" onClick={this.genererPinTemporaireAjoutDevice}>
+                  Generer un PIN
+                </Button> temporaire pour connecter un nouveau token.
+              </Col>
+            </Row>
+          </Feuille>
         </div>
       </div>
     );

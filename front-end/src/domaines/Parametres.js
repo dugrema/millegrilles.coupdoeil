@@ -2,8 +2,8 @@ import React from 'react';
 // import { Form, Container, Row, Col } from 'react-bootstrap';
 // import { Trans } from 'react-i18next';
 import webSocketManager from '../WebSocketManager';
+import { Feuille } from '../mgcomponents/Feuilles';
 import { GestionEmailSmtp } from './ParametresGestionEmailSmtp';
-import { GestionDeployeurPublic } from './ParametresGestionDeployeurPublic'
 import { NoeudsPublics } from './ParametresNoeudsPublics'
 import { ParametresErreurs } from './ParametresErreurs'
 import './Parametres.css';
@@ -66,7 +66,6 @@ export class Parametres extends React.Component {
 
   sousPages = {
     'GestionEmailSmtp': GestionEmailSmtp,
-    'GestionDeployeurPublic': GestionDeployeurPublic,
     'ActionsInterdites': ActionsInterdites,
     NoeudsPublics, ParametresErreurs,
   }
@@ -83,41 +82,33 @@ export class Parametres extends React.Component {
 
   fonctionsGestion() {
     return (
-      <div className="w3-card w3-round w3-white">
-        <div className="w3-container w3-padding">
-          <h2 className="w3-opacity">Parametres d&apos;administration de la MilleGrille</h2>
+      <Feuille>
+        <h2 className="w3-opacity">Parametres d&apos;administration de la MilleGrille</h2>
 
-          <ul>
-            <li>
-              <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="GestionEmailSmtp">
-                Gerer serveurs de notification par courriel (SMTP)
-              </button>
-            </li>
-            <li>
-              <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="GestionDeployeurPublic">
-                Deployeur public sur internet
-              </button>
-              -- deprecated
-            </li>
-            <li>
-              <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="NoeudsPublics">
-                Noeuds publics
-              </button>
-              : Déploiements de la MilleGrille sur internet
-            </li>
-            <li>
-              <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="ActionsInterdites">
-                Actions interdites
-              </button>
-            </li>
-            <li>
-              <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="ParametresErreurs">
-                Erreurs systeme
-              </button>
-            </li>
-          </ul>
-        </div>
-      </div>
+        <ul>
+          <li>
+            <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="NoeudsPublics">
+              Noeuds publics
+            </button>
+            : Déploiements de la MilleGrille sur internet
+          </li>
+          <li>
+            <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="ActionsInterdites">
+              Actions interdites
+            </button>
+          </li>
+          <li>
+            <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="GestionEmailSmtp">
+              Gerer serveurs de notification par courriel (SMTP)
+            </button>
+          </li>
+          <li>
+            <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="ParametresErreurs">
+              Erreurs systeme
+            </button>
+          </li>
+        </ul>
+      </Feuille>
     );
   }
 

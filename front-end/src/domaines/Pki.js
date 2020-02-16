@@ -313,7 +313,7 @@ export class RenouvellerCertificats extends React.Component {
         {message}
 
         <Row>
-          <Col className="w3-col m12 w3-center boutons buttonBar">
+          <Col>
             <Button onClick={this.renouvellerMiddleware} value="Soumettre">Sauvegarder</Button>
           </Col>
         </Row>
