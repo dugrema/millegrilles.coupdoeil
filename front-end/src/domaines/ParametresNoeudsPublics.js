@@ -375,6 +375,9 @@ export class NoeudsPublics extends React.Component {
 
 function ListGroupItemDraggable(props) {
 
+  const deplacerMenu = props.deplacerMenu;
+  console.debug(deplacerMenu);
+
   const ref = React.createRef();
   const [, connectDrag] = useDrag({
     item: { menuItem: props.menuItem, type: "MENU_VITRINE", sousMenu: props.sousMenu },
@@ -391,7 +394,7 @@ function ListGroupItemDraggable(props) {
     drop(item) {
       // console.debug("Drop " + item.menuItem + " sur " + props.menuItem);
       if(item.menuItem !== props.menuItem) {
-        props.deplacerMenu(
+        deplacerMenu(
           props.menuUrl,
           {sousMenu: item.sousMenu, menuItem: item.menuItem},
           {sousMenu: props.sousMenu, menuItem: props.menuItem}
@@ -481,7 +484,7 @@ class NoeudPublic extends React.Component {
           menuUrl={this.props.url_web}
           menuItem={sectionDisponible}
           sousMenu='disponible'
-          deplacerMenu={this._deplacerMenu} />
+          deplacerMenu={this.props.deplacerMenu} />
       );
     }
 
