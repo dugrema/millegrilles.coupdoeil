@@ -29,8 +29,8 @@ export class SignerNoeud extends React.Component {
       domaines: [this.state.domaine],
       csr: this.state.requeteCsr,
     }
-    console.debug("Transaction de signature");
-    console.debug(transaction);
+    // console.debug("Transaction de signature");
+    // console.debug(transaction);
 
     let domaine = 'millegrilles.domaines.MaitreDesCles.signerCertificatNoeud';
     webSocketManager.transmettreTransaction(domaine, transaction)
@@ -38,8 +38,8 @@ export class SignerNoeud extends React.Component {
       if(reponse.err) {
         console.error("Erreur transaction");
       }
-      console.debug("Reponse");
-      console.debug(reponse);
+      // console.debug("Reponse");
+      // console.debug(reponse);
 
       if(reponse.autorise) {
 
@@ -193,7 +193,7 @@ export class RenouvellerCertificats extends React.Component {
     ),
   }
 
-  componentWillMount = () => {
+  componentDidMount = () => {
     this.renouvellementMiddlewareRoles = new Set();
   }
 
@@ -244,8 +244,8 @@ export class RenouvellerCertificats extends React.Component {
     let commande = {
       roles,
     }
-    console.debug("Commande de renouvellement");
-    console.debug(commande);
+    // console.debug("Commande de renouvellement");
+    // console.debug(commande);
 
     this.setState({renouvellementMiddlewareTransmis: 'Demande transmise'});
 
@@ -257,8 +257,8 @@ export class RenouvellerCertificats extends React.Component {
         console.error("Erreur commande");
         console.error(reponse.err);
       }
-      console.debug("Reponse");
-      console.debug(reponse);
+      // console.debug("Reponse");
+      // console.debug(reponse);
 
       if(reponse.autorise) {
 
@@ -373,8 +373,8 @@ export class AfficherCertificatsRoot extends React.Component {
     // Enregistrer les routingKeys, demander le document initial.
     webSocketManager.transmettreRequete(domaine, requeteCerts)
     .then( certificats => {
-      console.debug("Reponse certificats");
-      console.debug(certificats);
+      // console.debug("Reponse certificats");
+      // console.debug(certificats);
       let certificatsRoot = certificats[0];
       let certificatsMillegrille = certificats[1];
       this.setState({certificatsRoot, certificatsMillegrille});

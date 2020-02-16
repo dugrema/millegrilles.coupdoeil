@@ -42,6 +42,9 @@ export class ParametresErreurs extends React.Component {
                 <Button onClick={this.requeteErreurs}>
                   <Trans>global.rafraichir</Trans>
                 </Button>
+                <Button variant="danger" onClick={this.supprimerErreur} value="tout">
+                  <Trans>parametres.erreurs.supprimerTout</Trans>
+                </Button>
               </Col>
             </Row>
           </Feuille>
@@ -58,10 +61,17 @@ export class ParametresErreurs extends React.Component {
   supprimerErreur = event => {
     const value = event.currentTarget.value;
     // console.debug("Supprimer " + value);
-
-    const commande = {
-      'id_erreur': value
+    var commande;
+    if(value === 'tout') {
+      commande = {
+        supprimer_tout: true,
+      };
+    } else {
+      commande = {
+        'id_erreur': value
+      }
     }
+
 
     // Note : normalement ce serait une transaction ou une commande
     //        mais le traitement d'erreur fait partie de l'admin systeme

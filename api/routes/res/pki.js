@@ -65,7 +65,7 @@ class PKIUtils {
           return reject(err);
         }
 
-        console.debug("CERT PEM DATA")
+        // console.debug("CERT PEM DATA")
         var certs = splitPEMCerts(data.toString('utf8'));
         // console.debug(certs);
 
@@ -268,7 +268,7 @@ class PKIUtils {
         let fichier = path.join(REPERTOIRE_CERTS_TMP, fingerprint + '.json');
         fs.access(fichier, fs.constants.F_OK, (err) => {
           let existe = ! err;
-          console.debug("Fichier existe ? " + existe);
+          // console.debug("Fichier existe ? " + existe);
           resolve(existe);
         });
       } else {
@@ -286,10 +286,10 @@ class PKIUtils {
 
       // Sauvegarder sur disque
       fs.writeFile(fichier, message, ()=>{
-        console.debug("Fichier certificat " + fingerprintCalcule + ".json sauvegarde");
+        // console.debug("Fichier certificat " + fingerprintCalcule + ".json sauvegarde");
       });
     } else {
-      console.debug("Fichier certificat existe deja : " + fingerprint + ".json");
+      // console.debug("Fichier certificat existe deja : " + fingerprint + ".json");
     }
   }
 

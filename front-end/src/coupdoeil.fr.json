@@ -83,7 +83,8 @@
         "erreur": "Erreur :",
         "routingKey": "Routing Key :",
         "messageOriginal": "Message original",
-        "traceback": "StackTrace / TraceBack"
+        "traceback": "StackTrace / TraceBack",
+        "supprimerTout": "Supprimer tout"
       }
     },
     "plume": {
