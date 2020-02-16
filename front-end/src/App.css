@@ -25,3 +25,16 @@
 input.pin {
   margin-left: 0.5em;
 }
+
+.boutons {
+  text-align: right;
+}
+
+.formLogin > div {
+  padding-top: 1em;
+  padding-bottom: 1em;
+}
+
+.pinInput {
+  width: 20em;
+}

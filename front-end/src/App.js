@@ -1,11 +1,14 @@
 import React from 'react';
 // import logo from './logo.svg';
-import './App.css';
-import Ecran from './Ecran';
+import { Alert, Container, Row, Col, Button, InputGroup, Form, FormControl } from 'react-bootstrap';
 import { solveRegistrationChallenge, solveLoginChallenge } from '@webauthn/client';
 import openSocket from 'socket.io-client';
+
+import Ecran from './Ecran';
 import webSocketManager from './WebSocketManager';
 import {CryptageAsymetrique} from './mgcomponents/CryptoSubtle'
+
+import './App.css';
 
 // const urlApi = 'https://dev2.maple.mdugre.info:3001';  // Autre site, dev.
 const urlApi = '';  // Meme serveur
@@ -67,16 +70,19 @@ class Login extends React.Component {
   state = {
     redirectToReferrer: false,
     empreinte: false,
+    operationEnCours: false,
+    certificatsNavigateurExiste: localStorage.getItem('certificat.expiration'),
   };
 
   register = () => {
+    this.setState({operationEnCours: true});
     fakeAuth.register(err => {
       if(err) {
         console.error("Erreur");
         console.error(err);
       }
 
-      this.setState({ redirectToReferrer: true });
+      this.setState({ redirectToReferrer: true, operationEnCours: false });
       // console.log("Callback register complete");
     })
     .catch(err => {
@@ -84,7 +90,7 @@ class Login extends React.Component {
       console.log(err);
 
       let erreur = "L'empreinte a déjà été complétée avec succès. Si vous avez perdu votre clé, il faudra reinitialiser la MilleGrille."
-      this.setState({messageErreur: erreur});
+      this.setState({messageErreur: erreur, operationEnCours: false });
 
     });
   };
@@ -92,6 +98,8 @@ class Login extends React.Component {
   registerPin = event => {
     const form = event.currentTarget.form;
     var pin = form.pin.value;
+
+    this.setState({operationEnCours: true});
 
     fetch(urlApi + '/api/initialiser-ajout-token', {
         method: 'POST',
@@ -129,8 +137,19 @@ class Login extends React.Component {
           });
         });
       } else {
-        console.error("initialiser-ajout-token() Response code: " + response.status)
+        // console.error("initialiser-ajout-token() Response code: " + response.status)
+        if(response.status === 403) {
+          this.setState({messageErreur: "Erreur enregistrement token, pin invalide."});
+        } else {
+          this.setState({messageErreur: "Erreur enregistrement token, serveur inaccessible. Erreur : " + response.status});
+        }
       }
+    })
+    .catch(err=>{
+      this.setState({messageErreur: "Erreur enregistrement token, serveur inaccessible."});
+    })
+    .finally(()=>{
+      this.setState({operationEnCours: false});
     });
   }
 
@@ -141,13 +160,15 @@ class Login extends React.Component {
 
     const cryptageAsymetrique = new CryptageAsymetrique();
 
+    this.setState({operationEnCours: true});
+
     cryptageAsymetrique.genererKeyPair()
     .then(({clePrivee, clePublique})=>{
       sessionStorage.clePublique = clePublique;
       sessionStorage.clePrivee = clePrivee;
       return clePublique;
     }).then(clePublique=>{
-      fetch(urlApi + '/api/generercertificat', {
+      return fetch(urlApi + '/api/generercertificat', {
           method: 'POST',
           headers: {
               'content-type': 'Application/Json'
@@ -160,8 +181,8 @@ class Login extends React.Component {
       }).then(response => {
         if(response.status === 200) {
           response.json().then(certificatInfo => {
-            console.debug("Certificat recu");
-            console.debug(certificatInfo);
+            // console.debug("Certificat recu");
+            // console.debug(certificatInfo);
 
             // Sauvegarder information dans storage local
             localStorage.setItem('certificat.cert', certificatInfo.cert);
@@ -176,100 +197,217 @@ class Login extends React.Component {
             delete sessionStorage.clePublique;
             delete sessionStorage.clePrivee;
 
+            this.setState({
+              messageConfirmation: "Certificat cree avec succes",
+              messageErreur: false,
+              certificatsNavigateurExiste: true,
+            });
+
           });
         } else {
-          console.error("initialiser-ajout-token() Response code: " + response.status)
+          if(response.status === 403) {
+            this.setState({messageErreur: "Erreur enregistrement navigateur, pin invalide."});
+          } else {
+            this.setState({messageErreur: "Erreur enregistrement navigateur, serveur inaccessible. Erreur : " + response.status});
+          }
         }
-      });
+      })
+      .catch(err=>{
+        this.setState({messageErreur: "Erreur enregistrement navigateur, erreur d'access au serveur."});
+      })
 
+    })
+    .finally(()=>{
+      this.setState({operationEnCours: false});
+    });;
+
+  }
+
+  login_method = event => {
+    this.setState({operationEnCours: true});
+    this.timerResetAuthentification = setTimeout(()=>{
+      this.resetAuthentification();
+    }, 15000);
+    this.props.login_method(event);
+  }
+
+  resetAuthentification() {
+    this.setState({
+      operationEnCours: false,
+      messageErreur: "Erreur d'authentification, serveur non disponible",
     });
+  }
 
+  resetCertificatLocal = event => {
+    localStorage.removeItem('certificat.cert');
+    localStorage.removeItem('certificat.expiration');
+    localStorage.removeItem('certificat.fingerprint');
+    localStorage.removeItem('certificat.fullchain');
+    localStorage.removeItem('certificat.clepublique');
+    localStorage.removeItem('certificat.cleprivee');
+    this.setState({certificatsNavigateurExiste: false});
   }
 
   render() {
     // if (redirectToReferrer) return <Redirect to={from} />;
 
-    let erreur = null;
+    let message = null;
     if(this.state.messageErreur) {
-      erreur = (
-        <div className="w3-col m12 optionrow">
-          <div className="w3-col m1 w3-red">
-            Erreur
-          </div>
-          <div className="w3-col m9">
+      message = (
+        <Alert variant="danger">
+          <Alert.Heading>Erreur</Alert.Heading>
+          <p>
             {this.state.messageErreur}
-          </div>
-        </div>
+          </p>
+        </Alert>
+      );
+    } else if(this.state.messageConfirmation) {
+      message = (
+        <Alert variant="success">
+          <Alert.Heading>Succes</Alert.Heading>
+          <p>
+            {this.state.messageConfirmation}
+          </p>
+        </Alert>
       );
     }
 
-    let options = (
-      <form onSubmit={event => event.preventDefault()}>
-        <div className="w3-col m12 optionrow">
-          <div className="w3-col m2 bouton">
-            <button onClick={this.props.login_method}>Authentifier</button>
-          </div>
-          <div className="w3-col m10">
-            Accéder avec un token USB deja associé a votre MilleGrille.
-          </div>
-        </div>
+    var listeOptions = [];
+    listeOptions.push(
+      <Row key="authentifier">
+        <Col lg={12}>
+          <p>Accéder à votre MilleGrille.</p>
+        </Col>
+        <Col lg={12}>
+          <Button onClick={this.login_method} disabled={this.state.operationEnCours}>Authentifier</Button>
+        </Col>
+      </Row>
+    );
 
-        <div className="w3-col m12 optionrow">
-          <div className="w3-col m2 bouton">
-            <button onClick={this.registerPin}>Activer USB</button>
-          </div>
-          <div className="w3-col m10">
-            Activer un nouveau token avec un pin:
-            <input type="number" name="pin" className="pin" />
-          </div>
-        </div>
+    if( ! this.state.certificatsNavigateurExiste ) {
+      listeOptions.push(
+        <Row key="activerNavigateur">
+          <Form>
+            <Col lg={12}>
+              <p>Activer votre navigateur avec un PIN.</p>
+            </Col>
 
+            <Col lg={12}>
+              <Form.Group controlId="sujet">
+                <InputGroup className="pinInput">
+                  <InputGroup.Prepend>
+                    <InputGroup.Text id="sujet">Nom</InputGroup.Text>
+                  </InputGroup.Prepend>
+                  <FormControl
+                    placeholder="e.g. iPhone, maison, tablette"
+                    aria-label="Sujet"
+                    aria-describedby="sujet"
+                  />
+                </InputGroup>
+              </Form.Group>
+            </Col>
 
-        <div className="w3-col m12 optionrow">
-          <div className="w3-col m2 bouton">
-            <button onClick={this.creerCertificatNavigateur}>Activer Navigateur</button>
-          </div>
-          <div className="w3-col m4">
-            PIN :
-            <input type="number" name="pinnav" className="pin" />
-          </div>
-          <div className="w3-col m6">
-            Nom (e.g. iPhone) :
-            <input type="text" name="sujet"/>
-          </div>
-        </div>
+            <Col lg={12}>
+              <Form.Group controlId="pinnav">
+                <InputGroup className="pinInput">
+                  <InputGroup.Prepend>
+                    <InputGroup.Text id="pin">PIN</InputGroup.Text>
+                  </InputGroup.Prepend>
+                  <FormControl
+                    placeholder="123456"
+                    aria-label="PIN"
+                    aria-describedby="pin"
+                  />
+                </InputGroup>
+              </Form.Group>
+            </Col>
 
+            <Col lg={12}>
+              <Button variant="secondary" onClick={this.creerCertificatNavigateur} disabled={this.state.operationEnCours}>Activer Navigateur</Button>
+            </Col>
+          </Form>
+        </Row>
+      );
+    } else {
+      // Le navigateur a deja un certificat
+      listeOptions.push(
+        <Row key="desactiverNavigateur">
+          <Form>
+            <Col lg={12}>
+              <p>Desactiver votre navigateur et supprimer les certificats locaux.</p>
+            </Col>
+            <Col>
+              <Button variant="secondary" onClick={this.resetCertificatLocal} disabled={this.state.operationEnCours}>Desactiver navigateur</Button>
+            </Col>
+          </Form>
+        </Row>
+      );
+    }
 
-        <div className="w3-col m12 optionrow">
-          <div className="w3-col m2 bouton">
-            <button onClick={this.register}>Empreinte</button>
-          </div>
-          <div className="w3-col m10">
+    listeOptions.push(
+      <Row key="activerUsb">
+        <Form>
+          <Col lg={12}>
+            <p>Activer un nouveau token avec un pin.</p>
+          </Col>
+
+          <Col lg={12}>
+            <Form.Group controlId="pin">
+              <InputGroup className="pinInput">
+                <InputGroup.Prepend>
+                  <InputGroup.Text id="pin">PIN</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl
+                  placeholder="123456"
+                  aria-label="PIN"
+                  aria-describedby="pin"
+                />
+              </InputGroup>
+            </Form.Group>
+          </Col>
+
+          <Col lg={12}>
+            <Button variant="secondary" onClick={this.registerPin} disabled={this.state.operationEnCours}>Activer USB</Button>
+          </Col>
+        </Form>
+      </Row>
+    );
+
+    listeOptions.push(
+      <Row key="empreinte">
+        <Col lg={12}>
+          <p>
             Effectuer une empreinte sur votre nouvelle MilleGrille. Fonctionne
             uniquement sur une nouvelle MilleGrille.
-          </div>
-        </div>
-
-      </form>
+          </p>
+        </Col>
+        <Col lg={12}>
+          <Button variant="secondary" onClick={this.register} disabled={this.state.operationEnCours}>Empreinte</Button>
+        </Col>
+      </Row>
     );
 
     return (
-      <div className="w3-col m12">
-        <div className="w3-container">
-          <div className="w3-col m12">
+      <Container>
+        <Row>
+          <Col>
             <h1>Bienvenue à Coup D&apos;Oeil</h1>
-          </div>
+          </Col>
+        </Row>
 
-          {erreur}
+        {message}
 
-          {options}
-
-          <div className="w3-col m12">
+        <Row>
+          <Col>
             <p>Veuillez sélectionner une action.</p>
-          </div>
+          </Col>
+        </Row>
 
-        </div>
-      </div>
+        <Container className="formLogin">
+          {listeOptions}
+        </Container>
+
+      </Container>
     );
   }
 }

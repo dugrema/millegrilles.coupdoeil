@@ -201,7 +201,7 @@ router.post('/generercertificat', (req, res) => {
     });
 
   } else {
-    console.warning("generercertificat pin incorrect: " + pin);
+    console.warn("generercertificat pin incorrect: " + pin);
     res.sendStatus(403);
   }
 
