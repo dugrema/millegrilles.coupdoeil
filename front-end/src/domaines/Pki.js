@@ -325,16 +325,16 @@ export class RenouvellerCertificats extends React.Component {
   render() {
 
     let contenu = (
-      <div className="w3-col m12">
+      <div>
         {this.feuilleEntete()}
         {this.middleware()}
       </div>
     );
 
     return (
-      <div className="w3-col m9">
+      <div className="w3-col m12">
         <div className="w3-row-padding">
-            {contenu}
+          {contenu}
         </div>
       </div>
     );
