@@ -723,7 +723,7 @@ class SenseurPassifAppareil extends React.Component {
         )
       }
 
-      console.debug(typesDonneesCharte);
+      // console.debug(typesDonneesCharte);
       var optionsTypeLecture = [<option value="">Choisir un type de lecture</option>];
       if(typesDonneesCharte.temperature) {
         optionsTypeLecture.push(<option key="temperature" value="temperature">Température</option>);
