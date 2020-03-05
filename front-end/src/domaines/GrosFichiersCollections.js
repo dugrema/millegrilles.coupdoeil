@@ -76,7 +76,7 @@ export class ActionsCollections {
     });
   }
 
-  supprimerCollection(uuidCollection) {
+  supprimerCollection = (uuidCollection) => {
     let transaction = {
       "uuid": uuidCollection,
     }
@@ -104,7 +104,7 @@ export class ActionsCollections {
     return this.webSocketManager.transmettreTransaction(domaine, transaction);
   }
 
-  ajouterDocuments(collectionuuid, listeDocuments) {
+  ajouterDocuments = (collectionuuid, listeDocuments) => {
     // console.debug("Ajouter documents du carnet a collection " + collectionuuid);
     // console.debug(listeDocuments);
 
@@ -138,7 +138,7 @@ export class ActionsCollections {
     return this.webSocketManager.transmettreTransaction(domaine, transaction);
   }
 
-  retirerFichiersCollection(collectionUuid, listeUuids) {
+  retirerFichiersCollection = (collectionUuid, listeUuids) => {
     // console.debug("Ajouter documents du carnet a collection " + collectionUuid);
     // console.debug(listeUuids);
 
@@ -152,7 +152,7 @@ export class ActionsCollections {
     }
   }
 
-  figerCollection(collectionUuid) {
+  figerCollection = (collectionUuid) => {
     // console.debug("Figer la collection " + collectionUuid);
     let domaine = 'millegrilles.domaines.GrosFichiers.figerCollection';
     let transaction = {
@@ -161,7 +161,7 @@ export class ActionsCollections {
     return this.webSocketManager.transmettreTransaction(domaine, transaction);
   }
 
-  requeteTorrents(listeHashstrings) {
+  requeteTorrents = (listeHashstrings) => {
     return this.webSocketManager.transmettreRequete('requete.torrent.etat', {hashstrings: listeHashstrings})
     .then( docsRecu => {
       // console.log("Etat torrents:");
@@ -175,7 +175,7 @@ export class ActionsCollections {
     });
   }
 
-  demarrerTorrent(uuidCollection) {
+  demarrerTorrent = (uuidCollection) => {
     return this.webSocketManager.transmettreRequete('commande.torrent.seederTorrent', {uuid: uuidCollection})
     .catch( err => {
       console.error("Erreur demarrage torrents");
@@ -183,7 +183,7 @@ export class ActionsCollections {
     });
   }
 
-  arreterTorrents(listeHashstrings) {
+  arreterTorrents = (listeHashstrings) => {
     return this.webSocketManager.transmettreRequete('commande.torrent.supprimer', {hashlist: listeHashstrings})
     .catch( err => {
       console.error("Erreur arret torrents");
@@ -315,329 +315,226 @@ export class AffichageCollections extends React.Component {
     }
   }
 
-  renderListeDocuments() {
-    // let listeDocuments = [];
-    // let uuid = this.props.collectionCourante.uuid;
+  render() {
+    return (
+      <section className="w3-card_liste_BR">
 
-    return(
-      <Feuille>
+        <Commentaire
+          actions={{
+            changerNouvelleEtiquette: this.changerNouvelleEtiquette,
+            ajouterNouvelleEtiquette: this.ajouterNouvelleEtiquette,
+            supprimerEtiquette: this.supprimerEtiquette,
+            nouvelleEtiquette: this.nouvelleEtiquette,
+            editerCommentaire: this.editerCommentaire,
+            appliquerCommentaire: this.appliquerCommentaire,
+            supprimerFavori: this.props.actionsFavoris.supprimerFavori,
+            ajouterFavori: this.props.actionsFavoris.ajouterFavori,
+          }}
+          {...this.state}
+          {...this.props} />
 
-        <div className="w3-rowpadding">
+        <SecuriteCollection
+          actions={{
+            changerNiveauSecurite: this.changerNiveauSecurite,
+          }}
+          {...this.props} />
 
-          <h2 className="w3-col m8">Contenu</h2>
+        <ListeImages {...this.props} />
 
-          <div className="w3-col m4 boutons-actions-droite">
-            <span className="bouton-fa">
-              <button title="Figer" onClick={this.figerCollection}>
-                <i className="fa fa-thumb-tack"/>
-              </button>
-            </span>
-            <span className="bouton-fa">
-              <button title="Coller carnet" onClick={this.ajouterCarnet}>
-                <i className="fa fa-clipboard">
-                  {this.renderBadgeCarnet()}
-                </i>
-              </button>
-            </span>
+        <ListeDocuments
+          actions={{
+            ajouterCarnet: this.ajouterCarnet,
+            figerCollection: this.figerCollection,
+            supprimerDuCarnet: this.supprimerDuCarnet,
+            chargeruuid: this.props.actionsNavigation.chargeruuid,
+            telechargerEvent: this.props.actionsDownload.telechargerEvent,
+          }}
+          {...this.state}
+          {...this.props} />
 
-          </div>
-        </div>
+        <AffichageListeCollectionsFigees
+          actions={{
+            demarrerTorrent: this.props.actionsCollections.demarrerTorrent,
+            arreterTorrents: this.props.actionsCollections.arreterTorrents,
+            requeteTorrents: this.props.actionsCollections.requeteTorrents,
+            chargeruuid: this.props.actionsNavigation.chargeruuid,
+          }}
+          collectionCourante={this.props.collectionCourante} />
+      </section>
+    );
+  }
+}
 
-        <div className="liste-fichiers">
-          {this.genererListeFichiers()}
-        </div>
+function SecuriteCollection(props) {
 
-        <div className="bas-page">
-          <div className="w3-col m12 boutons-pages">
-            {this.renderBoutonsPages()}
-          </div>
-        </div>
+  var niveauSecurite;
+  if(props.collectionCourante) {
+    niveauSecurite = props.collectionCourante.securite;
+  }
 
-      </Feuille>
+  let boutons = []
+  if(niveauSecurite !== '2.prive') {
+    boutons.push(
+      <Button key="2.prive" variant="dark" onClick={props.actions.changerNiveauSecurite} value="2.prive">
+        <Trans>global.securite.prive</Trans>
+      </Button>
+    );
+  }
+  if(niveauSecurite !== '1.public') {
+    boutons.push(
+      <Button key="1.public" variant="danger" onClick={props.actions.changerNiveauSecurite} value="1.public">
+        <Trans>global.securite.public</Trans>
+      </Button>
     );
   }
 
-  renderSecuriteCollection() {
+  return (
+    <Feuille>
+      <Row>
+        <Col>
+          <h2><Trans>grosFichiers.niveauSecurite</Trans></h2>
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <SectionSecurite securite={niveauSecurite} colfin={5}>
+            <Col sm={5}><ButtonGroup>{boutons}</ButtonGroup></Col>
+          </SectionSecurite>
+        </Col>
+      </Row>
+    </Feuille>
+  )
+}
 
-    var niveauSecurite;
-    if(this.props.collectionCourante) {
-      niveauSecurite = this.props.collectionCourante.securite;
-    }
-
-    let boutons = []
-    if(niveauSecurite !== '2.prive') {
-      boutons.push(
-        <Button key="2.prive" variant="dark" onClick={this.changerNiveauSecurite} value="2.prive">
-          <Trans>global.securite.prive</Trans>
-        </Button>
+function ListeImages(props) {
+  // Verifier si on a au moins une image - active la section thumbnail/preview
+  var listeImages = [];
+  for(let uuid in props.collectionCourante.documents) {
+    let doc = props.collectionCourante.documents[uuid];
+    if(doc.thumbnail) {
+      // On a une image
+      listeImages.push(
+        <button key={doc.uuid} className="aslink" onClick={props.actionsNavigation.chargeruuid} value={doc.uuid}>
+          <img key={doc.uuid} src={'data:image/jpeg;base64,' + doc.thumbnail} alt={doc.nom}/>
+        </button>
       );
     }
-    if(niveauSecurite !== '1.public') {
-      boutons.push(
-        <Button key="1.public" variant="danger" onClick={this.changerNiveauSecurite} value="1.public">
-          <Trans>global.securite.public</Trans>
-        </Button>
-      );
-    }
+  }
 
-    return (
+  var sectionImages = null;
+  if(listeImages.length > 0) {
+    sectionImages = (
       <Feuille>
         <Row>
           <Col>
-            <h2><Trans>grosFichiers.niveauSecurite</Trans></h2>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <SectionSecurite securite={niveauSecurite} colfin={5}>
-              <Col sm={5}><ButtonGroup>{boutons}</ButtonGroup></Col>
-            </SectionSecurite>
+            {listeImages}
           </Col>
         </Row>
       </Feuille>
     )
   }
 
-  renderListeImages() {
-    // Verifier si on a au moins une image - active la section thumbnail/preview
-    var listeImages = [];
-    for(let uuid in this.props.collectionCourante.documents) {
-      let doc = this.props.collectionCourante.documents[uuid];
-      if(doc.thumbnail) {
-        // On a une image
-        listeImages.push(
-          <button key={doc.uuid} className="aslink" onClick={this.props.actionsNavigation.chargeruuid} value={doc.uuid}>
-            <img key={doc.uuid} src={'data:image/jpeg;base64,' + doc.thumbnail} alt={doc.nom}/>
-          </button>
-        );
-      }
-    }
+  return sectionImages;
+}
 
-    var sectionImages;
-    if(listeImages.length > 0) {
-      sectionImages = (
-        <Feuille>
-          <Row>
-            <Col>
-              {listeImages}
-            </Col>
-          </Row>
-        </Feuille>
-      )
-    }
+function Commentaire(props) {
+  const collectionCourante = props.collectionCourante;
 
-    return sectionImages;
-  }
-
-  renderBadgeCarnet() {
-    let badgeCarnet = '';
-    if(this.props.carnet.taille > 0) {
-      badgeCarnet = (
-        <span className="w3-badge w3-medium w3-green badge">{this.props.carnet.taille}</span>
-      )
-    }
-    return badgeCarnet;
-  }
-
-  renderCommentaire() {
-    const collectionCourante = this.props.collectionCourante;
-
-    let boutonFavori;
-    if(this.props.favorisParUuid[collectionCourante.uuid]) {
-      boutonFavori = (
-        <button
-          title="Favori"
-          value={collectionCourante.uuid}
-          onClick={this.props.actionsFavoris.supprimerFavori}>
-            <span className="fa-stack favori-actif">
-              <i className='fa fa-star fa-stack-1x fond'/>
-              <i className='fa fa-star-o fa-stack-1x'/>
-            </span>
-        </button>
-      );
-    } else {
-      boutonFavori = (
-        <button
-          title="Favori"
-          value={collectionCourante.uuid}
-          onClick={this.props.actionsFavoris.ajouterFavori}>
-            <i className="fa fa-star-o favori-inactif"/>
-        </button>
-      );
-    }
-
-    let titre = (
-      <div className="w3-rowpadding">
-        <div className="w3-col m11">
-          <h2><i className="fa fa-tags"/> Étiquettes et commentaires</h2>
-        </div>
-        <div className="w3-col m1">
-          {boutonFavori}
-        </div>
-      </div>
-    );
-
-    let etiquettes = [];
-    if(collectionCourante.etiquettes) {
-      collectionCourante.etiquettes.forEach(etiquette => {
-        etiquettes.push(
-          <span key={etiquette} className="etiquette">
-            <li className="fa fa-tag"/> {etiquette}
-            <button onClick={this.supprimerEtiquette} value={etiquette}>
-              <li className="fa fa-remove"/>
-            </button>
+  let boutonFavori;
+  if(props.favorisParUuid[collectionCourante.uuid]) {
+    boutonFavori = (
+      <button
+        title="Favori"
+        value={collectionCourante.uuid}
+        onClick={props.actions.supprimerFavori}>
+          <span className="fa-stack favori-actif">
+            <i className='fa fa-star fa-stack-1x fond'/>
+            <i className='fa fa-star-o fa-stack-1x'/>
           </span>
-        );
-      })
-    };
+      </button>
+    );
+  } else {
+    boutonFavori = (
+      <button
+        title="Favori"
+        value={collectionCourante.uuid}
+        onClick={props.actions.ajouterFavori}>
+          <i className="fa fa-star-o favori-inactif"/>
+      </button>
+    );
+  }
 
-    let ajouterEtiquette = (
-      <div className="w3-rowpadding">
-        <div className="w3-col m12">
-          <label>Ajouter une étiquette : </label>
-          <input type="text" onChange={this.changerNouvelleEtiquette} value={this.state.nouvelleEtiquette}/>
-          <button onClick={this.ajouterNouvelleEtiquette}>
-            <i className="fa fa-plus"/>
-          </button>
-        </div>
+  let titre = (
+    <div className="w3-rowpadding">
+      <div className="w3-col m11">
+        <h2><i className="fa fa-tags"/> Étiquettes et commentaires</h2>
       </div>
-    );
-
-    let commentaires = (
-      <div className="w3-rowpadding">
-        <div className="w3-col m12 commentaire">
-
-          <InputTextAreaMultilingueAutoSubmit
-            controlId="commentaires" valuePrefix="commentaires"
-            contenu={collectionCourante} contenuEdit={this.state}
-            onChange={this.editerCommentaire} onBlur={this.appliquerCommentaire}
-            languePrincipale={this.props.documentIdMillegrille.langue}
-            languesAdditionnelles={this.props.documentIdMillegrille.languesAdditionnelles}
-            placeholder="Ajouter un commentaire ici..."
-            />
-
-        </div>
+      <div className="w3-col m1">
+        {boutonFavori}
       </div>
-    );
+    </div>
+  );
 
-    return (
-      <Feuille>
-        <div className="formulaire">
-          {titre}
-
-          <div className="w3-rowpadding">
-            <div className="w3-col m12">
-              {etiquettes}
-            </div>
-          </div>
-
-          {ajouterEtiquette}
-
-          {commentaires}
-        </div>
-      </Feuille>
-    );
-  }
-
-  genererListeFichiers() {
-    let fichiersRendered = [];
-
-    if( this.props.collectionCourante.documents ) {
-
-      let premierElem = (this.state.pageCourante-1) * this.state.elementsParPage;
-      let dernierElem = premierElem + this.state.elementsParPage; // (+1)
-
-      let selection = this.props.collectionCourante.documents;
-
-      // Creer une liste de fichiers/collections et la trier
-      let fichiers = [];
-      for(let uuid in selection) {
-        let contenu = selection[uuid];
-        fichiers.push({...contenu, uuid});
-      }
-      fichiers.sort((a,b)=>{
-        let nom_a = a['nom'];
-        let nom_b = b['nom'];
-        if(nom_a === nom_b) return 0;
-        if(!nom_a) return 1;
-        return nom_a.localeCompare(nom_b);
-      })
-
-      for(let idx = premierElem; idx < dernierElem && idx < fichiers.length; idx++) {
-        let fichier = fichiers[idx];
-
-        let icone = <IconeFichier type={fichier['_mg-libelle']} securite={fichier.securite} />
-
-        fichiersRendered.push(
-          <div key={fichier.uuid} className="w3-row-padding tableau-fichiers">
-
-            <div className="w3-col m11">
-              {icone}
-              <button className="aslink" onClick={this.props.actionsNavigation.chargeruuid} value={fichier.uuid}>
-                {fichier.nom}
-              </button>
-            </div>
-
-            <div className="w3-col m1">
-              <button
-                title="Telecharger"
-                value={fichier.uuid}
-                onClick={this.props.actionsDownload.telechargerEvent}>
-                  <i className="fa fa-download"/>
-              </button>
-              <button value={fichier.uuid} onClick={this.supprimerDuCarnet}>
-                <i className="fa fa-remove" />
-              </button>
-            </div>
-
-          </div>
-        );
-      }
-    }
-
-    return fichiersRendered;
-  }
-
-  renderBoutonsPages() {
-    let boutonsPages = [];
-    if(this.props.collectionCourante.documents) {
-      let fichiers = this.props.collectionCourante.documents;
-      let nbPages = Math.ceil(Object.keys(fichiers).length / this.state.elementsParPage);
-
-      for(let page=1; page<=nbPages; page++) {
-        let cssCourante = '';
-        if(this.state.pageCourante === ''+page) {
-          cssCourante = 'courante';
-        }
-        boutonsPages.push(
-          <button key={page} onClick={this.changerPage} value={page} className={cssCourante}>
-            {page}
+  let etiquettes = [];
+  if(collectionCourante.etiquettes) {
+    collectionCourante.etiquettes.forEach(etiquette => {
+      etiquettes.push(
+        <span key={etiquette} className="etiquette">
+          <li className="fa fa-tag"/> {etiquette}
+          <button onClick={props.actions.supprimerEtiquette} value={etiquette}>
+            <li className="fa fa-remove"/>
           </button>
-        );
-      }
-    }
-    return boutonsPages;
-  }
+        </span>
+      );
+    })
+  };
 
-  render() {
-    return (
-      <section className="w3-card_liste_BR">
+  let ajouterEtiquette = (
+    <div className="w3-rowpadding">
+      <div className="w3-col m12">
+        <label>Ajouter une étiquette : </label>
+        <input type="text" onChange={props.actions.changerNouvelleEtiquette} value={props.nouvelleEtiquette}/>
+        <button onClick={props.actions.ajouterNouvelleEtiquette}>
+          <i className="fa fa-plus"/>
+        </button>
+      </div>
+    </div>
+  );
 
-        {this.renderCommentaire()}
+  let commentaires = (
+    <div className="w3-rowpadding">
+      <div className="w3-col m12 commentaire">
 
-        {this.renderSecuriteCollection()}
+        <InputTextAreaMultilingueAutoSubmit
+          controlId="commentaires" valuePrefix="commentaires"
+          contenu={collectionCourante} contenuEdit={props}
+          onChange={props.actions.editerCommentaire} onBlur={props.actions.appliquerCommentaire}
+          languePrincipale={props.documentIdMillegrille.langue}
+          languesAdditionnelles={props.documentIdMillegrille.languesAdditionnelles}
+          placeholder="Ajouter un commentaire ici..."
+          />
 
-        {this.renderListeImages()}
+      </div>
+    </div>
+  );
 
-        {this.renderListeDocuments()}
+  return (
+    <Feuille>
+      <div className="formulaire">
+        {titre}
 
-        <AffichageListeCollectionsFigees
-          collectionCourante={this.props.collectionCourante}
-          actionsCollections={this.props.actionsCollections}
-          actionsNavigation={this.props.actionsNavigation}/>
-      </section>
-    );
-  }
+        <div className="w3-rowpadding">
+          <div className="w3-col m12">
+            {etiquettes}
+          </div>
+        </div>
+
+        {ajouterEtiquette}
+
+        {commentaires}
+      </div>
+    </Feuille>
+  );
 }
 
 export class AffichageCollectionFigee extends React.Component {
@@ -652,188 +549,11 @@ export class AffichageCollectionFigee extends React.Component {
     this.setState({pageCourante: page});
   }
 
-  renderListeDocuments() {
-    // let listeDocuments = [];
-    // let uuid = this.props.collectionCourante.uuid;
-
-    return(
-      <Feuille>
-        <div className="w3-rowpadding">
-
-          <h2 className="w3-col m12"><i className="fa fa-thumb-tack"/> Contenu</h2>
-
-        </div>
-
-        <div className="liste-fichiers">
-          {this.genererListeFichiers()}
-        </div>
-
-        <div className="bas-page">
-          <div className="w3-col m12 boutons-pages">
-            {this.renderBoutonsPages()}
-          </div>
-        </div>
-      </Feuille>
-    );
-  }
-
-  renderCommentaire() {
-    let collectionCourante = this.props.collectionCourante;
-    // let cssEdition = '';
-    // if(this.state.commentaires) {
-    //   cssEdition = 'edition-en-cours'
-    // }
-
-    let boutonFavori;
-    if(this.props.favorisParUuid[collectionCourante.uuid]) {
-      boutonFavori = (
-        <button
-          title="Favori"
-          value={collectionCourante.uuid}
-          onClick={this.props.actionsFavoris.supprimerFavori}>
-            <span className="fa-stack favori-actif">
-              <i className='fa fa-star fa-stack-1x fond'/>
-              <i className='fa fa-star-o fa-stack-1x'/>
-            </span>
-        </button>
-      );
-    } else {
-      boutonFavori = (
-        <button
-          title="Favori"
-          value={collectionCourante.uuid}
-          onClick={this.props.actionsFavoris.ajouterFavori}>
-            <i className="fa fa-star-o favori-inactif"/>
-        </button>
-      );
-    }
-
-    let titre = (
-      <div className="w3-rowpadding">
-        <div className="w3-col m11">
-          <h2><i className="fa fa-tags"/> Étiquettes et commentaires</h2>
-        </div>
-        <div className="w3-col m1">
-          {boutonFavori}
-        </div>
-      </div>
-    );
-
-    let etiquettes = [];
-    if(collectionCourante.etiquettes) {
-      collectionCourante.etiquettes.forEach(etiquette => {
-        etiquettes.push(
-          <span key={etiquette} className="etiquette">
-            {etiquette}
-          </span>
-        );
-      })
-    };
-
-    let commentaires = (
-      <div className="w3-rowpadding">
-        <div className="w3-col m12 commentaire">
-            {collectionCourante.commentaires}
-        </div>
-      </div>
-    );
-
-    return (
-      <Feuille>
-        <div className="formulaire">
-          {titre}
-          {etiquettes}
-          {commentaires}
-        </div>
-      </Feuille>
-    );
-  }
-
-  genererListeFichiers() {
-    let fichiersRendered = [];
-
-    if( this.props.collectionCourante.documents ) {
-
-      let premierElem = (this.state.pageCourante-1) * this.state.elementsParPage;
-      let dernierElem = premierElem + this.state.elementsParPage; // (+1)
-
-      let selection = this.props.collectionCourante.documents;
-
-      // Creer une liste de fichiers/collections et la trier
-      let fichiers = [];
-      for(let uuid in selection) {
-        let contenu = selection[uuid];
-        fichiers.push({...contenu, uuid});
-      }
-      fichiers.sort((a,b)=>{
-        let nom_a = a['nom'];
-        let nom_b = b['nom'];
-        if(nom_a === nom_b) return 0;
-        if(!nom_a) return 1;
-        return nom_a.localeCompare(nom_b);
-      })
-
-      for(let idx = premierElem; idx < dernierElem && idx < fichiers.length; idx++) {
-        let fichier = fichiers[idx];
-
-        let icone = <IconeFichier type={fichier['_mg-libelle']} securite={fichier.securite} />
-
-        fichiersRendered.push(
-          <div key={fichier.uuid} className="w3-row-padding tableau-fichiers">
-
-            <div className="w3-col m11">
-              {icone}
-              <button className="aslink" onClick={this.props.actionsNavigation.chargeruuid} value={fichier.uuid}>
-                {fichier.nom}
-              </button>
-            </div>
-
-            <div className="w3-col m1">
-              <button
-                title="Telecharger"
-                value={fichier.uuid}
-                onClick={this.props.actionsDownload.telechargerEvent}>
-                  <i className="fa fa-download"/>
-              </button>
-            </div>
-
-          </div>
-        );
-      }
-    }
-
-    return fichiersRendered;
-  }
-
-  renderBoutonsPages() {
-    let boutonsPages = [];
-    if(this.props.collectionCourante.documents) {
-      let fichiers = this.props.collectionCourante.documents;
-      let nbPages = Math.ceil(Object.keys(fichiers).length / this.state.elementsParPage);
-
-      for(let page=1; page<=nbPages; page++) {
-        let cssCourante = '';
-        if(this.state.pageCourante === ''+page) {
-          cssCourante = 'courante';
-        }
-        boutonsPages.push(
-          <button key={page} onClick={this.changerPage} value={page} className={cssCourante}>
-            {page}
-          </button>
-        );
-      }
-    }
-    return boutonsPages;
-  }
-
   render() {
     return (
       <section className="w3-card_liste_BR">
-
-        {this.renderCommentaire()}
-
-        {this.renderListeDocuments()}
-
+        <Commentaire {...this.props} />
+        <ListeDocuments {...this.props} />
       </section>
     );
   }
@@ -849,12 +569,12 @@ class AffichageListeCollectionsFigees extends React.Component {
 
   demarrerTorrent = event => {
     let uuidCollection = event.currentTarget.value;
-    this.props.actionsCollections.demarrerTorrent(uuidCollection)
+    this.props.actions.demarrerTorrent(uuidCollection)
   }
 
   arreterTorrent = event => {
     let hashstring = event.currentTarget.value;
-    this.props.actionsCollections.arreterTorrents([hashstring])
+    this.props.actions.arreterTorrents([hashstring])
   }
 
   rafraichirTorrents = () => {
@@ -870,7 +590,7 @@ class AffichageListeCollectionsFigees extends React.Component {
         }
       }
 
-      this.props.actionsCollections.requeteTorrents(listeHashstrings)
+      this.props.actions.requeteTorrents(listeHashstrings)
       .then(reponse=>{
         // console.log("Reponse torrents demandes");
         // console.log(reponse);
@@ -898,66 +618,204 @@ class AffichageListeCollectionsFigees extends React.Component {
     clearInterval(this.intervalRefresh);
   }
 
-  afficherListe() {
-    var liste = null;
-    if(this.props.collectionCourante && this.props.collectionCourante.figees) {
-      const collectionsFigees = this.props.collectionCourante.figees;
-
-      liste = [];
-      for(let idx in collectionsFigees) {
-        let collectionFigee = collectionsFigees[idx];
-        let uuidCollection = collectionFigee.uuid;
-        let hashstring = collectionFigee['torrent_hashstring'];
-        var boutonsTorrent;
-
-        if(this.state.torrentsActifs) {
-          const torrentInfo = this.state.torrentsActifs[hashstring];
-
-          if(torrentInfo && torrentInfo.status === 6) { // Seeding
-            // Afficher bouton arret
-            boutonsTorrent = (
-              <button onClick={this.arreterTorrent} value={hashstring}>
-                <i className="fa fa-stop" />
-              </button>
-            );
-          } else {
-            // Afficher bouton demarrer
-            boutonsTorrent = (
-              <button onClick={this.demarrerTorrent} value={uuidCollection}>
-                <i className="fa fa-play" />
-              </button>
-            );
-          }
-        }
-
-
-        liste.push(
-          <div key={collectionFigee.uuid}>
-            <div>
-              <button className='aslink' value={collectionFigee.uuid} onClick={this.props.actionsNavigation.chargeruuid}>
-                {dateformatter.format_datetime(collectionFigee.date)}
-              </button>
-            </div>
-            <div>{hashstring}</div>
-            <div>{boutonsTorrent}</div>
-          </div>
-        )
-      }
-
-    }
-
-    return liste;
-  }
-
   render() {
     return (
       <Feuille>
         <h2><i className="fa fa-thumb-tack"/> Collections figees</h2>
 
         <div>
-          {this.afficherListe()}
+          <ListeCollectionsFigees
+            actions={{
+              arreterTorrent: this.arreterTorrent,
+              demarrerTorrent: this.demarrerTorrent,
+              ...this.props.actions
+            }}
+            {...this.props} />
         </div>
       </Feuille>
     );
   }
+}
+
+
+function ListeDocuments(props) {
+  // let listeDocuments = [];
+  // let uuid = this.props.collectionCourante.uuid;
+
+  return(
+    <Feuille>
+
+      <div className="w3-rowpadding">
+
+        <h2 className="w3-col m8">Contenu</h2>
+
+        <div className="w3-col m4 boutons-actions-droite">
+          <span className="bouton-fa">
+            <button title="Figer" onClick={props.actions.figerCollection}>
+              <i className="fa fa-thumb-tack"/>
+            </button>
+          </span>
+          <span className="bouton-fa">
+            <button title="Coller carnet" onClick={props.actions.ajouterCarnet}>
+              <i className="fa fa-clipboard">
+                <BadgeCarnet carnet={props.carnet}/>
+              </i>
+            </button>
+          </span>
+
+        </div>
+      </div>
+
+      <div className="liste-fichiers">
+        <ListeFichiers {...props} />
+      </div>
+
+      <div className="bas-page">
+        <div className="w3-col m12 boutons-pages">
+          <BoutonsPages {...props} />
+        </div>
+      </div>
+
+    </Feuille>
+  );
+}
+
+function BadgeCarnet(props) {
+  let badgeCarnet = '';
+  if(props.carnet.taille > 0) {
+    badgeCarnet = (
+      <span className="w3-badge w3-medium w3-green badge">{props.carnet.taille}</span>
+    )
+  }
+  return badgeCarnet;
+}
+
+function ListeFichiers(props) {
+  let fichiersRendered = [];
+
+  if( props.collectionCourante.documents ) {
+
+    let premierElem = (props.pageCourante-1) * props.elementsParPage;
+    let dernierElem = premierElem + props.elementsParPage; // (+1)
+
+    let selection = props.collectionCourante.documents;
+
+    // Creer une liste de fichiers/collections et la trier
+    let fichiers = [];
+    for(let uuid in selection) {
+      let contenu = selection[uuid];
+      fichiers.push({...contenu, uuid});
+    }
+    fichiers.sort((a,b)=>{
+      let nom_a = a['nom'];
+      let nom_b = b['nom'];
+      if(nom_a === nom_b) return 0;
+      if(!nom_a) return 1;
+      return nom_a.localeCompare(nom_b);
+    })
+
+    for(let idx = premierElem; idx < dernierElem && idx < fichiers.length; idx++) {
+      let fichier = fichiers[idx];
+
+      let icone = <IconeFichier type={fichier['_mg-libelle']} securite={fichier.securite} />
+
+      fichiersRendered.push(
+        <div key={fichier.uuid} className="w3-row-padding tableau-fichiers">
+
+          <div className="w3-col m11">
+            {icone}
+            <button className="aslink" onClick={props.actionsNavigation.chargeruuid} value={fichier.uuid}>
+              {fichier.nom}
+            </button>
+          </div>
+
+          <div className="w3-col m1">
+            <button
+              title="Telecharger"
+              value={fichier.uuid}
+              onClick={props.actionsDownload.telechargerEvent}>
+                <i className="fa fa-download"/>
+            </button>
+            <button value={fichier.uuid} onClick={props.supprimerDuCarnet}>
+              <i className="fa fa-remove" />
+            </button>
+          </div>
+
+        </div>
+      );
+    }
+  }
+
+  return fichiersRendered;
+}
+
+function BoutonsPages(props) {
+  let boutonsPages = [];
+  if(props.collectionCourante.documents) {
+    let fichiers = props.collectionCourante.documents;
+    let nbPages = Math.ceil(Object.keys(fichiers).length / props.elementsParPage);
+
+    for(let page=1; page<=nbPages; page++) {
+      let cssCourante = '';
+      if(props.pageCourante === ''+page) {
+        cssCourante = 'courante';
+      }
+      boutonsPages.push(
+        <button key={page} onClick={props.changerPage} value={page} className={cssCourante}>
+          {page}
+        </button>
+      );
+    }
+  }
+  return boutonsPages;
+}
+
+function ListeCollectionsFigees(props) {
+  var liste = null;
+  if(props.collectionCourante && props.collectionCourante.figees) {
+    const collectionsFigees = props.collectionCourante.figees;
+
+    liste = [];
+    for(let idx in collectionsFigees) {
+      let collectionFigee = collectionsFigees[idx];
+      let uuidCollection = collectionFigee.uuid;
+      let hashstring = collectionFigee['torrent_hashstring'];
+      var boutonsTorrent;
+
+      if(props.torrentsActifs) {
+        const torrentInfo = props.torrentsActifs[hashstring];
+
+        if(torrentInfo && torrentInfo.status === 6) { // Seeding
+          // Afficher bouton arret
+          boutonsTorrent = (
+            <button onClick={props.actions.arreterTorrent} value={hashstring}>
+              <i className="fa fa-stop" />
+            </button>
+          );
+        } else {
+          // Afficher bouton demarrer
+          boutonsTorrent = (
+            <button onClick={props.actions.demarrerTorrent} value={uuidCollection}>
+              <i className="fa fa-play" />
+            </button>
+          );
+        }
+      }
+
+      liste.push(
+        <div key={collectionFigee.uuid}>
+          <div>
+            <button className='aslink' value={collectionFigee.uuid} onClick={props.actions.chargeruuid}>
+              {dateformatter.format_datetime(collectionFigee.date)}
+            </button>
+          </div>
+          <div>{hashstring}</div>
+          <div>{boutonsTorrent}</div>
+        </div>
+      )
+    }
+
+  }
+
+  return liste;
 }
