@@ -4,7 +4,7 @@ import moment from 'moment-timezone';
 class DateFormatter {
 
   date_default = 'YYYY/MM/DD';
-  datetime_default = 'YYYY/MM/DD HH:mm:SS';
+  datetime_default = 'YYYY/MM/DD HH:mm:ss';
   datemonthhour_default  = 'MMM-DD HH:mm:ss';
 
   timezone_default = 'America/Toronto';

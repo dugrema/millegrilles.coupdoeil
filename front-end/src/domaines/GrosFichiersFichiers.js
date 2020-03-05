@@ -585,8 +585,8 @@ export class PanneauListeFichiers extends React.Component {
 
     if( this.props.listeFichiers ) {
 
-      console.debug("Carnet");
-      console.debug(this.props.carnet);
+      console.debug("Liste fichiers")
+      console.debug(this.props.listeFichiers)
 
       let activites = this.props.listeFichiers;
       if(activites) fichiersRendered = activites.map((fichier, idx) => {
@@ -600,7 +600,7 @@ export class PanneauListeFichiers extends React.Component {
         let icone = <IconeFichier className="icone-fichier" type={fichier['_mg-libelle']} securite={fichier.securite} mimetype={fichier.mimetype} />
 
         let dernierChangementRendered = (
-          <DateTimeFormatter date={fichier['_mg-derniere-modification']}/>
+          <DateTimeFormatter date={fichier.date_version || fichier['_mg-derniere-modification']}/>
         );
         let cssFavori, actionFavori;
         if(this.props.favorisParUuid[fichier.uuid]) {
