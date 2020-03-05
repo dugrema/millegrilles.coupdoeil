@@ -143,12 +143,24 @@ section.uploadIcon DIV SPAN {
 
 .boutons-actions-droite button {
   margin-left: 0.25em;
+  font-size: medium;
+  border: none;
+  background: none;
 }
 
 .tableau-fichiers > div {
   display: inline-block;
   white-space: nowrap;
   overflow: hidden;
+  font-size: small;
+}
+
+.tableau-fichiers:nth-child(even) {
+  background-color: #ffffff;
+}
+
+.tableau-fichiers:nth-child(odd) {
+  background-color: #ececec;
 }
 
 .favori-actif, .favori-inactif {
@@ -219,4 +231,18 @@ div.commentaire {
 .imagefichier {
   margin: 0.25em;
   text-decoration: none;
+}
+
+.fichierlien button {
+  text-decoration: none;
+  border-bottom: none;
+}
+
+.fichierlien button:hover {
+  text-decoration: none;
+  border-bottom: 1pt solid black;
+}
+
+.icone-fichier {
+  font-size: medium;
 }

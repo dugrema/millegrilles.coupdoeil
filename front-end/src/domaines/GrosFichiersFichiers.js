@@ -586,12 +586,12 @@ function FichiersRecents(props) {
     if(activites) fichiersRendered = activites.map((fichier, idx) => {
       let check;
       if(props.carnet.selection[fichier.uuid]) {
-        check = ((<i className="fa fa-check-square-o"/>));
+        check = ((<i className="fa fa-check-square-o icone-fichier"/>));
       } else {
-        check = ((<i className="fa fa-square-o"/>));
+        check = ((<i className="fa fa-square-o icone-fichier"/>));
       }
 
-      let icone = <IconeFichier type={fichier['_mg-libelle']} securite={fichier.securite} />
+      let icone = <IconeFichier className="icone-fichier" type={fichier['_mg-libelle']} securite={fichier.securite} />
 
       let dernierChangementRendered = (
         <DateTimeFormatter date={fichier['_mg-derniere-modification']}/>
@@ -608,7 +608,7 @@ function FichiersRecents(props) {
       let lienFichier;
       if(fichier.nom) {
         lienFichier = (
-          <span>
+          <span className="fichierlien">
             {icone}
             <button className="aslink" onClick={props.actions.chargeruuid} value={fichier.uuid}>
               {fichier.nom}
@@ -617,9 +617,11 @@ function FichiersRecents(props) {
         )
       } else {
         lienFichier = (
-          <button className="aslink" onClick={props.actions.chargeruuid} value={fichier.uuid}>
-            {icone}
-          </button>
+          <span className="fichierlien">
+            <button className="aslink" onClick={props.actions.chargeruuid} value={fichier.uuid}>
+              {icone}
+            </button>
+          </span>
         )
       }
 
@@ -638,6 +640,10 @@ function FichiersRecents(props) {
 
           </Col>
 
+          <Col sm={6} xl={2}>
+            {dernierChangementRendered}
+          </Col>
+
           <Col sm={6} xl={2} className="boutons-actions-droite">
             <button value={fichier.uuid} onClick={actionFavori}>
               <span className={"fa-stack " + cssFavori}>
@@ -649,10 +655,6 @@ function FichiersRecents(props) {
               onClick={props.actions.telechargerEvent}>
               <i className="fa fa-download"/>
             </button>
-          </Col>
-
-          <Col sm={6} xl={2}>
-            {dernierChangementRendered}
           </Col>
 
         </Row>
