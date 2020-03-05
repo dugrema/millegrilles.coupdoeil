@@ -415,7 +415,7 @@ function ListeImages(props) {
     if(doc.thumbnail) {
       // On a une image
       listeImages.push(
-        <button key={doc.uuid} className="aslink" onClick={props.actionsNavigation.chargeruuid} value={doc.uuid}>
+        <button key={doc.uuid} className="aslink imagefichier" onClick={props.actionsNavigation.chargeruuid} value={doc.uuid}>
           <img key={doc.uuid} src={'data:image/jpeg;base64,' + doc.thumbnail} alt={doc.nom}/>
         </button>
       );

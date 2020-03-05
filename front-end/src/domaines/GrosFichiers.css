@@ -215,3 +215,8 @@ span.etiquette {
 div.commentaire {
   margin-top: 2em;
 }
+
+.imagefichier {
+  margin: 0.25em;
+  text-decoration: none;
+}
