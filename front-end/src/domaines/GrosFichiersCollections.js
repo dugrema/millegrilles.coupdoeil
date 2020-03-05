@@ -5,6 +5,7 @@ import { dateformatter } from '../formatters';
 import { IconeFichier, SectionSecurite } from '../mgcomponents/IconeFichier';
 import { Feuille } from '../mgcomponents/Feuilles'
 import { InputTextAreaMultilingueAutoSubmit } from '../mgcomponents/InputMultilingue'
+import { PanneauListeFichiers } from './GrosFichiersFichiers';
 
 export class ActionsCollections {
 
@@ -198,8 +199,6 @@ export class ActionsCollections {
 export class AffichageCollections extends React.Component {
 
   state = {
-    pageCourante: '1',
-    elementsParPage: 10,
     commentaires: null,
     nouvelleEtiquette: '',
   }
@@ -662,41 +661,37 @@ function ListeDocuments(props) {
   return(
     <Feuille>
 
-      <div className="w3-rowpadding">
+      <Row>
 
-        <h2 className="w3-col m8">Contenu</h2>
+        <Col md={8}>
+          <h2 className="w3-col m8">Contenu</h2>
+        </Col>
 
-        <div className="w3-col m4 boutons-actions-droite">
-          <span className="bouton-fa">
-            <button title="Figer" onClick={props.actions.figerCollection}>
-              <i className="fa fa-thumb-tack"/>
-            </button>
-          </span>
-          <span className="bouton-fa">
-            <button title="Coller carnet" onClick={props.actions.ajouterCarnet}>
-              <i className="fa fa-clipboard">
-                <BadgeCarnet carnet={props.carnet}/>
-              </i>
-            </button>
-          </span>
+        <Col md={4}>
+          <div className="boutons-actions-droite">
+            <span className="bouton-fa">
+              <button title="Figer" onClick={props.actions.figerCollection}>
+                <i className="fa fa-thumb-tack"/>
+              </button>
+            </span>
+            <span className="bouton-fa">
+              <button title="Coller carnet" onClick={props.actions.ajouterCarnet}>
+                <i className="fa fa-clipboard">
+                  <BadgeCarnet carnet={props.carnet}/>
+                </i>
+              </button>
+            </span>
 
-        </div>
-      </div>
+          </div>
+        </Col>
+      </Row>
 
-      <div className="liste-fichiers">
-        <ListeFichiers
-          actions={{
-            telechargerEvent: props.actionsDownload.telechargerEvent,
-            ...props.actions
-          }}
-          {...props} />
-      </div>
-
-      <div className="bas-page">
-        <div className="w3-col m12 boutons-pages">
-          <BoutonsPages {...props} />
-        </div>
-      </div>
+      <ListeFichiers
+        actions={{
+          telechargerEvent: props.actionsDownload.telechargerEvent,
+          ...props.actions
+        }}
+        {...props} />
 
     </Feuille>
   );
@@ -712,63 +707,116 @@ function BadgeCarnet(props) {
   return badgeCarnet;
 }
 
-function ListeFichiers(props) {
-  let fichiersRendered = [];
+class ListeFichiers extends React.Component {
 
-  if( props.collectionCourante.documents ) {
+  state = {
+    tri: 'nom',
+    elementsParChargement: 50,
+    nombreElementsCourants: 50,
+  }
 
-    let premierElem = (props.pageCourante-1) * props.elementsParPage;
-    let dernierElem = premierElem + props.elementsParPage; // (+1)
+  suivant = event => {
+    this.setState({
+      nombreElementsCourants: this.state.nombreElementsCourants + this.state.elementsParChargement
+    });
+  }
 
-    let selection = props.collectionCourante.documents;
+  render() {
+    let fichiersRendered = [];
 
-    // Creer une liste de fichiers/collections et la trier
-    let fichiers = [];
-    for(let uuid in selection) {
-      let contenu = selection[uuid];
-      fichiers.push({...contenu, uuid});
-    }
-    fichiers.sort((a,b)=>{
-      let nom_a = a['nom'];
-      let nom_b = b['nom'];
-      if(nom_a === nom_b) return 0;
-      if(!nom_a) return 1;
-      return nom_a.localeCompare(nom_b);
-    })
+    if( this.props.collectionCourante.documents ) {
 
-    for(let idx = premierElem; idx < dernierElem && idx < fichiers.length; idx++) {
-      let fichier = fichiers[idx];
+      let premierElem = (this.props.pageCourante-1) * this.props.elementsParPage;
+      let dernierElem = premierElem + this.props.elementsParPage; // (+1)
 
-      let icone = <IconeFichier type={fichier['_mg-libelle']} securite={fichier.securite} />
+      let selection = this.props.collectionCourante.documents;
 
-      fichiersRendered.push(
-        <div key={fichier.uuid} className="w3-row-padding tableau-fichiers">
+      // Creer une liste de fichiers/collections et la trier
+      let fichiers = [];
+      for(let uuid in selection) {
+        let contenu = selection[uuid];
+        fichiers.push({...contenu, uuid});
+      }
+      fichiers.sort((a,b)=>{
+        let nom_a = a[this.state.tri];
+        let nom_b = b[this.state.tri];
+        if(nom_a === nom_b) return 0;
+        if(!nom_a) return 1;
+        return nom_a.localeCompare(nom_b);
+      })
 
-          <div className="w3-col m11">
-            {icone}
-            <button className="aslink" onClick={props.actions.chargeruuid} value={fichier.uuid}>
-              {fichier.nom}
-            </button>
-          </div>
+      console.debug("Collection fichiers");
+      console.debug(fichiers);
 
-          <div className="w3-col m1">
-            <button
-              title="Telecharger"
-              value={fichier.uuid}
-              onClick={props.actions.telechargerEvent}>
-                <i className="fa fa-download"/>
-            </button>
-            <button value={fichier.uuid} onClick={props.actions.supprimerDuCarnet}>
-              <i className="fa fa-remove" />
-            </button>
-          </div>
+      var listeFichiersTronquee = fichiers;
+      var boutonSuivant = null;
+      if(this.state.nombreElementsCourants < fichiers.length) {
+        listeFichiersTronquee = fichiers.slice(0, this.state.nombreElementsCourants);
+        boutonSuivant = (
+          <Row className="bas-page">
+            <Col className="boutons-pages">
+              <Button onClick={this.suivant}>
+                Suivants
+              </Button>
+            </Col>
+          </Row>
+        );
+      }
+
+      fichiersRendered = (
+        <div>
+          <PanneauListeFichiers
+            listeFichiers={listeFichiersTronquee}
+            carnet={this.props.carnet}
+            favorisParUuid={this.props.favorisParUuid}
+            actions={{
+              supprimerFavori: this.props.actionsFavoris.supprimerFavori,
+              ajouterFavori: this.props.actionsFavoris.ajouterFavori,
+              chargeruuid: this.props.actionsNavigation.chargeruuid,
+              checkEntree: this.props.checkEntree,
+              telechargerEvent: this.props.actionsDownload.telechargerEvent,
+              supprimerDuCarnet: this.props.supprimerDuCarnet,
+            }} />
+
+          {boutonSuivant}
 
         </div>
       );
-    }
-  }
 
-  return fichiersRendered;
+      // for(let idx = premierElem; idx < dernierElem && idx < fichiers.length; idx++) {
+      //   let fichier = fichiers[idx];
+      //
+      //   let icone = <IconeFichier type={fichier['_mg-libelle']} securite={fichier.securite} />
+      //
+      //   fichiersRendered.push(
+      //     <div key={fichier.uuid} className="w3-row-padding tableau-fichiers">
+      //
+      //       <div className="w3-col m11">
+      //         {icone}
+      //         <button className="aslink" onClick={props.actions.chargeruuid} value={fichier.uuid}>
+      //           {fichier.nom}
+      //         </button>
+      //       </div>
+      //
+      //       <div className="w3-col m1">
+      //         <button
+      //           title="Telecharger"
+      //           value={fichier.uuid}
+      //           onClick={props.actions.telechargerEvent}>
+      //             <i className="fa fa-download"/>
+      //         </button>
+      //         <button value={fichier.uuid} onClick={props.actions.supprimerDuCarnet}>
+      //           <i className="fa fa-remove" />
+      //         </button>
+      //       </div>
+      //
+      //     </div>
+      //   );
+      // }
+    }
+
+    return fichiersRendered;
+  }
 }
 
 function BoutonsPages(props) {
