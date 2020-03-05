@@ -246,3 +246,7 @@ div.commentaire {
 .icone-fichier {
   font-size: medium;
 }
+
+.fichier-supprime button {
+  text-decoration: line-through;
+}

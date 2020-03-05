@@ -585,8 +585,8 @@ export class PanneauListeFichiers extends React.Component {
 
     if( this.props.listeFichiers ) {
 
-      // console.debug("Liste fichiers")
-      // console.debug(this.props.listeFichiers)
+      console.debug("Liste fichiers")
+      console.debug(this.props.listeFichiers)
 
       let activites = this.props.listeFichiers;
       if(activites) fichiersRendered = activites.map((fichier, idx) => {
@@ -655,10 +655,17 @@ export class PanneauListeFichiers extends React.Component {
           );
         }
 
+        var supprimeClass = '';
+        if(fichier.supprime) {
+          supprimeClass = ' fichier-supprime';
+        }
+        // console.debug("Fichier : ")
+        // console.debug(fichier);
+
         return (
           <Row key={fichier.uuid} className="tableau-fichiers">
 
-            <Col xs={12} xl={8} className="nom-fichier">
+            <Col xs={12} xl={8} className={"nom-fichier " + supprimeClass}>
               <button className="nobutton" onClick={this.props.actions.checkEntree}
                 value={fichier.uuid}
                 data-nom={fichier.nom}
