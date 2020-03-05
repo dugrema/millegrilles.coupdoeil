@@ -178,16 +178,18 @@ export class ActionsCollections {
   demarrerTorrent = (uuidCollection) => {
     return this.webSocketManager.transmettreRequete('commande.torrent.seederTorrent', {uuid: uuidCollection})
     .catch( err => {
-      console.error("Erreur demarrage torrents");
-      console.error(err);
+      // console.error("Erreur demarrage torrents");
+      // console.error(err);
     });
   }
 
   arreterTorrents = (listeHashstrings) => {
+    // console.debug("Arreter torrents");
+    // console.debug(listeHashstrings);
     return this.webSocketManager.transmettreRequete('commande.torrent.supprimer', {hashlist: listeHashstrings})
     .catch( err => {
-      console.error("Erreur arret torrents");
-      console.error(err);
+      // console.error("Erreur arret torrents");
+      // console.error(err);
     });
   }
 
@@ -571,11 +573,24 @@ class AffichageListeCollectionsFigees extends React.Component {
   demarrerTorrent = event => {
     let uuidCollection = event.currentTarget.value;
     this.props.actions.demarrerTorrent(uuidCollection)
+    .catch(err=>{
+      // Pass
+    })
+    .finally(()=>{
+      this.rafraichirTorrents();
+    })
   }
 
   arreterTorrent = event => {
     let hashstring = event.currentTarget.value;
+    // console.debug("AffichageListeCollectionsFigees : arreter torrents " + hashstring);
     this.props.actions.arreterTorrents([hashstring])
+    .catch(err=>{
+      // Pass
+    })
+    .finally(()=>{
+      this.rafraichirTorrents();
+    })
   }
 
   rafraichirTorrents = () => {
@@ -626,12 +641,13 @@ class AffichageListeCollectionsFigees extends React.Component {
 
         <div>
           <ListeCollectionsFigees
+            {...this.props}
+            torrentsActifs={this.state.torrentsActifs}
             actions={{
+              chargeruuid: this.props.actions.chargeruuid,
               arreterTorrent: this.arreterTorrent,
               demarrerTorrent: this.demarrerTorrent,
-              ...this.props.actions
-            }}
-            {...this.props} />
+            }} />
         </div>
       </Feuille>
     );
