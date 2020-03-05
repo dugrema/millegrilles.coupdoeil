@@ -62,7 +62,8 @@ export class ParametresErreurs extends React.Component {
     const value = event.currentTarget.value;
     // console.debug("Supprimer " + value);
     var commande;
-    if(value === 'tout') {
+    const supprimerTout = value === 'tout';
+    if(supprimerTout) {
       commande = {
         supprimer_tout: true,
       };
@@ -83,10 +84,18 @@ export class ParametresErreurs extends React.Component {
       // console.debug(result);
 
       // Retirer l'erreur de la liste
-      const listeErreurs = this.state.listeErreurs.filter(erreur=>{
-        return erreur['_id'] !== value;
-      })
-      this.setState({listeErreurs});
+      if(supprimerTout) {
+        this.setState({listeErreurs: []});
+      } else {
+        const listeErreurs = this.state.listeErreurs.filter(erreur=>{
+          return erreur['_id'] !== value;
+        })
+        this.setState({listeErreurs});
+      }
+    })
+    .catch(err=>{
+      console.error("Erreur supprimer erreur");
+      console.error(err);
     });
 
   }
