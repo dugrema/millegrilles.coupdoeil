@@ -348,6 +348,7 @@ export class AffichageCollections extends React.Component {
             supprimerDuCarnet: this.supprimerDuCarnet,
             chargeruuid: this.props.actionsNavigation.chargeruuid,
             telechargerEvent: this.props.actionsDownload.telechargerEvent,
+            changerPage: this.changerPage,
           }}
           {...this.state}
           {...this.props} />
@@ -667,7 +668,12 @@ function ListeDocuments(props) {
       </div>
 
       <div className="liste-fichiers">
-        <ListeFichiers {...props} />
+        <ListeFichiers
+          actions={{
+            telechargerEvent: props.actionsDownload.telechargerEvent,
+            ...props.actions
+          }}
+          {...props} />
       </div>
 
       <div className="bas-page">
@@ -724,7 +730,7 @@ function ListeFichiers(props) {
 
           <div className="w3-col m11">
             {icone}
-            <button className="aslink" onClick={props.actionsNavigation.chargeruuid} value={fichier.uuid}>
+            <button className="aslink" onClick={props.actions.chargeruuid} value={fichier.uuid}>
               {fichier.nom}
             </button>
           </div>
@@ -733,10 +739,10 @@ function ListeFichiers(props) {
             <button
               title="Telecharger"
               value={fichier.uuid}
-              onClick={props.actionsDownload.telechargerEvent}>
+              onClick={props.actions.telechargerEvent}>
                 <i className="fa fa-download"/>
             </button>
-            <button value={fichier.uuid} onClick={props.supprimerDuCarnet}>
+            <button value={fichier.uuid} onClick={props.actions.supprimerDuCarnet}>
               <i className="fa fa-remove" />
             </button>
           </div>
@@ -761,7 +767,7 @@ function BoutonsPages(props) {
         cssCourante = 'courante';
       }
       boutonsPages.push(
-        <button key={page} onClick={props.changerPage} value={page} className={cssCourante}>
+        <button key={page} onClick={props.actions.changerPage} value={page} className={cssCourante}>
           {page}
         </button>
       );
