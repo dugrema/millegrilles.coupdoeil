@@ -356,12 +356,13 @@ export class Accueil extends React.Component {
 
   render() {
     return (
-      <div className="w3-card_liste_BR">
+      <div>
         <Favoris
           favoris={this.props.favoris}
           actionsNavigation={this.props.actionsNavigation}
           />
         {this.renderUploadProgress()}
+        <SectionSommaireTorrent />
         <ActiviteFichiers
           activiteRecente={this.props.activiteRecente}
           favorisParUuid={this.props.favorisParUuid}
@@ -372,7 +373,6 @@ export class Accueil extends React.Component {
           actionsCarnet={this.props.actionsCarnet}
           chargerPlusRecents={this.props.chargerPlusRecents}
           />
-        <SectionSommaireTorrent />
       </div>
     );
   }
@@ -404,18 +404,16 @@ export class Favoris extends React.Component {
     }
 
     return (
-      <div className="w3-card w3-round w3-white w3-card">
-        <div className="w3-container w3-padding">
-          <div className="w3-row-padding">
-            <h2 className="w3-col m12">Favoris</h2>
-          </div>
-          <div className="w3-row-padding">
-            <div className="w3-col m12 liste-favoris">
-              {favorisRendered}
-            </div>
+      <Feuille>
+        <div className="w3-row-padding">
+          <h2 className="w3-col m12">Favoris</h2>
+        </div>
+        <div className="w3-row-padding">
+          <div className="w3-col m12 liste-favoris">
+            {favorisRendered}
           </div>
         </div>
-      </div>
+      </Feuille>
     );
   }
 
@@ -542,12 +540,10 @@ export class FileUploadMonitor extends React.Component {
 
   render() {
     return(
-      <div className="w3-card w3-round w3-white">
-        <div className="w3-container w3-padding">
-          {this.preparerListeCompletes()}
-          {this.preparerListeCourants()}
-        </div>
-      </div>
+      <Feuille>
+        {this.preparerListeCompletes()}
+        {this.preparerListeCourants()}
+      </Feuille>
     );
   }
 
@@ -651,12 +647,10 @@ class SectionSommaireTorrent extends React.Component {
 
   render() {
     return (
-      <div className="w3-card w3-round w3-white">
-        <div className="w3-container w3-padding">
-          <h2>Torrents</h2>
-          {this.afficherStats()}
-        </div>
-      </div>
+      <Feuille>
+        <h2>Torrents</h2>
+        {this.afficherStats()}
+      </Feuille>
     );
   }
 

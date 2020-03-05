@@ -439,24 +439,22 @@ export class GrosFichiers extends React.Component {
     // Affichage Principal
     // (DOWNLOAD FORM) -- cachee, toujours presente
     return (
-      <div className="w3-col m9">
-        <div className="w3-row-padding">
-          <div className="w3-col m12">
-            <Entete
-              titre={titreEntete}
-              sourceTitreEntete={sourceTitreEntete}
-              carnet={this.state.carnet}
-              actionsNavigation={this.actionsNavigation}
-              actionsUpload={this.actionsUpload}
-              downloadDecrypte={this.state.downloadDecrypte}
-              actionRenommer={actionRenommer}
-              documentuuid={documentuuid}
-              securite={securite}
-              {...this.props}
-              />
-            {affichagePrincipal}
-          </div>
-        </div>
+      <div>
+        <Entete
+          titre={titreEntete}
+          sourceTitreEntete={sourceTitreEntete}
+          carnet={this.state.carnet}
+          actionsNavigation={this.actionsNavigation}
+          actionsUpload={this.actionsUpload}
+          downloadDecrypte={this.state.downloadDecrypte}
+          actionRenommer={actionRenommer}
+          documentuuid={documentuuid}
+          securite={securite}
+          {...this.props}
+          />
+
+        {affichagePrincipal}
+
         <GrosFichiersRenderDownloadForm
           refFormulaireDownload={this.refFormulaireDownload}/>
       </div>

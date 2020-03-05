@@ -551,29 +551,27 @@ export class ActiviteFichiers extends React.Component {
     }
 
     return (
-      <div className="w3-card w3-round w3-white w3-card">
-        <div className="w3-container w3-padding">
-          <div className="w3-row-padding">
-            <h2>{descriptionRapport}</h2>
-          </div>
-          <div className="liste-fichiers">
-            <FichiersRecents
-              {...this.props}
-              actions={{
-                supprimerFavori: this.props.actionsFavoris.supprimerFavori,
-                ajouterFavori: this.props.actionsFavoris.ajouterFavori,
-                chargeruuid: this.props.actionsNavigation.chargeruuid,
-                checkEntree: this.checkEntree,
-                telechargerEvent: this.props.actionsDownload.telechargerEvent,
-              }} />
-          </div>
-          <div className="bas-page">
-            <div className="w3-col m12 boutons-pages">
-              {this.renderBoutonsPages()}
-            </div>
+      <Feuille>
+        <div className="w3-row-padding">
+          <h2>{descriptionRapport}</h2>
+        </div>
+        <div className="liste-fichiers">
+          <FichiersRecents
+            {...this.props}
+            actions={{
+              supprimerFavori: this.props.actionsFavoris.supprimerFavori,
+              ajouterFavori: this.props.actionsFavoris.ajouterFavori,
+              chargeruuid: this.props.actionsNavigation.chargeruuid,
+              checkEntree: this.checkEntree,
+              telechargerEvent: this.props.actionsDownload.telechargerEvent,
+            }} />
+        </div>
+        <div className="bas-page">
+          <div className="w3-col m12 boutons-pages">
+            {this.renderBoutonsPages()}
           </div>
         </div>
-      </div>
+      </Feuille>
     );
   }
 }
@@ -628,7 +626,7 @@ function FichiersRecents(props) {
       return (
         <Row key={fichier.uuid} className="tableau-fichiers">
 
-          <Col sm={12} xl={8} className="nom-fichier">
+          <Col xs={12} xl={8} className="nom-fichier">
             <button className="nobutton" onClick={props.actions.checkEntree}
               value={fichier.uuid}
               data-nom={fichier.nom}
@@ -640,11 +638,11 @@ function FichiersRecents(props) {
 
           </Col>
 
-          <Col sm={6} xl={2}>
+          <Col xs={6} xl={2}>
             {dernierChangementRendered}
           </Col>
 
-          <Col sm={6} xl={2} className="boutons-actions-droite">
+          <Col xs={6} xl={2} className="boutons-actions-droite">
             <button value={fichier.uuid} onClick={actionFavori}>
               <span className={"fa-stack " + cssFavori}>
                 <i className='fa fa-star fa-stack-1x fond'/>
