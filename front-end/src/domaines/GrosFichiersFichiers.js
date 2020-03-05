@@ -533,91 +533,6 @@ export class ActiviteFichiers extends React.Component {
     );
   }
 
-  renderFichiers() {
-    let fichiersRendered = [];
-
-    if( this.props.activiteRecente ) {
-      let activites = this.props.activiteRecente;
-      if(activites) fichiersRendered = activites.map((fichier, idx) => {
-        let check;
-        if(this.props.carnet.selection[fichier.uuid]) {
-          check = ((<i className="fa fa-check-square-o"/>));
-        } else {
-          check = ((<i className="fa fa-square-o"/>));
-        }
-
-        let icone = <IconeFichier type={fichier['_mg-libelle']} securite={fichier.securite} />
-
-        let dernierChangementRendered = (
-          <DateTimeFormatter date={fichier['_mg-derniere-modification']}/>
-        );
-        let cssFavori, actionFavori;
-        if(this.props.favorisParUuid[fichier.uuid]) {
-          cssFavori = 'favori-actif';
-          actionFavori = this.props.actionsFavoris.supprimerFavori;
-        } else {
-          cssFavori = 'favori-inactif';
-          actionFavori = this.props.actionsFavoris.ajouterFavori;
-        }
-
-        let lienFichier;
-        if(fichier.nom) {
-          lienFichier = (
-            <span>
-              {icone}
-              <button className="aslink" onClick={this.props.actionsNavigation.chargeruuid} value={fichier.uuid}>
-                {fichier.nom}
-              </button>
-            </span>
-          )
-        } else {
-          lienFichier = (
-            <button className="aslink" onClick={this.props.actionsNavigation.chargeruuid} value={fichier.uuid}>
-              {icone}
-            </button>
-          )
-        }
-
-        return (
-          <Row key={fichier.uuid} className="tableau-fichiers">
-
-            <Col sm={12} xl={8} className="nom-fichier">
-              <button className="nobutton" onClick={this.checkEntree}
-                value={fichier.uuid}
-                data-nom={fichier.nom}
-                data-datemodification={fichier['_mg-derniere-modification']}>
-                {check}
-              </button>
-
-              {lienFichier}
-
-            </Col>
-
-            <Col sm={6} xl={2} className="boutons-actions-droite">
-              <button value={fichier.uuid} onClick={actionFavori}>
-                <span className={"fa-stack " + cssFavori}>
-                  <i className='fa fa-star fa-stack-1x fond'/>
-                  <i className='fa fa-star-o fa-stack-1x'/>
-                </span>
-              </button>
-              <button value={fichier.uuid} data-extension={fichier.extension}
-                onClick={this.props.actionsDownload.telechargerEvent}>
-                <i className="fa fa-download"/>
-              </button>
-            </Col>
-
-            <Col sm={6} xl={2}>
-              {dernierChangementRendered}
-            </Col>
-
-          </Row>
-        );
-      });
-    }
-
-    return fichiersRendered;
-  }
-
   renderBoutonsAction() {
     return (
       <div className="boutons-actions-gauche">
@@ -642,7 +557,15 @@ export class ActiviteFichiers extends React.Component {
             <h2>{descriptionRapport}</h2>
           </div>
           <div className="liste-fichiers">
-            {this.renderFichiers()}
+            <FichiersRecents
+              {...this.props}
+              actions={{
+                supprimerFavori: this.props.actionsFavoris.supprimerFavori,
+                ajouterFavori: this.props.actionsFavoris.ajouterFavori,
+                chargeruuid: this.props.actionsNavigation.chargeruuid,
+                checkEntree: this.checkEntree,
+                telechargerEvent: this.props.actionsDownload.telechargerEvent,
+              }} />
           </div>
           <div className="bas-page">
             <div className="w3-col m12 boutons-pages">
@@ -653,4 +576,89 @@ export class ActiviteFichiers extends React.Component {
       </div>
     );
   }
+}
+
+function FichiersRecents(props) {
+  let fichiersRendered = [];
+
+  if( props.activiteRecente ) {
+    let activites = props.activiteRecente;
+    if(activites) fichiersRendered = activites.map((fichier, idx) => {
+      let check;
+      if(props.carnet.selection[fichier.uuid]) {
+        check = ((<i className="fa fa-check-square-o"/>));
+      } else {
+        check = ((<i className="fa fa-square-o"/>));
+      }
+
+      let icone = <IconeFichier type={fichier['_mg-libelle']} securite={fichier.securite} />
+
+      let dernierChangementRendered = (
+        <DateTimeFormatter date={fichier['_mg-derniere-modification']}/>
+      );
+      let cssFavori, actionFavori;
+      if(props.favorisParUuid[fichier.uuid]) {
+        cssFavori = 'favori-actif';
+        actionFavori = props.actions.supprimerFavori;
+      } else {
+        cssFavori = 'favori-inactif';
+        actionFavori = props.actions.ajouterFavori;
+      }
+
+      let lienFichier;
+      if(fichier.nom) {
+        lienFichier = (
+          <span>
+            {icone}
+            <button className="aslink" onClick={props.actions.chargeruuid} value={fichier.uuid}>
+              {fichier.nom}
+            </button>
+          </span>
+        )
+      } else {
+        lienFichier = (
+          <button className="aslink" onClick={props.actions.chargeruuid} value={fichier.uuid}>
+            {icone}
+          </button>
+        )
+      }
+
+      return (
+        <Row key={fichier.uuid} className="tableau-fichiers">
+
+          <Col sm={12} xl={8} className="nom-fichier">
+            <button className="nobutton" onClick={props.actions.checkEntree}
+              value={fichier.uuid}
+              data-nom={fichier.nom}
+              data-datemodification={fichier['_mg-derniere-modification']}>
+              {check}
+            </button>
+
+            {lienFichier}
+
+          </Col>
+
+          <Col sm={6} xl={2} className="boutons-actions-droite">
+            <button value={fichier.uuid} onClick={actionFavori}>
+              <span className={"fa-stack " + cssFavori}>
+                <i className='fa fa-star fa-stack-1x fond'/>
+                <i className='fa fa-star-o fa-stack-1x'/>
+              </span>
+            </button>
+            <button value={fichier.uuid} data-extension={fichier.extension}
+              onClick={props.actions.telechargerEvent}>
+              <i className="fa fa-download"/>
+            </button>
+          </Col>
+
+          <Col sm={6} xl={2}>
+            {dernierChangementRendered}
+          </Col>
+
+        </Row>
+      );
+    });
+  }
+
+  return fichiersRendered;
 }
