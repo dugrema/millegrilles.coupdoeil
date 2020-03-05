@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, ButtonGroup, Row, Col } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 import { dateformatter } from '../formatters';
-import { IconeFichier, SectionSecurite } from '../mgcomponents/IconeFichier';
+import { SectionSecurite } from '../mgcomponents/IconeFichier';
 import { Feuille } from '../mgcomponents/Feuilles'
 import { InputTextAreaMultilingueAutoSubmit } from '../mgcomponents/InputMultilingue'
 import { PanneauListeFichiers } from './GrosFichiersFichiers';
@@ -736,9 +736,6 @@ class ListeFichiers extends React.Component {
 
     if( this.props.collectionCourante.documents ) {
 
-      let premierElem = (this.props.pageCourante-1) * this.props.elementsParPage;
-      let dernierElem = premierElem + this.props.elementsParPage; // (+1)
-
       let selection = this.props.collectionCourante.documents;
 
       // Creer une liste de fichiers/collections et la trier
@@ -793,61 +790,10 @@ class ListeFichiers extends React.Component {
         </div>
       );
 
-      // for(let idx = premierElem; idx < dernierElem && idx < fichiers.length; idx++) {
-      //   let fichier = fichiers[idx];
-      //
-      //   let icone = <IconeFichier type={fichier['_mg-libelle']} securite={fichier.securite} />
-      //
-      //   fichiersRendered.push(
-      //     <div key={fichier.uuid} className="w3-row-padding tableau-fichiers">
-      //
-      //       <div className="w3-col m11">
-      //         {icone}
-      //         <button className="aslink" onClick={props.actions.chargeruuid} value={fichier.uuid}>
-      //           {fichier.nom}
-      //         </button>
-      //       </div>
-      //
-      //       <div className="w3-col m1">
-      //         <button
-      //           title="Telecharger"
-      //           value={fichier.uuid}
-      //           onClick={props.actions.telechargerEvent}>
-      //             <i className="fa fa-download"/>
-      //         </button>
-      //         <button value={fichier.uuid} onClick={props.actions.supprimerDuCarnet}>
-      //           <i className="fa fa-remove" />
-      //         </button>
-      //       </div>
-      //
-      //     </div>
-      //   );
-      // }
     }
 
     return fichiersRendered;
   }
-}
-
-function BoutonsPages(props) {
-  let boutonsPages = [];
-  if(props.collectionCourante.documents) {
-    let fichiers = props.collectionCourante.documents;
-    let nbPages = Math.ceil(Object.keys(fichiers).length / props.elementsParPage);
-
-    for(let page=1; page<=nbPages; page++) {
-      let cssCourante = '';
-      if(props.pageCourante === ''+page) {
-        cssCourante = 'courante';
-      }
-      boutonsPages.push(
-        <button key={page} onClick={props.actions.changerPage} value={page} className={cssCourante}>
-          {page}
-        </button>
-      );
-    }
-  }
-  return boutonsPages;
 }
 
 function ListeCollectionsFigees(props) {
