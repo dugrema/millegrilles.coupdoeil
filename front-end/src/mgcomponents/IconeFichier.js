@@ -19,13 +19,6 @@ export class IconeFichier extends React.Component {
     if(this.props.type === 'collection') {
       icone = (
         <span className="fa-stack fa-1g">
-          <i className={"fa fa-file fa-stack-1x " + securitecss}/>
-          <i className={"fa fa-file-o fa-stack-1x"}/>
-        </span>
-      );
-    } else if(this.props.type === 'collection') {
-      icone = (
-        <span className="fa-stack fa-1g">
           <i className={"fa fa-folder fa-stack-1x " + securitecss}/>
           <i className={"fa fa-folder-o fa-stack-1x"}/>
         </span>
