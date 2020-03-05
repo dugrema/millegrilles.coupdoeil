@@ -7,6 +7,7 @@ import openSocket from 'socket.io-client';
 import Ecran from './Ecran';
 import webSocketManager from './WebSocketManager';
 import {CryptageAsymetrique} from './mgcomponents/CryptoSubtle'
+import {DateTimeAfficher} from './mgcomponents/ReactFormatters'
 
 import './App.css';
 
@@ -336,11 +337,15 @@ class Login extends React.Component {
       );
     } else {
       // Le navigateur a deja un certificat
+      var expirationCert = localStorage.getItem('certificat.expiration');
       listeOptions.push(
         <Row key="desactiverNavigateur">
           <Form>
             <Col lg={12}>
-              <p>Desactiver votre navigateur et supprimer les certificats locaux.</p>
+              <p>
+                Desactiver votre navigateur et supprimer les certificats locaux.
+                Expiration: <DateTimeAfficher date={expirationCert}/>
+              </p>
             </Col>
             <Col>
               <Button variant="secondary" onClick={this.resetCertificatLocal} disabled={this.state.operationEnCours}>Desactiver navigateur</Button>

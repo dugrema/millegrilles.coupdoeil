@@ -51,3 +51,23 @@ export class DateTimeFormatter extends React.Component {
   }
 
 }
+
+export class DateTimeAfficher extends React.Component {
+
+  render() {
+    let date = this.props.date;
+
+    if(!date || date === '') {
+      // Date vide
+      return (<span title=""></span>);
+    }
+
+    let dateFormattee = dateformatter.format_datetime(date);
+    return (
+      <span className="date">
+        {dateFormattee}
+      </span>
+    );
+  }
+
+}
