@@ -585,8 +585,8 @@ export class PanneauListeFichiers extends React.Component {
 
     if( this.props.listeFichiers ) {
 
-      console.debug("Liste fichiers")
-      console.debug(this.props.listeFichiers)
+      // console.debug("Liste fichiers")
+      // console.debug(this.props.listeFichiers)
 
       let activites = this.props.listeFichiers;
       if(activites) fichiersRendered = activites.map((fichier, idx) => {
