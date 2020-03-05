@@ -91,7 +91,7 @@ export class GrosFichiers extends React.Component {
             "_mg-libelle": 1, "uuid": 1, "_mg-derniere-modification": 1,
             "securite": 1, "extension": 1,
             "nom": 1, "nom_fr": 1, "nom_en": 1,
-            "supprime": 1,
+            "supprime": 1, "mimetype": 1,
           },
           'hint': [
             {'_mg-derniere-modification': -1}
@@ -281,7 +281,7 @@ export class GrosFichiers extends React.Component {
             "_mg-libelle": 1, "uuid": 1, "_mg-derniere-modification": 1,
             "securite": 1, "extension": 1,
             "nom": 1, "nom_fr": 1, "nom_en": 1,
-            "supprime": 1
+            "supprime": 1, "mimetype": 1,
           },
           'hint': [
             {'_mg-derniere-modification': -1}

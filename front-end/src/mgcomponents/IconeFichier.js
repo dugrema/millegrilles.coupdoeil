@@ -30,6 +30,20 @@ export class IconeFichier extends React.Component {
           <i className={"fa fa-file-video-o fa-stack-1x"}/>
         </span>
       );
+    } else if(this.props.mimetype === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+      icone = (
+        <span className={"fa-stack fa-1g " + this.props.className}>
+          <i className={"fa fa-file fa-stack-1x " + securitecss}/>
+          <i className={"fa fa-file-excel-o fa-stack-1x"}/>
+        </span>
+      );
+    } else if(this.props.mimetype === "application/pdf") {
+      icone = (
+        <span className={"fa-stack fa-1g " + this.props.className}>
+          <i className={"fa fa-file fa-stack-1x " + securitecss}/>
+          <i className={"fa fa-file-pdf-o fa-stack-1x"}/>
+        </span>
+      );
     } else if(this.props.type === 'collection') {
       icone = (
         <span className={"fa-stack fa-1g " + this.props.className}>
