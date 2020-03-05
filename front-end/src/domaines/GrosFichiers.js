@@ -388,6 +388,7 @@ export class GrosFichiers extends React.Component {
           actionsDownload={this.actionsDownload}
           actionsFavoris={this.actionsFavoris}
           actionsNavigation={this.actionsNavigation}
+          actionsCarnet={this.actionsCarnet}
           {...this.props}
          />
       );

@@ -208,7 +208,7 @@ export class AffichageCollections extends React.Component {
       this.props.collectionCourante.uuid, this.props.carnet.selection);
   }
 
-  supprimerDuCarnet = event => {
+  retirerFichiersCollection = event => {
     let uuid = event.currentTarget.value;
     this.props.actionsCollections.retirerFichiersCollection(
       this.props.collectionCourante.uuid, [uuid]
@@ -346,10 +346,11 @@ export class AffichageCollections extends React.Component {
           actions={{
             ajouterCarnet: this.ajouterCarnet,
             figerCollection: this.figerCollection,
-            supprimerDuCarnet: this.supprimerDuCarnet,
+            retirerFichiersCollection: this.retirerFichiersCollection,
             chargeruuid: this.props.actionsNavigation.chargeruuid,
             telechargerEvent: this.props.actionsDownload.telechargerEvent,
             changerPage: this.changerPage,
+            toggle: this.props.actionsCarnet.toggle,
           }}
           {...this.state}
           {...this.props} />
@@ -687,11 +688,12 @@ function ListeDocuments(props) {
       </Row>
 
       <ListeFichiers
+        {...props}
         actions={{
           telechargerEvent: props.actionsDownload.telechargerEvent,
           ...props.actions
         }}
-        {...props} />
+        />
 
     </Feuille>
   );
@@ -721,6 +723,14 @@ class ListeFichiers extends React.Component {
     });
   }
 
+  checkEntree = event => {
+    let uuid = event.currentTarget.value;
+    let dataset = event.currentTarget.dataset;
+    // console.debug("Toggle selection " + uuid);
+    // console.debug(dataset);
+    this.props.actions.toggle(uuid, {...dataset});
+  }
+
   render() {
     let fichiersRendered = [];
 
@@ -745,8 +755,8 @@ class ListeFichiers extends React.Component {
         return nom_a.localeCompare(nom_b);
       })
 
-      console.debug("Collection fichiers");
-      console.debug(fichiers);
+      // console.debug("Collection fichiers");
+      // console.debug(fichiers);
 
       var listeFichiersTronquee = fichiers;
       var boutonSuivant = null;
@@ -773,9 +783,9 @@ class ListeFichiers extends React.Component {
               supprimerFavori: this.props.actionsFavoris.supprimerFavori,
               ajouterFavori: this.props.actionsFavoris.ajouterFavori,
               chargeruuid: this.props.actionsNavigation.chargeruuid,
-              checkEntree: this.props.checkEntree,
+              checkEntree: this.checkEntree,
               telechargerEvent: this.props.actionsDownload.telechargerEvent,
-              supprimerDuCarnet: this.props.supprimerDuCarnet,
+              retirerFichiersCollection: this.props.actions.retirerFichiersCollection,
             }} />
 
           {boutonSuivant}

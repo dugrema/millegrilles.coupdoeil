@@ -584,6 +584,10 @@ export class PanneauListeFichiers extends React.Component {
     let fichiersRendered = [];
 
     if( this.props.listeFichiers ) {
+
+      console.debug("Carnet");
+      console.debug(this.props.carnet);
+
       let activites = this.props.listeFichiers;
       if(activites) fichiersRendered = activites.map((fichier, idx) => {
         let check;
@@ -627,6 +631,30 @@ export class PanneauListeFichiers extends React.Component {
           )
         }
 
+        var boutons = [];
+        boutons.push(
+          <button key="favori" value={fichier.uuid} onClick={actionFavori}>
+            <span className={"fa-stack " + cssFavori}>
+              <i className='fa fa-star fa-stack-1x fond'/>
+              <i className='fa fa-star-o fa-stack-1x'/>
+            </span>
+          </button>
+        );
+        boutons.push(
+          <button key="download" value={fichier.uuid} data-extension={fichier.extension}
+            onClick={this.props.actions.telechargerEvent}>
+            <i className="fa fa-download"/>
+          </button>
+        )
+        if(this.props.actions.retirerFichiersCollection) {
+          boutons.push(
+            <button key="retirerFichierCollection" value={fichier.uuid}
+              onClick={this.props.actions.retirerFichiersCollection}>
+              <i className="fa fa-close"/>
+            </button>
+          );
+        }
+
         return (
           <Row key={fichier.uuid} className="tableau-fichiers">
 
@@ -647,16 +675,7 @@ export class PanneauListeFichiers extends React.Component {
             </Col>
 
             <Col xs={6} xl={2} className="boutons-actions-droite">
-              <button value={fichier.uuid} onClick={actionFavori}>
-                <span className={"fa-stack " + cssFavori}>
-                  <i className='fa fa-star fa-stack-1x fond'/>
-                  <i className='fa fa-star-o fa-stack-1x'/>
-                </span>
-              </button>
-              <button value={fichier.uuid} data-extension={fichier.extension}
-                onClick={this.props.actions.telechargerEvent}>
-                <i className="fa fa-download"/>
-              </button>
+              {boutons}
             </Col>
 
           </Row>
