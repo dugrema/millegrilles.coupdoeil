@@ -183,14 +183,14 @@ export class Carnet {
     if(!carnet.selection[uuidelement]) {
       // Ajouter fichier/collection
       carnet.selection[uuidelement] = opts;
-      console.debug("Selection actuelle carnet, ajout de " + uuidelement);
+      // console.debug("Selection actuelle carnet, ajout de " + uuidelement);
     } else {
       // Enlever fichier/collection
       delete carnet.selection[uuidelement];
-      console.debug("Selection actuelle carnet, retrait de " + uuidelement);
+      // console.debug("Selection actuelle carnet, retrait de " + uuidelement);
     }
 
-    console.debug(carnet.selection);
+    // console.debug(carnet.selection);
 
     carnet.taille = this.calculerTaille(carnet);
 

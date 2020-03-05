@@ -292,6 +292,14 @@ export class AffichageCollections extends React.Component {
       this.props.collectionCourante.uuid, niveauSecurite);
   }
 
+  checkEntree = event => {
+    let uuid = event.currentTarget.value;
+    let dataset = event.currentTarget.dataset;
+    // console.debug("Toggle selection " + uuid);
+    // console.debug(dataset);
+    this.props.actionsCarnet.toggle(uuid, {...dataset});
+  }
+
   // Verifier si on peut resetter les versions locales des proprietes editees.
   componentDidUpdate(prevProps) {
     const source = this.props.collectionCourante;
@@ -330,6 +338,7 @@ export class AffichageCollections extends React.Component {
             appliquerCommentaire: this.appliquerCommentaire,
             supprimerFavori: this.props.actionsFavoris.supprimerFavori,
             ajouterFavori: this.props.actionsFavoris.ajouterFavori,
+            checkEntree: this.checkEntree,
           }}
           {...this.state}
           {...this.props} />
@@ -467,12 +476,36 @@ function Commentaire(props) {
     );
   }
 
+  let boutonSelectionne;
+  if(props.carnet.selection[collectionCourante.uuid]) {
+    boutonSelectionne = (
+      <button
+        title="Selectionner"
+        value={collectionCourante.uuid}
+        onClick={props.actions.checkEntree}>
+          <i className="fa fa-check-square-o"/>
+      </button>
+    );
+  } else {
+    boutonSelectionne = (
+      <button
+        title="Selectionner"
+        value={collectionCourante.uuid}
+        data-nom={collectionCourante.nom}
+        data-datemodification={collectionCourante['_mg-derniere-modification']}
+        onClick={props.actions.checkEntree}>
+          <i className="fa fa-square-o"/>
+      </button>
+    );
+  }
+
   let titre = (
     <div className="w3-rowpadding">
       <div className="w3-col m11">
         <h2><i className="fa fa-tags"/> Étiquettes et commentaires</h2>
       </div>
       <div className="w3-col m1">
+        {boutonSelectionne}
         {boutonFavori}
       </div>
     </div>
@@ -772,6 +805,18 @@ class ListeFichiers extends React.Component {
 
       fichiersRendered = (
         <div>
+          <Row className="entete">
+            <Col xs={12} xl={8}>
+              [ ] Nom
+            </Col>
+            <Col xs={6} xl={2}>
+              Date
+            </Col>
+            <Col xs={6} xl={2}>
+              Boutons
+            </Col>
+          </Row>
+
           <PanneauListeFichiers
             listeFichiers={listeFichiersTronquee}
             carnet={this.props.carnet}
