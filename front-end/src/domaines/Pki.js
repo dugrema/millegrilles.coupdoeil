@@ -1,5 +1,5 @@
 import React from 'react';
-import { Row, Col, Button } from 'react-bootstrap';
+import { Row, Col, Button, Form } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 
 import Checkbox from "../mgcomponents/Checkbox";
@@ -178,8 +178,11 @@ export class RenouvellerCertificats extends React.Component {
 
   LISTE_MIDDLEWARE = [
     "mq", "nginx", "coupdoeil", "ceduleur", "domaines",
-    "fichiers", "maitredescles", "mongo", "mongoexpress", "publicateur",
+    "fichiers", "maitredescles", "mongo", "mongoexpress",
     "transaction", "vitrine"];
+
+  // Liste des services avec un URL accessible a l'exterieur de docker
+  DICT_SERVICES_URL = {"mq": true, "coupdoeil": true, "nginx": true, "mongoexpress": true};
 
   state = {
     renouvellementMiddlewareTransmis: '',
@@ -191,10 +194,28 @@ export class RenouvellerCertificats extends React.Component {
       }),
       {}
     ),
+    altdomains: Object.keys(this.DICT_SERVICES_URL).reduce(
+      (services, service) => ({
+        ...services,
+        [service]: ''
+      }),
+      {}
+    )
   }
 
   componentDidMount = () => {
     this.renouvellementMiddlewareRoles = new Set();
+  }
+
+  changerAltDomain = event => {
+    var nomDomaine = event.currentTarget.name.split("_")[1];
+    var valeur = event.currentTarget.value;
+    // console.debug("Changer alt domaine nom : " + nomDomaine);
+    var altdomains = Object.assign({}, this.state.altdomains);
+    altdomains[nomDomaine] = valeur;
+    var checkboxes = this.state.checkboxes;
+    checkboxes[nomDomaine] = true;
+    this.setState({altdomains, checkboxes});
   }
 
   handleCheckboxChange = changeEvent => {
@@ -217,20 +238,6 @@ export class RenouvellerCertificats extends React.Component {
 
     this.setState({renouvellementMiddlewareRoles: valeurs});
   }
-
-  createCheckbox = option => (
-    <Row key={option}>
-      <Col>
-        <Checkbox
-          label={option}
-          isSelected={this.state.checkboxes[option]}
-          onCheckboxChange={this.handleCheckboxChange}
-        />
-      </Col>
-    </Row>
-  );
-
-  createCheckboxes = () => this.LISTE_MIDDLEWARE.map(this.createCheckbox);
 
   renouvellerMiddleware = event => {
     let roles = [];
@@ -289,45 +296,23 @@ export class RenouvellerCertificats extends React.Component {
     );
   }
 
-  middleware() {
-
-    let message = null;
-    if(this.state.renouvellementMiddlewareTransmis !== '') {
-      message = (
-        <div>
-          <div className="w3-col m12">
-            {this.state.renouvellementMiddlewareTransmis}
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <Feuille>
-        <Row>
-          <h3 className="w3-col m12 w3-opacity">Middleware</h3>
-        </Row>
-
-        {this.createCheckboxes()}
-
-        {message}
-
-        <Row>
-          <Col>
-            <Button onClick={this.renouvellerMiddleware} value="Soumettre">Sauvegarder</Button>
-          </Col>
-        </Row>
-      </Feuille>
-    );
-  }
-
-
   render() {
 
     let contenu = (
       <div>
         {this.feuilleEntete()}
-        {this.middleware()}
+        <ListeMiddlewareCertificats
+          renouvellementMiddlewareTransmis={this.state.renouvellementMiddlewareTransmis}
+          checkboxes={this.state.checkboxes}
+          altdomains={this.state.altdomains}
+          listeMiddleware={this.LISTE_MIDDLEWARE}
+          dictServicesMiddleware={this.DICT_SERVICES_URL}
+          actions={{
+            handleCheckboxChange: this.handleCheckboxChange,
+            renouvellerMiddleware: this.renouvellerMiddleware,
+            changerAltDomain: this.changerAltDomain,
+          }}
+          />
       </div>
     );
 
@@ -340,6 +325,77 @@ export class RenouvellerCertificats extends React.Component {
     );
   }
 
+}
+
+function ListeMiddlewareCertificats(props) {
+  let message = null;
+  if(props.renouvellementMiddlewareTransmis !== '') {
+    message = (
+      <div>
+        <div className="w3-col m12">
+          {props.renouvellementMiddlewareTransmis}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Feuille>
+      <Row>
+        <h3 className="w3-col m12 w3-opacity">Middleware</h3>
+      </Row>
+
+      <Form>
+        <CreateCheckBoxes
+          checkboxes={props.checkboxes}
+          listeMiddleware={props.listeMiddleware}
+          dictServicesMiddleware={props.dictServicesMiddleware}
+          altdomains={props.altdomains}
+          actions={{...props.actions}}
+          />
+      </Form>
+
+      {message}
+
+      <Row>
+        <Col>
+          <Button onClick={props.renouvellerMiddleware} value="Soumettre">Sauvegarder</Button>
+        </Col>
+      </Row>
+    </Feuille>
+  );
+}
+
+function CreateCheckBoxes(props) {
+  let checkboxes = props.listeMiddleware.map(option => {
+    let formUrl = null;
+    if(props.dictServicesMiddleware[option]) {
+      formUrl = (
+        <Form.Control type="text" placeholder="URL 1, URL2"
+                      name={"altDomain_" + option}
+                      onChange={props.actions.changerAltDomain}
+                      value={props.altdomains[option]} />
+      );
+    }
+
+    return (
+      <Row key={option}>
+        <Col lg={2}>
+          <Checkbox
+            label={option}
+            isSelected={props.checkboxes[option]}
+            onCheckboxChange={props.actions.handleCheckboxChange}
+          />
+        </Col>
+        <Col lg={10}>
+          {formUrl}
+        </Col>
+      </Row>
+    );
+
+  })
+
+  return checkboxes;
 }
 
 export class AfficherCertificatsRoot extends React.Component {
