@@ -248,24 +248,27 @@ export class RenouvellerCertificats extends React.Component {
         roles.push(checkbox);
       });
 
+    let altdomains = this.state.altdomains;
+
     let commande = {
       roles,
+      altdomains,
     }
-    // console.debug("Commande de renouvellement");
+    // console.debug("Transaction de renouvellement");
     // console.debug(commande);
 
     this.setState({renouvellementMiddlewareTransmis: 'Demande transmise'});
 
-    let domaine = 'commande.monitor.maj.certificatsParRole';
-    webSocketManager.transmettreCommande(domaine, commande)
+    let domaine = 'millegrilles.domaines.Pki.renouvellerCertDocker';
+    webSocketManager.transmettreTransaction(domaine, commande)
     .then(reponse=>{
       if(reponse.err) {
         this.setState({renouvellementMiddlewareTransmis: 'Erreur dans la demande, reessayer plus tard'});
         console.error("Erreur commande");
         console.error(reponse.err);
       }
-      // console.debug("Reponse");
-      // console.debug(reponse);
+      console.debug("Reponse");
+      console.debug(reponse);
 
       if(reponse.autorise) {
 
@@ -359,7 +362,7 @@ function ListeMiddlewareCertificats(props) {
 
       <Row>
         <Col>
-          <Button onClick={props.renouvellerMiddleware} value="Soumettre">Sauvegarder</Button>
+          <Button onClick={props.actions.renouvellerMiddleware} value="Soumettre">Sauvegarder</Button>
         </Col>
       </Row>
     </Feuille>
