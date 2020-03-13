@@ -205,6 +205,39 @@ export class RenouvellerCertificats extends React.Component {
 
   componentDidMount = () => {
     this.renouvellementMiddlewareRoles = new Set();
+
+    // Charger configuration des alt domains
+    let requeteDomaine = 'requete.millegrilles.domaines.Pki.altdomains';
+    let requete = {
+      'filtre': {
+          '_mg-libelle': {'$in': ['configuration.certdocker']},
+      },
+    };
+    let requetes = {'requetes': [requete]};
+
+    webSocketManager.transmettreRequete(requeteDomaine, requetes)
+    .then( docsRecu => {
+      // console.debug("Docs recus");
+      // console.debug(docsRecu);
+      return docsRecu[0][0];
+    })
+    .then( certDocker => {
+      var altdomainsRecus = certDocker.altdomains;
+      if( altdomainsRecus ) {
+        var altdomains = Object.assign({}, this.state.altdomains);
+        for(let moduleDocker in altdomainsRecus) {
+          // console.debug("Set " + moduleDocker);
+          altdomains[moduleDocker] = altdomainsRecus[moduleDocker];
+        }
+        // console.debug(altdomains);
+        this.setState({altdomains});
+      }
+    })
+    .catch( err => {
+      console.error("Erreur chargement document alt domains");
+      console.error(err);
+    });
+
   }
 
   changerAltDomain = event => {
@@ -267,10 +300,10 @@ export class RenouvellerCertificats extends React.Component {
         console.error("Erreur commande");
         console.error(reponse.err);
       }
-      console.debug("Reponse");
-      console.debug(reponse);
+      // console.debug("Reponse");
+      // console.debug(reponse);
 
-      if(reponse.autorise) {
+      if(reponse.succes) {
 
         this.setState({
           renouvellementMiddlewareTransmis: "Renouvellement en cours",
@@ -349,6 +382,15 @@ function ListeMiddlewareCertificats(props) {
       </Row>
 
       <Form>
+        <Row>
+          <Col lg={2}>
+            Module
+          </Col>
+          <Col lg={10}>
+            Alt domain (url)
+          </Col>
+        </Row>
+
         <CreateCheckBoxes
           checkboxes={props.checkboxes}
           listeMiddleware={props.listeMiddleware}
