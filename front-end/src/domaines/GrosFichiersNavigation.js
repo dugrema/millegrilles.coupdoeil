@@ -1,6 +1,6 @@
 import React from 'react';
 import Dropzone from 'react-dropzone';
-import { Row, Col } from 'react-bootstrap';
+import { Row, Col, Button } from 'react-bootstrap';
 import webSocketManager from '../WebSocketManager';
 import { Feuille } from '../mgcomponents/Feuilles'
 import { InputTextAreaMultilingueAutoSubmit } from '../mgcomponents/InputMultilingue'
@@ -605,6 +605,21 @@ class SectionSommaireTorrent extends React.Component {
 
   intervalRafraichissement = null;
 
+  arreterTousTorrents = event => {
+    console.debug("Arreter tous les torrents");
+    webSocketManager.transmettreCommande('commande.torrent.supprimerTout', {})
+    .then( docsRecu => {
+      console.log("Tous les torrents sont arretes");
+    })
+    .catch( err => {
+      console.error("Erreur arret des torrents");
+      console.error(err);
+    })
+    .finally(()=>{
+      this.rafraichirTorrents();
+    });
+  }
+
   rafraichirTorrents = () => {
     webSocketManager.transmettreRequete('requete.torrent.sommaire', {})
     .then( docsRecu => {
@@ -649,7 +664,14 @@ class SectionSommaireTorrent extends React.Component {
     return (
       <Feuille>
         <h2>Torrents</h2>
-        {this.afficherStats()}
+        <Row>
+          <Col>
+            {this.afficherStats()}
+          </Col>
+          <Col>
+            <Button onClick={this.arreterTousTorrents}>Arret</Button>
+          </Col>
+        </Row>
       </Feuille>
     );
   }
