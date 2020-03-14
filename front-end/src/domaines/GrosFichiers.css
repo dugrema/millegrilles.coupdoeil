@@ -250,3 +250,15 @@ div.commentaire {
 .fichier-supprime button {
   text-decoration: line-through;
 }
+
+.tableau-zebre > div {
+  padding-top: 0.1em;
+}
+
+.tableau-zebre > div:nth-child(even) {
+  background-color: #ffffff;
+}
+
+.tableau-zebre > div:nth-child(odd) {
+  background-color: #ececec;
+}

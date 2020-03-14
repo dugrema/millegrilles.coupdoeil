@@ -370,6 +370,7 @@ export class AffichageCollections extends React.Component {
             arreterTorrents: this.props.actionsCollections.arreterTorrents,
             requeteTorrents: this.props.actionsCollections.requeteTorrents,
             chargeruuid: this.props.actionsNavigation.chargeruuid,
+            telechargerEvent: this.props.actionsDownload.telechargerEvent,
           }}
           collectionCourante={this.props.collectionCourante} />
       </section>
@@ -672,7 +673,15 @@ class AffichageListeCollectionsFigees extends React.Component {
       <Feuille>
         <h2><i className="fa fa-thumb-tack"/> Collections figees</h2>
 
-        <div>
+        <Row>
+          <Col lg={4}>
+            Date collection
+          </Col>
+          <Col lg={6}>Hashstring torrent</Col>
+          <Col lg={2}>Actions</Col>
+        </Row>
+
+        <div className="tableau-zebre">
           <ListeCollectionsFigees
             {...this.props}
             torrentsActifs={this.state.torrentsActifs}
@@ -680,6 +689,7 @@ class AffichageListeCollectionsFigees extends React.Component {
               chargeruuid: this.props.actions.chargeruuid,
               arreterTorrent: this.arreterTorrent,
               demarrerTorrent: this.demarrerTorrent,
+              telechargerEvent: this.props.actions.telechargerEvent,
             }} />
         </div>
       </Feuille>
@@ -847,46 +857,75 @@ function ListeCollectionsFigees(props) {
     const collectionsFigees = props.collectionCourante.figees;
 
     liste = [];
+    // console.debug("Collections figees");
     for(let idx in collectionsFigees) {
       let collectionFigee = collectionsFigees[idx];
-      let uuidCollection = collectionFigee.uuid;
-      let hashstring = collectionFigee['torrent_hashstring'];
-      var boutonsTorrent;
-
-      if(props.torrentsActifs) {
-        const torrentInfo = props.torrentsActifs[hashstring];
-
-        if(torrentInfo && torrentInfo.status === 6) { // Seeding
-          // Afficher bouton arret
-          boutonsTorrent = (
-            <button onClick={props.actions.arreterTorrent} value={hashstring}>
-              <i className="fa fa-stop" />
-            </button>
-          );
-        } else {
-          // Afficher bouton demarrer
-          boutonsTorrent = (
-            <button onClick={props.actions.demarrerTorrent} value={uuidCollection}>
-              <i className="fa fa-play" />
-            </button>
-          );
-        }
-      }
+      // console.debug(collectionFigee);
 
       liste.push(
-        <div key={collectionFigee.uuid}>
-          <div>
-            <button className='aslink' value={collectionFigee.uuid} onClick={props.actions.chargeruuid}>
-              {dateformatter.format_datetime(collectionFigee.date)}
-            </button>
-          </div>
-          <div>{hashstring}</div>
-          <div>{boutonsTorrent}</div>
-        </div>
-      )
+        <LigneCollectionFigee
+          key={collectionFigee.uuid}
+          collectionFigee={collectionFigee}
+          torrentsActifs={props.torrentsActifs}
+          actions={props.actions} />
+      );
     }
 
   }
 
   return liste;
+}
+
+function LigneCollectionFigee(props) {
+
+  let uuidCollection = props.collectionFigee.uuid;
+  let hashstring = props.collectionFigee['torrent_hashstring'];
+  var boutonsTorrent;
+
+  if(props.torrentsActifs) {
+    const torrentInfo = props.torrentsActifs[hashstring];
+
+    if(torrentInfo && torrentInfo.status === 6) { // Seeding
+      // Afficher bouton arret
+      boutonsTorrent = (
+        <button onClick={props.actions.arreterTorrent} value={hashstring}>
+          <i className="fa fa-stop" />
+        </button>
+      );
+    } else {
+      // Afficher bouton demarrer
+      boutonsTorrent = (
+        <button onClick={props.actions.demarrerTorrent} value={uuidCollection}>
+          <i className="fa fa-play" />
+        </button>
+      );
+    }
+  }
+
+  return (
+    <Row>
+      <Col lg={4}>
+        <button className='aslink' value={uuidCollection} onClick={props.actions.chargeruuid}>
+          {dateformatter.format_datetime(props.collectionFigee.date)}
+        </button>
+      </Col>
+      <Col lg={6}>{hashstring}</Col>
+      <Col lg={2}>
+        <div className="boutons-actions-droite">
+          <span className="bouton-fa">
+            {boutonsTorrent}
+          </span>
+          <span className="bouton-fa">
+            <button
+              title="Telecharger"
+              value={uuidCollection}
+              data-extension="torrent"
+              onClick={props.actions.telechargerEvent}>
+                <i className="fa fa-download"/>
+            </button>
+          </span>
+        </div>
+      </Col>
+    </Row>
+  );
 }
