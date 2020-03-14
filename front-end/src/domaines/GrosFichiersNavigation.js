@@ -606,10 +606,10 @@ class SectionSommaireTorrent extends React.Component {
   intervalRafraichissement = null;
 
   arreterTousTorrents = event => {
-    console.debug("Arreter tous les torrents");
+    // console.debug("Arreter tous les torrents");
     webSocketManager.transmettreCommande('commande.torrent.supprimerTout', {})
-    .then( docsRecu => {
-      console.log("Tous les torrents sont arretes");
+    .then( reponse => {
+      // console.debug("Tous les torrents sont arretes");
     })
     .catch( err => {
       console.error("Erreur arret des torrents");
@@ -665,10 +665,10 @@ class SectionSommaireTorrent extends React.Component {
       <Feuille>
         <h2>Torrents</h2>
         <Row>
-          <Col>
+          <Col xl={10}>
             {this.afficherStats()}
           </Col>
-          <Col>
+          <Col xl={1}>
             <Button onClick={this.arreterTousTorrents}>Arret</Button>
           </Col>
         </Row>
