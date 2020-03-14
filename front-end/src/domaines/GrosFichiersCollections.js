@@ -608,11 +608,11 @@ class AffichageListeCollectionsFigees extends React.Component {
     let uuidCollection = event.currentTarget.value;
     this.props.actions.demarrerTorrent(uuidCollection)
     .then(reponse=>{
-      console.debug("Torrent demarre");
-      console.debug(reponse);
+      // console.debug("Torrent demarre");
+      // console.debug(reponse);
 
       if(reponse.seeding) {
-        console.debug("Seeding actif sur " + uuidCollection);
+        // console.debug("Seeding actif sur " + uuidCollection);
         const torrentsActifs = Object.assign({}, this.state.torrentsActifs);
         torrentsActifs[reponse.hashstring] = reponse.torrents[0];
         this.setState({torrentsActifs});
@@ -632,11 +632,14 @@ class AffichageListeCollectionsFigees extends React.Component {
     // console.debug("AffichageListeCollectionsFigees : arreter torrents " + hashstring);
     this.props.actions.arreterTorrents([hashstring])
     .then(reponse=>{
-      console.debug("Torrent arrete");
-      console.debug(reponse);
+      // console.debug("Torrent arrete");
+      // console.debug(reponse);
 
       if(reponse.seeding === false) {
-        console.debug("Seeding arrete pour hashstrings" + reponse.torrentHashList);
+        // console.debug("Seeding arrete pour hashstrings" + reponse.torrentHashList);
+        const torrentsActifs = Object.assign({}, this.state.torrentsActifs);
+        delete torrentsActifs[hashstring];
+        this.setState({torrentsActifs});
       }
 
     })
