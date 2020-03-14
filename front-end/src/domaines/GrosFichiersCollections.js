@@ -684,12 +684,12 @@ class AffichageListeCollectionsFigees extends React.Component {
   componentDidMount() {
     // console.debug("componentDidMount collections figees");
     this.rafraichirTorrents();  // Rafraichir immediatement
-    // this.intervalRefresh = setInterval(this.rafraichirTorrents, 60000);
+    this.intervalRefresh = setInterval(this.rafraichirTorrents, 20000);
   }
 
   componentWillUnmount() {
     // console.debug("componentWillUnmount collections figees");
-    // clearInterval(this.intervalRefresh);
+    clearInterval(this.intervalRefresh);
   }
 
   render() {
