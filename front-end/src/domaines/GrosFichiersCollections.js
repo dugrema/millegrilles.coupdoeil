@@ -918,7 +918,7 @@ function LigneCollectionFigee(props) {
           <span className="bouton-fa">
             <button
               title="Telecharger"
-              value={uuidCollection}
+              data-fuuid={uuidCollection}
               data-extension="torrent"
               onClick={props.actions.telechargerEvent}>
                 <i className="fa fa-download"/>

@@ -80,14 +80,21 @@ export class ActionsDownload {
       opts.fuuid = dataset.fuuid;
     }
 
+    var filtre = {'_mg-libelle': 'fichier'};
+    if(opts.fuuid) {
+      filtre['versions.' + opts.fuuid] = {'$exists': true};
+    } else {
+      filtre.uuid = uuidfichier;
+    }
+
     // Aller chercher l'information sur le fichier
     // L'information est peut-etre deja en memoire
     this.reactModule.chargerDocument({
-      requetes: [{'filtre': {'_mg-libelle': 'fichier', 'uuid': uuidfichier}}]
+      requetes: [{'filtre': filtre}]
     })
     .then(resultats=>{
-      // console.debug("Resultats requete fichier " + uuidfichier);
-      // console.debug(resultats);
+      console.debug("Resultats requete fichier " + uuidfichier || opts.fuuid);
+      console.debug(resultats);
       let fichier = resultats[0][0];
 
       this.telecharger({

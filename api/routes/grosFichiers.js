@@ -130,16 +130,15 @@ router.post('/local/*', noFileMulter.none(), function(req, res, next) {
     }
 
   } else {
-    promiseStream = new Promise((resolve, reject)=>{
-      resolve(res);  // Retourne result stream directement
-    })
+    promiseStream = Promise.resolve(res);
   }
 
-  promiseStream.then(pipe=>{
-    _pipeFileToResult(req, res, pipe, securite);
+  promiseStream.then(pipe => {
+    // console.debug("Debut download fichier " + fuuid);
+    return _pipeFileToResult(req, res, pipe, securite);
   })
   .catch(err=>{
-    console.error("Erreur download fichier");
+    console.error("Erreur download fichier " + fuuid);
     console.error(err);
     res.sendStatus(503);
   })
@@ -159,8 +158,7 @@ function _pipeFileToResult(req, res, pipes, securite) {
   }
 
   let targetConsignation = serveurConsignation + '/grosFichiers/local/' + fuuid;
-  // console.debug("Transfert vers: " + targetConsignation);
-  // console.debug(pki.ca);
+  // console.debug("Transfert a partir de : " + targetConsignation);
 
   const options = {
     url: targetConsignation,
@@ -171,13 +169,18 @@ function _pipeFileToResult(req, res, pipes, securite) {
       cert: pki.certPEM,
     },  // Utilisation certificats SSL internes
   }
-  try {
-    request(options).pipe(pipes);
-  } catch (ex) {
-    logger.error("local erreur");
-    logger.error(ex);
-    res.sendStatus(500);
-  }
+
+  var requestDownload = request(options);
+  requestDownload.pipe(pipes);
+
+  requestDownload.on('error', function(err) {
+    // Handle error
+    console.error("Erreur download fichier");
+    console.error(err);
+    res.sendStatus(503);
+  });
+
+  return requestDownload;
 }
 
 module.exports = router;
