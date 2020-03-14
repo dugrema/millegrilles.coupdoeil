@@ -179,8 +179,8 @@ export class ActionsCollections {
   demarrerTorrent = (uuidCollection) => {
     return this.webSocketManager.transmettreRequete('commande.torrent.seederTorrent', {uuid: uuidCollection})
     .catch( err => {
-      // console.error("Erreur demarrage torrents");
-      // console.error(err);
+      console.error("Erreur demarrage torrents");
+      console.error(err);
     });
   }
 
@@ -189,8 +189,8 @@ export class ActionsCollections {
     // console.debug(listeHashstrings);
     return this.webSocketManager.transmettreRequete('commande.torrent.supprimer', {hashlist: listeHashstrings})
     .catch( err => {
-      // console.error("Erreur arret torrents");
-      // console.error(err);
+      console.error("Erreur arret torrents");
+      console.error(err);
     });
   }
 
@@ -607,24 +607,45 @@ class AffichageListeCollectionsFigees extends React.Component {
   demarrerTorrent = event => {
     let uuidCollection = event.currentTarget.value;
     this.props.actions.demarrerTorrent(uuidCollection)
-    .catch(err=>{
-      // Pass
+    .then(reponse=>{
+      console.debug("Torrent demarre");
+      console.debug(reponse);
+
+      if(reponse.seeding) {
+        console.debug("Seeding actif sur " + uuidCollection);
+        const torrentsActifs = Object.assign({}, this.state.torrentsActifs);
+        torrentsActifs[reponse.hashstring] = reponse.torrents[0];
+        this.setState({torrentsActifs});
+      }
+
     })
-    .finally(()=>{
+    .catch(err=>{
+      console.error("Erreur demarrage torrent");
+      console.error(err);
       this.rafraichirTorrents();
     })
+
   }
 
   arreterTorrent = event => {
     let hashstring = event.currentTarget.value;
     // console.debug("AffichageListeCollectionsFigees : arreter torrents " + hashstring);
     this.props.actions.arreterTorrents([hashstring])
-    .catch(err=>{
-      // Pass
+    .then(reponse=>{
+      console.debug("Torrent arrete");
+      console.debug(reponse);
+
+      if(reponse.seeding === false) {
+        console.debug("Seeding arrete pour hashstrings" + reponse.torrentHashList);
+      }
+
     })
-    .finally(()=>{
+    .catch(err=>{
+      console.error("Erreur arret torrent");
+      console.error(err);
       this.rafraichirTorrents();
     })
+
   }
 
   rafraichirTorrents = () => {
@@ -660,7 +681,7 @@ class AffichageListeCollectionsFigees extends React.Component {
   componentDidMount() {
     // console.debug("componentDidMount collections figees");
     this.rafraichirTorrents();  // Rafraichir immediatement
-    this.intervalRefresh = setInterval(this.rafraichirTorrents, 10000);
+    this.intervalRefresh = setInterval(this.rafraichirTorrents, 60000);
   }
 
   componentWillUnmount() {
@@ -885,7 +906,7 @@ function LigneCollectionFigee(props) {
   if(props.torrentsActifs) {
     const torrentInfo = props.torrentsActifs[hashstring];
 
-    if(torrentInfo && torrentInfo.status === 6) { // Seeding
+    if(torrentInfo && (torrentInfo.status === 6 || torrentInfo.status === 2) ) { // Seeding ou present
       // Afficher bouton arret
       boutonsTorrent = (
         <button onClick={props.actions.arreterTorrent} value={hashstring}>
