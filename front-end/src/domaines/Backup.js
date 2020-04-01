@@ -1,6 +1,6 @@
 import React from 'react';
 import webSocketManager from '../WebSocketManager';
-import {MilleGrillesCryptoHelper} from '../mgcomponents/CryptoSubtle';
+import {MilleGrillesCryptoHelper, CryptageAsymetrique} from '../mgcomponents/CryptoSubtle';
 
 import { Alert, Form, Container, Row, Col,
          Button, ButtonGroup, InputGroup, FormControl} from 'react-bootstrap';
@@ -10,6 +10,7 @@ import { Trans, Translation } from 'react-i18next';
 import './Backup.css';
 
 const cryptoHelper = new MilleGrillesCryptoHelper();
+const cryptageAsymetrique = new CryptageAsymetrique();
 
 export class Backup extends React.Component {
 
@@ -116,13 +117,13 @@ class PageBackupCles extends React.Component {
   }
 
   componentDidMount() {
-    console.debug("Component did mount PageBackupCles");
-    console.debug(sessionStorage);
-    console.debug(sessionStorage.clePubliqueMaitredescles);
+    // console.debug("Component did mount PageBackupCles");
+    // console.debug(sessionStorage);
+    // console.debug(sessionStorage.clePubliqueMaitredescles);
 
     // S'assurer que la cle publique du maitre des cles est disponible
     if( ! sessionStorage.clePubliqueMaitredescles ) {
-      console.debug("Charger cle publique du maitre des cles");
+      // console.debug("Charger cle publique du maitre des cles");
       webSocketManager.emit('demandeClePubliqueMaitredescles', {})
       .then(infoCertificat=>{
         sessionStorage.clePubliqueMaitredescles = infoCertificat.clePublique;
@@ -173,7 +174,7 @@ class PageBackupCles extends React.Component {
     this.setState({motDePasse: motDePasseArray.join('-')});
   }
 
-  recupererCleBackup = event => {
+  recupererCleRacine = event => {
     cryptoHelper.crypterCleSecrete(
       this.state.motDePasse, sessionStorage.clePubliqueMaitredescles)
     .then(({cleSecreteCryptee}) => {
@@ -204,6 +205,20 @@ class PageBackupCles extends React.Component {
       console.error("Erreur chargement cle racine");
     })
 
+  }
+
+  genererCleBackup = event => {
+    cryptageAsymetrique.genererKeyPair()
+    .then(reponse=>{
+      console.debug("Reponse generation cle privee backup");
+      console.debug(reponse);
+
+      
+    })
+    .catch(err=>{
+      console.error("Erreur creation cle privee pour backup");
+      console.error(err);
+    });
   }
 
   render() {
@@ -290,8 +305,8 @@ class PageBackupCles extends React.Component {
         <Feuille>
           <Row>
             <Col>
-              <ButtonGroup aria-label="Operations cles">
-                <Button onClick={this.recupererCleBackup}>
+              <ButtonGroup aria-label="Operations racine">
+                <Button onClick={this.recupererCleRacine}>
                   <Trans>backup.cles.boutonRecupererCleRacine</Trans>
                 </Button>
               </ButtonGroup>
@@ -300,6 +315,18 @@ class PageBackupCles extends React.Component {
         </Feuille>
 
         {racine}
+
+        <Feuille>
+          <Row>
+            <Col>
+              <ButtonGroup aria-label="Operations backup">
+                <Button onClick={this.genererCleBackup}>
+                  <Trans>backup.cles.boutonGenererCleBackup</Trans>
+                </Button>
+              </ButtonGroup>
+            </Col>
+          </Row>
+        </Feuille>
 
       </div>
     );
