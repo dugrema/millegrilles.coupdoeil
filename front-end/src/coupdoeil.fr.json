@@ -152,7 +152,7 @@
         "boutonRestaurer": "Restaurer",
         "boutonRegenerer": "Régénérer",
         "boutonResetBackup": "Reset transactions",
-        "instructions_reset": "Attention : la fonction de reset efface tous les backups existants et recommencer à neuf."
+        "instructions_reset": "Attention : la fonction de reset efface tous les backups existants et recommence à neuf."
       }
     }
   }
