@@ -156,15 +156,17 @@ class PageOperationsBackup extends React.Component {
           </Row>
           <Row>
             <Col>
-              <Button onClick={this.declencherBackup}>
-                <Trans>backup.lancer.boutonDeclencher</Trans>
-              </Button>
-              <Button onClick={this.restaurerBackup} variant="secondary">
-                <Trans>backup.lancer.boutonRestaurer</Trans>
-              </Button>
-              <Button onClick={this.regenerer} variant="secondary">
-                <Trans>backup.lancer.boutonRegenerer</Trans>
-              </Button>
+              <ButtonGroup aria-label="Operations Backup">
+                <Button onClick={this.declencherBackup}>
+                  <Trans>backup.lancer.boutonDeclencher</Trans>
+                </Button>
+                <Button onClick={this.restaurerBackup} variant="secondary">
+                  <Trans>backup.lancer.boutonRestaurer</Trans>
+                </Button>
+                <Button onClick={this.regenerer} variant="secondary">
+                  <Trans>backup.lancer.boutonRegenerer</Trans>
+                </Button>
+              </ButtonGroup>
             </Col>
           </Row>
         </Feuille>
