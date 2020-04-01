@@ -471,6 +471,20 @@ export class MilleGrillesCryptoHelper {
     })
   }
 
+  async crypterCleSecrete(cleSecrete, clePublique) {
+    return await new Promise((resolve, reject) => {
+      cryptageAsymetrique.crypterCleSecrete(clePublique, cleSecrete)
+      .then(cleSecreteCryptee=>{
+        cleSecreteCryptee = btoa(String.fromCharCode.apply(null, new Uint8Array(cleSecreteCryptee)));
+        resolve({cleSecreteCryptee});
+      })
+      .catch(err=>{
+        console.error("Erreur cryptage cle secrete");
+        reject(err);
+      })
+    });
+  }
+
   genererSecret(callback) {
     var lenBuffer = 16 + 32;
     crypto.pseudoRandomBytes(lenBuffer, (err, pseudoRandomBytes) => {

@@ -1,12 +1,15 @@
 import React from 'react';
 import webSocketManager from '../WebSocketManager';
+import {MilleGrillesCryptoHelper} from '../mgcomponents/CryptoSubtle';
 
 import { Alert, Form, Container, Row, Col,
-         Button, ButtonGroup, InputGroup} from 'react-bootstrap';
+         Button, ButtonGroup, InputGroup, FormControl} from 'react-bootstrap';
 import { Feuille } from '../mgcomponents/Feuilles';
 import { Trans, Translation } from 'react-i18next';
 
 import './Backup.css';
+
+const cryptoHelper = new MilleGrillesCryptoHelper();
 
 export class Backup extends React.Component {
 
@@ -45,7 +48,8 @@ export class Backup extends React.Component {
 
     let contenu;
     if(ecranCourant === 'backupCles') {
-      contenu = null;
+      contenu = <PageBackupCles
+                  />;
     } else if(ecranCourant === 'configurer') {
       contenu = null;
     } else if(ecranCourant === 'lancerBackup') {
@@ -96,6 +100,211 @@ function PageInitiale(props) {
 
     </Feuille>
   );
+}
+
+class PageBackupCles extends React.Component {
+
+  state = {
+    'motDePasse': '',
+
+    'certificatRacine': null,
+    'cleChiffreeRacine': null,
+
+    'certificatBackup': null,
+    'clePriveeBackup': null,
+    'clePubliqueBackup': null,
+  }
+
+  componentDidMount() {
+    console.debug("Component did mount PageBackupCles");
+    console.debug(sessionStorage);
+    console.debug(sessionStorage.clePubliqueMaitredescles);
+
+    // S'assurer que la cle publique du maitre des cles est disponible
+    if( ! sessionStorage.clePubliqueMaitredescles ) {
+      console.debug("Charger cle publique du maitre des cles");
+      webSocketManager.emit('demandeClePubliqueMaitredescles', {})
+      .then(infoCertificat=>{
+        sessionStorage.clePubliqueMaitredescles = infoCertificat.clePublique;
+        sessionStorage.fingerprintMaitredescles = infoCertificat.fingerprint;
+      })
+      .catch(err=>{
+        console.error("Erreur demande cle publique du maitredescles");
+        console.error(err);
+      });
+    }
+  }
+
+  changerMotDePasse = event => {
+    const {value} = event.currentTarget;
+    this.setState({motDePasse: value});
+  }
+
+  genererMotDePasse = event => {
+    var charsetLetters = "abcdefghijklmnopqrstuvwxyz",
+        charsetDigits = "0123456789",
+        retVal = "";
+
+    var groupings = [
+      charsetLetters,
+      charsetLetters.toUpperCase(),
+      charsetDigits,
+    ]
+
+    var groupingsAleatoire = [];
+    for(let i=0; i<4; i++) {
+      var idxGroupe = Math.floor(Math.random() * 3);
+      groupingsAleatoire.push(groupings[idxGroupe]);
+    }
+
+    var motDePasseArray = groupingsAleatoire.reduce((liste, groupe)=>{
+      var retVal = '';
+      var nombreElements = Math.floor(Math.random() * 3) + 3;
+      for (var i = 0, n = groupe.length; i < nombreElements; ++i) {
+          retVal += groupe.charAt(Math.floor(Math.random() * n));
+      }
+      liste.push(retVal);
+      return liste;
+    }, []);
+
+    // console.debug("Array mot de passe");
+    // console.debug(motDePasseArray);
+
+    this.setState({motDePasse: motDePasseArray.join('-')});
+  }
+
+  recupererCleBackup = event => {
+    cryptoHelper.crypterCleSecrete(
+      this.state.motDePasse, sessionStorage.clePubliqueMaitredescles)
+    .then(({cleSecreteCryptee}) => {
+
+      // console.debug("Mot de passe chiffre");
+      // console.debug(cleSecreteCryptee);
+
+      const routingRequete = 'requete.millegrilles.domaines.MaitreDesCles.requeteCleRacine';
+      const requete = {
+        'mot_de_passe_chiffre': cleSecreteCryptee,
+      }
+      webSocketManager.transmettreRequete(routingRequete, requete)
+      .then(reponse=>{
+        // console.debug("Information racine");
+        // console.debug(reponse);
+        this.setState({
+          certificatRacine: reponse.cert_racine,
+          cleChiffreeRacine: reponse.cle_racine,
+        })
+      })
+      .catch(err=>{
+        console.error("Erreur reception cle racine");
+        console.error(err);
+      })
+
+    })
+    .catch(err=>{
+      console.error("Erreur chargement cle racine");
+    })
+
+  }
+
+  render() {
+
+    var racine = null;
+    if(this.state.cleChiffreeRacine != '') {
+      racine = (
+        <Feuille>
+          <Row>
+            <Col>
+              <p>Certificat racine</p>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <pre>
+                {this.state.certificatRacine}
+              </pre>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <p>Cle chiffree racine</p>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <pre>
+                {this.state.cleChiffreeRacine}
+              </pre>
+            </Col>
+          </Row>
+        </Feuille>
+      )
+    }
+
+    return (
+      <div>
+        <Feuille>
+          <Row><Col><h2 className="w3-opacity"><Trans>backup.cles.titre</Trans></h2></Col></Row>
+
+          <Row>
+            <Col>
+              <p><Trans>backup.cles.instructions_1</Trans></p>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col>
+              <Alert variant="warning">
+                <Alert.Heading><Trans>backup.cles.avertissementTitre</Trans></Alert.Heading>
+                <p><Trans>backup.cles.avertissement_1</Trans></p>
+                <p><Trans>backup.cles.avertissement_2</Trans></p>
+              </Alert>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col>
+              <p><Trans>backup.cles.instructions_2</Trans></p>
+              <p><Trans>backup.cles.instructions_3</Trans></p>
+            </Col>
+          </Row>
+        </Feuille>
+
+        <Feuille>
+          <Row><Col><h2 className="w3-opacity"><Trans>backup.cles.titre</Trans></h2></Col></Row>
+          <Form>
+            <InputGroup>
+              <FormControl
+                placeholder="Mot de passe"
+                aria-label="Mot de passe"
+                aria-describedby="formMotDePasse"
+                onChange={this.changerMotDePasse}
+                value={this.state.motDePasse}
+              />
+              <InputGroup.Append>
+                <Button variant="secondary" onClick={this.genererMotDePasse}><Trans>backup.cles.boutonGenerer</Trans></Button>
+              </InputGroup.Append>
+            </InputGroup>
+          </Form>
+        </Feuille>
+
+        <Feuille>
+          <Row>
+            <Col>
+              <ButtonGroup aria-label="Operations cles">
+                <Button onClick={this.recupererCleBackup}>
+                  <Trans>backup.cles.boutonRecupererCleRacine</Trans>
+                </Button>
+              </ButtonGroup>
+            </Col>
+          </Row>
+        </Feuille>
+
+        {racine}
+
+      </div>
+    );
+  }
+
 }
 
 class PageOperationsBackup extends React.Component {
