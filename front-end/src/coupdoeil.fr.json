@@ -140,7 +140,15 @@
     "backup": {
       "initiale": {
         "titre": "Backup",
-        "lienBackupCles": "Backup clés sécurité"
+        "lienBackupCles": "Backup des clés sécurité",
+        "lancerBackup": "Lancer le backup",
+        "restaurer": "Restaurer le système",
+        "configurer": "Configurer le backup"
+      },
+      "lancer": {
+        "titre": "Lancer un backup",
+        "instructions_1": "Lancer un backup avec les paramètres courants.",
+        "boutonDeclencher": "Déclencher"
       }
     }
   }

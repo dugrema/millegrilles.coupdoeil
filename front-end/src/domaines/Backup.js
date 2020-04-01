@@ -13,6 +13,10 @@ export class Backup extends React.Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      ecranCourant: null,
+    }
+
     //   subscriptions: Le nom des routing keys qui vont etre ecoutees
     this.config = {
       subscriptions: [
@@ -27,14 +31,40 @@ export class Backup extends React.Component {
     webSocketManager.subscribe(this.config.subscriptions, this.processMessage);
   }
 
-  afficherEcran = nomEcran => {
+  afficherEcran = event => {
+    const {value} = event.currentTarget;
+    this.setState({ecranCourant: value});
+  }
 
+  retourInitiale = () => {
+    this.setState({ecranCourant: null});
   }
 
   render() {
-    return <PageInitiale
-              fonctionsNavigation={{afficherEcran: this.afficherEcran}}
-              />
+    let ecranCourant = this.state.ecranCourant;
+
+    let contenu;
+    if(ecranCourant === 'backupCles') {
+      contenu = null;
+    } else if(ecranCourant === 'configurer') {
+      contenu = null;
+    } else if(ecranCourant === 'lancerBackup') {
+      contenu = <PageLancerBackup />;
+    } else if(ecranCourant === 'restaurer') {
+      contenu = null;
+    } else {
+      contenu = <PageInitiale
+                  fonctionsNavigation={{afficherEcran: this.afficherEcran}}
+                  />;
+    }
+
+    return (
+      <div className="w3-col m9 w3-row-padding">
+        <div className="w3-row-padding">
+          {contenu}
+        </div>
+      </div>
+    );
   }
 
 }
@@ -42,26 +72,74 @@ export class Backup extends React.Component {
 function PageInitiale(props) {
 
   return (
-    <div className="w3-col m9 w3-row-padding">
-      <div className="w3-row-padding">
+    <Feuille>
+
+      <Row><Col><h2 className="w3-opacity"><Trans>backup.initiale.titre</Trans></h2></Col></Row>
+
+      <Row>
+        <ul>
+          <li>
+            <Button className="aslink" onClick={props.fonctionsNavigation.afficherEcran} value="backupCles">
+              <Trans>backup.initiale.lienBackupCles</Trans>
+            </Button>
+          </li>
+          <li>
+            <Button className="aslink" onClick={props.fonctionsNavigation.afficherEcran} value="configurer">
+              <Trans>backup.initiale.configurer</Trans>
+            </Button>
+          </li>
+          <li>
+            <Button className="aslink" onClick={props.fonctionsNavigation.afficherEcran} value="lancerBackup">
+              <Trans>backup.initiale.lancerBackup</Trans>
+            </Button>
+          </li>
+          <li>
+            <Button className="aslink" onClick={props.fonctionsNavigation.afficherEcran} value="restaurer">
+              <Trans>backup.initiale.restaurer</Trans>
+            </Button>
+          </li>
+        </ul>
+      </Row>
+
+    </Feuille>
+  );
+}
+
+class PageLancerBackup extends React.Component {
+
+  declencherBackup = event => {
+    const routing = 'commande.global.declencherBackupHoraire';
+    webSocketManager.transmettreCommande(
+      routing,
+      {
+        heure: Math.trunc(new Date().getTime() / 1000),
+        securite: '2.prive',
+      },
+      {nowait: true}
+    );
+  }
+
+  render() {
+    return (
+      <div>
+
         <Feuille>
+          <Row><Col><h2 className="w3-opacity"><Trans>backup.lancer.titre</Trans></h2></Col></Row>
+          <Row><Col><Trans>backup.lancer.instructions_1</Trans></Col></Row>
+        </Feuille>
 
-          <Row><Col><h2 className="w3-opacity"><Trans>backup.initiale.titre</Trans></h2></Col></Row>
-
+        <Feuille>
           <Row>
-            <ul>
-              <li>
-                <Button className="aslink" onClick={props.fonctionsNavigation.afficherEcran} value="backupCles">
-                  <Trans>backup.initiale.lienBackupCles</Trans>
-                </Button>
-              </li>
-            </ul>
+            <Col>
+              <Button onClick={this.declencherBackup}>
+                <Trans>backup.lancer.boutonDeclencher</Trans>
+              </Button>
+            </Col>
           </Row>
-
         </Feuille>
 
       </div>
-    </div>
+    );
+  }
 
-  )
 }

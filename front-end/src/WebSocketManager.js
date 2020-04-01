@@ -79,8 +79,9 @@ class WebSocketManager {
     return promise;
   }
 
-  transmettreCommande(routingKey, commande) {
+  transmettreCommande(routingKey, commande, opts) {
     // Transmet une commande. Retourne une Promise pour recuperer la reponse.
+    if(!opts) opts = {};
 
     let socket = this.socket;
     let promise = new Promise((resolve, reject) => {
@@ -90,17 +91,24 @@ class WebSocketManager {
       };
 
       // Transmettre requete
-      socket.emit('commande', enveloppe, reponse=>{
-        if(!reponse) {
-          console.error("Erreur survenue durant commande vers " + routingKey);
-          reject();
-          return;
-        }
-        // console.log("Reponse dans websocket pour requete");
-        // console.log(reponse);
-        resolve(reponse);
-        return reponse;
-      });
+      let reponseFunction;
+
+      if(!opts.nowait) {
+
+        reponseFunction = reponse=>{
+          if(!reponse) {
+            console.error("Erreur survenue durant commande vers " + routingKey);
+            reject();
+            return;
+          }
+          // console.log("Reponse dans websocket pour requete");
+          // console.log(reponse);
+          resolve(reponse);
+          return reponse;
+        };
+        
+      }
+      socket.emit('commande', enveloppe, reponseFunction);
     });
 
     return promise;
