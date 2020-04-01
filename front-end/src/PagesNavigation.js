@@ -9,6 +9,7 @@ import {Parametres} from './domaines/Parametres.js';
 import {Pki} from './domaines/Pki.js';
 import {Plume} from './domaines/Plume.js';
 import {SenseursPassifs} from './domaines/SenseursPassifs';
+import {Backup} from './domaines/Backup';
 
 const domainesConnus = {
   'Annuaire': Annuaire,
@@ -18,6 +19,7 @@ const domainesConnus = {
   'Pki': Pki,
   'Principale': InterfacePrincipale,
   'SenseursPassifs': SenseursPassifs,
+  'Backup': Backup,
 };
 
 export function SectionContenu(props) {
