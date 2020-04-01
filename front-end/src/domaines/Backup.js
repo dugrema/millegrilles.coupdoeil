@@ -49,9 +49,7 @@ export class Backup extends React.Component {
     } else if(ecranCourant === 'configurer') {
       contenu = null;
     } else if(ecranCourant === 'lancerBackup') {
-      contenu = <PageLancerBackup />;
-    } else if(ecranCourant === 'restaurer') {
-      contenu = null;
+      contenu = <PageOperationsBackup />;
     } else {
       contenu = <PageInitiale
                   fonctionsNavigation={{afficherEcran: this.afficherEcran}}
@@ -93,11 +91,6 @@ function PageInitiale(props) {
               <Trans>backup.initiale.lancerBackup</Trans>
             </Button>
           </li>
-          <li>
-            <Button className="aslink" onClick={props.fonctionsNavigation.afficherEcran} value="restaurer">
-              <Trans>backup.initiale.restaurer</Trans>
-            </Button>
-          </li>
         </ul>
       </Row>
 
@@ -105,7 +98,7 @@ function PageInitiale(props) {
   );
 }
 
-class PageLancerBackup extends React.Component {
+class PageOperationsBackup extends React.Component {
 
   declencherBackup = event => {
     const routing = 'commande.global.declencherBackupHoraire';
@@ -120,8 +113,27 @@ class PageLancerBackup extends React.Component {
   }
 
   resetBackup = event => {
-    console.debug("Commande reset backup");
+    // console.debug("Commande reset backup");
     const routing = 'commande.global.resetBackup';
+    webSocketManager.transmettreCommande(
+      routing,
+      {},
+      {nowait: true}
+    );
+  }
+
+  restaurerBackup = event => {
+    // console.debug("Commande restaurer backup");
+    const routing = 'commande.backup.preparerStagingRestauration';
+    webSocketManager.transmettreCommande(
+      routing,
+      {},
+      {nowait: true}
+    );
+  }
+
+  regenerer = event => {
+    const routing = 'commande.global.regenerer';
     webSocketManager.transmettreCommande(
       routing,
       {},
@@ -140,15 +152,35 @@ class PageLancerBackup extends React.Component {
 
         <Feuille>
           <Row>
+            <Col><Trans>backup.lancer.instructions_2</Trans></Col>
+          </Row>
+          <Row>
             <Col>
               <Button onClick={this.declencherBackup}>
                 <Trans>backup.lancer.boutonDeclencher</Trans>
               </Button>
+              <Button onClick={this.restaurerBackup} variant="secondary">
+                <Trans>backup.lancer.boutonRestaurer</Trans>
+              </Button>
+              <Button onClick={this.regenerer} variant="secondary">
+                <Trans>backup.lancer.boutonRegenerer</Trans>
+              </Button>
+            </Col>
+          </Row>
+        </Feuille>
+
+        <Feuille>
+          <Row>
+            <Col lg={8}>
+              <Trans>backup.lancer.instructions_reset</Trans>
+            </Col>
+            <Col lg={4}>
               <Button onClick={this.resetBackup} variant="danger">
                 <Trans>backup.lancer.boutonResetBackup</Trans>
               </Button>
             </Col>
           </Row>
+
         </Feuille>
 
       </div>

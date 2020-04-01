@@ -141,15 +141,18 @@
       "initiale": {
         "titre": "Backup",
         "lienBackupCles": "Backup des clés sécurité",
-        "lancerBackup": "Lancer le backup",
-        "restaurer": "Restaurer le système",
+        "lancerBackup": "Lancer le backup et restaurer le système",
         "configurer": "Configurer le backup"
       },
       "lancer": {
-        "titre": "Lancer un backup",
+        "titre": "Opérations de backup et restauration",
         "instructions_1": "Lancer un backup avec les paramètres courants.",
+        "instructions_2": "Pour déclencher une opération, cliquer sur le bouton correspondant. Tous les domaines sont affectés en même temps.",
         "boutonDeclencher": "Déclencher",
-        "boutonResetBackup": "Reset transactions"
+        "boutonRestaurer": "Restaurer",
+        "boutonRegenerer": "Régénérer",
+        "boutonResetBackup": "Reset transactions",
+        "instructions_reset": "Attention : la fonction de reset efface tous les backups existants et recommencer à neuf."
       }
     }
   }
