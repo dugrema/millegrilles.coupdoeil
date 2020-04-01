@@ -119,6 +119,16 @@ class PageLancerBackup extends React.Component {
     );
   }
 
+  resetBackup = event => {
+    console.debug("Commande reset backup");
+    const routing = 'commande.global.resetBackup';
+    webSocketManager.transmettreCommande(
+      routing,
+      {},
+      {nowait: true}
+    );
+  }
+
   render() {
     return (
       <div>
@@ -133,6 +143,9 @@ class PageLancerBackup extends React.Component {
             <Col>
               <Button onClick={this.declencherBackup}>
                 <Trans>backup.lancer.boutonDeclencher</Trans>
+              </Button>
+              <Button onClick={this.resetBackup} variant="danger">
+                <Trans>backup.lancer.boutonResetBackup</Trans>
               </Button>
             </Col>
           </Row>

@@ -148,7 +148,8 @@
       "lancer": {
         "titre": "Lancer un backup",
         "instructions_1": "Lancer un backup avec les paramètres courants.",
-        "boutonDeclencher": "Déclencher"
+        "boutonDeclencher": "Déclencher",
+        "boutonResetBackup": "Reset transactions"
       }
     }
   }

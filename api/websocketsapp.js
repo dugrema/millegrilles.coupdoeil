@@ -197,29 +197,44 @@ class WebSocketApp {
       // console.debug(enveloppe);
       let routingKey = enveloppe.routingKey;
       let commande = enveloppe.commande;
+      let nowait = !cb;
 
       rabbitMQ.singleton
-        .transmettreCommande(routingKey, commande)
+        .transmettreCommande(routingKey, commande, {nowait})
         .then( reponse => {
-          let messageContent = reponse.content.toString('utf-8');
-          let json_message = JSON.parse(messageContent);
-          cb(json_message.resultats); // On transmet juste les resultats
+          if(reponse) {
+            let messageContent = reponse.content.toString('utf-8');
+            let json_message = JSON.parse(messageContent);
+            if(cb) {
+              cb(json_message.resultats); // On transmet juste les resultats
+            }
+          } else {
+            if(!nowait) {
+              console.error("Erreur reception reponse commande " + routingKey);
+            }
+          }
         })
         .catch( err => {
-          console.error("Erreur requete");
+          console.error("Erreur commande");
           console.error(err);
-          cb(); // Callback sans valeurs
+          if(cb) {
+            cb(); // Callback sans valeurs
+          }
         });
     });
 
     socket.on('creerTokenTransfert', (message, cb) => {
       let token = sessionManagement.createTokenTransfert();
-      cb(token); // Renvoit le token pour amorcer le transfert via PUT
+      if(cb) {
+        cb(token); // Renvoit le token pour amorcer le transfert via PUT
+      }
     });
 
     socket.on('creerPINTemporaireDevice', (message, cb) => {
       let pin = sessionManagement.createPinTemporaireDevice();
-      cb({pin: pin});
+      if(cb) {
+        cb({pin: pin});
+      }
     })
 
     socket.on('enregistrerDevice', (message)=> {

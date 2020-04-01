@@ -488,14 +488,19 @@ class RabbitMQWrapper {
     return promise;
   }
 
-  transmettreCommande(routingKey, message) {
+  transmettreCommande(routingKey, message, opts) {
+    if(!opts) opts = {};
 
     const infoTransaction = this._formatterInfoTransaction(routingKey);
 
     message['en-tete'] = infoTransaction;
     this._signerMessage(message);
 
-    const correlation = infoTransaction['uuid-transaction'];
+    var correlation = null;
+    if(!opts.nowait) {
+      correlation = infoTransaction['uuid-transaction'];
+    }
+
     const jsonMessage = JSON.stringify(message);
 
     // Transmettre requete - la promise permet de traiter la reponse
@@ -523,19 +528,24 @@ class RabbitMQWrapper {
         }
       };
 
-      // Exporter la fonction de callback dans l'objet RabbitMQ.
-      // Permet de faire la correlation lorsqu'on recoit la reponse.
-      pendingResponses[correlationId] = fonction_callback;
+      let properties = {
+        replyTo: this.reply_q.queue
+      }
+      if(correlationId) {
+        // Exporter la fonction de callback dans l'objet RabbitMQ.
+        // Permet de faire la correlation lorsqu'on recoit la reponse.
+        pendingResponses[correlationId] = fonction_callback;
+        properties.correlationId = correlationId;
+      } else {
+        resolve();
+      }
 
       // Faire la publication
       this.channel.publish(
         'millegrilles.noeuds',
         routingKey,
         Buffer.from(jsonMessage),
-        {
-          correlationId: correlationId,
-          replyTo: this.reply_q.queue,
-        },
+        properties,
         function(err, ok) {
           console.error("Erreur MQ Callback");
           console.error(err);
