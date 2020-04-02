@@ -168,7 +168,7 @@
         "instructions_reset": "Attention : la fonction de reset efface tous les backups existants et recommence à neuf.",
         "titreRestaurerCles": "Restaurer accès aux documents protégés et sécures",
         "instructionsRestaurerCles_1": "Restaurer l'accès au documents protégés et sécures en fournissant la clé de backup et son mot de passe.",
-        "instructionsRestaurerCles_2": "Il est possible d'uploader la clé de backup sous format de fichier .json provenant d'une copie de sûreté.",
+        "instructionsRestaurerCles_2": "Il est possible d'uploader la clé de backup sous format de fichier .json provenant d'une copie de sûreté. Il est aussi possible d'entrer le mot de passe et coller la clé directement dans les espaces à cet effet.",
         "champMotDePasse": "Mot de passe",
         "boutonRestaurerCles": "Restaurer clés",
         "actionsInterdites": "Actions interdites",

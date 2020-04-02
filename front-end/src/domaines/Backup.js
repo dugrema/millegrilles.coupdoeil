@@ -37,6 +37,7 @@ export class Backup extends React.Component {
   componentDidMount() {
     // Enregistrer les routingKeys de documents
     webSocketManager.subscribe(this.config.subscriptions, this.processMessage);
+    // console.debug(this.props);
   }
 
   afficherEcran = event => {
@@ -54,6 +55,7 @@ export class Backup extends React.Component {
     let contenu;
     if(ecranCourant === 'backupCles') {
       contenu = <PageBackupCles
+                  idmg={this.props.documentIdMillegrille.idmg}
                   />;
     } else if(ecranCourant === 'configurer') {
       contenu = null;
@@ -202,10 +204,13 @@ class PageBackupCles extends React.Component {
       .then(reponse=>{
         // console.debug("Information racine");
         // console.debug(reponse);
-        this.setState({
-          certificatRacine: reponse.cert_racine,
-          cleChiffreeRacine: reponse.cle_racine,
-        })
+        this.setState(
+          {
+            certificatRacine: reponse.cert_racine,
+            cleChiffreeRacine: reponse.cle_racine,
+          },
+          ()=>{this.genererUrlDataDownload()}
+        )
       })
       .catch(err=>{
         console.error("Erreur reception cle racine");
@@ -235,13 +240,57 @@ class PageBackupCles extends React.Component {
       // console.debug(privateKeyPEM);
 
       const clePriveeChiffree = chiffrerPrivateKeyPEM(privateKeyPEM, this.state.motDePasse);
-      this.setState({clePriveeBackup: clePriveeChiffree, clePubliqueBackup: reponse.clePublique});
+      this.setState(
+        {clePriveeBackup: clePriveeChiffree, clePubliqueBackup: reponse.clePublique},
+        ()=>{this.genererUrlDataDownload()}
+      );
 
     })
     .catch(err=>{
       console.error("Erreur creation cle privee pour backup");
       console.error(err);
     });
+  }
+
+  genererUrlDataDownload() {
+    const jsonContent = {
+      idmg: this.props.idmg
+    }
+    var urlCleRacine = null, urlCertRacine = null;
+
+    const champs = ['motDePasse', 'certificatRacine', 'cleChiffreeRacine', 'certificatBackup', 'clePriveeBackup', 'clePubliqueBackup'];
+
+    if(this.state.motDePasse) {
+      jsonContent.motDePasse = this.state.motDePasse;
+    }
+
+    if(this.state.certificatRacine || this.state.cleChiffreeRacine) {
+      const racine = {
+        certificat: this.state.certificatRacine,
+        cleChiffree: this.state.cleChiffreeRacine,
+      }
+      jsonContent.racine = racine;
+
+      const blobCleRacine = new Blob([this.state.cleChiffreeRacine], {type: 'application/text'});
+      urlCleRacine = window.URL.createObjectURL(blobCleRacine);
+      const blobCertRacine = new Blob([this.state.certificatRacine], {type: 'application/text'});
+      urlCertRacine = window.URL.createObjectURL(blobCertRacine);
+
+    }
+
+    if(this.state.certificatBackup || this.state.clePriveeBackup) {
+      const backup = {
+        certificat: this.state.certificatBackup,
+        cleChiffree: this.state.clePriveeBackup,
+      }
+      jsonContent.backup = backup;
+    }
+
+    const stringContent = JSON.stringify(jsonContent);
+    // const blobFichier = new Blob([new Uint8Array(bufferDecrypte)], {type: 'application/json'});
+    const blobFichier = new Blob([stringContent], {type: 'application/json'});
+    let dataUrl = window.URL.createObjectURL(blobFichier);
+    this.setState({dataUrl, urlCleRacine, urlCertRacine})
   }
 
   render() {
@@ -313,6 +362,43 @@ class PageBackupCles extends React.Component {
       qrCodeMotDePasse = <QRCode value={this.state.motDePasse} size={75} />
     }
 
+    var boutonDownload, boutonDownloadCleRacine, boutonDownloadCertRacine;
+    if(this.state.dataUrl) {
+      var fichierDownload = 'backupCles_' + this.props.idmg + ".json";
+      boutonDownload = (
+        <span>
+          Fichier de JSON cles :
+          <a href={this.state.dataUrl} download={fichierDownload}>
+            <i title="Telecharger" className="fa fa-download fa-2x"/>
+          </a>
+        </span>
+      );
+    }
+
+    if(this.state.urlCleRacine) {
+      var fichierDownloadRacine = this.props.idmg + ".key.pem";
+      boutonDownloadCleRacine = (
+        <span>
+          Cle racine (PEM):
+          <a href={this.state.urlCleRacine} download={fichierDownloadRacine}>
+            <i title="Telecharger cle racine" className="fa fa-download fa-2x"/>
+          </a>
+        </span>
+      );
+    }
+
+    if(this.state.urlCertRacine) {
+      var fichierDownloadRacine = this.props.idmg + ".cert.pem";
+      boutonDownloadCertRacine = (
+        <span>
+          Certificat racine (PEM) :
+          <a href={this.state.urlCertRacine} download={fichierDownloadRacine}>
+            <i title="Telecharger certificat racine" className="fa fa-download fa-2x"/>
+          </a>
+        </span>
+      );
+    }
+
     return (
       <div>
         <Feuille>
@@ -367,6 +453,10 @@ class PageBackupCles extends React.Component {
               </InputGroup.Append>
             </InputGroup>
           </Form>
+
+          {boutonDownload}
+          {boutonDownloadCleRacine}
+          {boutonDownloadCertRacine}
         </Feuille>
 
         {racine}
@@ -441,17 +531,17 @@ class PageOperationsBackup extends React.Component {
     // Traitement d'un fichier a uploader.
     // console.debug(acceptedFiles);
 
-    console.debug("Fichiers")
+    // console.debug("Fichiers")
     acceptedFiles.forEach( async file => {
       // Ajouter le fichier a l'upload queue
-      console.debug(file)
+      // console.debug(file)
       if( file.type === 'application/json' ) {
-        console.debug("Fichier JSON");
+        // console.debug("Fichier JSON");
         var reader = new FileReader();
         const {contenuFichier} = await new Promise((resolve, reject)=>{
           reader.onload = () => {
             var buffer = reader.result;
-            console.debug("Ficher charge dans buffer, taille " + buffer.byteLength);
+            // console.debug("Ficher charge dans buffer, taille " + buffer.byteLength);
             const contenuFichier =  String.fromCharCode.apply(null, new Uint8Array(buffer));
             resolve({contenuFichier});
           }
@@ -461,17 +551,20 @@ class PageOperationsBackup extends React.Component {
           reader.readAsArrayBuffer(file);
         });
 
-        console.debug(contenuFichier);
+        // console.debug(contenuFichier);
         const contenuJson = JSON.parse(contenuFichier);
-        console.debug(contenuJson);
+        // console.debug(contenuJson);
 
         const {backup, racine} = contenuJson;
+        if(contenuJson.motDePasse) {
+          this.setState({motDePasse: contenuJson.motDePasse});
+        }
         if(backup) {
-          if(backup.cle) {
-            this.setState({backupCle: backup.cle});
+          if(backup.cleChiffree) {
+            this.setState({backupCle: backup.cleChiffree});
           }
-          if(backup.motDePasse) {
-            this.setState({motDePasse: backup.motDePasse});
+          if(backup.certificat) {
+            this.setState({backupCertificat: backup.certificat});
           }
         }
 
