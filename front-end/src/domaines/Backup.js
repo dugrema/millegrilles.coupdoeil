@@ -6,10 +6,10 @@ import webSocketManager from '../WebSocketManager';
 import {MilleGrillesCryptoHelper, CryptageAsymetrique} from '../mgcomponents/CryptoSubtle';
 import {chiffrerPrivateKeyPEM} from '../mgcomponents/CryptoForge';
 
-import { Alert, Form, Container, Row, Col,
+import { Alert, Form, Row, Col,
          Button, ButtonGroup, InputGroup, FormControl} from 'react-bootstrap';
 import { Feuille } from '../mgcomponents/Feuilles';
-import { Trans, Translation } from 'react-i18next';
+import { Trans } from 'react-i18next';
 
 import './Backup.css';
 
@@ -149,8 +149,7 @@ class PageBackupCles extends React.Component {
 
   genererMotDePasse = async event => {
     var charsetLetters = "abcdefghijklmnopqrstuvwxyz",
-        charsetDigits = "0123456789",
-        retVal = "";
+        charsetDigits = "0123456789";
 
     var groupings = [
       charsetLetters,
@@ -257,8 +256,6 @@ class PageBackupCles extends React.Component {
       idmg: this.props.idmg
     }
     var urlCleRacine = null, urlCertRacine = null;
-
-    const champs = ['motDePasse', 'certificatRacine', 'cleChiffreeRacine', 'certificatBackup', 'clePriveeBackup', 'clePubliqueBackup'];
 
     if(this.state.motDePasse) {
       jsonContent.motDePasse = this.state.motDePasse;
@@ -388,11 +385,11 @@ class PageBackupCles extends React.Component {
     }
 
     if(this.state.urlCertRacine) {
-      var fichierDownloadRacine = this.props.idmg + ".cert.pem";
+      var fichierDownloadCertRacine = this.props.idmg + ".cert.pem";
       boutonDownloadCertRacine = (
         <span>
           Certificat racine (PEM) :
-          <a href={this.state.urlCertRacine} download={fichierDownloadRacine}>
+          <a href={this.state.urlCertRacine} download={fichierDownloadCertRacine}>
             <i title="Telecharger certificat racine" className="fa fa-download fa-2x"/>
           </a>
         </span>
@@ -555,7 +552,7 @@ class PageOperationsBackup extends React.Component {
         const contenuJson = JSON.parse(contenuFichier);
         // console.debug(contenuJson);
 
-        const {backup, racine} = contenuJson;
+        const {backup} = contenuJson;
         if(contenuJson.motDePasse) {
           this.setState({motDePasse: contenuJson.motDePasse});
         }
