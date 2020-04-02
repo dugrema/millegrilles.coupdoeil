@@ -1,6 +1,7 @@
 import React from 'react';
 import webSocketManager from '../WebSocketManager';
 import {MilleGrillesCryptoHelper, CryptageAsymetrique} from '../mgcomponents/CryptoSubtle';
+import {chiffrerPrivateKeyPEM} from '../mgcomponents/CryptoForge';
 
 import { Alert, Form, Container, Row, Col,
          Button, ButtonGroup, InputGroup, FormControl} from 'react-bootstrap';
@@ -210,10 +211,15 @@ class PageBackupCles extends React.Component {
   genererCleBackup = event => {
     cryptageAsymetrique.genererKeyPair()
     .then(reponse=>{
-      console.debug("Reponse generation cle privee backup");
-      console.debug(reponse);
+      // console.debug("Reponse generation cle privee backup");
+      // console.debug(reponse);
 
-      
+      const privateKeyPEM = ['-----BEGIN RSA PRIVATE KEY-----', reponse.clePrivee, '-----END RSA PRIVATE KEY-----'].join('\n');
+      // console.debug(privateKeyPEM);
+
+      const clePriveeChiffree = chiffrerPrivateKeyPEM(privateKeyPEM, this.state.motDePasse);
+      this.setState({clePriveeBackup: clePriveeChiffree, clePubliqueBackup: reponse.clePublique});
+
     })
     .catch(err=>{
       console.error("Erreur creation cle privee pour backup");
@@ -253,6 +259,38 @@ class PageBackupCles extends React.Component {
           </Row>
         </Feuille>
       )
+    }
+
+    var backup = null;
+    if(this.state.clePriveeBackup) {
+      backup = (
+        <Feuille>
+          <Row>
+            <Col>
+              <p>Certificat backup</p>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <pre>
+                {this.state.certificatBackup}
+              </pre>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <p>Cle chiffree backup</p>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <pre>
+                {this.state.clePriveeBackup}
+              </pre>
+            </Col>
+          </Row>
+        </Feuille>
+      );
     }
 
     return (
@@ -327,6 +365,8 @@ class PageBackupCles extends React.Component {
             </Col>
           </Row>
         </Feuille>
+
+        {backup}
 
       </div>
     );
