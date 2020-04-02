@@ -267,7 +267,7 @@ class PageBackupCles extends React.Component {
         <div>
           <div className="pagebreak"></div>
           <Feuille>
-            <h2>Certificat et cle racine</h2>
+            <h2>Certificat et cle de backup</h2>
             <RenderPair
               certificat={this.state.certificatBackup}
               clePrivee={this.state.clePriveeBackup}
