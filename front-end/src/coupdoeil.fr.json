@@ -152,8 +152,11 @@
         "avertissementTitre": "Avertissement",
         "avertissement_1": "Si une clé et son mot de passe est volé, la MilleGrille doit être détruite aussi vite que possible.",
         "avertissement_2": "Les clés ne doivent sous aucun prétexte être données à quelqu'un d'autre, surtout si ce n'est pas quelqu'un à qui vous seriez prêt à donner une copie des clés de votre voiture sport.",
+        "titreMotDePasse": "Mot de passe",
+        "motDePasse": "Mot de passe",
         "boutonGenerer": "Générer",
-        "boutonRecupererCleRacine": "Charger clé racine"
+        "boutonRecupererCleRacine": "Charger clé racine",
+        "boutonGenererCleBackup": "Générer clé de backup"
       },
       "lancer": {
         "titre": "Opérations de backup et restauration",

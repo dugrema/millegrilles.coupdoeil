@@ -323,7 +323,7 @@ class PageBackupCles extends React.Component {
         </Feuille>
 
         <Feuille>
-          <Row><Col><h2 className="w3-opacity"><Trans>backup.cles.titre</Trans></h2></Col></Row>
+          <Row><Col><h2 className="w3-opacity"><Trans>backup.cles.titreMotDePasse</Trans></h2></Col></Row>
           <Form>
             <InputGroup>
               <FormControl
