@@ -545,7 +545,7 @@ class RenderPEM extends React.Component {
       // Ajouter premiere ligne d'info pour re-assemblage
       pemData = this.props.nom + ';' + idx + '\n' + pemData;
       qrCodes.push(
-        <Col md={6} ey={idx}>
+        <Col md={6} key={idx}>
           <QRCode className="qrcode" value={pemData} size={400} />
         </Col>
       );
