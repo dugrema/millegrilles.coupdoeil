@@ -182,7 +182,7 @@ function ListeDomaines(props) {
 
 function MenuGauche(props) {
   return (
-    <div className="w3-col m3">
+    <div className="w3-col m3 menu-gauche">
       <MenuGaucheTop
         documentIdMillegrille={props.documentIdMillegrille}
         domaineActif={props.domaineActif} />

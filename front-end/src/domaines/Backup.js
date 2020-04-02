@@ -460,7 +460,7 @@ function RenderPair(props) {
 
   if(props.certificat) {
     certificat = (
-      <div>
+      <div className="pem">
         <Row>
           <Col>
             <h3>Certificat</h3>
@@ -486,8 +486,8 @@ function RenderPair(props) {
 
   return (
     <div>
-      {certificat}
       {clePrivee}
+      {certificat}
     </div>
   );
 
@@ -527,8 +527,8 @@ class RenderPEM extends React.Component {
       if(fin > this.props.pem.length) fin = this.props.pem.length;
       var pemData = this.props.pem.slice(debut, fin);
       qrCodes.push(
-        <Col key={idx} xl={6}>
-          <QRCode className="qrcode" value={pemData} size={400} />
+        <Col key={idx}>
+          <QRCode className="qrcode" value={pemData} size={600} />
         </Col>
       );
     }

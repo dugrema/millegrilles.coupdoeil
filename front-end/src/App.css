@@ -38,3 +38,14 @@ input.pin {
 .pinInput {
   width: 20em;
 }
+
+@media print {
+
+  .w3-top {
+    display: none;
+  }
+
+  .menu-gauche {
+    display: none;
+  }
+}
