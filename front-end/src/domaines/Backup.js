@@ -242,6 +242,7 @@ class PageBackupCles extends React.Component {
             <RenderPair
               certificat={this.state.certificatRacine}
               clePrivee={this.state.cleChiffreeRacine}
+              nom="racine"
               />
           </Feuille>
         </div>
@@ -271,6 +272,7 @@ class PageBackupCles extends React.Component {
             <RenderPair
               certificat={this.state.certificatBackup}
               clePrivee={this.state.clePriveeBackup}
+              nom="backup"
               />
           </Feuille>
         </div>
@@ -466,7 +468,7 @@ function RenderPair(props) {
             <h3>Certificat</h3>
           </Col>
         </Row>
-        <RenderPEM pem={props.certificat}/>
+        <RenderPEM pem={props.certificat} nom={props.nom + '.cert'}/>
       </div>
     );
   }
@@ -479,7 +481,7 @@ function RenderPair(props) {
             <h3>Cle</h3>
           </Col>
         </Row>
-        <RenderPEM pem={props.clePrivee}/>
+        <RenderPEM pem={props.clePrivee} nom={props.nom + '.cle'}/>
       </div>
     );
   }
@@ -504,7 +506,7 @@ class RenderPEM extends React.Component {
   }
 
   render() {
-    const tailleMaxQR = 2048;
+    const tailleMaxQR = 750;
     const qrCodes = [];
 
     const nbCodes = Math.ceil(this.props.pem.length / tailleMaxQR);
@@ -526,9 +528,11 @@ class RenderPEM extends React.Component {
       var debut = idx * tailleMaxQR, fin = (idx+1) * tailleMaxQR;
       if(fin > this.props.pem.length) fin = this.props.pem.length;
       var pemData = this.props.pem.slice(debut, fin);
+      // Ajouter premiere ligne d'info pour re-assemblage
+      pemData = this.props.nom + ';' + idx + '\n' + pemData;
       qrCodes.push(
-        <Col key={idx}>
-          <QRCode className="qrcode" value={pemData} size={600} />
+        <Col md={6} ey={idx}>
+          <QRCode className="qrcode" value={pemData} size={400} />
         </Col>
       );
     }
