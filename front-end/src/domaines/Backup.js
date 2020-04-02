@@ -144,7 +144,7 @@ class PageBackupCles extends React.Component {
     this.setState({motDePasse: value});
   }
 
-  genererMotDePasse = event => {
+  genererMotDePasse = async event => {
     var charsetLetters = "abcdefghijklmnopqrstuvwxyz",
         charsetDigits = "0123456789",
         retVal = "";
@@ -174,10 +174,18 @@ class PageBackupCles extends React.Component {
     // console.debug("Array mot de passe");
     // console.debug(motDePasseArray);
 
-    this.setState({motDePasse: motDePasseArray.join('-')});
+    await new Promise((resolve, reject)=>{
+      this.setState({motDePasse: motDePasseArray.join('-')}, ()=>{resolve()});
+    });
   }
 
-  recupererCleRacine = event => {
+  recupererCleRacine = async event => {
+
+    // S'assurer qu'un mot de passe a ete fourni, sinon en generer un
+    if(!this.state.motDePasse || this.state.motDePasse === '') {
+      await this.genererMotDePasse();
+    }
+
     cryptoHelper.crypterCleSecrete(
       this.state.motDePasse, sessionStorage.clePubliqueMaitredescles)
     .then(({cleSecreteCryptee}) => {
@@ -210,7 +218,13 @@ class PageBackupCles extends React.Component {
 
   }
 
-  genererCleBackup = event => {
+  genererCleBackup = async event => {
+
+    // S'assurer qu'un mot de passe a ete fourni, sinon en generer un
+    if(!this.state.motDePasse || this.state.motDePasse === '') {
+      await this.genererMotDePasse();
+    }
+
     cryptageAsymetrique.genererKeyPair()
     .then(reponse=>{
       // console.debug("Reponse generation cle privee backup");
