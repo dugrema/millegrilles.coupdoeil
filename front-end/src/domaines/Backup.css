@@ -1,3 +1,8 @@
+.textAreaCle {
+  font-size: 7pt;
+}
+
+
 @media print {
     .pagebreak {
       clear: both;

@@ -1,5 +1,6 @@
 import React from 'react';
 import QRCode from 'qrcode.react';
+import Dropzone from 'react-dropzone';
 
 import webSocketManager from '../WebSocketManager';
 import {MilleGrillesCryptoHelper, CryptageAsymetrique} from '../mgcomponents/CryptoSubtle';
@@ -380,6 +381,21 @@ class PageBackupCles extends React.Component {
 
 class PageOperationsBackup extends React.Component {
 
+  state = {
+    motDePasse: '',
+    backupCle: '',
+  }
+
+  changerMotDePasse = event => {
+    const {value} = event.currentTarget;
+    this.setState({motDePasse: value});
+  }
+
+  changerBackupCle = event => {
+    const {value} = event.currentTarget;
+    this.setState({backupCle: value});
+  }
+
   declencherBackup = event => {
     const routing = 'commande.global.declencherBackupHoraire';
     webSocketManager.transmettreCommande(
@@ -421,6 +437,49 @@ class PageOperationsBackup extends React.Component {
     );
   }
 
+  uploadFileProcessor = async acceptedFiles => {
+    // Traitement d'un fichier a uploader.
+    // console.debug(acceptedFiles);
+
+    console.debug("Fichiers")
+    acceptedFiles.forEach( async file => {
+      // Ajouter le fichier a l'upload queue
+      console.debug(file)
+      if( file.type === 'application/json' ) {
+        console.debug("Fichier JSON");
+        var reader = new FileReader();
+        const {contenuFichier} = await new Promise((resolve, reject)=>{
+          reader.onload = () => {
+            var buffer = reader.result;
+            console.debug("Ficher charge dans buffer, taille " + buffer.byteLength);
+            const contenuFichier =  String.fromCharCode.apply(null, new Uint8Array(buffer));
+            resolve({contenuFichier});
+          }
+          reader.onerror = err => {
+            reject(err);
+          }
+          reader.readAsArrayBuffer(file);
+        });
+
+        console.debug(contenuFichier);
+        const contenuJson = JSON.parse(contenuFichier);
+        console.debug(contenuJson);
+
+        const {backup, racine} = contenuJson;
+        if(backup) {
+          if(backup.cle) {
+            this.setState({backupCle: backup.cle});
+          }
+          if(backup.motDePasse) {
+            this.setState({motDePasse: backup.motDePasse});
+          }
+        }
+
+      }
+    });
+
+  }
+
   render() {
     return (
       <div>
@@ -452,6 +511,74 @@ class PageOperationsBackup extends React.Component {
         </Feuille>
 
         <Feuille>
+          <Row>
+            <Col>
+              <h2><Trans>backup.lancer.titreRestaurerCles</Trans></h2>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <p><Trans>backup.lancer.instructionsRestaurerCles_1</Trans></p>
+              <p><Trans>backup.lancer.instructionsRestaurerCles_2</Trans></p>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              Uploader :
+              <Dropzone onDrop={this.uploadFileProcessor}>
+                {({getRootProps, getInputProps}) => (
+                  <section className="uploadIcon">
+                    <div {...getRootProps()}>
+                      <input {...getInputProps()} />
+                      <span className="fa fa-upload fa-2x"/>
+                    </div>
+                  </section>
+                )}
+              </Dropzone>
+            </Col>
+          </Row>
+          <Form>
+            <Row>
+              <Col xl={6}>
+                <InputGroup>
+                  <InputGroup.Prepend>
+                    <InputGroup.Text id="formMotDePasse"><Trans>backup.lancer.champMotDePasse</Trans></InputGroup.Text>
+                  </InputGroup.Prepend>
+                  <FormControl
+                    placeholder="Mot de passe"
+                    aria-label="Mot de passe"
+                    aria-describedby="formMotDePasse"
+                    onChange={this.changerMotDePasse}
+                    value={this.state.motDePasse}
+                  />
+                </InputGroup>
+              </Col>
+              <Col xl={6}>
+                <Form.Group controlId="clePEMTextarea">
+                  <Form.Label>Cle format PEM</Form.Label>
+                  <Form.Control as="textarea" rows="20" className="textAreaCle"
+                    onChange={this.changerBackupCle}
+                    value={this.state.backupCle}
+                    />
+                </Form.Group>
+              </Col>
+            </Row>
+          </Form>
+          <Row>
+            <Col>
+              <Button onClick={this.restaurerCleBackup}>
+                <Trans>backup.lancer.boutonRestaurerCles</Trans>
+              </Button>
+            </Col>
+          </Row>
+        </Feuille>
+
+        <Feuille>
+          <Row>
+            <Col>
+              <h2><Trans>backup.lancer.actionsInterdites</Trans></h2>
+            </Col>
+          </Row>
           <Row>
             <Col lg={8}>
               <Trans>backup.lancer.instructions_reset</Trans>
