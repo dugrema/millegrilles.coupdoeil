@@ -1,4 +1,6 @@
 import React from 'react';
+import QRCode from 'qrcode.react';
+
 import webSocketManager from '../WebSocketManager';
 import {MilleGrillesCryptoHelper, CryptageAsymetrique} from '../mgcomponents/CryptoSubtle';
 import {chiffrerPrivateKeyPEM} from '../mgcomponents/CryptoForge';
@@ -229,68 +231,22 @@ class PageBackupCles extends React.Component {
 
   render() {
 
-    var racine = null;
-    if(this.state.cleChiffreeRacine != '') {
-      racine = (
-        <Feuille>
-          <Row>
-            <Col>
-              <p>Certificat racine</p>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <pre>
-                {this.state.certificatRacine}
-              </pre>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <p>Cle chiffree racine</p>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <pre>
-                {this.state.cleChiffreeRacine}
-              </pre>
-            </Col>
-          </Row>
-        </Feuille>
-      )
+    var racine = null, backup = null;
+
+    if(this.state.certificatRacine || this.state.cleChiffreeRacine) {
+      racine = <RenderPair
+                  certificat={this.state.certificatRacine}
+                  clePrivee={this.state.cleChiffreeRacine}
+                  titre="Certificat Racine"
+                  />
     }
 
-    var backup = null;
-    if(this.state.clePriveeBackup) {
-      backup = (
-        <Feuille>
-          <Row>
-            <Col>
-              <p>Certificat backup</p>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <pre>
-                {this.state.certificatBackup}
-              </pre>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <p>Cle chiffree backup</p>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <pre>
-                {this.state.clePriveeBackup}
-              </pre>
-            </Col>
-          </Row>
-        </Feuille>
-      );
+    if(this.state.certificatBackup || this.state.clePriveeBackup) {
+      backup = <RenderPair
+                  certificat={this.state.certificatBackup}
+                  clePrivee={this.state.clePriveeBackup}
+                  titre="Cle de backup"
+                  />
     }
 
     return (
@@ -464,5 +420,65 @@ class PageOperationsBackup extends React.Component {
       </div>
     );
   }
+
+}
+
+function RenderPair(props) {
+  var certificat = null, clePrivee = null;
+
+  if(props.certificat) {
+    certificat = <RenderPEM pem={props.certificat}/>;
+  }
+
+  if(props.clePrivee) {
+    clePrivee = <RenderPEM pem={props.clePrivee}/>;
+  }
+
+  return (
+    <Feuille>
+      <Row>
+        <Col>
+          <p>{props.titre}</p>
+        </Col>
+      </Row>
+      {certificat}
+      {clePrivee}
+    </Feuille>
+  );
+
+}
+
+function RenderPEM(props) {
+
+  const tailleMaxQR = 2048;
+  const qrCodes = [];
+
+  const nbCodes = Math.ceil(props.pem.length / tailleMaxQR);
+
+  for(let idx=0; idx < nbCodes; idx++) {
+    var debut = idx * tailleMaxQR, fin = (idx+1) * tailleMaxQR;
+    if(fin > props.pem.length) fin = props.pem.length;
+    var pemData = props.pem.slice(debut, fin);
+    qrCodes.push(
+      <Col key={idx} xl={6}>
+        <QRCode value={pemData} size={400} />
+      </Col>
+    );
+  }
+
+  return(
+    <div>
+      <Row>
+        {qrCodes}
+      </Row>
+      <Row>
+        <Col>
+          <pre>
+            {props.pem}
+          </pre>
+        </Col>
+      </Row>
+    </div>
+  );
 
 }
