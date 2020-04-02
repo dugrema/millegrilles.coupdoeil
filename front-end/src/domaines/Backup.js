@@ -85,17 +85,17 @@ function PageInitiale(props) {
       <Row>
         <ul>
           <li>
-            <Button className="aslink" onClick={props.fonctionsNavigation.afficherEcran} value="backupCles">
+            <Button className="aslink bouton" onClick={props.fonctionsNavigation.afficherEcran} value="backupCles">
               <Trans>backup.initiale.lienBackupCles</Trans>
             </Button>
           </li>
           <li>
-            <Button className="aslink" onClick={props.fonctionsNavigation.afficherEcran} value="configurer">
+            <Button className="aslink bouton" onClick={props.fonctionsNavigation.afficherEcran} value="configurer">
               <Trans>backup.initiale.configurer</Trans>
             </Button>
           </li>
           <li>
-            <Button className="aslink" onClick={props.fonctionsNavigation.afficherEcran} value="lancerBackup">
+            <Button className="aslink bouton" onClick={props.fonctionsNavigation.afficherEcran} value="lancerBackup">
               <Trans>backup.initiale.lancerBackup</Trans>
             </Button>
           </li>
@@ -234,19 +234,66 @@ class PageBackupCles extends React.Component {
     var racine = null, backup = null;
 
     if(this.state.certificatRacine || this.state.cleChiffreeRacine) {
-      racine = <RenderPair
-                  certificat={this.state.certificatRacine}
-                  clePrivee={this.state.cleChiffreeRacine}
-                  titre="Certificat Racine"
-                  />
+      racine = (
+        <div>
+          <div className="pagebreak"></div>
+          <Feuille>
+            <h2>Certificat et cle racine</h2>
+            <RenderPair
+              certificat={this.state.certificatRacine}
+              clePrivee={this.state.cleChiffreeRacine}
+              />
+          </Feuille>
+        </div>
+      )
+    } else {
+      racine = (
+        <Feuille>
+          <Row>
+            <Col>
+              <ButtonGroup aria-label="Operations racine">
+              <Button onClick={this.recupererCleRacine} className="bouton">
+                  <Trans>backup.cles.boutonRecupererCleRacine</Trans>
+                </Button>
+              </ButtonGroup>
+            </Col>
+          </Row>
+        </Feuille>
+      );
     }
 
     if(this.state.certificatBackup || this.state.clePriveeBackup) {
-      backup = <RenderPair
-                  certificat={this.state.certificatBackup}
-                  clePrivee={this.state.clePriveeBackup}
-                  titre="Cle de backup"
-                  />
+      backup = (
+        <div>
+          <div className="pagebreak"></div>
+          <Feuille>
+            <h2>Certificat et cle racine</h2>
+            <RenderPair
+              certificat={this.state.certificatBackup}
+              clePrivee={this.state.clePriveeBackup}
+              />
+          </Feuille>
+        </div>
+      )
+    } else {
+      backup = (
+        <Feuille>
+          <Row>
+            <Col>
+              <ButtonGroup aria-label="Operations backup">
+                <Button onClick={this.genererCleBackup} className="bouton">
+                  <Trans>backup.cles.boutonGenererCleBackup</Trans>
+                </Button>
+              </ButtonGroup>
+            </Col>
+          </Row>
+        </Feuille>
+      );
+    }
+
+    var qrCodeMotDePasse = null;
+    if(this.state.motDePasse) {
+      qrCodeMotDePasse = <QRCode value={this.state.motDePasse} size={75} />
     }
 
     return (
@@ -279,7 +326,14 @@ class PageBackupCles extends React.Component {
         </Feuille>
 
         <Feuille>
-          <Row><Col><h2 className="w3-opacity"><Trans>backup.cles.titreMotDePasse</Trans></h2></Col></Row>
+          <Row>
+            <Col lg={8}>
+              <h2 className="w3-opacity"><Trans>backup.cles.titreMotDePasse</Trans></h2>
+            </Col>
+            <Col lg={4}>
+              {qrCodeMotDePasse}
+            </Col>
+          </Row>
           <Form>
             <InputGroup>
               <FormControl
@@ -290,37 +344,15 @@ class PageBackupCles extends React.Component {
                 value={this.state.motDePasse}
               />
               <InputGroup.Append>
-                <Button variant="secondary" onClick={this.genererMotDePasse}><Trans>backup.cles.boutonGenerer</Trans></Button>
+                <Button variant="secondary" className="bouton" onClick={this.genererMotDePasse}>
+                    <Trans>backup.cles.boutonGenerer</Trans>
+                </Button>
               </InputGroup.Append>
             </InputGroup>
           </Form>
         </Feuille>
 
-        <Feuille>
-          <Row>
-            <Col>
-              <ButtonGroup aria-label="Operations racine">
-                <Button onClick={this.recupererCleRacine}>
-                  <Trans>backup.cles.boutonRecupererCleRacine</Trans>
-                </Button>
-              </ButtonGroup>
-            </Col>
-          </Row>
-        </Feuille>
-
         {racine}
-
-        <Feuille>
-          <Row>
-            <Col>
-              <ButtonGroup aria-label="Operations backup">
-                <Button onClick={this.genererCleBackup}>
-                  <Trans>backup.cles.boutonGenererCleBackup</Trans>
-                </Button>
-              </ButtonGroup>
-            </Col>
-          </Row>
-        </Feuille>
 
         {backup}
 
@@ -427,58 +459,93 @@ function RenderPair(props) {
   var certificat = null, clePrivee = null;
 
   if(props.certificat) {
-    certificat = <RenderPEM pem={props.certificat}/>;
+    certificat = (
+      <div>
+        <Row>
+          <Col>
+            <h3>Certificat</h3>
+          </Col>
+        </Row>
+        <RenderPEM pem={props.certificat}/>
+      </div>
+    );
   }
 
   if(props.clePrivee) {
-    clePrivee = <RenderPEM pem={props.clePrivee}/>;
+    clePrivee = (
+      <div>
+        <Row>
+          <Col>
+            <h3>Cle</h3>
+          </Col>
+        </Row>
+        <RenderPEM pem={props.clePrivee}/>
+      </div>
+    );
   }
 
   return (
-    <Feuille>
-      <Row>
-        <Col>
-          <p>{props.titre}</p>
-        </Col>
-      </Row>
+    <div>
       {certificat}
       {clePrivee}
-    </Feuille>
+    </div>
   );
 
 }
 
-function RenderPEM(props) {
+class RenderPEM extends React.Component {
 
-  const tailleMaxQR = 2048;
-  const qrCodes = [];
-
-  const nbCodes = Math.ceil(props.pem.length / tailleMaxQR);
-
-  for(let idx=0; idx < nbCodes; idx++) {
-    var debut = idx * tailleMaxQR, fin = (idx+1) * tailleMaxQR;
-    if(fin > props.pem.length) fin = props.pem.length;
-    var pemData = props.pem.slice(debut, fin);
-    qrCodes.push(
-      <Col key={idx} xl={6}>
-        <QRCode value={pemData} size={400} />
-      </Col>
-    );
+  state = {
+    afficherPEM: false,
   }
 
-  return(
-    <div>
-      <Row>
-        {qrCodes}
-      </Row>
-      <Row>
-        <Col>
-          <pre>
-            {props.pem}
-          </pre>
+  toggleAfficherPEM = event => {
+    this.setState({afficherPEM: !this.state.afficherPEM});
+  }
+
+  render() {
+    const tailleMaxQR = 2048;
+    const qrCodes = [];
+
+    const nbCodes = Math.ceil(this.props.pem.length / tailleMaxQR);
+
+    var afficherPEM = null;
+    if(this.state.afficherPEM) {
+      afficherPEM = (
+        <Row>
+          <Col>
+            <pre>
+              {this.props.pem}
+            </pre>
+          </Col>
+        </Row>
+      );
+    }
+
+    for(let idx=0; idx < nbCodes; idx++) {
+      var debut = idx * tailleMaxQR, fin = (idx+1) * tailleMaxQR;
+      if(fin > this.props.pem.length) fin = this.props.pem.length;
+      var pemData = this.props.pem.slice(debut, fin);
+      qrCodes.push(
+        <Col key={idx} xl={6}>
+          <QRCode className="qrcode" value={pemData} size={400} />
         </Col>
-      </Row>
-    </div>
-  );
+      );
+    }
+
+    return(
+      <div>
+        <Row>
+          {qrCodes}
+        </Row>
+        {afficherPEM}
+        <Row>
+          <Col>
+            <Button className="bouton" variant="secondary" onClick={this.toggleAfficherPEM}>PEM</Button>
+          </Col>
+        </Row>
+      </div>
+    );
+  }
 
 }

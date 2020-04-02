@@ -1,0 +1,23 @@
+@media print {
+    .pagebreak {
+      clear: both;
+      page-break-after: always;
+    }
+
+    .qrcode {
+      padding-bottom: 2em;
+    }
+
+    .bouton {
+      display: none;
+    }
+
+    button {
+      display: none;
+    }
+
+    h2 {
+      padding-top: 4em;
+    }
+
+}
