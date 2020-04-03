@@ -26,6 +26,14 @@
       "facebook": "Compte Facebook :"
     },
     "principale": {
+      "accueil": {
+        "generalTitre": "Information générale",
+        "version": "Version de Coup d'Oeil :",
+        "idmg": "IDMG :",
+        "gestionTitre": "Fonctions de gestion de votre MilleGrille",
+        "lienUsager": "Information usager et MilleGrille",
+        "lienTokens": "Gérer les tokens de sécurité"
+      },
       "information": {
         "titre": "Information personnalisée",
         "description_1": "Personnaliser l'information de la MilleGrille.",

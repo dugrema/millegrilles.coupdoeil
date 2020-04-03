@@ -39,6 +39,14 @@ input.pin {
   width: 20em;
 }
 
+.alignement-droite {
+  text-align: right;
+}
+
+.code-qr {
+  padding: 1em;
+}
+
 @media print {
 
   .w3-top {

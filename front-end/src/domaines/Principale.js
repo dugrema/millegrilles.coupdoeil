@@ -1,4 +1,5 @@
 import React from 'react';
+import QRCode from 'qrcode.react';
 import { Alert, Form, Container, Row, Col,
          Button, ButtonGroup, InputGroup} from 'react-bootstrap';
 import manifest from '../manifest.build.js';  // App version, build date
@@ -42,44 +43,51 @@ export class InterfacePrincipale extends React.Component {
   }
 
   version() {
-    return (
-      <div className="w3-card w3-round w3-white w3-card_BR">
-        <div className="w3-container w3-padding">
-          <h2 className="w3-opacity">Information générale</h2>
 
-          <ul>
-            <li>
-              Version de Coup D&apos;Oeil: <span title={manifest.date}>{manifest.version}</span>
-            </li>
-            <li>
-              IDMG : {this.state.milleGrille.idmg}
-            </li>
-          </ul>
-        </div>
-      </div>
+    var qrCode = null;
+    if(this.state.milleGrille.idmg) {
+      qrCode = <QRCode value={'idmg:' + this.state.milleGrille.idmg} size={75} />;
+    }
+
+    return (
+      <Feuille>
+        <Row>
+          <Col lg={10}>
+            <h2 className="w3-opacity"><Trans>principale.accueil.generalTitre</Trans></h2>
+
+            <ul>
+              <li>
+                <Trans>principale.accueil.version</Trans> <span title={manifest.date}>{manifest.version}</span>
+              </li>
+              <li>
+                <Trans>principale.accueil.idmg</Trans> {this.state.milleGrille.idmg}
+              </li>
+            </ul>
+          </Col>
+          <Col lg={2} className="code-qr">{qrCode}</Col>
+        </Row>
+      </Feuille>
     );
   }
 
   fonctionsGestion() {
     return (
-      <div className="w3-card w3-round w3-white w3-card_BR">
-        <div className="w3-container w3-padding">
-          <h2 className="w3-opacity">Fonctions de gestion de votre MilleGrille</h2>
+      <Feuille>
+        <h2 className="w3-opacity"><Trans>principale.accueil.gestionTitre</Trans></h2>
 
-          <ul>
-            <li>
-              <Button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="information">
-                Information usager et MilleGrille
-              </Button>
-            </li>
-            <li>
-              <Button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="gestionTokens">
-                Gerer les tokens de securite
-              </Button>
-            </li>
-          </ul>
-        </div>
-      </div>
+        <ul>
+          <li>
+            <Button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="information">
+              <Trans>principale.accueil.lienUsager</Trans>
+            </Button>
+          </li>
+          <li>
+            <Button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="gestionTokens">
+              <Trans>principale.accueil.lienTokens</Trans>
+            </Button>
+          </li>
+        </ul>
+      </Feuille>
     );
   }
 
