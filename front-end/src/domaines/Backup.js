@@ -570,6 +570,25 @@ class PageOperationsBackup extends React.Component {
 
   }
 
+  restaurerCleBackup = async event => {
+    const motDePasse = await cryptoHelper.crypterCleSecrete(
+      this.state.motDePasse, sessionStorage.clePubliqueMaitredescles)
+    .then(({cleSecreteCryptee}) => {
+      return cleSecreteCryptee;
+    });
+
+    const routing = 'commande.millegrilles.domaines.MaitreDesCles.restaurerBackupCles';
+    const commande = {
+      'mot_de_passe_chiffre': motDePasse,
+      "cle_privee": this.state.backupCle,
+    }
+    webSocketManager.transmettreCommande(
+      routing,
+      commande,
+      {nowait: true}
+    );
+  }
+
   render() {
     return (
       <div>
