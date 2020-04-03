@@ -237,12 +237,28 @@ class PageBackupCles extends React.Component {
 
       const privateKeyPEM = ['-----BEGIN RSA PRIVATE KEY-----', reponse.clePrivee, '-----END RSA PRIVATE KEY-----'].join('\n');
       // console.debug(privateKeyPEM);
+      const publicKeyPEM = ['-----BEGIN PUBLIC KEY-----', reponse.clePublique, '-----END PUBLIC KEY-----'].join('\n');
 
-      const clePriveeChiffree = chiffrerPrivateKeyPEM(privateKeyPEM, this.state.motDePasse);
-      this.setState(
-        {clePriveeBackup: clePriveeChiffree, clePubliqueBackup: reponse.clePublique},
-        ()=>{this.genererUrlDataDownload()}
-      );
+      // Transmettre la cle publique pour recuperer certificat
+      const routing = 'commande.millegrilles.domaines.MaitreDesCles.signerCleBackup';
+      const commande = {
+        'cle_publique': publicKeyPEM
+      }
+      // console.debug(commande);
+
+      webSocketManager.transmettreCommande(routing, commande)
+      .then(reponseSignature=>{
+        // console.debug(reponseSignature)
+        const clePriveeChiffree = chiffrerPrivateKeyPEM(privateKeyPEM, this.state.motDePasse);
+        this.setState(
+          {
+            clePriveeBackup: clePriveeChiffree,
+            clePubliqueBackup: reponse.clePublique,
+            certificatBackup: reponseSignature.cert,
+          },
+          ()=>{this.genererUrlDataDownload()}
+        );
+      });
 
     })
     .catch(err=>{
