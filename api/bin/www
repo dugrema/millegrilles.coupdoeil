@@ -20,21 +20,22 @@ const rabbitMQ = require('../routes/res/rabbitMQ')
  */
 
 var port = normalizePort(process.env.PORT || '443');
-const hostIp = process.env.HOST || 'dev2.maple.mdugre.info';
+const hostIp = process.env.HOST;
 const key_path = process.env.PRIVKEY;
 const cert_path = process.env.CERT;
-// const idmg = process.env.MG_IDMG;
 
 /**
  * Create SPDY/http2 server.
  */
-
 const config = {
     hostIp: hostIp,
     cert: FS.readFileSync(cert_path),
     key: FS.readFileSync(key_path)
 };
 
+/*
+ * Creer un serveur pour https et WSS (socket.io)
+ */
 const wss_server = io();
 const server = https.createServer(config, app).listen(port, () => {
   wss_server.listen(server);
@@ -43,14 +44,14 @@ const server = https.createServer(config, app).listen(port, () => {
     websocketsapp.addSocket(socket);
   });
 
-  console.log('Server is listening at https://localhost:' + port + '. Ctrl^C to stop it.');
+  console.info('Server is listening at https://localhost:' + port + '. Ctrl^C to stop it.');
 });
 
 
 // Connexion a RabbitMQ
-let mqConnectionUrl = process.env.MG_MQ_URL || 'amqps://mq:5673/' + nomMilleGrille;
+// amqps://mq:5673/[idmg]
+let mqConnectionUrl = process.env.MG_MQ_URL;
 rabbitMQ.singleton.connect(mqConnectionUrl);
-
 
 /**
  * Normalize a port into a number, string, or false.
