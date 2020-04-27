@@ -16,8 +16,8 @@ const {WebSocketApp} = require('../websocketsapp');
 const {SessionManagement} = require('../routes/res/sessionManagement');
 
 //  Charger certificats web et MilleGrille
-const webkeyPem = fs.readFileSync(process.env.PRIVKEY).toString('utf-8');
-const webcertPem = fs.readFileSync(process.env.CERT).toString('utf-8');
+const webkeyPem = fs.readFileSync(process.env.WEB_KEY).toString('utf-8');
+const webcertPem = fs.readFileSync(process.env.WEB_CERT).toString('utf-8');
 const certPem = fs.readFileSync(process.env.MG_MQ_CERTFILE).toString('utf-8');
 const keyPem = fs.readFileSync(process.env.MG_MQ_KEYFILE).toString('utf-8');
 const certMillegrillePem = fs.readFileSync(process.env.MG_MQ_CAFILE).toString('utf-8');
