@@ -8,7 +8,7 @@ const crypto = require('crypto');
 const forge = require('node-forge');
 const request = require('request');
 const pki = require('./pki')
-const rabbitMQ = require('./rabbitMQ');
+// const rabbitMQ = require('./rabbitMQ');
 
 const serveurConsignation = process.env.MG_CONSIGNATION_HTTP || 'https://consignationfichiers';
 
@@ -100,7 +100,8 @@ class CryptoEncryptPipe {
 
 class MulterCryptoStorage {
 
-  constructor (opts) {
+  constructor (rabbitMQ, opts) {
+    this.rabbitMQ = rabbitMQ;
     this.stagingFolder = opts.stagingFolder || "/tmp/coupdoeilStaging";
     this.hashOpts = opts.hashOpts || {};
     this.cryptoOpts = opts.cryptoOpts || {};
@@ -256,7 +257,7 @@ class MulterCryptoStorage {
         '_evenements': 'certMaitreDesCles'
       }
       var routingKey = 'requete.millegrilles.domaines.MaitreDesCles.certMaitreDesCles';
-      return rabbitMQ.singleton.transmettreRequete(routingKey, requete)
+      return this.rabbitMQ.transmettreRequete(routingKey, requete)
       .then(reponse=>{
         let messageContent = decodeURIComponent(escape(reponse.content));
         let json_message = JSON.parse(messageContent);

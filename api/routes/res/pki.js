@@ -12,14 +12,10 @@ const PEM_CERT_FIN = '-----END CERTIFICATE-----';
 class PKIUtils {
   // Classe qui supporte des operations avec certificats et cles privees.
 
-  constructor() {
-    let mq_cacert = process.env.MG_MQ_CAFILE,
-        mq_cert = process.env.MG_MQ_CERTFILE,
-        mq_key = process.env.MG_MQ_KEYFILE;
-
-    this.cacertFile = mq_cacert;
-    this.certFile = mq_cert;
-    this.keyFile = mq_key;
+  constructor(certs) {
+    this.cacertFile = cert.millegrille || process.env.MG_MQ_CAFILE;
+    this.certFile = cert.cert || process.env.MG_MQ_CERTFILE;
+    this.keyFile = cert.key || process.env.MG_MQ_KEYFILE;
 
     this.cle = null;
     this.certPEM = null;
@@ -436,5 +432,6 @@ class CertificatInconnu extends Error {
   }
 }
 
-const pki = new PKIUtils();
-module.exports = pki;
+//const pki = new PKIUtils();
+
+module.exports = {PKIUtils};

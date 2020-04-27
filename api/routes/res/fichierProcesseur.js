@@ -3,11 +3,15 @@ const path = require('path');
 const uuidv1 = require('uuid/v1');
 const request = require('request');
 const crypto = require('crypto');
-const rabbitMQ = require('./rabbitMQ');
+// const rabbitMQ = require('./rabbitMQ');
 const pki = require('./pki')
 const forge = require('node-forge');
 
 class ProcesseurUpload {
+
+  constructor(rabbitMQ) {
+    this.rabbitMQ = rabbitMQ;
+  }
 
   ajouterFichier(req, fichier, serveurConsignation) {
     var promise = new Promise((resolve, reject)=>{
@@ -62,7 +66,7 @@ class ProcesseurUpload {
           // console.debug(transactionInformationCryptee);
 
           // Transmettre information au serveur via MQ
-          rabbitMQ.singleton.transmettreTransactionFormattee(
+          this.rabbitMQ.transmettreTransactionFormattee(
               transactionInformationCryptee,
               'millegrilles.domaines.MaitreDesCles.nouvelleCle.grosFichier',
               {version: 6}
@@ -102,7 +106,7 @@ class ProcesseurUpload {
   } // ajouterFichier
 
   _transmettreMetadata(resolve, reject, transactionNouvelleVersion) {
-    return rabbitMQ.singleton.transmettreTransactionFormattee(
+    return this.rabbitMQ.transmettreTransactionFormattee(
       transactionNouvelleVersion,
       'millegrilles.domaines.GrosFichiers.nouvelleVersion.metadata')
     .then( msg => {
@@ -122,7 +126,8 @@ class ProcesseurUpload {
 
 class ProcesseurDownloadCrypte {
 
-  constructor(props) {
+  constructor(rabbitMQ, props) {
+    this.rabbitMQ = rabbitMQ;
     this.key = null;
 
     this._charger_key(key=>{
@@ -147,7 +152,7 @@ class ProcesseurDownloadCrypte {
       requete.fingerprint = fingerprint;
     }
 
-    return rabbitMQ.singleton.transmettreRequete(routing, requete)
+    return this.rabbitMQ.transmettreRequete(routing, requete)
     .then(reponse=>{
       // console.debug("Recu message pour decrypter fuuid: " + fuuid);
       let messageContent = decodeURIComponent(escape(reponse.content));

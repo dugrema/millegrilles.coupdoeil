@@ -13,7 +13,7 @@ const Path = require('path');
 // const Spdy = require('spdy');
 // const http2 = require('http2');
 const io = require('socket.io');
-const rabbitMQ = require('../routes/res/rabbitMQ')
+const {RabbitMQ} = require('../routes/res/rabbitMQ')
 
 /**
  * Get port from environment and store in Express.
@@ -33,6 +33,12 @@ const config = {
     key: FS.readFileSync(key_path)
 };
 
+// Connexion a RabbitMQ
+// amqps://mq:5673/[idmg]
+const rabbitMQ = RabbitMQ();
+let mqConnectionUrl = process.env.MG_MQ_URL;
+rabbitMQ.connect(mqConnectionUrl);
+
 /*
  * Creer un serveur pour https et WSS (socket.io)
  */
@@ -46,12 +52,6 @@ const server = https.createServer(config, app).listen(port, () => {
 
   console.info('Server is listening at https://localhost:' + port + '. Ctrl^C to stop it.');
 });
-
-
-// Connexion a RabbitMQ
-// amqps://mq:5673/[idmg]
-let mqConnectionUrl = process.env.MG_MQ_URL;
-rabbitMQ.singleton.connect(mqConnectionUrl);
 
 /**
  * Normalize a port into a number, string, or false.

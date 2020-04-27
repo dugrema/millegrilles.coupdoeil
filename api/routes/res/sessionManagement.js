@@ -1,4 +1,4 @@
-const rabbitMQ = require('./rabbitMQ');
+// const rabbitMQ = require('./rabbitMQ');
 const {
     generateRegistrationChallenge,
     parseRegisterRequest,
@@ -11,7 +11,8 @@ const pki = require('./pki')
 
 class SessionManagement {
 
-  constructor() {
+  constructor(rabbitMQ) {
+    this.rabbitMQ = rabbitMQ;
     this.timer;
     this.session_timeout = process.env.COUPDOEIL_SESSION_TIMEOUT || (60 * 1000);
     this.session_timeout = Number(this.session_timeout);
@@ -112,7 +113,7 @@ class SessionManagement {
     // Authentifier le socket
     let filtre = {"_mg-libelle": "cles"};
 
-    return rabbitMQ.singleton.get_document(
+    return this.rabbitMQ.get_document(
       'millegrilles.domaines.Principale', filtre)
     .then( doc => {
       // console.log(doc);
@@ -142,7 +143,7 @@ class SessionManagement {
           }
 
           let filtre = {"_mg-libelle": "cles"};
-          rabbitMQ.singleton.get_document(
+          this.rabbitMQ.get_document(
             'millegrilles.domaines.Principale', filtre)
           .then( doc => {
             // console.log(doc);
@@ -214,7 +215,7 @@ class SessionManagement {
     // console.debug("Requete verification " + fingerprint);
 
     let requete = {'fingerprint': fingerprint};
-    return rabbitMQ.singleton.transmettreRequete(
+    return this.rabbitMQ.transmettreRequete(
       'requete.millegrilles.domaines.Pki.confirmerCertificat', requete)
     .then( reponseCertVerif => {
       console.debug("Reponse verification certificat");
@@ -295,7 +296,7 @@ class SessionManagement {
 
 }
 
-const sessionManagement = new SessionManagement();
-sessionManagement.start();
+// const sessionManagement = new SessionManagement();
+// sessionManagement.start();
 
-module.exports = sessionManagement;
+module.exports = {SessionManagement};

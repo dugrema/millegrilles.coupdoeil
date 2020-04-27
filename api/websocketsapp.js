@@ -1,8 +1,9 @@
-var rabbitMQ = require('./routes/res/rabbitMQ');
 var fs = require('fs');
 var sessionManagement = require('./routes/res/sessionManagement');
 var {SocketIoUpload} = require('./routes/res/SocketioUpload');
-var pki = require('./routes/res/pki');
+
+// var pki = require('./routes/res/pki');
+// var rabbitMQ = require('./routes/res/rabbitMQ');
 
 const {
     generateRegistrationChallenge,
@@ -16,6 +17,7 @@ class WebSocketResources {
 
   constructor(socket) {
     this.socket = socket;
+
     this.mqChannel = null;
     this.reply_q = null;
     this.expiration = (new Date()).getTime()+120000; // 2 minutes pour socket connect
@@ -40,7 +42,10 @@ class WebSocketResources {
 
 class WebSocketApp {
 
-  constructor() {
+  constructor(rabbitMQ, pki) {
+    this.rabbitMQ = rabbitMQ;
+    this.pki = pki;
+
     this.new_sockets = {};
     this.authenticated_sockets = {};
 
@@ -52,7 +57,7 @@ class WebSocketApp {
       this.cleanDisconnected();
     }, 60000);
 
-    rabbitMQ.singleton.routingKeyManager.setWebSocketsManager(this); // Permet transmettre incoming msg
+    this.rabbitMQ.routingKeyManager.setWebSocketsManager(this); // Permet transmettre incoming msg
   }
 
   cleanNew() {
@@ -115,7 +120,7 @@ class WebSocketApp {
       this.new_sockets[socket.id] = socketResources;
 
       // Ouvrir Channel MQ
-      rabbitMQ.singleton.createChannel(socketResources)
+      this.rabbitMQ.createChannel(socketResources)
       .then(()=>{
         console.debug("Debut de l'authentification");
         return sessionManagement.addSocketConnection(socket)
@@ -152,17 +157,17 @@ class WebSocketApp {
     let reply_q = socketResources.reply_q;
 
     // Enregistrer evenements upload
-    new SocketIoUpload(rabbitMQ.singleton).enregistrer(socket);
+    new SocketIoUpload(this.rabbitMQ).enregistrer(socket);
 
     socket.on('subscribe', message => {
-      rabbitMQ.singleton.routingKeyManager
+      this.rabbitMQ.routingKeyManager
         .addRoutingKeysForSocket(socket, message, channel, reply_q);
     });
 
     socket.on('unsubscribe', message => {
       // console.debug("Message unsubscribe");
       // console.debug(message);
-      rabbitMQ.singleton.routingKeyManager
+      this.rabbitMQ.routingKeyManager
         .removeRoutingKeysForSocket(socket, message, channel, reply_q);
     });
 
@@ -172,7 +177,7 @@ class WebSocketApp {
       let routingKey = enveloppe.routingKey;
       let requete = enveloppe.requete;
 
-      rabbitMQ.singleton
+      this.rabbitMQ
         .transmettreRequete(routingKey, requete)
       .then( reponse => {
         let messageContent = reponse.content.toString('utf-8');
@@ -199,7 +204,7 @@ class WebSocketApp {
       let commande = enveloppe.commande;
       let nowait = !cb;
 
-      rabbitMQ.singleton
+      this.rabbitMQ
         .transmettreCommande(routingKey, commande, {nowait})
         .then( reponse => {
           if(reponse) {
@@ -260,7 +265,7 @@ class WebSocketApp {
         }
 
         // Tout est correct, on transmet le nouveau token en transaction
-        rabbitMQ.singleton.transmettreTransactionFormattee(
+        this.rabbitMQ.transmettreTransactionFormattee(
             infoToken, 'millegrilles.domaines.Principale.ajouterToken')
           .then( msg => {
             console.debug("Recu confirmation d'ajout de device'");
@@ -281,7 +286,7 @@ class WebSocketApp {
       let routingKey = message.routingKey;
       let transaction = message.transaction;
       let opts = message.opts;
-      rabbitMQ.singleton.transmettreTransactionFormattee(
+      this.rabbitMQ.transmettreTransactionFormattee(
         transaction, routingKey, opts
       ).then(msg=>{
         let messageContent = msg.content.toString('utf-8');
@@ -295,29 +300,31 @@ class WebSocketApp {
     });
 
     socket.on('demandeClePubliqueMaitredescles', (msg, cb) => {
-      extraireClePubliqueMaitredescles().then(clePublique=>{
+      this.extraireClePubliqueMaitredescles().then(clePublique=>{
         cb(clePublique);
       });
     });
 
   }
 
+  extraireClePubliqueMaitredescles() {
+    return this.rabbitMQ.demanderCertificatMaitreDesCles()
+    .then(certificat=>{
+      // console.debug("Certificat maitredescles");
+      // console.debug(certificat);
+
+      const infoCertificat = this.pki.extraireClePubliqueFingerprint(certificat);
+
+      // console.debug(infoCertificat);
+
+      // Enlever le wrapping pour faciliter l'usage pour le navigateur
+      return infoCertificat;
+    })
+  }
+
+
 }
 
-function extraireClePubliqueMaitredescles() {
-  return rabbitMQ.singleton.demanderCertificatMaitreDesCles()
-  .then(certificat=>{
-    // console.debug("Certificat maitredescles");
-    // console.debug(certificat);
+//const websocketapp = new WebSocketApp();
 
-    const infoCertificat = pki.extraireClePubliqueFingerprint(certificat);
-
-    // console.debug(infoCertificat);
-
-    // Enlever le wrapping pour faciliter l'usage pour le navigateur
-    return infoCertificat;
-  })
-}
-
-const websocketapp = new WebSocketApp();
-module.exports = websocketapp;
+module.exports = {WebSocketApp};

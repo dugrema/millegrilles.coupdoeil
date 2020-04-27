@@ -734,9 +734,6 @@ class RoutingKeyManager {
 
 }
 
-const rabbitMQ_singleton = new RabbitMQWrapper();
+// const rabbitMQ_singleton = new RabbitMQWrapper();
 
-module.exports = {
-  'RabbitMQWrapper': RabbitMQWrapper,
-  'singleton': rabbitMQ_singleton
-};
+module.exports = {RabbitMQWrapper};

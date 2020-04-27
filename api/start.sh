@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 CERT_FOLDER=/home/mathieu/mgdev/certs
-source /opt/millegrilles/etc/variables.env
-export MG_IDMG=$IDMG
+export MG_IDMG=vPXTaPjpUErFjV5d8pKrAHHqKhFUr7GSEruCL7
 export MG_CONSIGNATION_PATH=/var/opt/millegrilles/$IDMG/mounts/consignation
 export HOST=`hostname`
 
@@ -11,7 +10,7 @@ CERT_FOLDER=/home/mathieu/mgdev/certs
 
 # export COUPDOEIL_SESSION_TIMEOUT=15000
 export MG_MQ_CAFILE=$CERT_FOLDER/pki.millegrille.cert
-export MG_MQ_CERTFILE=$CERT_FOLDER/pki.coupdoeil.fullchain
+export MG_MQ_CERTFILE=$CERT_FOLDER/pki.coupdoeil.cert
 export MG_MQ_KEYFILE=$CERT_FOLDER/pki.coupdoeil.key
 
 export CERT=~/.acme.sh/mg-dev3.maple.maceroc.com/fullchain.cer

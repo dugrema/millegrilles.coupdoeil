@@ -1,9 +1,10 @@
 const fs = require('fs');
 const path = require('path');
-const pki = require('./pki')
 const request = require('request');
 const crypto = require('crypto');
 const { Readable } = require('stream');
+
+const pki = require('./pki')
 
 const serveurConsignation = process.env.MG_CONSIGNATION_HTTP || 'https://consignationfichiers';
 
