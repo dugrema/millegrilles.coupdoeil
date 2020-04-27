@@ -1,3 +1,4 @@
+var express = require('express');
 var fs = require('fs');
 var bodyParser = require('body-parser');
 
@@ -5,7 +6,6 @@ var {SessionManagement} = require('./res/sessionManagement');
 
 // var amqp = require('amqplib');
 // var rabbitMQ = require('./res/rabbitMQ');
-// var express = require('express');
 // var router = express.Router();
 
 const {
@@ -21,7 +21,9 @@ class SocketSession {
   }
 }
 
-function APIRouteurInitialiser(rabbitMQ, sessionManagement, pki, routeur) {
+function APIRouteurInitialiser(rabbitMQ, sessionManagement, pki) {
+
+  const router = express.Router();
 
   // const sessionManagement = SessionManagement(rabbitMQ);
   // sessionManagement.start();
@@ -212,6 +214,8 @@ function APIRouteurInitialiser(rabbitMQ, sessionManagement, pki, routeur) {
     }
 
   });
+
+  return router;
 
 }
 

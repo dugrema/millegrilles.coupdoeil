@@ -1,16 +1,23 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
 
-// Routes
-var {APIRouteurInitialiser} = require('./routes/api'); // apiRouter = require('./routes/api');
-var {InitialiserGrosFichiers} = require('./routes/grosFichiers'); // grosFichiersRouter = require('./routes/grosFichiers');
-var {PKIUtils} = require('./routes/res/pki');
+const {RabbitMQWrapper} = require('./routes/res/rabbitMQ')
+const {APIRouteurInitialiser} = require('./routes/api'); // apiRouter = require('./routes/api');
+const {initialiserGrosFichiers} = require('./routes/grosFichiers'); // grosFichiersRouter = require('./routes/grosFichiers');
+const {PKIUtils} = require('./routes/res/pki');
+const {SessionManagement} = require('./routes/res/sessionManagement');
 
-function InitialiserApp() {
+function initialiserApp() {
   const app = express();
+
+  // Connexion a RabbitMQ
+  // amqps://mq:5673/[idmg]
+  const rabbitMQ = new RabbitMQWrapper();
+  const mqConnectionUrl = process.env.MG_MQ_URL;
+  rabbitMQ.connect(mqConnectionUrl);
 
   // Config de base, paths statiques
   app.use(logger('dev'));
@@ -22,7 +29,11 @@ function InitialiserApp() {
     certFile: process.env.MG_MQ_CERTFILE,
     keyFile: process.env.MG_MQ_KEYFILE,
   };
-  const pki = PKIUtils({});
+  const pki = new PKIUtils(certs);
+
+  // Demarrer gestion de sessions websockets
+  const sessionManagement = new SessionManagement(rabbitMQ);
+  sessionManagement.start();
 
   // API principal
   const routeurApi = APIRouteurInitialiser(rabbitMQ, sessionManagement, pki);
@@ -32,7 +43,7 @@ function InitialiserApp() {
     stagingFolder: process.env.MG_STAGING_FOLDER || "/tmp/coupdoeilStaging",
     serveurConsignation: process.env.MG_CONSIGNATION_HTTP || 'https://consignationfichiers',
   }
-  const routeurGrosFichiers = InitialiserGrosFichiers(rabbitMQ, sessionManagement, pki, optsGrosFichiers);
+  const routeurGrosFichiers = initialiserGrosFichiers(rabbitMQ, sessionManagement, pki, app, optsGrosFichiers);
 
   app.use('/api', routeurApi);
   app.use('/grosFichiers', routeurGrosFichiers);
@@ -55,6 +66,8 @@ function InitialiserApp() {
     res.status(err.status || 500);
     res.render('error');
   });
+
+  return app;
 }
 
-module.exports = {InitialiserApp};
+module.exports = {initialiserApp};

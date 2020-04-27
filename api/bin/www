@@ -3,17 +3,17 @@
 /**
  * Module dependencies.
  */
-
-const app = require('../app');
-const websocketsapp = require('../websocketsapp');
 const debug = require('debug')('api:server');
 const https = require('https');
 const FS = require("fs");
 const Path = require('path');
+const io = require('socket.io');
+
+const {initialiserApp} = require('../app');
+const {WebSocketApp} = require('../websocketsapp');
+
 // const Spdy = require('spdy');
 // const http2 = require('http2');
-const io = require('socket.io');
-const {RabbitMQ} = require('../routes/res/rabbitMQ')
 
 /**
  * Get port from environment and store in Express.
@@ -33,11 +33,8 @@ const config = {
     key: FS.readFileSync(key_path)
 };
 
-// Connexion a RabbitMQ
-// amqps://mq:5673/[idmg]
-const rabbitMQ = RabbitMQ();
-let mqConnectionUrl = process.env.MG_MQ_URL;
-rabbitMQ.connect(mqConnectionUrl);
+// Creer application CoupDOeil
+const app = initialiserApp();
 
 /*
  * Creer un serveur pour https et WSS (socket.io)

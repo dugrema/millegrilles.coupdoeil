@@ -1,3 +1,4 @@
+const express = require('express');
 const fs = require('fs');
 const multer = require('multer');
 const bodyParser = require('body-parser');
@@ -5,22 +6,23 @@ const path = require('path');
 const request = require('request');
 
 const {ProcesseurUpload, ProcesseurDownloadCrypte} = require('./res/fichierProcesseur');
-const multerCryptoStorage = require('./res/multerCryptoStorage');
+const {MulterCryptoStorage} = require('./res/multerCryptoStorage');
 
-// const express = require('express');
 // const sessionManagement = require('./res/sessionManagement');
 // var router = express.Router();
 // const pki = require('./res/pki')
 
-function InitialiserGrosFichiers(rabbitMQ, sessionManagement, pki, routeur) {
-  var stagingFolder = process.env.MG_STAGING_FOLDER || "/tmp/coupdoeilStaging";
+function initialiserGrosFichiers(rabbitMQ, sessionManagement, pki) {
+  const router = express.Router();
+
+  const stagingFolder = process.env.MG_STAGING_FOLDER || "/tmp/coupdoeilStaging";
   const serveurConsignation = process.env.MG_CONSIGNATION_HTTP || 'https://consignationfichiers';
 
   // Configuration du stockage de fichier securise
   // Va faire deux operations dans le stream (on the fly):
   //   - digest
   //   - cryptage (pour fichier proteges ou secure)
-  const multerCryptoStorageHandler = multerCryptoStorage({});
+  const multerCryptoStorageHandler = new MulterCryptoStorage(rabbitMQ, {});
   var multerHandler = multer({
     storage: multerCryptoStorageHandler,
     limits: {
@@ -28,7 +30,7 @@ function InitialiserGrosFichiers(rabbitMQ, sessionManagement, pki, routeur) {
     }
   });
 
-  const fichierProcesseurUpload = new ProcesseurUpload(rabbiqMQ);
+  const fichierProcesseurUpload = new ProcesseurUpload(rabbitMQ);
   const fichierProcesseurDownloadCrypte = new ProcesseurDownloadCrypte(rabbitMQ);
 
   function _charger_certificat(cb) {
@@ -185,6 +187,8 @@ function InitialiserGrosFichiers(rabbitMQ, sessionManagement, pki, routeur) {
 
     return requestDownload;
   }
+
+  return router;
 }
 
-module.exports = {InitialiserGrosFichiers};
+module.exports = {initialiserGrosFichiers};

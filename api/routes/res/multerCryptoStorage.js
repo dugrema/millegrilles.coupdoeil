@@ -271,6 +271,4 @@ class MulterCryptoStorage {
 
 }
 
-module.exports = function (opts) {
-  return new MulterCryptoStorage(opts)
-}
+module.exports = {MulterCryptoStorage}

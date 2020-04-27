@@ -13,9 +13,9 @@ class PKIUtils {
   // Classe qui supporte des operations avec certificats et cles privees.
 
   constructor(certs) {
-    this.cacertFile = cert.millegrille || process.env.MG_MQ_CAFILE;
-    this.certFile = cert.cert || process.env.MG_MQ_CERTFILE;
-    this.keyFile = cert.key || process.env.MG_MQ_KEYFILE;
+    this.cacertFile = certs.millegrille || process.env.MG_MQ_CAFILE;
+    this.certFile = certs.cert || process.env.MG_MQ_CERTFILE;
+    this.keyFile = certs.key || process.env.MG_MQ_KEYFILE;
 
     this.cle = null;
     this.certPEM = null;
