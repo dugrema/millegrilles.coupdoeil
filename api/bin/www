@@ -5,7 +5,7 @@
  */
 const debug = require('debug')('api:server');
 const https = require('https');
-const FS = require("fs");
+const fs = require("fs");
 const Path = require('path');
 const io = require('socket.io');
 
@@ -21,28 +21,30 @@ const {SessionManagement} = require('../routes/res/sessionManagement');
 /**
  * Get port from environment and store in Express.
  */
-
 var port = normalizePort(process.env.PORT || '443');
-const hostIp = process.env.HOST;
-const key_path = process.env.PRIVKEY;
-const cert_path = process.env.CERT;
 
-/**
- * Create SPDY/http2 server.
- */
-const config = {
-    hostIp: hostIp,
-    cert: FS.readFileSync(cert_path),
-    key: FS.readFileSync(key_path)
-};
+//  Charger certificats web et MilleGrille
+const webkeyPem = fs.readFileSync(process.env.PRIVKEY).toString('utf-8');
+const webcertPem = fs.readFileSync(process.env.CERT).toString('utf-8');
+const certPem = fs.readFileSync(process.env.MG_MQ_CERTFILE).toString('utf-8');
+const keyPem = fs.readFileSync(process.env.MG_MQ_KEYFILE).toString('utf-8');
+const certMillegrillePem = fs.readFileSync(process.env.MG_MQ_CAFILE).toString('utf-8');
 
 // Charger certificats, PKI
-const certs = {
-  millegrille: process.env.MG_MQ_CAFILE,
-  certFile: process.env.MG_MQ_CERTFILE,
-  keyFile: process.env.MG_MQ_KEYFILE,
+const certPems = {
+  millegrille: certMillegrillePem,
+  cert: certPem,
+  key: keyPem,
 };
-const pki = new PKIUtils(certs);
+const pki = new PKIUtils(certPems);
+
+// Configuration web
+const hostIp = process.env.HOST;
+const config = {
+    hostIp: hostIp,
+    cert: webcertPem,
+    key: webkeyPem,
+};
 
 // Connexion a RabbitMQ
 // amqps://mq:5673/[idmg]

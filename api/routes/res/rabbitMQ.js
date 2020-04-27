@@ -179,14 +179,26 @@ class RabbitMQWrapper {
     // console.debug('1. Message recu');
     // console.debug(msg);
     let correlationId = msg.properties.correlationId;
+    let replyQ = msg.properties.reply_q;
     let messageContent = msg.content.toString('utf-8');
     let routingKey = msg.fields.routingKey;
     let json_message = JSON.parse(messageContent);
-    // console.debug(json_message);
+    console.debug("Traiter message, routing: {0}", routingKey);
+    console.debug(json_message);
 
     if(routingKey && routingKey.startsWith('pki.certificat.')) {
       // Sauvegarder le certificat localement pour usage futur
       this.pki.sauvegarderMessageCertificat(messageContent, json_message.fingerprint);
+      return; // Ce message ne correspond pas au format standard
+    } else if(routingKey && routingKey.startsWith('pki.requete.')) {
+      // Transmettre le certificat
+      let messageCertificat = this.pki.preparerMessageCertificat();
+      let messageJSONStr = JSON.stringify(messageCertificat);
+      console.debug("Repondre demande certificat ")
+      console.debug(msg.properties);
+      console.debug(messageJSONStr);
+      // this._repondre(messageJSONStr, replyQ, correlationId)
+      this.transmettreCertificat()
       return; // Ce message ne correspond pas au format standard
     }
 
@@ -280,6 +292,10 @@ class RabbitMQWrapper {
     );
 
     return fingerprint;
+  }
+
+  repondreCertificat(reply_q, correlationId) {
+
   }
 
   createChannel(socketResources) {
@@ -551,7 +567,7 @@ class RabbitMQWrapper {
         Buffer.from(jsonMessage),
         properties,
         function(err, ok) {
-          console.error("Erreur MQ Callback");
+          console.error("_transmettre: Erreur MQ Callback");
           console.error(err);
           delete pendingResponses[correlationId];
           reject(err);
@@ -581,11 +597,33 @@ class RabbitMQWrapper {
       routingKey,
       Buffer.from(jsonMessage),
       (err, ok) => {
-        console.error("Erreur MQ Callback");
+        console.error("_publish: Erreur MQ Callback");
         console.error(err);
         if(correlationId) {
           delete pendingResponses[correlationId];
         }
+      }
+    );
+  }
+
+  _repondre(jsonMessage, replyQ, correlationId) {
+    if(!channel) {
+      channel = this.channel; // Channel global par defaut
+    }
+
+    let properties = {
+      correlationId
+    }
+
+    // Faire la publication
+    this.channel.publish(
+      '', // Echange par defaut
+      replyQ,
+      Buffer.from(jsonMessage),
+      properties,
+      (err, ok) => {
+        console.error("_repondre: Erreur MQ Callback");
+        console.error(err);
       }
     );
   }

@@ -13,14 +13,10 @@ class PKIUtils {
   // Classe qui supporte des operations avec certificats et cles privees.
 
   constructor(certs) {
-    this.cacertFile = certs.millegrille || process.env.MG_MQ_CAFILE;
-    this.certFile = certs.cert || process.env.MG_MQ_CERTFILE;
-    this.keyFile = certs.key || process.env.MG_MQ_KEYFILE;
-
-    this.cle = null;
+    this.cle = certs.key;
+    this.ca = certs.millegrille;
     this.certPEM = null;
     this.cert = null;
-    this.ca = null;
     this.caStore = null;
     this.caIntermediaires = [];
     this.cacheCertsParFingerprint = {};
@@ -28,11 +24,11 @@ class PKIUtils {
     this.algorithm = 'aes256';
     this.rsaAlgorithm = 'RSA-OAEP';
 
-    this.chargerPEMs();
+    this.chargerPEMs(certs);
     this._verifierCertificat();
   }
 
-  chargerPEMs() {
+  chargerPEMs(certs) {
     // Preparer repertoire pour sauvegarder PEMS
     fs.mkdir(REPERTOIRE_CERTS_TMP, {recursive: true, mode: 0o700}, e=>{
       if(e) {
@@ -40,52 +36,35 @@ class PKIUtils {
       }
     });
 
-    // console.log("PKI: Chargement cle " + this.keyFile + " et cert " + this.certFile);
-    this.cle = fs.readFileSync(this.keyFile);
-    this.ca = fs.readFileSync(this.cacertFile);
-
     // Charger le certificat pour conserver commonName, fingerprint
-    this.chargerCertificats();
+    this.chargerCertificats(certs);
   }
 
   _verifierCertificat() {
     this.getFingerprint();
   }
 
-  async chargerCertificats() {
+  async chargerCertificats(certPems) {
 
     // Charger certificat local
-    await new Promise((resolve, reject) => {
-      fs.readFile(this.certFile, (err, data)=>{
-        if(err) {
-          return reject(err);
-        }
+    var certs = splitPEMCerts(certPems.cert);
+    // console.debug(certs);
 
-        // console.debug("CERT PEM DATA")
-        var certs = splitPEMCerts(data.toString('utf8'));
-        // console.debug(certs);
+    this.certPEM = certs[0];
+    // console.debug(this.certPEM);
+    let parsedCert = this.chargerCertificatPEM(this.certPEM);
+    // console.debug(parsedCert);
 
-        this.certPEM = certs[0];
-        // console.debug(this.certPEM);
-        let parsedCert = this.chargerCertificatPEM(this.certPEM);
-        // console.debug(parsedCert);
+    this.fingerprint = getCertificateFingerprint(parsedCert);
+    this.cert = parsedCert;
+    this.commonName = parsedCert.subject.getField('CN').value;
 
-        this.fingerprint = getCertificateFingerprint(parsedCert);
-        this.cert = parsedCert;
-        this.commonName = parsedCert.subject.getField('CN').value;
+    // Sauvegarder certificats intermediaires
+    let intermediaire = this.chargerCertificatPEM(certs[1]);
+    this.caIntermediaires = [intermediaire];
 
-        // Sauvegarder certificats intermediaires
-        let intermediaire = this.chargerCertificatPEM(certs[1]);
-        this.caIntermediaires = [intermediaire];
-
-        // console.log("Certificat du noeud. Sujet CN: " +
-        //   this.commonName + ", fingerprint: " + this.fingerprint);
-        resolve();
-      })
-    })
-    .catch(err=>{
-      throw new Error(err);
-    })
+    console.log("Certificat du noeud. Sujet CN: " +
+    this.commonName + ", fingerprint: " + this.fingerprint);
 
     // Creer le CA store pour verifier les certificats.
     let parsedCACert = this.chargerCertificatPEM(this.ca);
@@ -156,7 +135,7 @@ class PKIUtils {
   preparerMessageCertificat() {
     // Retourne un message qui peut etre transmis a MQ avec le certificat
     // utilise par ce noeud. Sert a verifier la signature des transactions.
-    let certificatBuffer = fs.readFileSync(this.certFile, 'utf8');
+    const certificatBuffer = this.certPEM;
 
     let transactionCertificat = {
         evenement: 'pki.certificat',
@@ -264,7 +243,7 @@ class PKIUtils {
         let fichier = path.join(REPERTOIRE_CERTS_TMP, fingerprint + '.json');
         fs.access(fichier, fs.constants.F_OK, (err) => {
           let existe = ! err;
-          // console.debug("Fichier existe ? " + existe);
+          console.debug("Fichier existe ? " + existe);
           resolve(existe);
         });
       } else {
