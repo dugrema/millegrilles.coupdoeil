@@ -7,23 +7,13 @@ const debug = require('debug')('api:server');
 const https = require('https');
 const fs = require("fs");
 const Path = require('path');
-const io = require('socket.io');
+const socketio = require('socket.io');
 
 const {RabbitMQWrapper} = require('../routes/res/rabbitMQ')
 const {PKIUtils} = require('../routes/res/pki');
 const {initialiserApp} = require('../app');
 const {WebSocketApp} = require('../websocketsapp');
 const {SessionManagement} = require('../routes/res/sessionManagement');
-
-// Serveurs supportes : https, spdy
-const serverType = process.env.SERVER_TYPE || 'spdy';
-const serverTypeLib = require(serverType);
-console.info("Type de serveur web : %s", serverType)
-
-/**
- * Get port from environment and store in Express.
- */
-var port = normalizePort(process.env.PORT || '443');
 
 //  Charger certificats web et MilleGrille
 const webkeyPem = fs.readFileSync(process.env.PRIVKEY).toString('utf-8');
@@ -62,31 +52,26 @@ sessionManagement.start();
 const app = initialiserApp(rabbitMQ, pki, sessionManagement);
 const webSocketApp = new WebSocketApp(rabbitMQ, pki, sessionManagement);
 
-/*
- * Creer un serveur pour https et WSS (socket.io)
- */
-const wss_server = io();
-// const server = https.createServer(config, app).listen(port, demarrer);
-// const server = http2.createServer(config, app).listen(port, demarrer);
-// const server = spdy.createServer(config, app).listen(port, demarrer);
+// Serveurs supportes : https, spdy, (http2)
+const serverType = process.env.SERVER_TYPE || 'spdy';
+const serverTypeLib = require(serverType);
+console.info("Type de serveur web : %s", serverType)
+const server = serverType === 'http2'?
+  serverTypeLib.createSecureServer(config, app):
+  serverTypeLib.createServer(config, app);
 
-let server;
-if(serverType === 'http2') {
-  server = serverTypeLib.createSecureServer(config, app);
-  server.listen(port, demarrer);
-} else {
-  server = serverTypeLib.createServer(config, app);
-  server.listen(port, demarrer);
-}
+var port = normalizePort(process.env.PORT || '443');
+server.listen(port, demarrer);
 
 function demarrer() {
-  wss_server.listen(server);
+  const wss_server = socketio(server);
+  // wss_server.listen(server);
   wss_server.on('connection', (socket) => {
-    console.info("Connexion WSS id: " + socket.id + ", remoteAddress: " + socket.conn.remoteAddress);
+    console.info("Connexion WSS id = %s, remoteAddress = %s", socket.id, socket.conn.remoteAddress);
     webSocketApp.addSocket(socket);
   });
 
-  console.info('Server is listening at https://localhost:' + port + '. Ctrl^C to stop it.');
+  console.info('Server is listening at https://localhost:%d.', port);
 }
 
 /**
