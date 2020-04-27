@@ -183,8 +183,8 @@ class RabbitMQWrapper {
     let messageContent = msg.content.toString('utf-8');
     let routingKey = msg.fields.routingKey;
     let json_message = JSON.parse(messageContent);
-    console.debug("Traiter message, routing: {0}", routingKey);
-    console.debug(json_message);
+    // console.debug("Traiter message, routing: {0}", routingKey);
+    // console.debug(json_message);
 
     if(routingKey && routingKey.startsWith('pki.certificat.')) {
       // Sauvegarder le certificat localement pour usage futur
@@ -194,9 +194,9 @@ class RabbitMQWrapper {
       // Transmettre le certificat
       let messageCertificat = this.pki.preparerMessageCertificat();
       let messageJSONStr = JSON.stringify(messageCertificat);
-      console.debug("Repondre demande certificat ")
-      console.debug(msg.properties);
-      console.debug(messageJSONStr);
+      // console.debug("Repondre demande certificat ")
+      // console.debug(msg.properties);
+      // console.debug(messageJSONStr);
       // this._repondre(messageJSONStr, replyQ, correlationId)
       this.transmettreCertificat()
       return; // Ce message ne correspond pas au format standard

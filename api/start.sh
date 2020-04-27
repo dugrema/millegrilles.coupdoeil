@@ -21,4 +21,6 @@ export PORT=3001
 export MG_HTTPPROXY_SECURE=false
 export MG_CONSIGNATION_HTTP=https://$HOST:3003
 
+export SERVER_TYPE=spdy
+
 npm start

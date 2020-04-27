@@ -63,8 +63,8 @@ class PKIUtils {
     let intermediaire = this.chargerCertificatPEM(certs[1]);
     this.caIntermediaires = [intermediaire];
 
-    console.log("Certificat du noeud. Sujet CN: " +
-    this.commonName + ", fingerprint: " + this.fingerprint);
+    // console.log("Certificat du noeud. Sujet CN: " +
+    // this.commonName + ", fingerprint: " + this.fingerprint);
 
     // Creer le CA store pour verifier les certificats.
     let parsedCACert = this.chargerCertificatPEM(this.ca);
@@ -243,7 +243,7 @@ class PKIUtils {
         let fichier = path.join(REPERTOIRE_CERTS_TMP, fingerprint + '.json');
         fs.access(fichier, fs.constants.F_OK, (err) => {
           let existe = ! err;
-          console.debug("Fichier existe ? " + existe);
+          // console.debug("Fichier existe ? " + existe);
           resolve(existe);
         });
       } else {

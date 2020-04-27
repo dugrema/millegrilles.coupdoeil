@@ -15,8 +15,10 @@ const {initialiserApp} = require('../app');
 const {WebSocketApp} = require('../websocketsapp');
 const {SessionManagement} = require('../routes/res/sessionManagement');
 
-// const Spdy = require('spdy');
-// const http2 = require('http2');
+// Serveurs supportes : https, spdy
+const serverType = process.env.SERVER_TYPE || 'spdy';
+const serverTypeLib = require(serverType);
+console.info("Type de serveur web : %s", serverType)
 
 /**
  * Get port from environment and store in Express.
@@ -64,7 +66,20 @@ const webSocketApp = new WebSocketApp(rabbitMQ, pki, sessionManagement);
  * Creer un serveur pour https et WSS (socket.io)
  */
 const wss_server = io();
-const server = https.createServer(config, app).listen(port, () => {
+// const server = https.createServer(config, app).listen(port, demarrer);
+// const server = http2.createServer(config, app).listen(port, demarrer);
+// const server = spdy.createServer(config, app).listen(port, demarrer);
+
+let server;
+if(serverType === 'http2') {
+  server = serverTypeLib.createSecureServer(config, app);
+  server.listen(port, demarrer);
+} else {
+  server = serverTypeLib.createServer(config, app);
+  server.listen(port, demarrer);
+}
+
+function demarrer() {
   wss_server.listen(server);
   wss_server.on('connection', (socket) => {
     console.info("Connexion WSS id: " + socket.id + ", remoteAddress: " + socket.conn.remoteAddress);
@@ -72,7 +87,7 @@ const server = https.createServer(config, app).listen(port, () => {
   });
 
   console.info('Server is listening at https://localhost:' + port + '. Ctrl^C to stop it.');
-});
+}
 
 /**
  * Normalize a port into a number, string, or false.
