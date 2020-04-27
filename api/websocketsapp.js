@@ -1,7 +1,7 @@
 var fs = require('fs');
-var sessionManagement = require('./routes/res/sessionManagement');
 var {SocketIoUpload} = require('./routes/res/SocketioUpload');
 
+// var sessionManagement = require('./routes/res/sessionManagement');
 // var pki = require('./routes/res/pki');
 // var rabbitMQ = require('./routes/res/rabbitMQ');
 
@@ -42,9 +42,10 @@ class WebSocketResources {
 
 class WebSocketApp {
 
-  constructor(rabbitMQ, pki) {
+  constructor(rabbitMQ, pki, sessionManagement) {
     this.rabbitMQ = rabbitMQ;
     this.pki = pki;
+    this.sessionManagement = sessionManagement;
 
     this.new_sockets = {};
     this.authenticated_sockets = {};
@@ -123,7 +124,7 @@ class WebSocketApp {
       this.rabbitMQ.createChannel(socketResources)
       .then(()=>{
         console.debug("Debut de l'authentification");
-        return sessionManagement.addSocketConnection(socket)
+        return this.sessionManagement.addSocketConnection(socket)
       })
       .then(()=>{
         // console.debug("Authentification est completee");
@@ -229,14 +230,14 @@ class WebSocketApp {
     });
 
     socket.on('creerTokenTransfert', (message, cb) => {
-      let token = sessionManagement.createTokenTransfert();
+      let token = this.sessionManagement.createTokenTransfert();
       if(cb) {
         cb(token); // Renvoit le token pour amorcer le transfert via PUT
       }
     });
 
     socket.on('creerPINTemporaireDevice', (message, cb) => {
-      let pin = sessionManagement.createPinTemporaireDevice();
+      let pin = this.sessionManagement.createPinTemporaireDevice();
       if(cb) {
         cb({pin: pin});
       }

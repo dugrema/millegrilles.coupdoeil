@@ -7,12 +7,13 @@ const {
     verifyAuthenticatorAssertion,
 } = require('@webauthn/server');
 const crypto = require('crypto');
-const pki = require('./pki')
+// const pki = require('./pki')
 
 class SessionManagement {
 
-  constructor(rabbitMQ) {
+  constructor(rabbitMQ, pki) {
     this.rabbitMQ = rabbitMQ;
+    this.pki = pki;
     this.timer;
     this.session_timeout = process.env.COUPDOEIL_SESSION_TIMEOUT || (60 * 1000);
     this.session_timeout = Number(this.session_timeout);
@@ -235,18 +236,18 @@ class SessionManagement {
         if(estRoleNavigateur === true) {
           // C'est bien un certificat de navigateur. On genere un challenge
           // avec la cle publique.
-          const certificat = pki.chargerCertificatPEM(pemCertificat);
+          const certificat = this.pki.chargerCertificatPEM(pemCertificat);
           // console.log(certificat);
 
           return new Promise((resolve, reject) => {
-            pki.genererKeyAndIV((err, randVal)=>{
+            this.pki.genererKeyAndIV((err, randVal)=>{
               if(err) {
                 return reject('Erreur generation random secret')
               }
 
               // Crypter un challenge pour le navigateur
               const challenge = randVal.key;
-              let challengeCrypte = pki.crypterContenuAsymetric(certificat.publicKey, challenge);
+              let challengeCrypte = this.pki.crypterContenuAsymetric(certificat.publicKey, challenge);
               socket.emit('challengeCertificat', {challengeCrypte}, reponse => {
                 const loggedIn = this.recevoirReponseChallengeCertificat(socket, challenge, reponse);
                 socket.emit('login', loggedIn);

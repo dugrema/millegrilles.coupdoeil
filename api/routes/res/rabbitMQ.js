@@ -2,14 +2,18 @@ const amqplib = require('amqplib');
 const os = require('os');
 const fs = require('fs');
 const uuidv4 = require('uuid/v4');
-const pki = require('./pki.js');
 const forge = require('node-forge');
+
+// const pki = require('./pki.js');
+
 
 const routingKeyNouvelleTransaction = 'transaction.nouvelle';
 
 class RabbitMQWrapper {
 
-  constructor() {
+  constructor(pki) {
+    this.pki = pki;
+
     this.idmg = process.env.MG_IDMG;
 
     this.url = null;
@@ -182,12 +186,12 @@ class RabbitMQWrapper {
 
     if(routingKey && routingKey.startsWith('pki.certificat.')) {
       // Sauvegarder le certificat localement pour usage futur
-      pki.sauvegarderMessageCertificat(messageContent, json_message.fingerprint);
+      this.pki.sauvegarderMessageCertificat(messageContent, json_message.fingerprint);
       return; // Ce message ne correspond pas au format standard
     }
 
     // Valider le contenu du message - hachage et signature
-    let hashTransactionCalcule = pki.hacherTransaction(json_message);
+    let hashTransactionCalcule = this.pki.hacherTransaction(json_message);
     let hashTransactionRecu = json_message['en-tete']['hachage-contenu'];
     if(hashTransactionCalcule !== hashTransactionRecu) {
       console.warn("Erreur hachage incorrect : " + hashTransactionCalcule + ", message dropped");
@@ -199,7 +203,7 @@ class RabbitMQWrapper {
       let callback = this.pendingResponses[correlationId];
       if(callback) {
         // Verifier la signature du message
-        pki.verifierSignatureMessage(json_message)
+        this.pki.verifierSignatureMessage(json_message)
         .then(signatureValide=>{
           if(signatureValide) {
             // console.debug("Signature valide");
@@ -227,8 +231,8 @@ class RabbitMQWrapper {
                 // console.debug(reponse);
 
                 // Sauvegarder le certificat et tenter de valider le message en attente
-                pki.sauvegarderMessageCertificat(JSON.stringify(reponse.resultats))
-                .then(()=>pki.verifierSignatureMessage(json_message))
+                this.pki.sauvegarderMessageCertificat(JSON.stringify(reponse.resultats))
+                .then(()=>this.pki.verifierSignatureMessage(json_message))
                 .then(signatureValide=>{
                   if(signatureValide) {
                     callback(msg);
@@ -268,7 +272,7 @@ class RabbitMQWrapper {
   }
 
   transmettreCertificat() {
-    let messageCertificat = pki.preparerMessageCertificat();
+    let messageCertificat = this.pki.preparerMessageCertificat();
     let fingerprint = messageCertificat.fingerprint;
     let messageJSONStr = JSON.stringify(messageCertificat);
     this._publish(
@@ -354,7 +358,7 @@ class RabbitMQWrapper {
 
   _transmettreMessageCle(contenuACrypter, correlation, idDocumentCrypte) {
     let promise = this.demanderCertificatMaitreDesCles()
-    .then(certificat=>pki.crypterContenu(certificat, contenuACrypter))
+    .then(certificat=>this.pki.crypterContenu(certificat, contenuACrypter))
     .then(({contenuCrypte, encryptedSecretKey, iv})=>{
       // Transmettre transaction pour la cle
       // Le ma
@@ -417,14 +421,14 @@ class RabbitMQWrapper {
 
     let dateUTC = (new Date().getTime()/1000) + new Date().getTimezoneOffset()*60;
     let tempsLecture = Math.trunc(dateUTC);
-    let sourceSystem = 'coupdoeil/' + 'dev2.maple.mdugre.info' + "@" + pki.getCommonName();
+    let sourceSystem = 'coupdoeil/' + 'dev2.maple.mdugre.info' + "@" + this.pki.getCommonName();
     let infoTransaction = {
       'domaine': domaine,
       // 'source-systeme': sourceSystem,
       'idmg': this.idmg,
       'uuid-transaction': uuidTransaction,
       'estampille': tempsLecture,
-      'certificat': pki.getFingerprint(),
+      'certificat': this.pki.getFingerprint(),
       'hachage-contenu': '',  // Doit etre calcule a partir du contenu
       'version': version
     };
@@ -435,11 +439,11 @@ class RabbitMQWrapper {
   _signerMessage(message) {
     // Produire le hachage du contenu avant de signer - le hash doit
     // etre inclus dans l'entete pour faire partie de la signature.
-    let hachage = pki.hacherTransaction(message);
+    let hachage = this.pki.hacherTransaction(message);
     message['en-tete']['hachage-contenu'] = hachage;
 
     // Signer la transaction. Ajoute l'information du certificat dans l'entete.
-    let signature = pki.signerTransaction(message);
+    let signature = this.pki.signerTransaction(message);
     message['_signature'] = signature;
   }
 
