@@ -171,7 +171,7 @@ function initialiserGrosFichiers(rabbitMQ, sessionManagement, pki) {
       agentOptions: {
         ca: pki.ca,
         key: pki.cle,
-        cert: pki.certPEM,
+        cert: pki.chainePEM,
       },  // Utilisation certificats SSL internes
     }
 
