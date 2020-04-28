@@ -29,6 +29,7 @@ const certPems = {
   key: keyPem,
 };
 const pki = new PKIUtils(certPems);
+pki.chargerPEMs(certPems);
 
 // Configuration web
 const hostIp = process.env.HOST;

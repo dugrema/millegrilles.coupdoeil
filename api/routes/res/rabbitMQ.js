@@ -14,8 +14,6 @@ class RabbitMQWrapper {
   constructor(pki) {
     this.pki = pki;
 
-    this.idmg = process.env.MG_IDMG;
-
     this.url = null;
     this.connection = null;
     this.channel = null;
@@ -38,32 +36,37 @@ class RabbitMQWrapper {
   }
 
   connect(url) {
-    this.url = url;
+    this.url = url + "/" + this.pki.idmg;
     return this._connect();
   }
 
   _connect() {
 
-    let mq_cacert = process.env.MG_MQ_CAFILE,
-        mq_cert = process.env.MG_MQ_CERTFILE,
-        mq_key = process.env.MG_MQ_KEYFILE;
+    // let mq_cacert = process.env.MG_MQ_CAFILE,
+    //     mq_cert = process.env.MG_MQ_CERTFILE,
+    //     mq_key = process.env.MG_MQ_KEYFILE;
 
     if(this.connection === null) {
-      let options = {}
-      if(mq_cacert !== undefined) {
-        var cacert = fs.readFileSync(mq_cacert);
-        options['ca'] = [cacert];
+      let options = {
+        ca: this.pki.ca,
+        cert: this.pki.chainePEM,
+        key: this.pki.cle,
       }
-      if(mq_cert !== undefined) {
-        var cert = fs.readFileSync(mq_cert);
-        options['cert'] = cert;
-      }
-      if(mq_key !== undefined) {
-        var key = fs.readFileSync(mq_key);
-        options['key'] = key;
-      }
+      // if(mq_cacert !== undefined) {
+      //   var cacert = fs.readFileSync(mq_cacert);
+      //   options['ca'] = [cacert];
+      // }
+      // if(mq_cert !== undefined) {
+      //   var cert = fs.readFileSync(mq_cert);
+      //   options['cert'] = cert;
+      // }
+      // if(mq_key !== undefined) {
+      //   var key = fs.readFileSync(mq_key);
+      //   options['key'] = key;
+      // }
       options['credentials'] = amqplib.credentials.external();
 
+      console.info("Connecter a RabbitMQ : %s", this.url);
       return amqplib.connect(this.url, options)
       .then( conn => {
         console.debug("Connexion a RabbitMQ reussie");

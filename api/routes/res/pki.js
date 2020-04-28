@@ -15,6 +15,7 @@ class PKIUtils {
   constructor(certs) {
     this.cle = certs.key;
     this.ca = certs.millegrille;
+    this.idmg = null;
     this.certPEM = null;
     this.chainePEM = null;
     this.cert = null;
@@ -24,12 +25,9 @@ class PKIUtils {
 
     this.algorithm = 'aes256';
     this.rsaAlgorithm = 'RSA-OAEP';
-
-    this.chargerPEMs(certs);
-    this._verifierCertificat();
   }
 
-  chargerPEMs(certs) {
+  async chargerPEMs(certs) {
     // Preparer repertoire pour sauvegarder PEMS
     fs.mkdir(REPERTOIRE_CERTS_TMP, {recursive: true, mode: 0o700}, e=>{
       if(e) {
@@ -38,7 +36,8 @@ class PKIUtils {
     });
 
     // Charger le certificat pour conserver commonName, fingerprint
-    this.chargerCertificats(certs);
+    await this.chargerCertificats(certs);
+    this._verifierCertificat();
   }
 
   _verifierCertificat() {
@@ -56,6 +55,9 @@ class PKIUtils {
     // console.debug(this.certPEM);
     let parsedCert = this.chargerCertificatPEM(this.certPEM);
     // console.debug(parsedCert);
+
+    this.idmg = parsedCert.issuer.getField("O").value;
+    console.debug("IDMG %s", this.idmg);
 
     this.fingerprint = getCertificateFingerprint(parsedCert);
     this.cert = parsedCert;

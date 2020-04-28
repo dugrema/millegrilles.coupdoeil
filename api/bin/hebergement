@@ -1,3 +1,101 @@
 #!/usr/bin/env node
 
-console.debug("Allo!")
+/**
+ * Module dependencies.
+ */
+const debug = require('debug')('api:server');
+const https = require('https');
+const fs = require("fs");
+const Path = require('path');
+const socketio = require('socket.io');
+
+const {RabbitMQWrapper} = require('../routes/res/rabbitMQ')
+const {PKIUtils} = require('../routes/res/pki');
+const {initialiserApp} = require('../app');
+const {WebSocketApp} = require('../websocketsapp');
+const {SessionManagement} = require('../routes/res/sessionManagement');
+
+console.debug("Charger certs");
+// console.debug(process.env);
+
+//  Charger certificats web et MilleGrille
+// const webkeyPem = fs.readFileSync(process.env.WEB_KEY).toString('utf-8');
+// const webcertPem = fs.readFileSync(process.env.WEB_CERT).toString('utf-8');
+const certPem = fs.readFileSync(process.env.HEB_CERTFILE).toString('utf-8');
+const keyPem = fs.readFileSync(process.env.HEB_KEYFILE).toString('utf-8');
+const certMillegrillePem = fs.readFileSync(process.env.MG_MQ_CAFILE).toString('utf-8');
+
+// Charger certificats, PKI
+const certPems = {
+  millegrille: certMillegrillePem,
+  cert: certPem,
+  key: keyPem,
+};
+const pki = new PKIUtils(certPems);
+
+console.info("Init PKI");
+pki.chargerPEMs(certPems);
+
+// Configuration web
+const hostIp = process.env.HOST;
+// const config = {
+//     hostIp: hostIp,
+//     cert: webcertPem,
+//     key: webkeyPem,
+// };
+
+// Connexion a RabbitMQ
+// amqps://mq:5673/[idmg]
+const rabbitMQ = new RabbitMQWrapper(pki);
+const mqConnectionUrl = process.env.MG_MQ_URL;
+rabbitMQ.connect(mqConnectionUrl);
+
+// Demarrer gestion de sessions websockets
+// const sessionManagement = new SessionManagement(rabbitMQ, pki);
+// sessionManagement.start();
+//
+// // Creer application CoupDOeil
+// const app = initialiserApp(rabbitMQ, pki, sessionManagement);
+// const webSocketApp = new WebSocketApp(rabbitMQ, pki, sessionManagement);
+//
+// // Serveurs supportes : https, spdy, (http2)
+// const serverType = process.env.SERVER_TYPE || 'spdy';
+// const serverTypeLib = require(serverType);
+// console.info("Type de serveur web : %s", serverType)
+// const server = serverType === 'http2'?
+//   serverTypeLib.createSecureServer(config, app):
+//   serverTypeLib.createServer(config, app);
+//
+// var port = normalizePort(process.env.PORT || '443');
+// server.listen(port, demarrer);
+//
+// function demarrer() {
+//   const wss_server = socketio(server);
+//   // wss_server.listen(server);
+//   wss_server.on('connection', (socket) => {
+//     console.info("Connexion WSS id = %s, remoteAddress = %s", socket.id, socket.conn.remoteAddress);
+//     webSocketApp.addSocket(socket);
+//   });
+//
+//   console.info('Server is listening at https://localhost:%d.', port);
+// }
+//
+// /**
+//  * Normalize a port into a number, string, or false.
+//  */
+//
+// function normalizePort(val) {
+//   var port = parseInt(val, 10);
+//
+//   if (isNaN(port)) {
+//     // named pipe
+//     return val;
+//   }
+//
+//   if (port >= 0) {
+//     // port number
+//     return port;
+//   }
+//
+//   return false;
+// }
