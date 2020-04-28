@@ -158,7 +158,7 @@ class WebSocketApp {
     let reply_q = socketResources.reply_q;
 
     // Enregistrer evenements upload
-    new SocketIoUpload(this.rabbitMQ).enregistrer(socket);
+    new SocketIoUpload(this.rabbitMQ, this.pki).enregistrer(socket);
 
     socket.on('subscribe', message => {
       this.rabbitMQ.routingKeyManager

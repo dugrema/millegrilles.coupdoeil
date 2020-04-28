@@ -16,6 +16,7 @@ class PKIUtils {
     this.cle = certs.key;
     this.ca = certs.millegrille;
     this.certPEM = null;
+    this.chainePEM = null;
     this.cert = null;
     this.caStore = null;
     this.caIntermediaires = [];
@@ -50,6 +51,7 @@ class PKIUtils {
     var certs = splitPEMCerts(certPems.cert);
     // console.debug(certs);
 
+    this.chainePEM = certPems.cert;
     this.certPEM = certs[0];
     // console.debug(this.certPEM);
     let parsedCert = this.chargerCertificatPEM(this.certPEM);

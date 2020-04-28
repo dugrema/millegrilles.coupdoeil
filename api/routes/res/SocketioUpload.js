@@ -4,7 +4,7 @@ const request = require('request');
 const crypto = require('crypto');
 const { Readable } = require('stream');
 
-const pki = require('./pki')
+// const pki = require('./pki')
 
 const serveurConsignation = process.env.MG_CONSIGNATION_HTTP || 'https://consignationfichiers';
 
@@ -12,8 +12,10 @@ const serveurConsignation = process.env.MG_CONSIGNATION_HTTP || 'https://consign
 // via socket.io. Genere transactions nouvelleCle et metadata pour GrosFichiers.
 class SocketIoUpload {
 
-  constructor(rabbitMQ) {
+  constructor(rabbitMQ, pki) {
     this.rabbitMQ = rabbitMQ;
+    this.pki = pki;
+
     this.socket = null;
     this.sha256Client = {}; // Dict de resultats SHA256 recus
     this.chunkInput = null;
@@ -105,6 +107,9 @@ class SocketIoUpload {
     let nomfichier = infoFichier.nomFichier;
     let mimetype = infoFichier.typeFichier;
 
+    // var certs = [this.pki.certPEM, ...this.pki.caIntermediaires];
+    // var certs = certs.join('\n');
+
     // console.debug(infoFichier);
     let pathServeur = serveurConsignation + '/' +
       path.join('grosfichiers', 'local', 'nouveauFichier', fileuuid);
@@ -117,11 +122,14 @@ class SocketIoUpload {
         mimetype,
       },
       agentOptions: {
-        ca: pki.ca,
-        key: pki.cle,
-        cert: pki.certPEM,
+        ca: this.pki.ca,
+        key: this.pki.cle,
+        cert: this.pki.chainePEM,
       },  // Utilisation certificats SSL internes
     };
+
+    // console.debug("Options request PUT pour upload fichier")
+    // console.debug(options)
 
     new Promise((resolve, reject)=>{
       var tailleFichier = 0;
@@ -187,6 +195,10 @@ class SocketIoUpload {
 
       outStream.on('error', reject);
 
+    })
+    .catch(err=>{
+      console.error("Erreur traitement outputstream")
+      console.error(err)
     });
 
     // console.debug("Oustream cree + promise");
