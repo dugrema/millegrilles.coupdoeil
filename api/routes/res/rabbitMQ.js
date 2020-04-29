@@ -311,8 +311,8 @@ class RabbitMQWrapper {
         })
       })
       .then(q=>{
-        console.log("Queue reponse usager via websocket cree"),
-        console.log(q);
+        // console.log("Queue reponse usager via websocket cree"),
+        // console.log(q);
         socketResources.reply_q = q;
 
         // Activer la lecture de message et callback pour notre websocket

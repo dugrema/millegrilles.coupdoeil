@@ -90,8 +90,8 @@ class SessionManagement {
   // Retourne la connexion a RabbitMQ si l'authentification reussi.
   // Lance une erreur en cas d'echec
   authentifier(socket, params) {
-    console.debug("Authentifier");
-    console.debug(params);
+    // console.debug("Authentifier");
+    // console.debug(params);
 
     // Lier a l'instance de RabbitMQ correspondant a l'identificateur de MilleGrille
     const idMillegrille = params.idMillegrille;
@@ -103,7 +103,7 @@ class SessionManagement {
       throw new Error("L'identificateur MilleGrille '" + idMillegrille + "' n'est pas connu");
 
     } else if(params.methode === 'certificatLocal') {
-      console.debug("Authentification par certificat");
+      // console.debug("Authentification par certificat");
       let fingerprint = params.fingerprint;
       let certificat = params.certificat;
       return this.creerChallengeCertificat(rabbitMQ, socket, fingerprint, certificat)
@@ -233,9 +233,9 @@ class SessionManagement {
     return rabbitMQ.transmettreRequete(
       'requete.millegrilles.domaines.Pki.confirmerCertificat', requete)
     .then( reponseCertVerif => {
-      console.debug("Reponse verification certificat");
+      // console.debug("Reponse verification certificat");
       const contenuResponseCertVerif = JSON.parse(reponseCertVerif.content.toString('utf-8'));
-      console.debug(contenuResponseCertVerif);
+      // console.debug(contenuResponseCertVerif);
 
       if(contenuResponseCertVerif.valide && contenuResponseCertVerif.roles) {
         // Certificat est valide, on verifie que c'est bien un certificat de navigateur

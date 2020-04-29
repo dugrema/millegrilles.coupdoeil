@@ -125,14 +125,13 @@ class WebSocketApp {
       this.new_sockets[socket.id] = socketResources;
 
       // Ouvrir Channel MQ
-      console.debug("Debut de l'authentification");
+      // console.debug("Debut de l'authentification");
       var rabbitMQ_local = null;
       this.sessionManagement.addSocketConnection(socket)
       .then(rabbitMQ=>{
         rabbitMQ_local = rabbitMQ;
         const idmg = rabbitMQ.pki.idmg;
         console.debug("Authentification est completee, idmg: " + idmg);
-        console.debug(rabbitMQ);
         return rabbitMQ.createChannel(socketResources);
       })
       .then(()=>{
