@@ -11,44 +11,56 @@ const socketio = require('socket.io');
 
 const {RabbitMQWrapper} = require('../routes/res/rabbitMQ')
 const {PKIUtils} = require('../routes/res/pki');
+const {HebergementCoupdoeil} = require('../routes/res/hebergement');
+
 const {initialiserApp} = require('../app');
 const {WebSocketApp} = require('../websocketsapp');
 const {SessionManagement} = require('../routes/res/sessionManagement');
 
-console.debug("Charger certs");
-// console.debug(process.env);
+new Promise(async (resolve, reject)=>{
+  console.debug("Charger certs");
+  // console.debug(process.env);
 
-//  Charger certificats web et MilleGrille
-// const webkeyPem = fs.readFileSync(process.env.WEB_KEY).toString('utf-8');
-// const webcertPem = fs.readFileSync(process.env.WEB_CERT).toString('utf-8');
-const certPem = fs.readFileSync(process.env.HEB_CERTFILE).toString('utf-8');
-const keyPem = fs.readFileSync(process.env.HEB_KEYFILE).toString('utf-8');
-const certMillegrillePem = fs.readFileSync(process.env.MG_MQ_CAFILE).toString('utf-8');
+  //  Charger certificats web et MilleGrille
+  // const webkeyPem = fs.readFileSync(process.env.WEB_KEY).toString('utf-8');
+  // const webcertPem = fs.readFileSync(process.env.WEB_CERT).toString('utf-8');
+  const certPem = fs.readFileSync(process.env.HEB_CERTFILE).toString('utf-8');
+  const keyPem = fs.readFileSync(process.env.HEB_KEYFILE).toString('utf-8');
+  const certMillegrillePem = fs.readFileSync(process.env.MG_MQ_CAFILE).toString('utf-8');
 
-// Charger certificats, PKI
-const certPems = {
-  millegrille: certMillegrillePem,
-  cert: certPem,
-  key: keyPem,
-};
-const pki = new PKIUtils(certPems);
+  // Charger certificats, PKI
+  const certPems = {
+    millegrille: certMillegrillePem,
+    cert: certPem,
+    key: keyPem,
+  };
+  const pki = new PKIUtils(certPems);
 
-console.info("Init PKI");
-pki.chargerPEMs(certPems);
+  console.info("Init PKI");
+  pki.chargerPEMs(certPems);
 
-// Configuration web
-const hostIp = process.env.HOST;
-// const config = {
-//     hostIp: hostIp,
-//     cert: webcertPem,
-//     key: webkeyPem,
-// };
+  // Configuration web
+  const hostIp = process.env.HOST;
+  // const config = {
+  //     hostIp: hostIp,
+  //     cert: webcertPem,
+  //     key: webkeyPem,
+  // };
 
-// Connexion a RabbitMQ
-// amqps://mq:5673/[idmg]
-const rabbitMQ = new RabbitMQWrapper(pki);
-const mqConnectionUrl = process.env.MG_MQ_URL;
-rabbitMQ.connect(mqConnectionUrl);
+  // Connexion a RabbitMQ
+  // amqps://mq:5673/[idmg]
+  const rabbitMQ = new RabbitMQWrapper(pki);
+  const mqConnectionUrl = process.env.MG_MQ_URL;
+  await rabbitMQ.connect(mqConnectionUrl);
+
+  console.debug("Demarrer hebergement");
+  const hebergement = new HebergementCoupdoeil(rabbitMQ);
+  hebergement.executer();
+})
+.catch(err=>{
+  console.error("Erreur demarrage hebergement")
+  console.error(err);
+});
 
 // Demarrer gestion de sessions websockets
 // const sessionManagement = new SessionManagement(rabbitMQ, pki);
