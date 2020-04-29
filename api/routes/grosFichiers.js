@@ -12,7 +12,7 @@ const {MulterCryptoStorage} = require('./res/multerCryptoStorage');
 // var router = express.Router();
 // const pki = require('./res/pki')
 
-function initialiserGrosFichiers(rabbitMQ, sessionManagement, pki) {
+function initialiserGrosFichiers(sessionManagement) {
   const router = express.Router();
 
   const stagingFolder = process.env.MG_STAGING_FOLDER || "/tmp/coupdoeilStaging";
@@ -22,7 +22,7 @@ function initialiserGrosFichiers(rabbitMQ, sessionManagement, pki) {
   // Va faire deux operations dans le stream (on the fly):
   //   - digest
   //   - cryptage (pour fichier proteges ou secure)
-  const multerCryptoStorageHandler = new MulterCryptoStorage(rabbitMQ, {});
+  const multerCryptoStorageHandler = new MulterCryptoStorage({});
   var multerHandler = multer({
     storage: multerCryptoStorageHandler,
     limits: {
@@ -30,8 +30,8 @@ function initialiserGrosFichiers(rabbitMQ, sessionManagement, pki) {
     }
   });
 
-  const fichierProcesseurUpload = new ProcesseurUpload(rabbitMQ);
-  const fichierProcesseurDownloadCrypte = new ProcesseurDownloadCrypte(rabbitMQ);
+  const fichierProcesseurUpload = new ProcesseurUpload();
+  const fichierProcesseurDownloadCrypte = new ProcesseurDownloadCrypte();
 
   function _charger_certificat(cb) {
     var mq_cert = process.env.MG_MQ_CERTFILE;
@@ -54,12 +54,22 @@ function initialiserGrosFichiers(rabbitMQ, sessionManagement, pki) {
     // console.debug("Headers ");
     // console.debug(req.headers);
     // console.debug(req.body);
-    // console.debug("AUTH: Recu token " + authtoken);
-    if(sessionManagement.consommerToken(authtoken)) {
+    console.debug("AUTH: Recu token " + authtoken);
+    // console.debug(sessionManagement.transferTokens);
+    const {idmg} = sessionManagement.consommerToken(authtoken);
+    if(idmg) {
+      console.debug("Idmg " + idmg);
+      const rabbitMQ = sessionManagement.rabbitMQParIdmg[idmg];
+      if(!rabbitMQ) {
+        console.error("RabbitMQ non disponible pour idmg " + idmg);
+        res.sendStatus(500);
+        return;
+      }
       // console.debug("Token consomme: " + authtoken + ", accepte.");
+      req.authentification = {idmg, rabbitMQ};
       next();
     } else {
-      // console.error("Token invalide pour transfert fichier" + authToken);
+      console.error("Token invalide pour transfert fichier" + authtoken);
       res.sendStatus(403);
     }
 
@@ -109,13 +119,15 @@ function initialiserGrosFichiers(rabbitMQ, sessionManagement, pki) {
     let fingerprint = req.body.fingerprint;
     // console.debug("local fichier: " + req.url + " fuuid: " + fuuid + ", securite: " + securite);
 
+    const {rabbitMQ} = req.authentification;
+
     let promiseStream = null;
     if(securite === '3.protege' || securite === '4.secure') {
       // console.debug("Le fichier est crypte.");
 
       if(fingerprint) {
         // console.debug("Le navigateur est capable de decrypter, on demande la cle secrete cryptee");
-        promiseStream = fichierProcesseurDownloadCrypte.getCleSecreteCryptee(fuuid, fingerprint)
+        promiseStream = fichierProcesseurDownloadCrypte.getCleSecreteCryptee(rabbitMQ, fuuid, fingerprint)
         .then((cleIv)=>{
           // Ajouter dict de cle et iv au response header
           res.set(cleIv);
@@ -164,6 +176,9 @@ function initialiserGrosFichiers(rabbitMQ, sessionManagement, pki) {
 
     let targetConsignation = serveurConsignation + '/grosFichiers/local/' + fuuid;
     // console.debug("Transfert a partir de : " + targetConsignation);
+
+    const {rabbitMQ} = req.authentification;
+    const pki = rabbitMQ.pki;
 
     const options = {
       url: targetConsignation,

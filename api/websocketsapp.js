@@ -236,7 +236,7 @@ class WebSocketApp {
     });
 
     socket.on('creerTokenTransfert', (message, cb) => {
-      let token = this.sessionManagement.createTokenTransfert();
+      let token = this.sessionManagement.createTokenTransfert(rabbitMQ.pki.idmg);
       if(cb) {
         cb(token); // Renvoit le token pour amorcer le transfert via PUT
       }

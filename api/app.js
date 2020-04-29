@@ -7,7 +7,7 @@ const logger = require('morgan');
 const {APIRouteurInitialiser} = require('./routes/api'); // apiRouter = require('./routes/api');
 const {initialiserGrosFichiers} = require('./routes/grosFichiers'); // grosFichiersRouter = require('./routes/grosFichiers');
 
-function initialiserApp(rabbitMQ, pki, sessionManagement) {
+function initialiserApp(sessionManagement) {
   const app = express();
 
   // Config de base, paths statiques
@@ -15,14 +15,14 @@ function initialiserApp(rabbitMQ, pki, sessionManagement) {
   app.use(express.static(path.join(__dirname, 'public')));
 
   // API principal
-  const routeurApi = APIRouteurInitialiser(rabbitMQ, sessionManagement, pki);
+  const routeurApi = APIRouteurInitialiser(sessionManagement);
 
   // GrosFichiers
   const optsGrosFichiers = {
     stagingFolder: process.env.MG_STAGING_FOLDER || "/tmp/coupdoeilStaging",
     serveurConsignation: process.env.MG_CONSIGNATION_HTTP || 'https://consignationfichiers',
   }
-  const routeurGrosFichiers = initialiserGrosFichiers(rabbitMQ, sessionManagement, pki, app, optsGrosFichiers);
+  const routeurGrosFichiers = initialiserGrosFichiers(sessionManagement);
 
   app.use('/api', routeurApi);
   app.use('/grosFichiers', routeurGrosFichiers);

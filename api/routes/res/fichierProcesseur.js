@@ -9,11 +9,10 @@ const forge = require('node-forge');
 
 class ProcesseurUpload {
 
-  constructor(rabbitMQ) {
-    this.rabbitMQ = rabbitMQ;
-  }
-
   ajouterFichier(req, fichier, serveurConsignation) {
+
+    const {rabbitMQ} = req.authentification;
+
     var promise = new Promise((resolve, reject)=>{
       // console.debug('Traitement fichier');
       // console.debug(fichier);
@@ -66,7 +65,7 @@ class ProcesseurUpload {
           // console.debug(transactionInformationCryptee);
 
           // Transmettre information au serveur via MQ
-          this.rabbitMQ.transmettreTransactionFormattee(
+          rabbitMQ.transmettreTransactionFormattee(
               transactionInformationCryptee,
               'millegrilles.domaines.MaitreDesCles.nouvelleCle.grosFichier',
               {version: 6}
@@ -74,7 +73,7 @@ class ProcesseurUpload {
           .then(msg=>{
             // console.debug("Recu confirmation cle");
             // console.debug(msg);
-            this._transmettreMetadata(resolve, reject, transactionNouvelleVersion);
+            this._transmettreMetadata(rabbitMQ, resolve, reject, transactionNouvelleVersion);
           })
           .catch(err=>{
             console.error("Erreur message");
@@ -84,7 +83,7 @@ class ProcesseurUpload {
         } else {
           // Le fichier n'est pas crypte - on transmet juste le message
           // de metadata.
-          this._transmettreMetadata(resolve, reject, transactionNouvelleVersion);
+          this._transmettreMetadata(rabbitMQ, resolve, reject, transactionNouvelleVersion);
         }
 
       } catch (err) {
@@ -105,8 +104,8 @@ class ProcesseurUpload {
     return promise;
   } // ajouterFichier
 
-  _transmettreMetadata(resolve, reject, transactionNouvelleVersion) {
-    return this.rabbitMQ.transmettreTransactionFormattee(
+  _transmettreMetadata(rabbitMQ, resolve, reject, transactionNouvelleVersion) {
+    return rabbitMQ.transmettreTransactionFormattee(
       transactionNouvelleVersion,
       'millegrilles.domaines.GrosFichiers.nouvelleVersion.metadata')
     .then( msg => {
@@ -126,8 +125,7 @@ class ProcesseurUpload {
 
 class ProcesseurDownloadCrypte {
 
-  constructor(rabbitMQ, props) {
-    this.rabbitMQ = rabbitMQ;
+  constructor(props) {
     this.key = null;
 
     this._charger_key(key=>{
@@ -141,7 +139,7 @@ class ProcesseurDownloadCrypte {
   // Par defaut, le certificat utilise pour re-encrypter la cle est celui de
   // CoupDOeil api, mais si le fingerprint du navigateur est fourni c'est plutot
   // ce certificat qui sera utilise.
-  getCleSecreteCryptee(fuuid, fingerprint) {
+  getCleSecreteCryptee(rabbitMQ, fuuid, fingerprint) {
 
     let routing = 'requete.millegrilles.domaines.MaitreDesCles.decryptageGrosFichier';
     let requete = {
@@ -152,7 +150,7 @@ class ProcesseurDownloadCrypte {
       requete.fingerprint = fingerprint;
     }
 
-    return this.rabbitMQ.transmettreRequete(routing, requete)
+    return rabbitMQ.transmettreRequete(routing, requete)
     .then(reponse=>{
       // console.debug("Recu message pour decrypter fuuid: " + fuuid);
       let messageContent = decodeURIComponent(escape(reponse.content));
@@ -167,7 +165,7 @@ class ProcesseurDownloadCrypte {
     });
   }
 
-  getDecipherPipe4fuuid(fuuid) {
+  getDecipherPipe4fuuid(rabbitMQ, fuuid) {
     // On doit commencer par demander une cle pour decrypte le fichier
     // Ensuite on prepare un decipher pipe pour decrypter le contenu.
     /*
@@ -187,7 +185,7 @@ class ProcesseurDownloadCrypte {
         }
       }
       console.debug(json_message);*/
-    return this.getCleSecreteCryptee(fuuid)
+    return this.getCleSecreteCryptee(rabbitMQ, fuuid)
     .then(({cle, iv}) => {
       let cleSecrete = forge.util.decode64(cle);
       let ivBuffer = Buffer.from(iv, 'base64');

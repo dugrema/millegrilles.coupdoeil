@@ -44,10 +44,11 @@ class SessionManagement {
     });
   }
 
-  createTokenTransfert() {
+  createTokenTransfert(idmg) {
     var token = crypto.randomBytes(20).toString('hex');
     this.transferTokens[token] = {
-      expiration: (new Date()).getTime() + 60000
+      expiration: (new Date()).getTime() + 60000,
+      idmg,
     };
     return token;
   }
@@ -60,7 +61,7 @@ class SessionManagement {
       delete this.transferTokens[tokenKey]; // Delete si token utilise ou expire
       if(token.expiration>=(new Date()).getTime())  {
         // console.debug("Token consomme " + tokenKey);
-        return true;
+        return token;
       }
     }
     return false;
