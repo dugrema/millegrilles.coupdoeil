@@ -17,7 +17,8 @@ class SessionManagement {
     this.session_timeout = process.env.COUPDOEIL_SESSION_TIMEOUT || (60 * 1000);
     this.session_timeout = Number(this.session_timeout);
     this.transferTokens = {};
-    this.pinTemporaireDevice = null;  // PIN utilise pour ajouter un device
+    this.challenges = {};
+    this.pinTemporaireDevice = {};  // PIN utilise pour ajouter un device
 
     // Certificat du maitre des cles. Permet de transmettre des fichiers
     // de maniere securisee.
@@ -29,19 +30,30 @@ class SessionManagement {
   }
 
   clean() {
-    let expiredTokens = [];
+    let expiredTokens = [], expiredChallenges = [];
     let tempsCourant = (new Date()).getTime();
+
     for(var tokenKey in this.transferTokens) {
       let token = this.transferTokens[tokenKey];
       if(token.expiration < tempsCourant) {
         expiredTokens.push(tokenkey)
       }
     };
-
     tempsCourant.forEach(tokenKey=>{
       // console.debug("Expiration token transfert " + tokenKey);
       delete this.transferTokens[tokenKey];
     });
+
+    for(var challengeIdmg in this.challenges) {
+      let token = this.challenges[challengeIdmg];
+      if(token.expiration < tempsCourant) {
+        expiredTokens.push(challengeIdmg)
+      }
+    };
+    tempsCourant.forEach(challengeIdmg=>{
+      delete this.challenges[challengeIdmg];
+    });
+
   }
 
   createTokenTransfert(idmg) {
@@ -67,19 +79,36 @@ class SessionManagement {
     return false;
   }
 
-  createPinTemporaireDevice() {
+  conserverChallenge(idmg, challenge) {
+    this.challenges[idmg] = {
+      expiration: (new Date()).getTime() + 60000,
+      challenge,
+    };
+  }
+
+  consommerChallenge(idmg) {
+    const challengeEnveloppe = this.challenges[idmg];
+    if(challenge) {
+      delete this.challenges[idmg];
+      return challengeEnveloppe.challenge;
+    }
+    return false;
+  }
+
+  createPinTemporaireDevice(idmg) {
     var pin = ''+crypto.randomBytes(4).readUInt32BE();
     pin = pin.substring(0, 6);
-    this.pinTemporaireDevice = {
+    this.pinTemporaireDevice[idmg] = {
       'pin': pin,
       'expiration': (new Date()).getTime() + 120000
     };
     return pin;
   }
 
-  consommerPinTemporaireDevice(pin) {
-    var infoPin = this.pinTemporaireDevice;
-    this.pinTemporaireDevice = null; // On enleve le PIN a la premiere tentative
+  consommerPinTemporaireDevice(idmg, pin) {
+    var infoPin = this.pinTemporaireDevice[idmg];
+    delete this.pinTemporaireDevice[idmg]; // On enleve le PIN a la premiere tentative
+
     if(infoPin && pin === infoPin.pin && infoPin.expiration>=(new Date()).getTime())  {
       // console.info("PIN Temporaire Device correct");
       return true;
@@ -94,34 +123,52 @@ class SessionManagement {
     // console.debug("Authentifier");
     // console.debug(params);
 
-    // Lier a l'instance de RabbitMQ correspondant a l'identificateur de MilleGrille
-    const idMillegrille = params.idMillegrille;
-    const idmg = idMillegrille;  // TODO: Faire lookup
-    const rabbitMQ = this.rabbitMQParIdmg[idmg];
+    return new Promise((resolve, reject)=>{
+      // Lier a l'instance de RabbitMQ correspondant a l'identificateur de MilleGrille
+      const idMillegrille = params.idMillegrille;
+      const idmg = idMillegrille;  // TODO: Faire lookup
+      const rabbitMQ = this.rabbitMQParIdmg[idmg];
 
-    if(!rabbitMQ) {
-      // La MilleGrille est inconnue
-      throw new Error("L'identificateur MilleGrille '" + idMillegrille + "' n'est pas connu");
+      if(!rabbitMQ) {
+        // La MilleGrille est inconnue
+        reject(new Error("L'identificateur MilleGrille '" + idMillegrille + "' n'est pas connu"));
 
-    } else if(params.methode === 'certificatLocal') {
-      // console.debug("Authentification par certificat");
-      let fingerprint = params.fingerprint;
-      let certificat = params.certificat;
-      return this.creerChallengeCertificat(rabbitMQ, socket, fingerprint, certificat)
-      .then(()=>rabbitMQ)
-      .catch(err=>{
-        console.warn("Erreur challenge certificat, essayer USB");
-        return this.creerChallengeUSB(rabbitMQ, socket).then(()=>rabbitMQ);
-      });
-    } else if (params.methode === 'tokenUSB') {
-      console.debug("Authentification par securityKey USB");
-      return this.creerChallengeUSB(rabbitMQ, socket).then(()=>rabbitMQ);
-    } else {
-      // Erreur d'Authentification
-      socket.emit('erreur.login', {'erreur': 'methode inconnue', 'methode': params.methode});
-      socket.disconnect();
-      throw new Error("Erreur d'authentification, methode inconnue: " + params.methode);
-    }
+      } else if(params.methode === 'empreinte') {
+        console.debug("Effectuer l'empreinte de la MilleGrille");
+        resolve(rabbitMQ);
+      } else if(params.methode === 'ajouterToken') {
+        console.debug("Ajouter un token a la MilleGrille avec un PIN");
+        resolve(rabbitMQ);
+      } else if(params.methode === 'genererCertificat') {
+        console.debug("Generer un certificat de navigateur pour la MilleGrille avec un PIN");
+        this.genererCertificat(rabbitMQ, socket, params)
+        .then(()=>resolve(rabbitMQ))
+        .catch(err=>{
+          console.warn("Erreur challenge certificat, essayer USB");
+          this.creerChallengeUSB(rabbitMQ, socket).then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
+        })
+      } else if(params.methode === 'certificatLocal') {
+        // console.debug("Authentification par certificat");
+        let fingerprint = params.fingerprint;
+        let certificat = params.certificat;
+        resolve(
+          this.creerChallengeCertificat(rabbitMQ, socket, fingerprint, certificat)
+          .then(()=>rabbitMQ)
+          .catch(err=>{
+            console.warn("Erreur challenge certificat, essayer USB");
+            this.creerChallengeUSB(rabbitMQ, socket).then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
+          })
+        );
+      } else if (params.methode === 'tokenUSB') {
+        console.debug("Authentification par securityKey USB");
+        this.creerChallengeUSB(rabbitMQ, socket).then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
+      } else {
+        // Erreur d'Authentification
+        socket.emit('erreur.login', {'erreur': 'methode inconnue', 'methode': params.methode});
+        socket.disconnect();
+        return reject(new Error("Erreur d'authentification, methode inconnue: " + params.methode));
+      }
+    });
   }
 
   creerChallengeUSB(rabbitMQ, socket) {
@@ -291,6 +338,51 @@ class SessionManagement {
       throw new Error("Erreur authentification par certificat");
     });
 
+  }
+
+  genererCertificat(rabbitMQ, socket, opts) {
+    if(!opts) opts = {};
+    const {pin, clePublique, sujet} = opts;
+
+    // console.debug("Requete verification " + fingerprint);
+    const pki = rabbitMQ.pki;
+    const idmg = pki.idmg;
+
+    // Verifier que le pin est correct
+    let pinCorrect = this.consommerPinTemporaireDevice(idmg, pin);
+
+    if(pinCorrect) {
+      console.log("generercertificat: sujet %s, clePublique %s", sujet, clePublique);
+
+      // Creer la transaction pour creer le certificat de navigateur
+      const transaction = {
+        'sujet': sujet,
+        'cle_publique': clePublique,
+      };
+
+      return rabbitMQ.transmettreTransactionFormattee(
+        transaction, 'millegrilles.domaines.MaitreDesCles.genererCertificatNavigateur'
+      )
+      .then( msg => {
+        console.log("Recu certificat pour navigateur");
+        let messageContent = decodeURIComponent(escape(msg.content));
+        let certificatInfo = JSON.parse(messageContent);
+        console.log(messageContent);
+        socket.emit('certificatGenere', certificatInfo);
+        socket.emit('login', true);
+      })
+      .catch( err => {
+        console.error("Erreur message");
+        console.error(err);
+        socket.emit('erreur', "Erreur creation certificat")
+        socket.emit('login', false);
+      });
+
+    } else {
+      console.warn("generercertificat pin incorrect: " + pin);
+      socket.emit("erreur", "PIN invalide");
+      return Promise.resolve();
+    }
   }
 
   // Ajoute un socket et attend l'evenement d'authentification

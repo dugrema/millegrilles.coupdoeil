@@ -243,7 +243,7 @@ class WebSocketApp {
     });
 
     socket.on('creerPINTemporaireDevice', (message, cb) => {
-      let pin = this.sessionManagement.createPinTemporaireDevice();
+      let pin = this.sessionManagement.createPinTemporaireDevice(rabbitMQ.pki.idmg);
       if(cb) {
         cb({pin: pin});
       }

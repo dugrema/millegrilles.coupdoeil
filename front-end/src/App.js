@@ -14,6 +14,8 @@ import './App.css';
 // const urlApi = 'https://dev2.maple.mdugre.info:3001';  // Autre site, dev.
 const urlApi = '';  // Meme serveur
 
+const cryptageAsymetrique = new CryptageAsymetrique();
+
 const fakeAuth = {
   isAuthenticated: false,
   challenge: null,
@@ -166,77 +168,46 @@ class Login extends React.Component {
     var pin = form.pinnav.value;
     var sujet = form.sujet.value;
 
-    const cryptageAsymetrique = new CryptageAsymetrique();
+    this.setState({operationEnCours: true, pin, sujet, action: "genererCertificat"}, ()=>{
+      this.timerResetAuthentification = setTimeout(()=>{
+        this.resetAuthentification();
+      }, 5000);
+      this.props.login_method(this.state)
+      // .catch(err=>{
+      //   console.error("Erreur creation certificat");
+      //   clearTimeout(this.timerResetAuthentification);
+      //   this.setState({operationEnCours: false});
+      // })
+    });
 
-    this.setState({operationEnCours: true});
 
-    cryptageAsymetrique.genererKeyPair()
-    .then(({clePrivee, clePublique})=>{
-      sessionStorage.clePublique = clePublique;
-      sessionStorage.clePrivee = clePrivee;
-      return clePublique;
-    }).then(clePublique=>{
-      return fetch(urlApi + '/api/generercertificat', {
-          method: 'POST',
-          headers: {
-              'content-type': 'Application/Json'
-          },
-          body: JSON.stringify({
-            pin: pin,
-            cle_publique: clePublique,
-            sujet: sujet,
-          })
-      }).then(response => {
-        if(response.status === 200) {
-          response.json().then(certificatInfo => {
-            // console.debug("Certificat recu");
-            // console.debug(certificatInfo);
-
-            // Sauvegarder information dans storage local
-            localStorage.setItem('certificat.cert', certificatInfo.cert);
-            localStorage.setItem('certificat.expiration', certificatInfo.certificat_info.not_valid_after);
-            localStorage.setItem('certificat.fingerprint', certificatInfo.certificat_info.fingerprint);
-            localStorage.setItem('certificat.fullchain', certificatInfo.fullchain.join('\n'));
-
-            // Transferer les cles publiques et privees de session vers local
-            localStorage.setItem('certificat.clepublique', sessionStorage.clePublique);
-            localStorage.setItem('certificat.cleprivee', sessionStorage.clePrivee);
-
-            delete sessionStorage.clePublique;
-            delete sessionStorage.clePrivee;
-
-            this.setState({
-              messageConfirmation: "Certificat cree avec succes",
-              messageErreur: false,
-              certificatsNavigateurExiste: true,
-            });
-
-          });
-        } else {
-          if(response.status === 403) {
-            this.setState({messageErreur: "Erreur enregistrement navigateur, pin invalide."});
-          } else {
-            this.setState({messageErreur: "Erreur enregistrement navigateur, serveur inaccessible. Erreur : " + response.status});
-          }
-        }
-      })
-      .catch(err=>{
-        this.setState({messageErreur: "Erreur enregistrement navigateur, erreur d'access au serveur."});
-      })
-
-    })
-    .finally(()=>{
-      this.setState({operationEnCours: false});
-    });;
+    //     } else {
+    //       if(response.status === 403) {
+    //         this.setState({messageErreur: "Erreur enregistrement navigateur, pin invalide."});
+    //       } else {
+    //         this.setState({messageErreur: "Erreur enregistrement navigateur, serveur inaccessible. Erreur : " + response.status});
+    //       }
+    //     }
+    //   })
+    //   .catch(err=>{
+    //     this.setState({messageErreur: "Erreur enregistrement navigateur, erreur d'access au serveur."});
+    //   })
+    //
+    // })
+    // .finally(()=>{
+    //   this.setState({operationEnCours: false});
+    // });;
 
   }
 
   login_method = event => {
-    this.setState({operationEnCours: true});
-    this.timerResetAuthentification = setTimeout(()=>{
-      this.resetAuthentification();
-    }, 15000);
-    this.props.login_method(this.state);
+    console.debug(event.currentTarget);
+    this.setState({operationEnCours: true, action: 'authentifier',}, ()=>{
+      this.timerResetAuthentification = setTimeout(()=>{
+        this.resetAuthentification();
+      }, 15000);
+      this.props.login_method(this.state);
+    });
   }
 
   resetAuthentification() {
@@ -459,10 +430,6 @@ class App extends React.Component {
 
   // Repond a un challenge pour token USB
   repondreChallengeTokenUSB(socket, challenge, callback) {
-    socket.on('login', confirmation=>{
-      webSocketManager.setupWebSocket(socket);
-      this.setState({loggedIn: confirmation, wss_socket: socket});
-    });
 
     // 2. Resoudre challenge et repondre au serveur pour activer connexion
     solveLoginChallenge(challenge)
@@ -483,11 +450,6 @@ class App extends React.Component {
   repondreChallengeCertificat(socket, challenge, callback) {
     // console.debug("Challenge certificat recu, on repond");
     // console.debug(challenge);
-
-    socket.on('login', confirmation=>{
-      webSocketManager.setupWebSocket(socket);
-      this.setState({loggedIn: confirmation, wss_socket: socket});
-    });
 
     // Decrypter le challenge avec la cle privee
     const challengeCrypte = challenge.challengeCrypte;
@@ -512,6 +474,12 @@ class App extends React.Component {
       console.error(erreur);
     })
 
+    socket.on('login', confirmation=>{
+      console.debug("Message login recu : %s", confirmation);
+      webSocketManager.setupWebSocket(socket);
+      this.setState({loggedIn: confirmation, wss_socket: socket});
+    });
+
     // Gerer l'authentification:
     socket.on(
       'challengeTokenUSB',
@@ -532,22 +500,86 @@ class App extends React.Component {
 
   }
 
-  login = ({idMillegrille}) => {
+  login = ({idMillegrille, action, pin, sujet}) => {
+
+    console.debug("ID MilleGrille: %s, action: %s", idMillegrille, action);
+
     if(!this.state.wss_socket) {
-      console.debug("ID MilleGrille: %s", idMillegrille);
 
       let socket;
-      if(this.peutUtiliserCertificatLocal()) {
+      if( action === 'genererCertificat' ) {
+
+        cryptageAsymetrique.genererKeyPair()
+        .then(({clePrivee, clePublique})=>{
+          sessionStorage.clePublique = clePublique;
+          sessionStorage.clePrivee = clePrivee;
+          return clePublique;
+        }).then(clePublique=>{
+
+          console.debug("Cle publique generee, ouverture Socket.IO");
+
+          // Ouvrir un socket avec pin pour demander certificat
+          // Peut se reconnecter automatiquement (sauf si creation certificat invalide)
+          socket = this.openSocketHelper({reconnection: true});
+          socket.on("certificatGenere", certificatInfo => {
+            console.debug("Certificat recu");
+            console.debug(certificatInfo);
+
+            // Sauvegarder information dans storage local
+            localStorage.setItem('certificat.cert', certificatInfo.cert);
+            localStorage.setItem('certificat.expiration', certificatInfo.certificat_info.not_valid_after);
+            localStorage.setItem('certificat.fingerprint', certificatInfo.certificat_info.fingerprint);
+            localStorage.setItem('certificat.fullchain', certificatInfo.fullchain.join('\n'));
+
+            // Transferer les cles publiques et privees de session vers local
+            localStorage.setItem('certificat.clepublique', sessionStorage.clePublique);
+            localStorage.setItem('certificat.cleprivee', sessionStorage.clePrivee);
+
+            delete sessionStorage.clePublique;
+            delete sessionStorage.clePrivee;
+
+            this.setState({
+              messageConfirmation: "Certificat cree avec succes",
+              messageErreur: false,
+              certificatsNavigateurExiste: true,
+            });
+          });
+
+          socket.on("authentifier", ()=>{
+            socket.emit('authentification', {
+              methode: 'genererCertificat',
+              idMillegrille,
+              pin,
+              sujet,
+              clePublique,
+            });
+          });
+
+          socket.on("reconnect", ()=>{
+            socket.disconnect(); // Annuler la reconnexion
+            console.warn("Annuler reconnexion lors de la creation de certificat")
+          })
+
+        });
+
+      //
+      //     if(response.status === 403) {
+      //       this.setState({messageErreur: "Erreur enregistrement navigateur, pin invalide."});
+      //     } else {
+      //       this.setState({messageErreur: "Erreur enregistrement navigateur, serveur inaccessible. Erreur : " + response.status});
+      //     }
+      //   }
+      // })
+      // .catch(err=>{
+      //   this.setState({messageErreur: "Erreur enregistrement navigateur, erreur d'access au serveur."});
+      // })
+
+
+      } else if(this.peutUtiliserCertificatLocal()) {
 
         // Ouvrir un socket avec certificat local.
         // Peut se reconnecter automatiquement
-        socket = openSocket('/', {
-          reconnection: true,
-          reconnectionAttempts: 30,
-          reconnectionDelay: 500,
-          reconnectionDelayMax: 30000,
-          randomizationFactor: 0.5
-        });
+        socket = this.openSocketHelper({reconnection: true});
         socket.on("authentifier", ()=>{
           socket.emit('authentification', {
             methode: 'certificatLocal',
@@ -561,13 +593,11 @@ class App extends React.Component {
           console.debug("Reconnexion");
         })
 
-        this.enregistrerEvenementsGeneriques(socket);
-
       } else {
 
         // Le certificat local est absent ou invalide
         // On va se connecter avec Token USB
-        socket = openSocket('/', {reconnection: false});
+        socket = this.openSocketHelper({reconnection: false});
         socket.on("authentifier", ()=>{
           socket.emit('authentification', {
             methode: 'tokenUSB',
@@ -583,8 +613,6 @@ class App extends React.Component {
             console.info("Dangling socket closed: " + socket.id);
           }
         });
-
-        this.enregistrerEvenementsGeneriques(socket);
 
       }
 
@@ -611,6 +639,27 @@ class App extends React.Component {
         <Ecran/>
       </div>
     );
+  }
+
+  openSocketHelper(opts) {
+    if (!opts) opts = {};
+    let socket;
+
+    if(opts.reconnection) {
+      socket = openSocket('/', {
+        reconnection: true,
+        reconnectionAttempts: 30,
+        reconnectionDelay: 500,
+        reconnectionDelayMax: 30000,
+        randomizationFactor: 0.5
+      });
+    } else {
+      socket = openSocket('/', {reconnection: false});
+    }
+
+    this.enregistrerEvenementsGeneriques(socket);
+
+    return socket;
   }
 
   render() {
@@ -653,5 +702,6 @@ function SelectionMillegrille(props) {
   );
 
 }
+
 
 export default App;
