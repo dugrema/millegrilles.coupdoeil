@@ -11,9 +11,8 @@ const crypto = require('crypto');
 
 class SessionManagement {
 
-  constructor(rabbitMQ, pki) {
-    this.rabbitMQ = rabbitMQ;
-    this.pki = pki;
+  constructor(rabbitMQParIdmg) {
+    this.rabbitMQParIdmg = rabbitMQParIdmg;
     this.timer;
     this.session_timeout = process.env.COUPDOEIL_SESSION_TIMEOUT || (60 * 1000);
     this.session_timeout = Number(this.session_timeout);
@@ -87,21 +86,35 @@ class SessionManagement {
     return false;
   }
 
+  // Authentification de l'usager avec la MilleGrille fournie en parametre
+  // Retourne la connexion a RabbitMQ si l'authentification reussi.
+  // Lance une erreur en cas d'echec
   authentifier(socket, params) {
-    // console.debug(params);
+    console.debug("Authentifier");
+    console.debug(params);
 
-    if(params.methode === 'certificatLocal') {
+    // Lier a l'instance de RabbitMQ correspondant a l'identificateur de MilleGrille
+    const idMillegrille = params.idMillegrille;
+    const idmg = idMillegrille;  // TODO: Faire lookup
+    const rabbitMQ = this.rabbitMQParIdmg[idmg];
+
+    if(!rabbitMQ) {
+      // La MilleGrille est inconnue
+      throw new Error("L'identificateur MilleGrille '" + idMillegrille + "' n'est pas connu");
+
+    } else if(params.methode === 'certificatLocal') {
       console.debug("Authentification par certificat");
       let fingerprint = params.fingerprint;
       let certificat = params.certificat;
-      return this.creerChallengeCertificat(socket, fingerprint, certificat)
+      return this.creerChallengeCertificat(rabbitMQ, socket, fingerprint, certificat)
+      .then(()=>rabbitMQ)
       .catch(err=>{
         console.warn("Erreur challenge certificat, essayer USB");
-        return this.creerChallengeUSB(socket);
+        return this.creerChallengeUSB(rabbitMQ, socket).then(()=>rabbitMQ);
       });
     } else if (params.methode === 'tokenUSB') {
       console.debug("Authentification par securityKey USB");
-      return this.creerChallengeUSB(socket);
+      return this.creerChallengeUSB(rabbitMQ, socket).then(()=>rabbitMQ);
     } else {
       // Erreur d'Authentification
       socket.emit('erreur.login', {'erreur': 'methode inconnue', 'methode': params.methode});
@@ -110,11 +123,11 @@ class SessionManagement {
     }
   }
 
-  creerChallengeUSB(socket) {
+  creerChallengeUSB(rabbitMQ, socket) {
     // Authentifier le socket
     let filtre = {"_mg-libelle": "cles"};
 
-    return this.rabbitMQ.get_document(
+    return rabbitMQ.get_document(
       'millegrilles.domaines.Principale', filtre)
     .then( doc => {
       // console.log(doc);
@@ -144,7 +157,7 @@ class SessionManagement {
           }
 
           let filtre = {"_mg-libelle": "cles"};
-          this.rabbitMQ.get_document(
+          rabbitMQ.get_document(
             'millegrilles.domaines.Principale', filtre)
           .then( doc => {
             // console.log(doc);
@@ -212,11 +225,12 @@ class SessionManagement {
     }
   }
 
-  creerChallengeCertificat(socket, fingerprint, pemCertificat) {
+  creerChallengeCertificat(rabbitMQ, socket, fingerprint, pemCertificat) {
     // console.debug("Requete verification " + fingerprint);
+    const pki = rabbitMQ.pki;
 
     let requete = {'fingerprint': fingerprint};
-    return this.rabbitMQ.transmettreRequete(
+    return rabbitMQ.transmettreRequete(
       'requete.millegrilles.domaines.Pki.confirmerCertificat', requete)
     .then( reponseCertVerif => {
       console.debug("Reponse verification certificat");
@@ -236,18 +250,18 @@ class SessionManagement {
         if(estRoleNavigateur === true) {
           // C'est bien un certificat de navigateur. On genere un challenge
           // avec la cle publique.
-          const certificat = this.pki.chargerCertificatPEM(pemCertificat);
+          const certificat = pki.chargerCertificatPEM(pemCertificat);
           // console.log(certificat);
 
           return new Promise((resolve, reject) => {
-            this.pki.genererKeyAndIV((err, randVal)=>{
+            pki.genererKeyAndIV((err, randVal)=>{
               if(err) {
                 return reject('Erreur generation random secret')
               }
 
               // Crypter un challenge pour le navigateur
               const challenge = randVal.key;
-              let challengeCrypte = this.pki.crypterContenuAsymetric(certificat.publicKey, challenge);
+              let challengeCrypte = pki.crypterContenuAsymetric(certificat.publicKey, challenge);
               socket.emit('challengeCertificat', {challengeCrypte}, reponse => {
                 const loggedIn = this.recevoirReponseChallengeCertificat(socket, challenge, reponse);
                 socket.emit('login', loggedIn);
@@ -283,8 +297,8 @@ class SessionManagement {
     return new Promise((resolve, reject)=>{
       socket.on('authentification', params=>{
         this.authentifier(socket, params)
-        .then(()=>{
-          resolve();
+        .then(rabbitMQ=>{
+          resolve(rabbitMQ);
         })
         .catch(err=>{
           reject(err);

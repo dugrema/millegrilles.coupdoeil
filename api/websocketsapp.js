@@ -14,6 +14,8 @@ const {
 } = require('@webauthn/server');
 
 class WebSocketResources {
+  // Classe utilisee pour conserver les references vers les ressources privees
+  // d'une connexion websocket (e.g. channel MQ, reply_Q).
 
   constructor(socket) {
     this.socket = socket;
@@ -42,9 +44,9 @@ class WebSocketResources {
 
 class WebSocketApp {
 
-  constructor(rabbitMQ, pki, sessionManagement) {
-    this.rabbitMQ = rabbitMQ;
-    this.pki = pki;
+  constructor(sessionManagement) {
+    // this.rabbitMQ = rabbitMQ;
+    // this.pki = pki;
     this.sessionManagement = sessionManagement;
 
     this.new_sockets = {};
@@ -58,7 +60,7 @@ class WebSocketApp {
       this.cleanDisconnected();
     }, 60000);
 
-    this.rabbitMQ.routingKeyManager.setWebSocketsManager(this); // Permet transmettre incoming msg
+    // this.rabbitMQ.routingKeyManager.setWebSocketsManager(this); // Permet transmettre incoming msg
   }
 
   cleanNew() {
@@ -106,6 +108,8 @@ class WebSocketApp {
     delete this.authenticated_sockets[socket.id];
   }
 
+  // Methode utiliser pour ajouter une nouvelle connexion a partir de Socket.IO (listener)
+  // L'authentification securitaire de l'usager est la premier action de addSocket.
   addSocket(socket) {
 
     // Ajoute un socket d'une nouvelle connexion
@@ -121,15 +125,19 @@ class WebSocketApp {
       this.new_sockets[socket.id] = socketResources;
 
       // Ouvrir Channel MQ
-      this.rabbitMQ.createChannel(socketResources)
-      .then(()=>{
-        console.debug("Debut de l'authentification");
-        return this.sessionManagement.addSocketConnection(socket)
+      console.debug("Debut de l'authentification");
+      var rabbitMQ_local = null;
+      this.sessionManagement.addSocketConnection(socket)
+      .then(rabbitMQ=>{
+        rabbitMQ_local = rabbitMQ;
+        const idmg = rabbitMQ.pki.idmg;
+        console.debug("Authentification est completee, idmg: " + idmg);
+        console.debug(rabbitMQ);
+        return rabbitMQ.createChannel(socketResources);
       })
       .then(()=>{
-        // console.debug("Authentification est completee");
         this.saveAuthenticated(socketResources);
-        this.registerEvents(socketResources);
+        this.registerEvents(rabbitMQ_local, socketResources);
       }).catch(err=>{
         console.error("Erreur traitement socket " + socket.id + ", on le ferme.");
         console.error(err);
@@ -148,7 +156,7 @@ class WebSocketApp {
     console.debug("Moved socket " + socket.id + " from new_sockets to authenticated_sockets");
   }
 
-  registerEvents(socketResources) {
+  registerEvents(rabbitMQ, socketResources) {
     // Enregistre tous les evenements transmis par le front-end coupdoeil.
     // registerDocument: Enregistrer nouvelle routingKey pour le socket
     // unregisterDocument: Retirer routingKey pour socket
@@ -158,17 +166,17 @@ class WebSocketApp {
     let reply_q = socketResources.reply_q;
 
     // Enregistrer evenements upload
-    new SocketIoUpload(this.rabbitMQ, this.pki).enregistrer(socket);
+    new SocketIoUpload(rabbitMQ, rabbitMQ.pki).enregistrer(socket);
 
     socket.on('subscribe', message => {
-      this.rabbitMQ.routingKeyManager
+      rabbitMQ.routingKeyManager
         .addRoutingKeysForSocket(socket, message, channel, reply_q);
     });
 
     socket.on('unsubscribe', message => {
       // console.debug("Message unsubscribe");
       // console.debug(message);
-      this.rabbitMQ.routingKeyManager
+      rabbitMQ.routingKeyManager
         .removeRoutingKeysForSocket(socket, message, channel, reply_q);
     });
 
@@ -178,8 +186,7 @@ class WebSocketApp {
       let routingKey = enveloppe.routingKey;
       let requete = enveloppe.requete;
 
-      this.rabbitMQ
-        .transmettreRequete(routingKey, requete)
+      rabbitMQ.transmettreRequete(routingKey, requete)
       .then( reponse => {
         let messageContent = reponse.content.toString('utf-8');
         let json_message = JSON.parse(messageContent);
@@ -205,7 +212,7 @@ class WebSocketApp {
       let commande = enveloppe.commande;
       let nowait = !cb;
 
-      this.rabbitMQ
+      rabbitMQ
         .transmettreCommande(routingKey, commande, {nowait})
         .then( reponse => {
           if(reponse) {
@@ -266,7 +273,7 @@ class WebSocketApp {
         }
 
         // Tout est correct, on transmet le nouveau token en transaction
-        this.rabbitMQ.transmettreTransactionFormattee(
+        rabbitMQ.transmettreTransactionFormattee(
             infoToken, 'millegrilles.domaines.Principale.ajouterToken')
           .then( msg => {
             console.debug("Recu confirmation d'ajout de device'");
@@ -287,7 +294,7 @@ class WebSocketApp {
       let routingKey = message.routingKey;
       let transaction = message.transaction;
       let opts = message.opts;
-      this.rabbitMQ.transmettreTransactionFormattee(
+      rabbitMQ.transmettreTransactionFormattee(
         transaction, routingKey, opts
       ).then(msg=>{
         let messageContent = msg.content.toString('utf-8');
@@ -309,12 +316,12 @@ class WebSocketApp {
   }
 
   extraireClePubliqueMaitredescles() {
-    return this.rabbitMQ.demanderCertificatMaitreDesCles()
+    return rabbitMQ.demanderCertificatMaitreDesCles()
     .then(certificat=>{
       // console.debug("Certificat maitredescles");
       // console.debug(certificat);
 
-      const infoCertificat = this.pki.extraireClePubliqueFingerprint(certificat);
+      const infoCertificat = rabbitMQ.pki.extraireClePubliqueFingerprint(certificat);
 
       // console.debug(infoCertificat);
 

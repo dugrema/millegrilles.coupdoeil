@@ -45,13 +45,17 @@ const rabbitMQ = new RabbitMQWrapper(pki);
 const mqConnectionUrl = process.env.MG_MQ_URL;
 rabbitMQ.connect(mqConnectionUrl);
 
+const rabbitMQParIdmg = {
+  [pki.idmg]: rabbitMQ,
+}
+
 // Demarrer gestion de sessions websockets
-const sessionManagement = new SessionManagement(rabbitMQ, pki);
+const sessionManagement = new SessionManagement(rabbitMQParIdmg);
 sessionManagement.start();
 
 // Creer application CoupDOeil
 const app = initialiserApp(rabbitMQ, pki, sessionManagement);
-const webSocketApp = new WebSocketApp(rabbitMQ, pki, sessionManagement);
+const webSocketApp = new WebSocketApp(sessionManagement);
 
 // Serveurs supportes : https, spdy, (http2)
 const serverType = process.env.SERVER_TYPE || 'spdy';

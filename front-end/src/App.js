@@ -69,6 +69,7 @@ const fakeAuth = {
 
 class Login extends React.Component {
   state = {
+    idMillegrille: '',
     redirectToReferrer: false,
     empreinte: false,
     operationEnCours: false,
@@ -235,7 +236,7 @@ class Login extends React.Component {
     this.timerResetAuthentification = setTimeout(()=>{
       this.resetAuthentification();
     }, 15000);
-    this.props.login_method(event);
+    this.props.login_method(this.state);
   }
 
   resetAuthentification() {
@@ -253,6 +254,11 @@ class Login extends React.Component {
     localStorage.removeItem('certificat.clepublique');
     localStorage.removeItem('certificat.cleprivee');
     this.setState({certificatsNavigateurExiste: false});
+  }
+
+  changerId = event => {
+    const idMillegrille = event.currentTarget.value;
+    this.setState({idMillegrille});
   }
 
   render() {
@@ -280,6 +286,7 @@ class Login extends React.Component {
     }
 
     var listeOptions = [];
+    listeOptions.push(<SelectionMillegrille key="idMillegrille" idMillegrille={this.state.idMillegrille} changerId={this.changerId}/>);
     listeOptions.push(
       <Row key="authentifier">
         <Col lg={12}>
@@ -340,47 +347,43 @@ class Login extends React.Component {
       var expirationCert = localStorage.getItem('certificat.expiration');
       listeOptions.push(
         <Row key="desactiverNavigateur">
-          <Form>
-            <Col lg={12}>
-              <p>
-                Desactiver votre navigateur et supprimer les certificats locaux.
-                Expiration: <DateTimeAfficher date={expirationCert}/>
-              </p>
-            </Col>
-            <Col>
-              <Button variant="secondary" onClick={this.resetCertificatLocal} disabled={this.state.operationEnCours}>Desactiver navigateur</Button>
-            </Col>
-          </Form>
+          <Col lg={12}>
+            <p>
+              Desactiver votre navigateur et supprimer les certificats locaux.
+              Expiration: <DateTimeAfficher date={expirationCert}/>
+            </p>
+          </Col>
+          <Col>
+            <Button variant="secondary" onClick={this.resetCertificatLocal} disabled={this.state.operationEnCours}>Desactiver navigateur</Button>
+          </Col>
         </Row>
       );
     }
 
     listeOptions.push(
       <Row key="activerUsb">
-        <Form>
-          <Col lg={12}>
-            <p>Activer un nouveau token avec un pin.</p>
-          </Col>
+        <Col lg={12}>
+          <p>Activer un nouveau token avec un pin.</p>
+        </Col>
 
-          <Col lg={12}>
-            <Form.Group controlId="pin">
-              <InputGroup className="pinInput">
-                <InputGroup.Prepend>
-                  <InputGroup.Text id="pin">PIN</InputGroup.Text>
-                </InputGroup.Prepend>
-                <FormControl
-                  placeholder="123456"
-                  aria-label="PIN"
-                  aria-describedby="pin"
-                />
-              </InputGroup>
-            </Form.Group>
-          </Col>
+        <Col lg={12}>
+          <Form.Group controlId="pin">
+            <InputGroup className="pinInput">
+              <InputGroup.Prepend>
+                <InputGroup.Text id="pin">PIN</InputGroup.Text>
+              </InputGroup.Prepend>
+              <FormControl
+                placeholder="123456"
+                aria-label="PIN"
+                aria-describedby="pin"
+              />
+            </InputGroup>
+          </Form.Group>
+        </Col>
 
-          <Col lg={12}>
-            <Button variant="secondary" onClick={this.registerPin} disabled={this.state.operationEnCours}>Activer USB</Button>
-          </Col>
-        </Form>
+        <Col lg={12}>
+          <Button variant="secondary" onClick={this.registerPin} disabled={this.state.operationEnCours}>Activer USB</Button>
+        </Col>
       </Row>
     );
 
@@ -415,7 +418,9 @@ class Login extends React.Component {
         </Row>
 
         <Container className="formLogin">
-          {listeOptions}
+          <Form>
+            {listeOptions}
+          </Form>
         </Container>
 
       </Container>
@@ -527,8 +532,9 @@ class App extends React.Component {
 
   }
 
-  login = () => {
+  login = ({idMillegrille}) => {
     if(!this.state.wss_socket) {
+      console.debug("ID MilleGrille: %s", idMillegrille);
 
       let socket;
       if(this.peutUtiliserCertificatLocal()) {
@@ -545,6 +551,7 @@ class App extends React.Component {
         socket.on("authentifier", ()=>{
           socket.emit('authentification', {
             methode: 'certificatLocal',
+            idMillegrille,
             fingerprint: localStorage.getItem('certificat.fingerprint'),
             certificat: localStorage.getItem('certificat.fullchain'),
           });
@@ -564,6 +571,7 @@ class App extends React.Component {
         socket.on("authentifier", ()=>{
           socket.emit('authentification', {
             methode: 'tokenUSB',
+            idMillegrille,
           });
         })
 
@@ -615,6 +623,35 @@ class App extends React.Component {
       return this.renderLogin();
     }
   }
+}
+
+// Affiche options de selections de la MilleGrille
+function SelectionMillegrille(props) {
+
+  return (
+    <Row key="millegrille">
+      <Col lg={12}>
+        <p>Identifier la MilleGrille avec son identificateur (idmg) ou son nom</p>
+      </Col>
+      <Col lg={12}>
+        <Form.Group controlId="millegrille">
+          <InputGroup>
+            <InputGroup.Prepend>
+              <InputGroup.Text id="millegrille">IDMG ou nom</InputGroup.Text>
+            </InputGroup.Prepend>
+            <FormControl
+              value={props.idMillegrille}
+              onChange={props.changerId}
+              placeholder="e.g. vPXTaPjpUErFjV5d8pKrAHHqKhFUr7GSEruCL7, maple"
+              aria-label="millegrille"
+              aria-describedby="millegrille"
+            />
+          </InputGroup>
+        </Form.Group>
+      </Col>
+    </Row>
+  );
+
 }
 
 export default App;
