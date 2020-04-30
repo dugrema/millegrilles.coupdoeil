@@ -22,6 +22,8 @@ class PKIUtils {
     this.chainePEM = null;
     this.caIntermediaires = [];
 
+    this.password = certs.password;  // Mot de passe pour la cle, optionnel
+
     // Objets node-forge
     this.cleForge = null; // Objet cle charge en memoire (forge)
     this.cert = null;     // Objet certificat charge en memoire (forge)
@@ -45,7 +47,17 @@ class PKIUtils {
     await this.chargerCertificats(certs);
     this._verifierCertificat();
 
-    this.cleForge = forge.pki.privateKeyFromPem(this.cle);
+    let cle = this.cle;
+    if(this.password) {
+      console.debug("Cle chiffree");
+      this.cleForge = forge.pki.decryptRsaPrivateKey(cle, this.password);
+      // Re-exporter la cle en format PEM dechiffre (utilise par RabbitMQ)
+      this.cle = forge.pki.privateKeyToPem(this.cleForge);
+    } else {
+      this.cleForge = forge.pki.privateKeyFromPem(cle);
+    }
+    // console.debug(this.cleForge);
+
   }
 
   _verifierCertificat() {
