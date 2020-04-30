@@ -133,7 +133,7 @@ class SessionManagement {
         // La MilleGrille est inconnue
         reject(new Error("L'identificateur MilleGrille '" + idMillegrille + "' n'est pas connu"));
 
-      } else if(params.methode === 'empreinte') {
+      } else if(params.methode === 'effectuerEmpreinte') {
         console.debug("Effectuer l'empreinte de la MilleGrille");
         this.effectuerEmpreinte(rabbitMQ, socket, params)
         .then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
@@ -466,6 +466,7 @@ class SessionManagement {
 
   effectuerEmpreinte(rabbitMQ, socket, opts) {
     if(!opts) opts = {};
+    const idmg = rabbitMQ.pki.idmg;
 
     // Verifier que la MilleGrille n'a pas deja d'empreinte usager
     let filtre = {"_mg-libelle": "cles"};
@@ -476,18 +477,54 @@ class SessionManagement {
       if(doc['empreinte_absente'] !== true) {
         socket.emit("erreur", "Empreinte deja appliquee");
         socket.emit('login', false);
+        throw new Error("Empreinte deja appliquee");
       } else {
         // Transmettre le challenge
         const challengeResponse = generateRegistrationChallenge({
             relyingParty: { name: 'coupdoeil' },
-            user: { id: opts.idmg, name: '' }
+            user: { id: idmg, name: 'usager' }
         });
         console.debug("Conserver challenge pour idmg %s", opts.idmg);
         this.conserverChallenge(idmg, challengeResponse.challenge);
 
-        socket.emit('login', true);
+        return new Promise((resolve, reject)=>{
+          socket.emit('challengeTokenUSBRegistration', challengeResponse, reponse=>{
+
+            const { key, challenge } = parseRegisterRequest(reponse);
+
+            const challengeConserve = this.consommerChallenge(idmg);
+            if (challengeConserve !== challenge) {
+              reject(new Error("Challenge incorrect, ajout token echoue"));
+            } else {
+
+              const infoToken = {
+                  'cle': key
+              }
+
+              // Noter que la transaction va echouer si l'empreinte a deja ete creee.
+              rabbitMQ.transmettreTransactionFormattee(
+                infoToken, 'millegrilles.domaines.Principale.creerEmpreinte')
+              .then( msg => {
+                console.log("Recu confirmation d'empreinte");
+                console.log(msg);
+                resolve();
+              })
+              .catch( err => {
+                console.error("Erreur message");
+                console.error(err);
+
+                reject(err);
+              });
+
+            }
+          });
+        })
+
       }
 
+    })
+    .then(()=>{
+      socket.emit('login', true);
     })
     .catch( err => {
       console.error("Erreur initialiser-empreinte");

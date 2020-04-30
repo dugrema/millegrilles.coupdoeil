@@ -85,23 +85,11 @@ class Login extends React.Component {
   }
 
   register = () => {
-    this.setState({operationEnCours: true});
-    fakeAuth.register(err => {
-      if(err) {
-        console.error("Erreur");
-        console.error(err);
-      }
-
-      this.setState({ redirectToReferrer: true, operationEnCours: false });
-      // console.log("Callback register complete");
-    })
-    .catch(err => {
-      console.log("Erreur");
-      console.log(err);
-
-      let erreur = "L'empreinte a déjà été complétée avec succès. Si vous avez perdu votre clé, il faudra reinitialiser la MilleGrille."
-      this.setState({messageErreur: erreur, operationEnCours: false });
-
+    this.setState({operationEnCours: true, action: "effectuerEmpreinte"}, ()=>{
+      this.timerResetAuthentification = setTimeout(()=>{
+        this.resetAuthentification();
+      }, 5000);
+      this.props.login_method(this.state)
     });
   };
 
