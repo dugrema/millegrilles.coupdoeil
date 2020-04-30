@@ -431,8 +431,8 @@ class SessionManagement {
               rabbitMQ.transmettreTransactionFormattee(
                 infoToken, 'millegrilles.domaines.Principale.ajouterToken')
               .then( msg => {
-                console.log("Recu confirmation d'ajout de nouveau token");
-                console.log(msg);
+                // console.log("Recu confirmation d'ajout de nouveau token");
+                // console.log(msg);
                 resolve();
               })
               .catch( err => {
@@ -505,8 +505,8 @@ class SessionManagement {
               rabbitMQ.transmettreTransactionFormattee(
                 infoToken, 'millegrilles.domaines.Principale.creerEmpreinte')
               .then( msg => {
-                console.log("Recu confirmation d'empreinte");
-                console.log(msg);
+                // console.log("Recu confirmation d'empreinte");
+                // console.log(msg);
                 resolve();
               })
               .catch( err => {
