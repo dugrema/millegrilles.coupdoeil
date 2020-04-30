@@ -78,14 +78,16 @@ class HebergementCoupdoeil {
     //   1. certificat_pem : certificat de coupdoeil heberge
     //   2. intermediaire : certificat intermediaire de la MilleGrille hebergee
     //   3. millegrille : certificat racine de la MilleGrille hebergee
+    const hebergeChain = [certificat_pem, intermediaire];
+    const hebergeChainStr = hebergeChain.join('\n');
 
     const motDePasse = await this.mq.pki.decrypterAsymetrique(motdepasse_chiffre);
     // console.debug("Mot de passe dechiffre : %s", motDePasse);
 
     const certPems = {
-      // millegrille: certificats.millegrille,
-      millegrille: this.mq.pki.ca,
-      cert: hoteChainStr,
+      millegrille: millegrille,
+      hoteMillegrille: this.mq.pki.ca,
+      cert: hebergeChainStr,
       hote: hoteChainStr,
       key: cle,
       password: motDePasse,

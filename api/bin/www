@@ -48,8 +48,12 @@ const rabbitMQParIdmg = {
   [pki.idmg]: rabbitMQ,
 }
 
+function fctRabbitMQParIdmg(idmg) {
+  return rabbitMQParIdmg[idmg];
+}
+
 // Demarrer gestion de sessions websockets
-const sessionManagement = new SessionManagement(rabbitMQParIdmg);
+const sessionManagement = new SessionManagement(fctRabbitMQParIdmg);
 sessionManagement.start();
 
 rabbitMQ.connect(mqConnectionUrl)

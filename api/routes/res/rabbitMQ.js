@@ -48,7 +48,7 @@ class RabbitMQWrapper {
 
     if(this.connection === null) {
       let options = {
-        ca: this.pki.ca,
+        ca: this.pki.hoteCA,
         cert: this.pki.hotePEM,
         key: this.pki.cle,
       }

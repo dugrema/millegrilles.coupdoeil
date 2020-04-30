@@ -57,7 +57,7 @@ function initialiserInfo(sessionManagement, opts) {
   // .then(info=>{
     router.get('/info.json', (req, res, next)=>{
 
-      const rabbitMQ = sessionManagement.rabbitMQParIdmg[idmg];
+      const rabbitMQ = sessionManagement.fctRabbitMQParIdmg(idmg);
 
       const routing = 'millegrilles.domaines.Principale';
       const filtre = {"_mg-libelle": "cles"};

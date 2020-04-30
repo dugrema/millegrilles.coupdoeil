@@ -11,8 +11,8 @@ const crypto = require('crypto');
 
 class SessionManagement {
 
-  constructor(rabbitMQParIdmg) {
-    this.rabbitMQParIdmg = rabbitMQParIdmg;
+  constructor(fctRabbitMQParIdmg) {
+    this.fctRabbitMQParIdmg = fctRabbitMQParIdmg;
     this.timer;
     this.session_timeout = process.env.COUPDOEIL_SESSION_TIMEOUT || (60 * 1000);
     this.session_timeout = Number(this.session_timeout);
@@ -127,7 +127,7 @@ class SessionManagement {
       // Lier a l'instance de RabbitMQ correspondant a l'identificateur de MilleGrille
       const idMillegrille = params.idMillegrille;
       const idmg = idMillegrille;  // TODO: Faire lookup
-      const rabbitMQ = this.rabbitMQParIdmg[idmg];
+      const rabbitMQ = this.fctRabbitMQParIdmg(idmg);
 
       if(!rabbitMQ) {
         // La MilleGrille est inconnue
