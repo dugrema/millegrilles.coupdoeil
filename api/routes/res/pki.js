@@ -15,16 +15,20 @@ class PKIUtils {
   constructor(certs) {
     this.idmg = null;
 
-    // Contenu format texte PEM
+    // Cle pour cert
     this.cle = certs.key;
-    this.ca = certs.millegrille;
-    this.certPEM = null;
-    this.chainePEM = null;
-    this.caIntermediaires = [];
-
     this.password = certs.password;  // Mot de passe pour la cle, optionnel
 
+    // Contenu format texte PEM
+    this.chainePEM = certs.cert;
+    this.hotePEM = certs.hote || certs.cert;  // Chaine XS pour connexion middleware
+    this.hoteCA = certs.hoteMillegrille || certs.millegrille;
+    this.ca = certs.millegrille;
+
+    this.caIntermediaires = [];
+
     // Objets node-forge
+    this.certPEM = null;
     this.cleForge = null; // Objet cle charge en memoire (forge)
     this.cert = null;     // Objet certificat charge en memoire (forge)
     this.caStore = null;  // CA store pour valider les chaines de certificats
@@ -69,9 +73,8 @@ class PKIUtils {
     // Charger certificat local
     var certs = splitPEMCerts(certPems.cert);
     // console.debug(certs);
-
-    this.chainePEM = certPems.cert;
     this.certPEM = certs[0];
+
     // console.debug(this.certPEM);
     let parsedCert = this.chargerCertificatPEM(this.certPEM);
     // console.debug(parsedCert);
@@ -84,8 +87,14 @@ class PKIUtils {
     this.commonName = parsedCert.subject.getField('CN').value;
 
     // Sauvegarder certificats intermediaires
-    let intermediaire = this.chargerCertificatPEM(certs[1]);
-    this.caIntermediaires = [intermediaire];
+    const certsChaineCAList = certs.slice(1);
+    const certsIntermediaires = [];
+    for(let idx in certsChaineCAList) {
+      var certIntermediaire = certsChaineCAList[idx];
+      let intermediaire = this.chargerCertificatPEM(certIntermediaire);
+      certsIntermediaires.push(intermediaire);
+    }
+    this.caIntermediaires = certsIntermediaires;
 
     // console.log("Certificat du noeud. Sujet CN: " +
     // this.commonName + ", fingerprint: " + this.fingerprint);

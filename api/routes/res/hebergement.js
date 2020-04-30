@@ -46,7 +46,7 @@ class HebergementCoupdoeil {
 
   async demarrerHebergementIdmg(idmg, infoMilleGrille) {
     console.info("Demarrage hebergement %s", idmg);
-    console.debug(infoMilleGrille);
+    // console.debug(infoMilleGrille);
 
     const requete = {'idmg': [idmg]}
     const trousseau = decoderMessage(await this.mq.transmettreRequete(REQUETE_TROUSSEAU, requete));
@@ -54,8 +54,8 @@ class HebergementCoupdoeil {
     const {hebergement, hote_pem, intermediaire, millegrille} = certificats;
 
     console.debug("Trousseau pour MilleGrille %s", idmg);
-    console.debug(trousseau);
-    console.debug(certificats);
+    // console.debug(trousseau);
+    // console.debug(certificats);
 
     // const certChain = [certificat_pem, certificats.intermediaire].join('\n');
     // Batir la chaine de connexion MQ :
@@ -80,7 +80,7 @@ class HebergementCoupdoeil {
     //   3. millegrille : certificat racine de la MilleGrille hebergee
 
     const motDePasse = await this.mq.pki.decrypterAsymetrique(motdepasse_chiffre);
-    console.debug("Mot de passe dechiffre : %s", motDePasse);
+    // console.debug("Mot de passe dechiffre : %s", motDePasse);
 
     const certPems = {
       // millegrille: certificats.millegrille,
@@ -100,9 +100,9 @@ class HebergementCoupdoeil {
     const mqConnectionUrl = process.env.MG_MQ_URL;
     await rabbitMQ.connect(mqConnectionUrl);
 
-    // this.millegrilles[idmg] = {
-    //   rabbitMQ,
-    // }
+    this.millegrilles[idmg] = {
+      rabbitMQ,
+    }
   }
 
 }
