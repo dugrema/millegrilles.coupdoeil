@@ -368,6 +368,8 @@ class SessionManagement {
         let messageContent = decodeURIComponent(escape(msg.content));
         let certificatInfo = JSON.parse(messageContent);
         console.log(messageContent);
+
+        // Transmettre nouveau certificat, confirmer le login avec succes
         socket.emit('certificatGenere', certificatInfo);
         socket.emit('login', true);
       })
@@ -383,6 +385,15 @@ class SessionManagement {
       socket.emit("erreur", "PIN invalide");
       return Promise.resolve();
     }
+  }
+
+  ajouterTokenUSB(rabbitMQ, socket, opts) {
+    if(!opts) opts = {};
+    const {pin} = opts;
+  }
+
+  empreinte(rabbitMQ, socket, opts) {
+    if(!opts) opts = {};
   }
 
   // Ajoute un socket et attend l'evenement d'authentification

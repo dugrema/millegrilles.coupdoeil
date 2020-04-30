@@ -307,14 +307,14 @@ class WebSocketApp {
     });
 
     socket.on('demandeClePubliqueMaitredescles', (msg, cb) => {
-      this.extraireClePubliqueMaitredescles().then(clePublique=>{
+      this.extraireClePubliqueMaitredescles(rabbitMQ).then(clePublique=>{
         cb(clePublique);
       });
     });
 
   }
 
-  extraireClePubliqueMaitredescles() {
+  extraireClePubliqueMaitredescles(rabbitMQ) {
     return rabbitMQ.demanderCertificatMaitreDesCles()
     .then(certificat=>{
       // console.debug("Certificat maitredescles");

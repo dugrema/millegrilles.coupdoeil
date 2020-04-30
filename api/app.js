@@ -15,7 +15,7 @@ function initialiserApp(sessionManagement) {
   app.use(express.static(path.join(__dirname, 'public')));
 
   // API principal
-  const routeurApi = APIRouteurInitialiser(sessionManagement);
+  // const routeurApi = APIRouteurInitialiser(sessionManagement);
 
   // GrosFichiers
   const optsGrosFichiers = {
@@ -24,7 +24,7 @@ function initialiserApp(sessionManagement) {
   }
   const routeurGrosFichiers = initialiserGrosFichiers(sessionManagement);
 
-  app.use('/api', routeurApi);
+  // app.use('/api', routeurApi);
   app.use('/grosFichiers', routeurGrosFichiers);
 
   // catch 404 and forward to error handler
