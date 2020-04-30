@@ -11,63 +11,9 @@ import {DateTimeAfficher} from './mgcomponents/ReactFormatters'
 
 import './App.css';
 
-// const urlApi = 'https://dev2.maple.mdugre.info:3001';  // Autre site, dev.
 const urlApi = '';  // Meme serveur
 
 const cryptageAsymetrique = new CryptageAsymetrique();
-
-const fakeAuth = {
-  isAuthenticated: false,
-  challenge: null,
-  key: null,
-  id: 'a1ID',
-  email: 'test@test.com',
-  async register(cb) {
-
-    const challenge = await fetch(urlApi + '/api/initialiser-empreinte', {
-        method: 'POST',
-        headers: {
-            'content-type': 'Application/Json'
-        },
-        body: JSON.stringify({ id: 'uuid', email: 'test@test' })
-    })
-    .then(response => response.json())
-    .catch(err => {
-      cb(err);
-    });
-
-    // console.log("Challenge recu");
-    // console.log(challenge);
-    const credentials = await solveRegistrationChallenge(challenge);
-
-    // console.log("Transmission de la reponse au challenge");
-    // console.log(credentials);
-    const { loggedIn } = await fetch(
-        urlApi + '/api/effectuer-empreinte',
-        {
-            method: 'POST',
-            headers: {
-                'content-type': 'Application/Json'
-            },
-            body: JSON.stringify(credentials)
-        }
-    )
-    .then(response => response.json())
-    .catch(err => {
-      console.error("Catcher erreur")
-      cb(err);
-    });
-
-    if (loggedIn) {
-        // console.log('registration successful');
-        this.isAuthenticated = true;
-    } else {
-      console.error('registration failed');
-    }
-
-    cb(); // Callback
-  }
-};
 
 class Login extends React.Component {
   state = {
@@ -77,6 +23,14 @@ class Login extends React.Component {
     operationEnCours: false,
     certificatsNavigateurExiste: localStorage.getItem('certificat.expiration'),
   };
+
+  componentDidMount() {
+    // Initialiser idmg a parir de localStorage
+    const idmgSauvegarde = localStorage.getItem('idmg');
+    if(idmgSauvegarde) {
+      this.setState({idMillegrille: idmgSauvegarde});
+    }
+  }
 
   componentWillUnmount() {
     if(this.timerResetAuthentification) {
@@ -148,8 +102,9 @@ class Login extends React.Component {
   }
 
   changerId = event => {
-    const idMillegrille = event.currentTarget.value;
-    this.setState({idMillegrille});
+    const {value} = event.currentTarget;
+    this.setState({idMillegrille: value});
+    localStorage.setItem('idmg', value);
   }
 
   render() {
