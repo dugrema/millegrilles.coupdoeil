@@ -5,8 +5,11 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
 const {initialiserGrosFichiers} = require('./routes/grosFichiers'); // grosFichiersRouter = require('./routes/grosFichiers');
+const {initialiserInfo} = require('./routes/info');
 
-function initialiserApp(sessionManagement) {
+function initialiserApp(sessionManagement, opts) {
+  if(!opts) opts = {};
+
   const app = express();
 
   // Config de base, paths statiques
@@ -19,9 +22,11 @@ function initialiserApp(sessionManagement) {
     serveurConsignation: process.env.MG_CONSIGNATION_HTTP || 'https://consignationfichiers',
   }
   const routeurGrosFichiers = initialiserGrosFichiers(sessionManagement);
-
-  // app.use('/api', routeurApi);
   app.use('/grosFichiers', routeurGrosFichiers);
+
+  // Configuration
+  const routeurInfo = initialiserInfo(sessionManagement, opts);
+  app.use('/config', routeurInfo);
 
   // catch 404 and forward to error handler
   app.use(function(req, res, next) {

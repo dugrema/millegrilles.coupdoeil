@@ -43,7 +43,6 @@ const config = {
 // amqps://mq:5673/[idmg]
 const rabbitMQ = new RabbitMQWrapper(pki);
 const mqConnectionUrl = process.env.MG_MQ_URL;
-rabbitMQ.connect(mqConnectionUrl);
 
 const rabbitMQParIdmg = {
   [pki.idmg]: rabbitMQ,
@@ -53,31 +52,44 @@ const rabbitMQParIdmg = {
 const sessionManagement = new SessionManagement(rabbitMQParIdmg);
 sessionManagement.start();
 
-// Creer application CoupDOeil
-const app = initialiserApp(sessionManagement);
-const webSocketApp = new WebSocketApp(sessionManagement);
+rabbitMQ.connect(mqConnectionUrl)
+.then(()=>{
 
-// Serveurs supportes : https, spdy, (http2)
-const serverType = process.env.SERVER_TYPE || 'spdy';
-const serverTypeLib = require(serverType);
-console.info("Type de serveur web : %s", serverType)
-const server = serverType === 'http2'?
-  serverTypeLib.createSecureServer(config, app):
-  serverTypeLib.createServer(config, app);
+  // Creer application CoupDOeil
+  const appOpts = {
+    idmg: pki.idmg,
+    hebergement: false,
+  }
+  const app = initialiserApp(sessionManagement, appOpts);
+  const webSocketApp = new WebSocketApp(sessionManagement);
 
-var port = normalizePort(process.env.PORT || '443');
-server.listen(port, demarrer);
+  // Serveurs supportes : https, spdy, (http2)
+  const serverType = process.env.SERVER_TYPE || 'spdy';
+  const serverTypeLib = require(serverType);
+  console.info("Type de serveur web : %s", serverType)
+  const server = serverType === 'http2'?
+    serverTypeLib.createSecureServer(config, app):
+    serverTypeLib.createServer(config, app);
 
-function demarrer() {
-  const wss_server = socketio(server);
-  // wss_server.listen(server);
-  wss_server.on('connection', (socket) => {
-    console.info("Connexion WSS id = %s, remoteAddress = %s", socket.id, socket.conn.remoteAddress);
-    webSocketApp.addSocket(socket);
-  });
+  var port = normalizePort(process.env.PORT || '443');
+  server.listen(port, demarrer);
 
-  console.info('Server is listening at https://localhost:%d.', port);
-}
+  function demarrer() {
+    const wss_server = socketio(server);
+    // wss_server.listen(server);
+    wss_server.on('connection', (socket) => {
+      console.info("Connexion WSS id = %s, remoteAddress = %s", socket.id, socket.conn.remoteAddress);
+      webSocketApp.addSocket(socket);
+    });
+
+    console.info('Server is listening at https://localhost:%d.', port);
+  }
+
+})
+.catch(err=>{
+  console.error("Erreur connexion a RabbitMQ")
+  throw err;
+})
 
 /**
  * Normalize a port into a number, string, or false.

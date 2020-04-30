@@ -30,6 +30,22 @@ class Login extends React.Component {
     if(idmgSauvegarde) {
       this.setState({idMillegrille: idmgSauvegarde});
     }
+
+    // Charger l'information a partir du serveur (config/info.json)
+    const infoUrl = urlApi + '/config/info.json';
+    fetch(infoUrl).then(response => {
+      if(response.status === 200) {
+        response.json().then(reponseJson => {
+          console.debug("Reponse config/info.json");
+          console.debug(reponseJson);
+        });
+      }
+    })
+    .catch(err=>{
+      console.error("Erreur recuperation config/info.json");
+      console.error(err);
+    });
+
   }
 
   componentWillUnmount() {
