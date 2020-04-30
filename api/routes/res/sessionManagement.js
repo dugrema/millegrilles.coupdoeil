@@ -88,7 +88,7 @@ class SessionManagement {
 
   consommerChallenge(idmg) {
     const challengeEnveloppe = this.challenges[idmg];
-    if(challenge) {
+    if(challengeEnveloppe) {
       delete this.challenges[idmg];
       return challengeEnveloppe.challenge;
     }
@@ -135,10 +135,12 @@ class SessionManagement {
 
       } else if(params.methode === 'empreinte') {
         console.debug("Effectuer l'empreinte de la MilleGrille");
-        resolve(rabbitMQ);
-      } else if(params.methode === 'ajouterToken') {
+        this.effectuerEmpreinte(rabbitMQ, socket, params)
+        .then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
+      } else if(params.methode === 'ajouterTokenUSB') {
         console.debug("Ajouter un token a la MilleGrille avec un PIN");
-        resolve(rabbitMQ);
+        this.ajouterTokenUSB(rabbitMQ, socket, params)
+        .then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
       } else if(params.methode === 'genererCertificat') {
         console.debug("Generer un certificat de navigateur pour la MilleGrille avec un PIN");
         this.genererCertificat(rabbitMQ, socket, params)
@@ -376,7 +378,7 @@ class SessionManagement {
       .catch( err => {
         console.error("Erreur message");
         console.error(err);
-        socket.emit('erreur', "Erreur creation certificat")
+        socket.emit('erreur.login', "Erreur creation certificat")
         socket.emit('login', false);
       });
 
@@ -390,10 +392,109 @@ class SessionManagement {
   ajouterTokenUSB(rabbitMQ, socket, opts) {
     if(!opts) opts = {};
     const {pin} = opts;
+    const idmg = rabbitMQ.pki.idmg;
+
+    // Verifier que le pin est correct
+    let pinCorrect = this.consommerPinTemporaireDevice(idmg, pin);
+
+    if(pinCorrect) {
+
+      // Verifier que la MilleGrille n'a pas deja d'empreinte usager
+      let filtre = {"_mg-libelle": "cles"};
+      return rabbitMQ.get_document(
+        'millegrilles.domaines.Principale', filtre)
+      .then( doc => {
+
+        // Transmettre le challenge
+        const challengeResponse = generateRegistrationChallenge({
+            relyingParty: { name: 'coupdoeil' },
+            user: { id: idmg, name: 'usager' }
+        });
+        console.debug("Conserver challenge pour idmg %s", opts.idmg);
+        this.conserverChallenge(idmg, challengeResponse.challenge);
+
+        return new Promise((resolve, reject)=>{
+          socket.emit('challengeTokenUSBRegistration', challengeResponse, reponse=>{
+
+            const { key, challenge } = parseRegisterRequest(reponse);
+
+            const challengeConserve = this.consommerChallenge(idmg);
+            if (challengeConserve !== challenge) {
+              reject(new Error("Challenge incorrect, ajout token echoue"));
+            } else {
+
+              const infoToken = {
+                  'cle': key
+              }
+
+              // Noter que la transaction va echouer si l'empreinte a deja ete creee.
+              rabbitMQ.transmettreTransactionFormattee(
+                infoToken, 'millegrilles.domaines.Principale.ajouterToken')
+              .then( msg => {
+                console.log("Recu confirmation d'ajout de nouveau token");
+                console.log(msg);
+                resolve();
+              })
+              .catch( err => {
+                console.error("Erreur message");
+                console.error(err);
+
+                reject(err);
+              });
+
+            }
+          });
+        })
+
+      })
+      .then(()=>{
+        socket.emit('login', true);
+      })
+      .catch( err => {
+        console.error("Erreur initialiser-empreinte");
+        console.error(err);
+        socket.emit("erreur.login", "Erreur initialiser-empreinte");
+        socket.emit('login', false);
+      });
+
+    } else {
+      socket.emit("erreur.login", "Erreur PIN incorrect");
+      socket.emit('login', false);
+    }
+
   }
 
-  empreinte(rabbitMQ, socket, opts) {
+  effectuerEmpreinte(rabbitMQ, socket, opts) {
     if(!opts) opts = {};
+
+    // Verifier que la MilleGrille n'a pas deja d'empreinte usager
+    let filtre = {"_mg-libelle": "cles"};
+    return rabbitMQ.get_document(
+      'millegrilles.domaines.Principale', filtre)
+    .then( doc => {
+
+      if(doc['empreinte_absente'] !== true) {
+        socket.emit("erreur", "Empreinte deja appliquee");
+        socket.emit('login', false);
+      } else {
+        // Transmettre le challenge
+        const challengeResponse = generateRegistrationChallenge({
+            relyingParty: { name: 'coupdoeil' },
+            user: { id: opts.idmg, name: '' }
+        });
+        console.debug("Conserver challenge pour idmg %s", opts.idmg);
+        this.conserverChallenge(idmg, challengeResponse.challenge);
+
+        socket.emit('login', true);
+      }
+
+    })
+    .catch( err => {
+      console.error("Erreur initialiser-empreinte");
+      console.error(err);
+      socket.emit("erreur", "Erreur initialiser-empreinte");
+      socket.emit('login', false);
+    });
   }
 
   // Ajoute un socket et attend l'evenement d'authentification

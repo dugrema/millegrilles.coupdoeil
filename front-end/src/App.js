@@ -109,58 +109,13 @@ class Login extends React.Component {
     const form = event.currentTarget.form;
     var pin = form.pin.value;
 
-    this.setState({operationEnCours: true});
-
-    fetch(urlApi + '/api/initialiser-ajout-token', {
-        method: 'POST',
-        headers: {
-            'content-type': 'Application/Json'
-        },
-        body: JSON.stringify({ id: 'uuid', email: 'test@test', pin: pin })
-    }).then(response => {
-      if(response.status === 200) {
-        response.json().then(challenge => {
-          // console.debug("Challenge recu");
-          // console.debug(challenge);
-          solveRegistrationChallenge(challenge).then(credentials => {
-            // console.debug("Transmission de la reponse au challenge");
-            // console.debug(credentials);
-            fetch(
-                urlApi + '/api/effectuer-ajout-token',
-                {
-                    method: 'POST',
-                    headers: {
-                        'content-type': 'Application/Json'
-                    },
-                    body: JSON.stringify(credentials)
-                }
-            ).then(response => {
-              response.json().then(({ loggedIn }) => {
-                if (loggedIn) {
-                    console.log('registration successful');
-                    this.isAuthenticated = true;
-                } else {
-                  console.error('registration failed');
-                }
-              });
-            });
-          });
-        });
-      } else {
-        // console.error("initialiser-ajout-token() Response code: " + response.status)
-        if(response.status === 403) {
-          this.setState({messageErreur: "Erreur enregistrement token, pin invalide."});
-        } else {
-          this.setState({messageErreur: "Erreur enregistrement token, serveur inaccessible. Erreur : " + response.status});
-        }
-      }
-    })
-    .catch(err=>{
-      this.setState({messageErreur: "Erreur enregistrement token, serveur inaccessible."});
-    })
-    .finally(()=>{
-      this.setState({operationEnCours: false});
+    this.setState({operationEnCours: true, pin, action: "ajouterTokenUSB"}, ()=>{
+      this.timerResetAuthentification = setTimeout(()=>{
+        this.resetAuthentification();
+      }, 5000);
+      this.props.login_method(this.state)
     });
+
   }
 
   creerCertificatNavigateur = event => {
@@ -173,30 +128,7 @@ class Login extends React.Component {
         this.resetAuthentification();
       }, 5000);
       this.props.login_method(this.state)
-      // .catch(err=>{
-      //   console.error("Erreur creation certificat");
-      //   clearTimeout(this.timerResetAuthentification);
-      //   this.setState({operationEnCours: false});
-      // })
     });
-
-
-    //     } else {
-    //       if(response.status === 403) {
-    //         this.setState({messageErreur: "Erreur enregistrement navigateur, pin invalide."});
-    //       } else {
-    //         this.setState({messageErreur: "Erreur enregistrement navigateur, serveur inaccessible. Erreur : " + response.status});
-    //       }
-    //     }
-    //   })
-    //   .catch(err=>{
-    //     this.setState({messageErreur: "Erreur enregistrement navigateur, erreur d'access au serveur."});
-    //   })
-    //
-    // })
-    // .finally(()=>{
-    //   this.setState({operationEnCours: false});
-    // });;
 
   }
 
@@ -428,6 +360,19 @@ class App extends React.Component {
     return false;
   }
 
+  async repondreChallengeTokenUSBRegistration(socket, challenge, callback) {
+    solveRegistrationChallenge(challenge)
+    .then(credentials=>{
+      callback(credentials);
+    })
+    .catch(err=>{
+      console.error("Erreur challenge reply registration security key");
+      console.error(err);
+      try{this.state.wss_socket.disconnect();} catch(err) {}
+      this.setState({wss_socket: null});
+    });
+  }
+
   // Repond a un challenge pour token USB
   repondreChallengeTokenUSB(socket, challenge, callback) {
 
@@ -489,6 +434,11 @@ class App extends React.Component {
       'challengeCertificat',
       (challenge, cb) => {this.repondreChallengeCertificat(socket, challenge, cb)}
     );
+    socket.on(
+      'challengeTokenUSBRegistration',
+      (challenge, cb) => {this.repondreChallengeTokenUSBRegistration(socket, challenge, cb)}
+    );
+
     socket.on(
       'erreur.login',
       erreur => {
@@ -562,18 +512,30 @@ class App extends React.Component {
 
         });
 
-      //
-      //     if(response.status === 403) {
-      //       this.setState({messageErreur: "Erreur enregistrement navigateur, pin invalide."});
-      //     } else {
-      //       this.setState({messageErreur: "Erreur enregistrement navigateur, serveur inaccessible. Erreur : " + response.status});
-      //     }
-      //   }
-      // })
-      // .catch(err=>{
-      //   this.setState({messageErreur: "Erreur enregistrement navigateur, erreur d'access au serveur."});
-      // })
+      } else if( action === 'ajouterTokenUSB' ) {
 
+        // Ouvrir un socket avec pin pour demander certificat
+        // Peut se reconnecter automatiquement (sauf si creation certificat invalide)
+        socket = this.openSocketHelper({reconnection: false});
+        socket.on("authentifier", ()=>{
+          socket.emit('authentification', {
+            methode: 'ajouterTokenUSB',
+            idMillegrille,
+            pin,
+          });
+        });
+
+      } else if( action === 'effectuerEmpreinte' ) {
+
+        // Ouvrir un socket avec pin pour demander certificat
+        // Peut se reconnecter automatiquement (sauf si creation certificat invalide)
+        socket = this.openSocketHelper({reconnection: false});
+        socket.on("authentifier", ()=>{
+          socket.emit('authentification', {
+            methode: 'effectuerEmpreinte',
+            idMillegrille,
+          });
+        });
 
       } else if(this.peutUtiliserCertificatLocal()) {
 
