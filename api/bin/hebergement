@@ -51,19 +51,26 @@ new Promise(async (resolve, reject)=>{
   const mqConnectionUrl = process.env.MG_MQ_URL;
   await rabbitMQ.connect(mqConnectionUrl);
 
-  // Demarrer web server
-  demarrerWeb();
-
   console.debug("Demarrer hebergement");
   const hebergement = new HebergementCoupdoeil(rabbitMQ);
+
+  function fctRabbitMQParIdmg(idmg) {
+    return hebergement.millegrilles[idmg].rabbitMQ;
+  }
+
+  // Demarrer web server
+  demarrerWeb(fctRabbitMQParIdmg);
+
+  // Demarrer l'hebergement (partie RabbitMQ)
   hebergement.executer();
+
 })
 .catch(err=>{
   console.error("Erreur demarrage hebergement")
   console.error(err);
 });
 
-function demarrerWeb() {
+function demarrerWeb(fctRabbitMQParIdmg) {
 
   // Configuration web
   const webkeyPem = fs.readFileSync(process.env.WEB_KEY).toString('utf-8');
@@ -77,57 +84,56 @@ function demarrerWeb() {
   };
 
   // Demarrer gestion de sessions websockets
-  const sessionManagement = new SessionManagement(rabbitMQParIdmg);
+  const sessionManagement = new SessionManagement(fctRabbitMQParIdmg);
   sessionManagement.start();
-  
+
+  // Creer application CoupDOeil
+  const appOpts = {
+    hebergement: true,
+  }
+  const app = initialiserApp(sessionManagement, appOpts);
+  const webSocketApp = new WebSocketApp(sessionManagement);
+
+  // Serveurs supportes : https, spdy, (http2)
+  const serverType = process.env.SERVER_TYPE || 'spdy';
+  const serverTypeLib = require(serverType);
+  console.info("Type de serveur web : %s", serverType)
+  const server = serverType === 'http2'?
+    serverTypeLib.createSecureServer(config, app):
+    serverTypeLib.createServer(config, app);
+
+  var port = normalizePort(process.env.PORT || '443');
+  server.listen(port, demarrer);
+
+  function demarrer() {
+    const wss_server = socketio(server);
+    // wss_server.listen(server);
+    wss_server.on('connection', (socket) => {
+      console.info("Connexion WSS id = %s, remoteAddress = %s", socket.id, socket.conn.remoteAddress);
+      webSocketApp.addSocket(socket);
+    });
+
+    console.info('Server is listening at https://localhost:%d.', port);
+  }
+
 }
 
-// Demarrer gestion de sessions websockets
-// const sessionManagement = new SessionManagement(rabbitMQ, pki);
-// sessionManagement.start();
-//
-// // Creer application CoupDOeil
-// const app = initialiserApp(rabbitMQ, pki, sessionManagement);
-// const webSocketApp = new WebSocketApp(rabbitMQ, pki, sessionManagement);
-//
-// // Serveurs supportes : https, spdy, (http2)
-// const serverType = process.env.SERVER_TYPE || 'spdy';
-// const serverTypeLib = require(serverType);
-// console.info("Type de serveur web : %s", serverType)
-// const server = serverType === 'http2'?
-//   serverTypeLib.createSecureServer(config, app):
-//   serverTypeLib.createServer(config, app);
-//
-// var port = normalizePort(process.env.PORT || '443');
-// server.listen(port, demarrer);
-//
-// function demarrer() {
-//   const wss_server = socketio(server);
-//   // wss_server.listen(server);
-//   wss_server.on('connection', (socket) => {
-//     console.info("Connexion WSS id = %s, remoteAddress = %s", socket.id, socket.conn.remoteAddress);
-//     webSocketApp.addSocket(socket);
-//   });
-//
-//   console.info('Server is listening at https://localhost:%d.', port);
-// }
-//
-// /**
-//  * Normalize a port into a number, string, or false.
-//  */
-//
-// function normalizePort(val) {
-//   var port = parseInt(val, 10);
-//
-//   if (isNaN(port)) {
-//     // named pipe
-//     return val;
-//   }
-//
-//   if (port >= 0) {
-//     // port number
-//     return port;
-//   }
-//
-//   return false;
-// }
+/**
+ * Normalize a port into a number, string, or false.
+ */
+
+function normalizePort(val) {
+  var port = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+
+  return false;
+}
