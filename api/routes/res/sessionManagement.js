@@ -354,7 +354,7 @@ class SessionManagement {
     let pinCorrect = this.consommerPinTemporaireDevice(idmg, pin);
 
     if(pinCorrect) {
-      console.log("generercertificat: sujet %s, clePublique %s", sujet, clePublique);
+      // console.log("generercertificat: sujet %s, clePublique %s", sujet, clePublique);
 
       // Creer la transaction pour creer le certificat de navigateur
       const transaction = {
@@ -366,10 +366,10 @@ class SessionManagement {
         transaction, 'millegrilles.domaines.MaitreDesCles.genererCertificatNavigateur'
       )
       .then( msg => {
-        console.log("Recu certificat pour navigateur");
+        // console.log("Recu certificat pour navigateur");
         let messageContent = decodeURIComponent(escape(msg.content));
         let certificatInfo = JSON.parse(messageContent);
-        console.log(messageContent);
+        // console.log(messageContent);
 
         // Transmettre nouveau certificat, confirmer le login avec succes
         socket.emit('certificatGenere', certificatInfo);

@@ -18,8 +18,9 @@ const cryptageAsymetrique = new CryptageAsymetrique();
 class Login extends React.Component {
   state = {
     idMillegrille: '',
+    hebergement: false,
     redirectToReferrer: false,
-    empreinte: false,
+    empreinte: true,
     operationEnCours: false,
     certificatsNavigateurExiste: localStorage.getItem('certificat.expiration'),
   };
@@ -38,6 +39,16 @@ class Login extends React.Component {
         response.json().then(reponseJson => {
           console.debug("Reponse config/info.json");
           console.debug(reponseJson);
+          const idmgConfig = reponseJson.idmg;
+          var hebergement = reponseJson.hebergement;
+          var empreinte = reponseJson.empreinte || false;
+
+          const stateUpdate = {hebergement, empreinte};
+          if(!idmgSauvegarde) {
+            stateUpdate.idMillegrille = idmgConfig;
+            localStorage.setItem('idmg', idmgConfig);
+          }
+          this.setState(stateUpdate);
         });
       }
     })
@@ -149,16 +160,34 @@ class Login extends React.Component {
 
     var listeOptions = [];
     listeOptions.push(<SelectionMillegrille key="idMillegrille" idMillegrille={this.state.idMillegrille} changerId={this.changerId}/>);
-    listeOptions.push(
-      <Row key="authentifier">
-        <Col lg={12}>
-          <p>Accéder à votre MilleGrille.</p>
-        </Col>
-        <Col lg={12}>
-          <Button onClick={this.login_method} disabled={this.state.operationEnCours}>Authentifier</Button>
-        </Col>
-      </Row>
-    );
+
+    if( ! this.state.empreinte ) {
+      listeOptions.push(
+        <Row key="empreinte">
+          <Col lg={12}>
+            <p>
+              Effectuer une empreinte sur votre nouvelle MilleGrille.
+            </p>
+          </Col>
+          <Col lg={12}>
+            <Button variant="primary" onClick={this.register} disabled={this.state.operationEnCours}>Empreinte</Button>
+          </Col>
+        </Row>
+      );
+    }
+
+    if( this.state.empreinte ) {
+      listeOptions.push(
+        <Row key="authentifier">
+          <Col lg={12}>
+            <p>Accéder à votre MilleGrille.</p>
+          </Col>
+          <Col lg={12}>
+            <Button onClick={this.login_method} disabled={this.state.operationEnCours}>Authentifier</Button>
+          </Col>
+        </Row>
+      );
+    }
 
     if( ! this.state.certificatsNavigateurExiste ) {
       listeOptions.push(
@@ -245,20 +274,6 @@ class Login extends React.Component {
 
         <Col lg={12}>
           <Button variant="secondary" onClick={this.registerPin} disabled={this.state.operationEnCours}>Activer USB</Button>
-        </Col>
-      </Row>
-    );
-
-    listeOptions.push(
-      <Row key="empreinte">
-        <Col lg={12}>
-          <p>
-            Effectuer une empreinte sur votre nouvelle MilleGrille. Fonctionne
-            uniquement sur une nouvelle MilleGrille.
-          </p>
-        </Col>
-        <Col lg={12}>
-          <Button variant="secondary" onClick={this.register} disabled={this.state.operationEnCours}>Empreinte</Button>
         </Col>
       </Row>
     );
