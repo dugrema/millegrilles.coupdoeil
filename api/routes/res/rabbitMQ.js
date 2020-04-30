@@ -781,4 +781,10 @@ class RoutingKeyManager {
 
 // const rabbitMQ_singleton = new RabbitMQWrapper();
 
-module.exports = {RabbitMQWrapper};
+function decoderMessage(message) {
+  let messageContent = message.content.toString('utf-8');
+  let jsonMessage = JSON.parse(messageContent);
+  return jsonMessage;
+}
+
+module.exports = {RabbitMQWrapper, decoderMessage};

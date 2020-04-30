@@ -13,14 +13,20 @@ class PKIUtils {
   // Classe qui supporte des operations avec certificats et cles privees.
 
   constructor(certs) {
+    this.idmg = null;
+
+    // Contenu format texte PEM
     this.cle = certs.key;
     this.ca = certs.millegrille;
-    this.idmg = null;
     this.certPEM = null;
     this.chainePEM = null;
-    this.cert = null;
-    this.caStore = null;
     this.caIntermediaires = [];
+
+    // Objets node-forge
+    this.cleForge = null; // Objet cle charge en memoire (forge)
+    this.cert = null;     // Objet certificat charge en memoire (forge)
+    this.caStore = null;  // CA store pour valider les chaines de certificats
+
     this.cacheCertsParFingerprint = {};
 
     this.algorithm = 'aes256';
@@ -38,6 +44,8 @@ class PKIUtils {
     // Charger le certificat pour conserver commonName, fingerprint
     await this.chargerCertificats(certs);
     this._verifierCertificat();
+
+    this.cleForge = forge.pki.privateKeyFromPem(this.cle);
   }
 
   _verifierCertificat() {
@@ -163,6 +171,24 @@ class PKIUtils {
 
       return {contenuCrypte, encryptedSecretKey, iv};
     });
+  }
+
+  async decrypterAsymetrique(contenuSecret) {
+    console.debug("CONTENU SECRET CHIFFRE : " + contenuSecret)
+    let cleSecrete = forge.util.decode64(contenuSecret);
+
+    // Decrypter la cle secrete avec notre cle privee
+    var decryptedSecretKey = this.cleForge.decrypt(cleSecrete, 'RSA-OAEP', {
+      md: forge.md.sha256.create(),
+      mgf1: {
+        md: forge.md.sha256.create()
+      }
+    });
+    // console.debug("Cle secrete decryptee string " + decryptedSecretKey);
+    // decryptedSecretKey = Buffer.from(forge.util.binary.hex.decode(decryptedSecretKey));
+    // console.debug("Cle secrete decryptee (" + decryptedSecretKey.length + ") bytes");
+    // console.debug(decryptedSecretKey);
+    return decryptedSecretKey;
   }
 
   _creerCipherKey(certificat) {
