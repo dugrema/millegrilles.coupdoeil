@@ -4,7 +4,6 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
-const {APIRouteurInitialiser} = require('./routes/api'); // apiRouter = require('./routes/api');
 const {initialiserGrosFichiers} = require('./routes/grosFichiers'); // grosFichiersRouter = require('./routes/grosFichiers');
 
 function initialiserApp(sessionManagement) {
@@ -13,9 +12,6 @@ function initialiserApp(sessionManagement) {
   // Config de base, paths statiques
   app.use(logger('dev'));
   app.use(express.static(path.join(__dirname, 'public')));
-
-  // API principal
-  // const routeurApi = APIRouteurInitialiser(sessionManagement);
 
   // GrosFichiers
   const optsGrosFichiers = {
