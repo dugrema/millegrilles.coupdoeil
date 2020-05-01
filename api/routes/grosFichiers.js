@@ -59,7 +59,7 @@ function initialiserGrosFichiers(sessionManagement) {
     const {idmg} = sessionManagement.consommerToken(authtoken);
     if(idmg) {
       console.debug("Idmg " + idmg);
-      const rabbitMQ = sessionManagement.rabbitMQParIdmg[idmg];
+      const rabbitMQ = sessionManagement.fctRabbitMQParIdmg(idmg);
       if(!rabbitMQ) {
         console.error("RabbitMQ non disponible pour idmg " + idmg);
         res.sendStatus(500);
@@ -139,11 +139,12 @@ function initialiserGrosFichiers(sessionManagement) {
 
       } else {
         // console.debug("Aucun fingerprint de navigateur, on doit demander un pipe de decryptage");
-        promiseStream = fichierProcesseurDownloadCrypte.getDecipherPipe4fuuid(fuuid)
-        .then(pipeDecipher=>{
-          pipeDecipher.pipe(res);
-          return pipeDecipher; // Pipe au travers du decipher
-        })
+        // promiseStream = fichierProcesseurDownloadCrypte.getDecipherPipe4fuuid(fuuid)
+        // .then(pipeDecipher=>{
+        //   pipeDecipher.pipe(res);
+        //   return pipeDecipher; // Pipe au travers du decipher
+        // })
+        throw new Error("Fichier protege/secure - activer le certificat de navigateur pour transfert chiffre end-to-end.");
       }
 
     } else {
