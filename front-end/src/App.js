@@ -40,7 +40,7 @@ class Login extends React.Component {
           console.debug("Reponse config/info.json");
           console.debug(reponseJson);
           const idmgConfig = reponseJson.idmg;
-          var hebergement = reponseJson.hebergement;
+          var hebergement = reponseJson.modeHebergement;
           var empreinte = reponseJson.empreinte || false;
 
           const stateUpdate = {hebergement, empreinte};
@@ -161,7 +161,7 @@ class Login extends React.Component {
     var listeOptions = [];
     listeOptions.push(<SelectionMillegrille key="idMillegrille" idMillegrille={this.state.idMillegrille} changerId={this.changerId}/>);
 
-    if( ! this.state.empreinte ) {
+    if( this.state.hebergement || ! this.state.empreinte ) {
       listeOptions.push(
         <Row key="empreinte">
           <Col lg={12}>
@@ -176,7 +176,7 @@ class Login extends React.Component {
       );
     }
 
-    if( this.state.empreinte ) {
+    if( this.state.hebergement || this.state.empreinte ) {
       listeOptions.push(
         <Row key="authentifier">
           <Col lg={12}>

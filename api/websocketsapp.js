@@ -129,6 +129,9 @@ class WebSocketApp {
       var rabbitMQ_local = null;
       this.sessionManagement.addSocketConnection(socket)
       .then(rabbitMQ=>{
+        if(!rabbitMQ) {
+          throw new Error("Idmg inconnu");
+        }
         rabbitMQ_local = rabbitMQ;
         const idmg = rabbitMQ.pki.idmg;
         console.debug("Authentification est completee, idmg: " + idmg);

@@ -122,9 +122,9 @@ class SocketIoUpload {
         mimetype,
       },
       agentOptions: {
-        ca: this.pki.ca,
+        ca: this.pki.hoteCA,
         key: this.pki.cle,
-        cert: this.pki.chainePEM,
+        cert: this.pki.hotePEM,
       },  // Utilisation certificats SSL internes
     };
 
