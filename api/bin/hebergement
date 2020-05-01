@@ -39,11 +39,6 @@ new Promise(async (resolve, reject)=>{
 
   // Configuration web
   const hostIp = process.env.HOST;
-  // const config = {
-  //     hostIp: hostIp,
-  //     cert: webcertPem,
-  //     key: webkeyPem,
-  // };
 
   // Connexion a RabbitMQ
   // amqps://mq:5673/[idmg]
@@ -113,7 +108,7 @@ function demarrerWeb(fctRabbitMQParIdmg) {
       webSocketApp.addSocket(socket);
     });
 
-    console.info('Server is listening at https://localhost:%d.', port);
+    console.info('Server is listening on port %d', port);
   }
 
 }

@@ -124,28 +124,28 @@ function initialiserGrosFichiers(sessionManagement) {
     let promiseStream = null;
     if(securite === '3.protege' || securite === '4.secure') {
       // console.debug("Le fichier est crypte.");
+      throw new Error("Fichier protege/secure, activer certificat navigateur pour telecharger avec chiffrage end-to-end");
 
-      if(fingerprint) {
-        // console.debug("Le navigateur est capable de decrypter, on demande la cle secrete cryptee");
-        promiseStream = fichierProcesseurDownloadCrypte.getCleSecreteCryptee(rabbitMQ, fuuid, fingerprint)
-        .then((cleIv)=>{
-          // Ajouter dict de cle et iv au response header
-          res.set(cleIv);
-
-          // Pipe dans le result stream directement
-          // Le decryptage va etre fait par le navigateur directement
-          return res;
-        });
-
-      } else {
-        // console.debug("Aucun fingerprint de navigateur, on doit demander un pipe de decryptage");
-        // promiseStream = fichierProcesseurDownloadCrypte.getDecipherPipe4fuuid(fuuid)
-        // .then(pipeDecipher=>{
-        //   pipeDecipher.pipe(res);
-        //   return pipeDecipher; // Pipe au travers du decipher
-        // })
-        throw new Error("Fichier protege/secure - activer le certificat de navigateur pour transfert chiffre end-to-end.");
-      }
+      // if(fingerprint) {
+      //   // console.debug("Le navigateur est capable de decrypter, on demande la cle secrete cryptee");
+      //   promiseStream = fichierProcesseurDownloadCrypte.getCleSecreteCryptee(rabbitMQ, fuuid, fingerprint)
+      //   .then((cleIv)=>{
+      //     // Ajouter dict de cle et iv au response header
+      //     res.set(cleIv);
+      //
+      //     // Pipe dans le result stream directement
+      //     // Le decryptage va etre fait par le navigateur directement
+      //     return res;
+      //   });
+      //
+      // } else {
+      //   console.debug("Aucun fingerprint de navigateur, on doit demander un pipe de decryptage");
+      //   promiseStream = fichierProcesseurDownloadCrypte.getDecipherPipe4fuuid(fuuid)
+      //   .then(pipeDecipher=>{
+      //     pipeDecipher.pipe(res);
+      //     return pipeDecipher; // Pipe au travers du decipher
+      //   })
+      // }
 
     } else {
       promiseStream = Promise.resolve(res);
@@ -185,9 +185,9 @@ function initialiserGrosFichiers(sessionManagement) {
       url: targetConsignation,
       headers: headers,
       agentOptions: {
-        ca: pki.ca,
+        ca: pki.hoteCA,
         key: pki.cle,
-        cert: pki.chainePEM,
+        cert: pki.hotePEM,
       },  // Utilisation certificats SSL internes
     }
 
