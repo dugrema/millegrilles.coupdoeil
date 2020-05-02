@@ -3,8 +3,11 @@ const forge = require('node-forge');
 const stringify = require('json-stable-stringify');
 const fs = require('fs');
 const path = require('path');
+const tmp = require('tmp');
 
-const REPERTOIRE_CERTS_TMP = '/tmp/coupdoeil.certs';
+const REPERTOIRE_CERTS_TMP = tmp.dirSync().name;  //'/tmp/consignationfichiers.certs';
+console.info("Repertoire temporaire certs : %s", REPERTOIRE_CERTS_TMP);
+
 
 const PEM_CERT_DEBUT = '-----BEGIN CERTIFICATE-----';
 const PEM_CERT_FIN = '-----END CERTIFICATE-----';
