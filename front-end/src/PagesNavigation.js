@@ -10,16 +10,18 @@ import {Pki} from './domaines/Pki.js';
 import {Plume} from './domaines/Plume.js';
 import {SenseursPassifs} from './domaines/SenseursPassifs';
 import {Backup} from './domaines/Backup';
+import {Hebergement} from './domaines/Hebergement';
 
 const domainesConnus = {
-  'Annuaire': Annuaire,
-  'GrosFichiers': GrosFichiers,
-  'Parametres': Parametres,
-  'Plume': Plume,
-  'Pki': Pki,
+  Annuaire,
+  GrosFichiers,
+  Parametres,
+  Plume,
+  Pki,
   'Principale': InterfacePrincipale,
-  'SenseursPassifs': SenseursPassifs,
-  'Backup': Backup,
+  SenseursPassifs,
+  Backup,
+  Hebergement,
 };
 
 export function SectionContenu(props) {
