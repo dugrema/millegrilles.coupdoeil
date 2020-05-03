@@ -15,8 +15,12 @@
       "sauvegarder": "Sauvegarder",
       "publier": "Publier",
       "retour": "Retour",
+      "ajouter": "Ajouter",
+      "supprimer": "Supprimer",
       "url": "URL",
-      "rafraichir": "Rafraichir"
+      "rafraichir": "Rafraichir",
+      "activer": "Activer",
+      "desactiver": "Desactiver"
     },
     "formulaire": {
       "prenom": "Prénom :",
@@ -181,6 +185,18 @@
         "boutonRestaurerCles": "Restaurer clés",
         "actionsInterdites": "Actions interdites",
         "boutonResetBackup": "Reset transactions"
+      }
+    },
+    "hebergement": {
+      "initiale": {
+        "titre": "Hébergement de MilleGrilles",
+        "millegrillesHebergees": "MilleGrilles hébergées"
+      },
+      "millegrillesHebergees": {
+        "titre": "MilleGrilles hébergées",
+        "idmg": "MilleGrille",
+        "etat": "État",
+        "actions": "Actions"
       }
     }
   }

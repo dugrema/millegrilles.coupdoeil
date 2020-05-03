@@ -47,6 +47,12 @@ input.pin {
   padding: 1em;
 }
 
+div.table {}
+div.table div.table-header {
+  background-color: #9eb1bb;
+  font-weight: bolder;
+}
+
 @media print {
 
   .w3-top {
