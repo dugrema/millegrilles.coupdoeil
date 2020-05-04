@@ -57,6 +57,10 @@ class Login extends React.Component {
       console.error(err);
     });
 
+    // Nettoyer la session du navigateur
+    const sessionKeys = ['clePubliqueMaitredescles', 'fingerprintMaitredescles'];
+    sessionKeys.forEach(key=>sessionStorage.removeItem(key));
+
   }
 
   componentWillUnmount() {
@@ -119,12 +123,8 @@ class Login extends React.Component {
   }
 
   resetCertificatLocal = event => {
-    localStorage.removeItem('certificat.cert');
-    localStorage.removeItem('certificat.expiration');
-    localStorage.removeItem('certificat.fingerprint');
-    localStorage.removeItem('certificat.fullchain');
-    localStorage.removeItem('certificat.clepublique');
-    localStorage.removeItem('certificat.cleprivee');
+    const keys = ['certificat.fullchain', 'certificat.clepublique', 'certificat.cleprivee', 'certificat.fingerprint', 'certificat.cert', 'certificat.expiration'];
+    keys.forEach(key=>localStorage.removeItem(key));
     this.setState({certificatsNavigateurExiste: false});
   }
 
@@ -132,6 +132,8 @@ class Login extends React.Component {
     const {value} = event.currentTarget;
     this.setState({idMillegrille: value});
     localStorage.setItem('idmg', value);
+
+    this.resetCertificatLocal();
   }
 
   render() {
