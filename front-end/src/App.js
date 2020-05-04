@@ -37,8 +37,8 @@ class Login extends React.Component {
     fetch(infoUrl).then(response => {
       if(response.status === 200) {
         response.json().then(reponseJson => {
-          console.debug("Reponse config/info.json");
-          console.debug(reponseJson);
+          // console.debug("Reponse config/info.json");
+          // console.debug(reponseJson);
           const idmgConfig = reponseJson.idmg;
           var hebergement = reponseJson.modeHebergement;
           var empreinte = reponseJson.empreinte || false;
@@ -102,7 +102,7 @@ class Login extends React.Component {
   }
 
   login_method = event => {
-    console.debug(event.currentTarget);
+    // console.debug(event.currentTarget);
     this.setState({operationEnCours: true, action: 'authentifier',}, ()=>{
       this.timerResetAuthentification = setTimeout(()=>{
         this.resetAuthentification();
@@ -394,7 +394,7 @@ class App extends React.Component {
     })
 
     socket.on('login', confirmation=>{
-      console.debug("Message login recu : %s", confirmation);
+      // console.debug("Message login recu : %s", confirmation);
       webSocketManager.setupWebSocket(socket);
       this.setState({loggedIn: confirmation, wss_socket: socket});
     });
@@ -426,7 +426,7 @@ class App extends React.Component {
 
   login = ({idMillegrille, action, pin, sujet}) => {
 
-    console.debug("ID MilleGrille: %s, action: %s", idMillegrille, action);
+    // console.debug("ID MilleGrille: %s, action: %s", idMillegrille, action);
 
     if(!this.state.wss_socket) {
 

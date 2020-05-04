@@ -1,6 +1,5 @@
 import React from 'react';
-import { Alert, Form, Row, Col,
-         Button, ButtonGroup, InputGroup, FormControl} from 'react-bootstrap';
+import { Row, Col, Button, ButtonGroup} from 'react-bootstrap';
 import { Feuille } from '../mgcomponents/Feuilles';
 import { Trans } from 'react-i18next';
 
@@ -45,8 +44,6 @@ export class Hebergement extends React.Component {
   }
 
   render() {
-    let ecranCourant = this.state.ecranCourant;
-
     const sousEcran = this.state.ecranCourant;
     let contenu;
     if(sousEcran === 'millegrillesHebergees') {
@@ -114,8 +111,8 @@ class MillegrillesHebergees extends React.Component {
     const requete = {}
     this.props.webSocketManager.transmettreRequete(routing, requete)
     .then(reponse=>{
-      console.debug("Reponse millegrilles hebergees");
-      console.debug(reponse);
+      // console.debug("Reponse millegrilles hebergees");
+      // console.debug(reponse);
       this.setState({listeMillegrilles: reponse});
     });
 
@@ -179,7 +176,7 @@ class MillegrillesHebergees extends React.Component {
     const transaction = {idmg: value};
     this.props.webSocketManager.transmettreTransaction(routing, transaction)
     .catch(err=>{
-      console.error("Erreur bouton activer millegrille");
+      console.error("Erreur bouton desactiver millegrille");
       console.error(err);
     })
     .finally(()=>{
@@ -188,15 +185,30 @@ class MillegrillesHebergees extends React.Component {
   }
 
   supprimerMillegrille = event => {
-
+    const {value} = event.currentTarget;
+    this.setState({desactiverBoutons: true});
+    const routing = 'millegrilles.domaines.Hebergement.supprimerMilleGrilleHebergee';
+    const transaction = {idmg: value};
+    this.props.webSocketManager.transmettreTransaction(routing, transaction)
+    .then(reponse=>{
+      const listeMillegrilles = this.state.listeMillegrilles.filter(info=>{
+        // Reponse recue, on retire la MilleGrille de la liste
+        if(info.idmg === value) return false;
+        return true;
+      })
+      this.setState({listeMillegrilles});
+    })
+    .catch(err=>{
+      console.error("Erreur bouton supprimer millegrille");
+      console.error(err);
+    })
+    .finally(()=>{
+      this.setState({desactiverBoutons: false});
+    });
   }
 
   render() {
 
-    // const liste = [
-    //   {'idmg': '2zHt8UFJhAdH8XzcPfb4Evsn4kcZrvZ7fxBT97a', 'etat': 'actif'},
-    //   {'idmg': '3M87pZxVVWbT1dVLeRarQnge1mvADTs4trG7Caa', 'etat': 'actif'},
-    // ];
     const liste = this.state.listeMillegrilles.sort((a,b)=>{
       if(a===b) return 0;
       if(a.idmg && b.idmg) return a.idmg.localeCompare(b.idmg);
@@ -225,7 +237,12 @@ class MillegrillesHebergees extends React.Component {
         </Button>
       );
       boutons.push(
-        <Button key="supprimer" variant="danger" disabled={this.state.desactiverBoutons}><Trans>global.supprimer</Trans></Button>
+        <Button key="supprimer"
+          onClick={this.supprimerMillegrille}
+          value={millegrille.idmg}
+          variant="danger"
+          disabled={this.state.desactiverBoutons}><Trans>global.supprimer</Trans>
+        </Button>
       );
 
       return (
