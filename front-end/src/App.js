@@ -161,7 +161,12 @@ class Login extends React.Component {
     }
 
     var listeOptions = [];
-    listeOptions.push(<SelectionMillegrille key="idMillegrille" idMillegrille={this.state.idMillegrille} changerId={this.changerId}/>);
+    listeOptions.push(
+      <SelectionMillegrille key="idMillegrille"
+        idMillegrille={this.state.idMillegrille}
+        changerId={this.changerId}
+        hebergement={this.state.hebergement} />
+    );
 
     if( this.state.hebergement || ! this.state.empreinte ) {
       listeOptions.push(
@@ -615,29 +620,42 @@ class App extends React.Component {
 // Affiche options de selections de la MilleGrille
 function SelectionMillegrille(props) {
 
-  return (
-    <Row key="millegrille">
-      <Col lg={12}>
-        <p>Identifier la MilleGrille avec son identificateur (idmg) ou son nom</p>
-      </Col>
-      <Col lg={12}>
-        <Form.Group controlId="millegrille">
-          <InputGroup>
-            <InputGroup.Prepend>
-              <InputGroup.Text id="millegrille">IDMG ou nom</InputGroup.Text>
-            </InputGroup.Prepend>
-            <FormControl
-              value={props.idMillegrille}
-              onChange={props.changerId}
-              placeholder="e.g. vPXTaPjpUErFjV5d8pKrAHHqKhFUr7GSEruCL7, maple"
-              aria-label="millegrille"
-              aria-describedby="millegrille"
-            />
-          </InputGroup>
-        </Form.Group>
-      </Col>
-    </Row>
-  );
+  let contenu;
+  if(props.hebergement) {
+    contenu = (
+      <Row key="millegrille">
+        <Col lg={12}>
+          <p>Identifier la MilleGrille avec son identificateur (idmg) ou son nom</p>
+        </Col>
+        <Col lg={12}>
+          <Form.Group controlId="millegrille">
+            <InputGroup>
+              <InputGroup.Prepend>
+                <InputGroup.Text id="millegrille">IDMG ou nom</InputGroup.Text>
+              </InputGroup.Prepend>
+              <FormControl
+                value={props.idMillegrille}
+                onChange={props.changerId}
+                placeholder="e.g. vPXTaPjpUErFjV5d8pKrAHHqKhFUr7GSEruCL7, maple"
+                aria-label="millegrille"
+                aria-describedby="millegrille"
+              />
+            </InputGroup>
+          </Form.Group>
+        </Col>
+      </Row>
+    );
+  } else {
+    contenu = (
+      <Row>
+        <Col lg={12}>
+          <p>MilleGrille {props.idMillegrille}</p>
+        </Col>
+      </Row>
+    );
+  }
+
+  return contenu;
 
 }
 
