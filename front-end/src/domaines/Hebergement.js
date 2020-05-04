@@ -92,21 +92,22 @@ function PageInitiale(props) {
   );
 }
 
+const MESSAGE_MAJ_DOCUMENT = 'noeuds.source.millegrilles_domaines_Hebergement.documents.millegrille.hebergee';
+
 class MillegrillesHebergees extends React.Component {
 
   constructor(props) {
     super(props);
     this.state = {
       listeMillegrilles: [],
+      desactiverBoutons: false,
     }
-    this.subscriptions = [
-        'noeuds.source.millegrilles_domaines_Hebergement.documents.millegrille.hebergee',
-    ];
+    this.subscriptions = [MESSAGE_MAJ_DOCUMENT,];
   }
 
   componentDidMount() {
     // Enregistrer les routingKeys de documents
-    this.props.webSocketManager.subscribe(this.subscriptions, this.processMessage);
+    this.props.webSocketManager.subscribe([MESSAGE_MAJ_DOCUMENT], this.majDocument);
 
     // Aller chercher la liste des MilleGrilles hebergees
     const routing = 'requete.millegrilles.domaines.Hebergement.requeteMilleGrillesHebergees';
@@ -124,9 +125,70 @@ class MillegrillesHebergees extends React.Component {
     this.props.webSocketManager.unsubscribe(this.subscriptions);
   }
 
-  processMessage = (routing, message) => {
-    console.debug("Message recu, routing : %s", routing);
-    console.debug(message);
+  // Mise a jour document MilleGrille hebergee
+  majDocument = (routing, message) => {
+    // console.debug("Message recu, routing : %s", routing);
+    // console.debug(message);
+    const dictDocs = {};
+    for(let idx in this.state.listeMillegrilles) {
+      const info = this.state.listeMillegrilles[idx];
+      dictDocs[info.idmg] = info;
+    }
+
+    // Remplacer / ajouter document
+    dictDocs[message.idmg] = message;
+
+    // Extraire et sauvegarder liste
+    const listeMillegrilles = Object.values(dictDocs);
+    this.setState({listeMillegrilles})
+  }
+
+  ajouterMillegrille = event => {
+    this.setState({desactiverBoutons: true});
+    const routing = 'commande.millegrilles.domaines.Hebergement.creerMilleGrilleHebergee';
+    const commande = {};
+    this.props.webSocketManager.transmettreCommande(routing, commande)
+    .catch(err=>{
+      console.error("Erreur bouton ajouter millegrille");
+      console.error(err);
+    })
+    .finally(()=>{
+      this.setState({desactiverBoutons: false});
+    });
+  }
+
+  activerMillegrille = event => {
+    const {value} = event.currentTarget;
+    this.setState({desactiverBoutons: true});
+    const routing = 'millegrilles.domaines.Hebergement.activerMilleGrilleHebergee';
+    const transaction = {idmg: value};
+    this.props.webSocketManager.transmettreTransaction(routing, transaction)
+    .catch(err=>{
+      console.error("Erreur bouton activer millegrille");
+      console.error(err);
+    })
+    .finally(()=>{
+      this.setState({desactiverBoutons: false});
+    });
+  }
+
+  desactiverMillegrille = event => {
+    const {value} = event.currentTarget;
+    this.setState({desactiverBoutons: true});
+    const routing = 'millegrilles.domaines.Hebergement.desactiverMilleGrilleHebergee';
+    const transaction = {idmg: value};
+    this.props.webSocketManager.transmettreTransaction(routing, transaction)
+    .catch(err=>{
+      console.error("Erreur bouton activer millegrille");
+      console.error(err);
+    })
+    .finally(()=>{
+      this.setState({desactiverBoutons: false});
+    });
+  }
+
+  supprimerMillegrille = event => {
+
   }
 
   render() {
@@ -147,13 +209,23 @@ class MillegrillesHebergees extends React.Component {
       const boutons = []
       const actif = millegrille.etat === 'actif';
       boutons.push(
-        <Button key="activer" variant="secondary" disabled={actif}><Trans>global.activer</Trans></Button>
+        <Button key="activer"
+          onClick={this.activerMillegrille}
+          value={millegrille.idmg}
+          variant="secondary"
+          disabled={actif || this.state.desactiverBoutons}><Trans>global.activer</Trans>
+        </Button>
       );
       boutons.push(
-        <Button key="desactiver" variant="secondary" disabled={!actif}><Trans>global.desactiver</Trans></Button>
+        <Button key="desactiver"
+          onClick={this.desactiverMillegrille}
+          value={millegrille.idmg}
+          variant="secondary"
+          disabled={!actif || this.state.desactiverBoutons }><Trans>global.desactiver</Trans>
+        </Button>
       );
       boutons.push(
-        <Button key="supprimer" variant="danger"><Trans>global.supprimer</Trans></Button>
+        <Button key="supprimer" variant="danger" disabled={this.state.desactiverBoutons}><Trans>global.supprimer</Trans></Button>
       );
 
       return (
@@ -195,7 +267,9 @@ class MillegrillesHebergees extends React.Component {
           <Row>
             <Col>
               <ButtonGroup aria-label="Operations MilleGrilles hebergees">
-                <Button variant="primary"><Trans>global.ajouter</Trans></Button>
+                <Button variant="primary"
+                  onClick={this.ajouterMillegrille}
+                  disabled={this.state.desactiverBoutons}><Trans>global.ajouter</Trans></Button>
               </ButtonGroup>
             </Col>
           </Row>
