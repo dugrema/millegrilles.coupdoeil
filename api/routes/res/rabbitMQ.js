@@ -660,9 +660,10 @@ class RabbitMQWrapper {
   }
 
   demanderCertificatMaitreDesCles() {
-    if(this.certificatMaitreDesCles) {
+    const tempsCourant = new Date().getTime();
+    if(this.certificatMaitreDesCles && this.certificatMaitreDesCles.expiration < tempsCourant) {
       return new Promise((resolve, reject) => {
-        resolve(this.certificatMaitreDesCles);
+        resolve(this.certificatMaitreDesCles.cert);
       });
     } else {
       let objet_crypto = this;
@@ -673,10 +674,15 @@ class RabbitMQWrapper {
       .then(reponse=>{
         let messageContent = decodeURIComponent(escape(reponse.content));
         let json_message = JSON.parse(messageContent);
-        // console.debug("Reponse cert maitre des cles");
-        // console.debug(messageContent);
-        objet_crypto.certificatMaitreDesCles = forge.pki.certificateFromPem(json_message.certificat);
-        return objet_crypto.certificatMaitreDesCles;
+        console.debug("Reponse cert maitre des cles");
+        console.debug(messageContent);
+        const cert = forge.pki.certificateFromPem(json_message.certificat);
+        objet_crypto.certificatMaitreDesCles = {
+          expiration: tempsCourant + 120000,
+          cert,
+        }
+
+        return cert;
       })
     }
   }
