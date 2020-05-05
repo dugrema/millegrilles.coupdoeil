@@ -28,7 +28,9 @@ class HebergementCoupdoeil {
         const infoMilleGrille = milleGrillesHebergees[idx];
         const idmg = infoMilleGrille.idmg;
         if(!this.millegrilles[idmg]) {
-          this.demarrerHebergementIdmg(idmg, infoMilleGrille);
+          console.debug("Demarrer hebergement %s", idmg)
+          await this.demarrerHebergementIdmg(idmg, infoMilleGrille);
+          console.info("Hebergement %s demarre", idmg)
         }
       }
 
