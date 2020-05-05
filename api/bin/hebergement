@@ -52,7 +52,7 @@ new Promise(async (resolve, reject)=>{
   function fctRabbitMQParIdmg(idmg) {
     const dictMillegrilles = hebergement.millegrilles;
     console.debug("MilleGrilles hebergees");
-    console.debug(Object.keys(dictMillegrilles));
+    console.debug(hebergement)
     const millegrille = dictMillegrilles[idmg];
     if(millegrille) {
       return millegrille.rabbitMQ;
