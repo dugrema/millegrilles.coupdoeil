@@ -47,6 +47,10 @@ class Login extends React.Component {
           if(!idmgSauvegarde) {
             stateUpdate.idMillegrille = idmgConfig;
             localStorage.setItem('idmg', idmgConfig);
+          } else if(!hebergement) {
+            // Hebergement inactif, override du idmg sauvegarde
+            stateUpdate.idMillegrille = idmgConfig;
+            localStorage.setItem('idmg', idmgConfig);
           }
           this.setState(stateUpdate);
         });
