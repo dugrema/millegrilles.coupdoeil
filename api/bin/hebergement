@@ -49,10 +49,10 @@ new Promise(async (resolve, reject)=>{
   console.debug("Demarrer hebergement");
   const hebergement = new HebergementCoupdoeil(rabbitMQ);
 
-  function fctRabbitMQParIdmg(idmg) {
+  const fctRabbitMQParIdmg = (idmg) => {
     const dictMillegrilles = hebergement.millegrilles;
     console.debug("MilleGrilles hebergees");
-    console.debug(hebergement)
+    console.debug(Object.keys(dictMillegrilles));
     const millegrille = dictMillegrilles[idmg];
     if(millegrille) {
       return millegrille.rabbitMQ;
