@@ -153,14 +153,12 @@ class SessionManagement {
         // console.debug("Authentification par certificat");
         let fingerprint = params.fingerprint;
         let certificat = params.certificat;
-        resolve(
-          this.creerChallengeCertificat(rabbitMQ, socket, fingerprint, certificat)
+        return this.creerChallengeCertificat(rabbitMQ, socket, fingerprint, certificat)
           .then(()=>rabbitMQ)
           .catch(err=>{
             console.warn("Erreur challenge certificat, essayer USB");
             this.creerChallengeUSB(rabbitMQ, socket).then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
-          })
-        );
+          });
       } else if (params.methode === 'tokenUSB') {
         console.debug("Authentification par securityKey USB");
         this.creerChallengeUSB(rabbitMQ, socket).then(()=>resolve(rabbitMQ)).catch(err=>reject(err));

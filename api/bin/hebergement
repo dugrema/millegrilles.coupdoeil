@@ -50,7 +50,11 @@ new Promise(async (resolve, reject)=>{
   const hebergement = new HebergementCoupdoeil(rabbitMQ);
 
   function fctRabbitMQParIdmg(idmg) {
-    return hebergement.millegrilles[idmg].rabbitMQ;
+    const millegrille = hebergement.millegrilles[idmg];
+    if(millegrille) {
+      return millegrille.rabbitMQ;
+    }
+    return null;
   }
 
   // Demarrer web server
