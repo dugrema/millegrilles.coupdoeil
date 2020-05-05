@@ -149,35 +149,41 @@ class SocketIoUpload {
         // console.debug("Response body");
         // console.debug(body);
 
-        const responseBody = JSON.parse(body);
-        const sha256consignation = responseBody.sha256Hash;
-        const sha256Local = infoFichier.sha256Local; // Place par chunkInput 'end'
+        try {
+          const responseBody = JSON.parse(body);
+          const sha256consignation = responseBody.sha256Hash;
+          const sha256Local = infoFichier.sha256Local; // Place par chunkInput 'end'
 
-        let compMessage = "SHA256 client : " + sha256Client +
-          ", local : " + sha256Local + ", consignation " + sha256consignation;
-        // console.debug(compMessage);
+          let compMessage = "SHA256 client : " + sha256Client +
+            ", local : " + sha256Local + ", consignation " + sha256consignation;
+          // console.debug(compMessage);
 
-        // Verifier le hachage client vs consignation (local n'est pas
-        // important sauf pour diagnostiquer des problemes)
-        if(sha256Client !== sha256consignation) {
-          let err = "SHA256 fichiers ne correspondent pas : " + compMessage;
-          reject(err);
-          return;
-        }
+          // Verifier le hachage client vs consignation (local n'est pas
+          // important sauf pour diagnostiquer des problemes)
+          if(sha256Client !== sha256consignation) {
+            let err = "SHA256 fichiers ne correspondent pas : " + compMessage;
+            reject(err);
+            return;
+          }
 
-        // Transmettre les transactions metadata
-        // Cette action est asynchrone, le prochain fichier peut commencer a
-        // uploader immediatement.
-        return this.transmettreTransactionMetadata(infoFichier, sha256Client)
-        .then(()=>{
-          // console.debug("Transaction fin complete");
-          resolve();
-        })
-        .catch(err=>{
-          console.error("Erreur transmission metadata");
+          // Transmettre les transactions metadata
+          // Cette action est asynchrone, le prochain fichier peut commencer a
+          // uploader immediatement.
+          return this.transmettreTransactionMetadata(infoFichier, sha256Client)
+          .then(()=>{
+            // console.debug("Transaction fin complete");
+            resolve();
+          })
+          .catch(err=>{
+            console.error("Erreur transmission metadata");
+            console.error(err);
+            reject(err);
+          })
+        } catch(err) {
+          console.error("Erreur traitement upload");
           console.error(err);
           reject(err);
-        })
+        }
 
       })
 
