@@ -80,15 +80,13 @@ export class SignerNoeud extends React.Component {
       verifie = csr.verify()
       const idmg = csr.subject.getField('O').value;
       const typeCertificat = csr.subject.getField('OU').value;
-      console.debug("CSR information, idmg : %s, type : %s, verifie : %s", idmg, typeCertificat, verifie);
-
-      console.debug(this.props)
+      // console.debug("CSR information, idmg : %s, type : %s, verifie : %s", idmg, typeCertificat, verifie);
 
       // Afficher l'information si le certificat est valide
       infoCsr = verifie?{idmg, typeCertificat}:{};
     } catch (err) {
       console.debug("Erreur verification CSR");
-      console.debug(err);
+      // console.debug(err);
     }
     this.setState({verifie, infoCsr});
   }
@@ -126,9 +124,19 @@ export class SignerNoeud extends React.Component {
 
       var infoIdmg = null;
       if(idmg === idmgLocal) {
-        infoIdmg = (<Col>IDMG : {idmg}</Col>);
+        infoIdmg = (
+          <Row>
+            <Col lg={4}>IDMG :</Col>
+            <Col lg={6}>{idmg}</Col>
+          </Row>
+        );
       } else {
-        infoIdmg = (<Col>IDMG tiers : {idmg}</Col>);
+        infoIdmg = (
+          <Row>
+            <Col lg={4}>IDMG tiers :</Col>
+            <Col lg={6}>{idmg}</Col>
+          </Row>
+        );
       }
 
       basFormulaire = (
@@ -136,22 +144,22 @@ export class SignerNoeud extends React.Component {
           <Row>
             <Col>Fichier CSR valide, verifier le contenu avant de signer</Col>
           </Row>
+
+          {infoIdmg}
+
           <Row>
-            {infoIdmg}
-          </Row>
-          <Row>
-            <Col>Type Certificat a generer : {typeCertificat}</Col>
+            <Col lg={4}>Type Certificat a generer :</Col>
+            <Col lg={6}>{typeCertificat}</Col>
           </Row>
 
           <Row className="w3-center boutons buttonBar">
             <Col>
               <Button variant="primary" onClick={this.signer} value="Signer">Signer</Button>
-              <Button variant="secondary" onClick={this.props.retourPki} value="Annuler">Annuler</Button>
             </Col>
           </Row>
         </div>
       );
-    } else {
+    } else if (this.state.requeteCsr !== '') {
       basFormulaire = (
         <Row>
           <Col>Requete invalide</Col>
