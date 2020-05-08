@@ -1,6 +1,7 @@
 import React from 'react';
 import { Row, Col, Button, Form } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
+import forge from 'node-forge';
 
 import Checkbox from "../mgcomponents/Checkbox";
 import webSocketManager from '../WebSocketManager';
@@ -20,10 +21,18 @@ export class SignerNoeud extends React.Component {
     domaine: '',
     erreur: null,
     certificat: null,
+    verifie: false,
+    infoCsr: {},
   }
 
   changementDomaine = event => {this.setState({domaine: event.currentTarget.value})}
-  changementRequeteCsr = event => {this.setState({requeteCsr: event.currentTarget.value})}
+
+  changementRequeteCsr = event => {
+    this.setState({requeteCsr: event.currentTarget.value}, ()=>{
+      this.verifierCsr();
+    })
+  }
+
   signer = event => {
     let transaction = {
       domaines: [this.state.domaine],
@@ -61,6 +70,29 @@ export class SignerNoeud extends React.Component {
 
   }
 
+  verifierCsr() {
+    // Tenter de charger le CSR et extraire l'information
+    const csrPem = this.state.requeteCsr;
+    var infoCsr = {};
+    var verifie = false;
+    try {
+      const csr = forge.pki.certificationRequestFromPem(csrPem);
+      verifie = csr.verify()
+      const idmg = csr.subject.getField('O').value;
+      const typeCertificat = csr.subject.getField('OU').value;
+      console.debug("CSR information, idmg : %s, type : %s, verifie : %s", idmg, typeCertificat, verifie);
+
+      console.debug(this.props)
+
+      // Afficher l'information si le certificat est valide
+      infoCsr = verifie?{idmg, typeCertificat}:{};
+    } catch (err) {
+      console.debug("Erreur verification CSR");
+      console.debug(err);
+    }
+    this.setState({verifie, infoCsr});
+  }
+
   renderErreur() {
     if(this.state.erreur) {
       return (
@@ -85,24 +117,55 @@ export class SignerNoeud extends React.Component {
   }
 
   renderFormulaire() {
+
+    var basFormulaire = null;
+    if(this.state.verifie) {
+      const {typeCertificat, idmg} = this.state.infoCsr;
+
+      const idmgLocal = this.props.documentIdMillegrille.idmg;
+
+      var infoIdmg = null;
+      if(idmg === idmgLocal) {
+        infoIdmg = (<Col>IDMG : {idmg}</Col>);
+      } else {
+        infoIdmg = (<Col>IDMG tiers : {idmg}</Col>);
+      }
+
+      basFormulaire = (
+        <div>
+          <Row>
+            <Col>Fichier CSR valide, verifier le contenu avant de signer</Col>
+          </Row>
+          <Row>
+            {infoIdmg}
+          </Row>
+          <Row>
+            <Col>Type Certificat a generer : {typeCertificat}</Col>
+          </Row>
+
+          <Row className="w3-center boutons buttonBar">
+            <Col>
+              <Button variant="primary" onClick={this.signer} value="Signer">Signer</Button>
+              <Button variant="secondary" onClick={this.props.retourPki} value="Annuler">Annuler</Button>
+            </Col>
+          </Row>
+        </div>
+      );
+    } else {
+      basFormulaire = (
+        <Row>
+          <Col>Requete invalide</Col>
+        </Row>
+      );
+    }
+
     return (
       <form onSubmit={event => event.preventDefault()}>
         <div className="w3-container formulaire">
-          <div>
-            <div className="w3-col m4">Domaine du certificat</div>
-            <div className="w3-col m8 champ">
-              <select value={this.state.domaine} onChange={this.changementDomaine}>
-                <option value="">Choisir un domaine</option>
-                <option value="Noeud">Noeud</option>
-                <option value="NoeudPublication">Noeud de publication</option>
-                <option value="SenseursPassifs">Senseurs Passifs</option>
-              </select>
-            </div>
-          </div>
 
           <div>
             <div className="w3-col m12">
-              Coller le texte de la requete PEM
+              Coller le texte de la requete PEM (fichier CSR)
             </div>
           </div>
 
@@ -114,10 +177,7 @@ export class SignerNoeud extends React.Component {
             </div>
           </div>
 
-          <div className="w3-col m12 w3-center boutons buttonBar">
-            <button onClick={this.signer} value="Signer">Signer</button>
-            <button onClick={this.props.retourPki} value="Annuler">Annuler</button>
-          </div>
+          {basFormulaire}
 
         </div>
       </form>
