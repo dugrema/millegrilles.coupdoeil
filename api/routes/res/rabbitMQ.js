@@ -494,7 +494,8 @@ class RabbitMQWrapper {
     }
   }
 
-  transmettreRequete(routingKey, message) {
+  transmettreRequete(routingKey, message, opts) {
+    if(!opts) opts = {};
 
     const infoTransaction = this._formatterInfoTransaction(routingKey);
 
@@ -505,7 +506,32 @@ class RabbitMQWrapper {
     const jsonMessage = JSON.stringify(message);
 
     // Transmettre requete - la promise permet de traiter la reponse
-    const promise = this._transmettre(routingKey, jsonMessage, correlation);
+    var promise = this._transmettre(routingKey, jsonMessage, correlation);
+
+    if(opts.decoder) {
+      promise = promise.then(msg=>{
+        let messageContent = decodeURIComponent(escape(msg.content));
+        let json_message = JSON.parse(messageContent);
+
+        let documentRecu = json_message;
+        if(json_message.resultats) {
+          documentRecu = json_message['resultats'];
+          if(documentRecu[0]) {
+            documentRecu = documentRecu[0];
+            if(documentRecu[0]) {
+              documentRecu = documentRecu[0];
+            }
+          }
+        }
+
+        // console.debug("Document decode");
+        // console.debug(documentRecu)
+
+        return documentRecu;
+      })
+
+    }
+
     return promise;
   }
 

@@ -21,7 +21,7 @@ function initialiserInfo(sessionManagement, opts) {
 
       // console.debug("Requete info")
 
-      rabbitMQ.transmettreRequete('requete.Principale.getAuthInfo', {})
+      rabbitMQ.transmettreRequete('requete.Principale.getAuthInfo', {}, {decoder: true})
       .then(doc=>{
 
         // console.debug("reception info")
