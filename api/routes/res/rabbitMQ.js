@@ -6,7 +6,8 @@ const forge = require('node-forge');
 
 // const pki = require('./pki.js');
 
-
+const EXCHANGE_PROTEGE = '3.protege';
+const ROUTING_EMETTRE_CERTIFICAT = 'evenement.Pki.infoCertificat';
 const routingKeyNouvelleTransaction = 'transaction.nouvelle';
 
 class RabbitMQWrapper {
@@ -86,15 +87,14 @@ class RabbitMQWrapper {
       }).then(()=>{
         console.debug("Connexion et channel prets");
 
-        // Transmettre le certificat
+        // Proactivement emettre le certificat
         let fingerprint = this.transmettreCertificat();
 
         // Enregistrer routing key du certificat
         // Permet de repondre si un autre composant demande notre certificat
-        this.routingKeyCertificat = 'pki.requete.' + fingerprint;
+        this.routingKeyCertificat = 'requete.certificat.' + fingerprint;
         console.debug("Enregistrer routing key: " + fingerprint)
-        this.channel.bindQueue(this.reply_q.queue, 'millegrilles.noeuds', this.routingKeyCertificat);
-        this.channel.bindQueue(this.reply_q.queue, 'millegrilles.noeuds', 'pki.certificat.#');
+        this.channel.bindQueue(this.reply_q.queue, EXCHANGE_PROTEGE, this.routingKeyCertificat);
 
         // console.debug("Certificat transmis");
       }).catch(err => {
@@ -193,14 +193,14 @@ class RabbitMQWrapper {
       // Sauvegarder le certificat localement pour usage futur
       this.pki.sauvegarderMessageCertificat(messageContent, json_message.fingerprint);
       return; // Ce message ne correspond pas au format standard
-    } else if(routingKey && routingKey.startsWith('pki.requete.')) {
+    } else if(routingKey && routingKey.startsWith('requete.certificat.')) {
       // Transmettre le certificat
-      let messageCertificat = this.pki.preparerMessageCertificat();
-      let messageJSONStr = JSON.stringify(messageCertificat);
-      // console.debug("Repondre demande certificat ")
+      // let messageCertificat = this.pki.preparerMessageCertificat();
+      // let messageJSONStr = JSON.stringify(messageCertificat);
       // console.debug(msg.properties);
       // console.debug(messageJSONStr);
       // this._repondre(messageJSONStr, replyQ, correlationId)
+      // console.debug("Repondre demande certificat ")
       this.transmettreCertificat()
       return; // Ce message ne correspond pas au format standard
     }
@@ -290,9 +290,7 @@ class RabbitMQWrapper {
     let messageCertificat = this.pki.preparerMessageCertificat();
     let fingerprint = messageCertificat.fingerprint;
     let messageJSONStr = JSON.stringify(messageCertificat);
-    this._publish(
-      'pki.certificat.' + fingerprint, messageJSONStr
-    );
+    this._publish(ROUTING_EMETTRE_CERTIFICAT, messageJSONStr);
 
     return fingerprint;
   }
@@ -476,7 +474,7 @@ class RabbitMQWrapper {
     try {
       // console.log("Message a transmettre: " + routingKey + " = " + jsonMessage);
       this.channel.publish(
-        'millegrilles.noeuds',
+        EXCHANGE_PROTEGE,
         routingKey,
          new Buffer(jsonMessage),
          {
@@ -565,7 +563,7 @@ class RabbitMQWrapper {
 
       // Faire la publication
       this.channel.publish(
-        'millegrilles.noeuds',
+        EXCHANGE_PROTEGE,
         routingKey,
         Buffer.from(jsonMessage),
         properties,
@@ -596,7 +594,7 @@ class RabbitMQWrapper {
 
     // Faire la publication
     this.channel.publish(
-      'millegrilles.noeuds',
+      EXCHANGE_PROTEGE,
       routingKey,
       Buffer.from(jsonMessage),
       (err, ok) => {
@@ -674,8 +672,8 @@ class RabbitMQWrapper {
       .then(reponse=>{
         let messageContent = decodeURIComponent(escape(reponse.content));
         let json_message = JSON.parse(messageContent);
-        console.debug("Reponse cert maitre des cles");
-        console.debug(messageContent);
+        // console.debug("Reponse cert maitre des cles");
+        // console.debug(messageContent);
         const cert = forge.pki.certificateFromPem(json_message.certificat);
         objet_crypto.certificatMaitreDesCles = {
           expiration: tempsCourant + 120000,
@@ -689,9 +687,11 @@ class RabbitMQWrapper {
 
   demanderCertificat(fingerprint) {
     var requete = {fingerprint}
-    var routingKey = 'requete.millegrilles.domaines.Pki.certificat';
+    var routingKey = 'requete.certificat.' + fingerprint;
+    // console.debug(routingKey);
     return this.transmettreRequete(routingKey, requete)
     .then(reponse=>{
+      // console.debug(reponse);
       if(reponse.content) {
         let messageContent = decodeURIComponent(escape(reponse.content));
         let json_message = JSON.parse(messageContent);
@@ -732,7 +732,7 @@ class RoutingKeyManager {
     for(var routingKey_idx in routingKeys) {
       let routingKeyName = routingKeys[routingKey_idx];
       // Ajouter la routing key
-      channel.bindQueue(reply_q.queue, 'millegrilles.noeuds', routingKeyName);
+      channel.bindQueue(reply_q.queue, EXCHANGE_PROTEGE, routingKeyName);
 
       // var socket_dict = this.registeredRoutingKeysForSockets[routingKeyName];
       // if(!socket_dict) {
@@ -750,7 +750,7 @@ class RoutingKeyManager {
     for(var routingKey_idx in routingKeys) {
       let routingKeyName = routingKeys[routingKey_idx];
       // Retirer la routing key
-      channel.unbindQueue(reply_q.queue, 'millegrilles.noeuds', routingKeyName);
+      channel.unbindQueue(reply_q.queue, EXCHANGE_PROTEGE, routingKeyName);
     }
   }
 

@@ -19,11 +19,13 @@ function initialiserInfo(sessionManagement, opts) {
     if(!modeHebergement) {
       const rabbitMQ = sessionManagement.fctRabbitMQParIdmg(idmg);
 
-      const routing = 'millegrilles.domaines.Principale';
-      const filtre = {"_mg-libelle": "cles"};
-      rabbitMQ.get_document(
-        'millegrilles.domaines.Principale', filtre)
+      // console.debug("Requete info")
+
+      rabbitMQ.transmettreRequete('requete.Principale.getAuthInfo', {})
       .then(doc=>{
+
+        // console.debug("reception info")
+        // console.debug(doc)
 
         const infoCopie = Object.assign({}, info);
 
