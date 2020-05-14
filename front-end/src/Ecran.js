@@ -69,54 +69,17 @@ class EcranApp extends React.Component {
   }
 
   chargerDocumentPrincipale() {
-    // Transmettre requete pour recevoir le des domaines
-    let requeteDomaines =  {
-      'requetes': [{
-        'filtre': {
-          '_mg-libelle': {'$in': ['domaines', 'profil.millegrille']}
-        }
-      }]};
-
-    webSocketManager.transmettreRequete(
-      'requete.millegrilles.domaines.Principale', requeteDomaines)
-    .then( docInitial => {
-      // console.debug("Recu doc");
-      let resultats = docInitial[0];
-      // console.debug(resultats);
-      const documentsConfig = {};
-      for(let idx in resultats) {
-        let resultat = resultats[idx];
-
-        if(resultat['_mg-libelle'] === 'domaines') {
-          documentsConfig.documentDomaines = resultat;
-        } else if(resultat['_mg-libelle'] === 'profil.millegrille') {
-          documentsConfig.documentIdMillegrille = resultat;
-        }
-      }
-
-      this.setState(documentsConfig);
+    webSocketManager.transmettreRequete('Principale.getProfilMillegrille', {})
+    .then( resultats => {
+      console.debug("Recu doc");
+      console.debug(resultats);
+      this.setState({
+          documentDomaines: resultats.domaines,
+          documentIdMillegrille: resultats['profil.millegrille'],
+      });
     })
     .catch( err=>{
       console.error("Erreur chargement document liste domaines");
-      console.error(err);
-    });
-
-    let requeteIdMillegrille =  {
-      'requetes': [{
-        'filtre': {
-          '_mg-libelle': 'profil.millegrille'
-        }
-      }]};
-    webSocketManager.transmettreRequete(
-      'requete.millegrilles.domaines.Principale', requeteIdMillegrille)
-    .then( docInitial => {
-      // console.debug("Recu doc");
-      let resultats = docInitial[0][0];
-      // console.debug(resultats);
-      this.setState({documentIdMillegrille: resultats});
-    })
-    .catch( err=>{
-      console.error("Erreur chargement document id millegrille");
       console.error(err);
     });
 

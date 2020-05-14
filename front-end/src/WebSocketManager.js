@@ -52,14 +52,18 @@ class WebSocketManager {
 
   }
 
-  transmettreRequete(routingKey, requete) {
+  transmettreRequete(domaineAction, requete, opts) {
+    if(!opts) opts = {};
+
     // Transmet une requete. Retourne une Promise pour recuperer la reponse.
+    const routingKey = 'requete.' + domaineAction;
 
     let socket = this.socket;
     let promise = new Promise((resolve, reject) => {
       let enveloppe = {
-        'routingKey': routingKey,
-        'requete': requete
+        routingKey,
+        'requete': requete,
+        opts
       };
 
       // Transmettre requete
@@ -106,7 +110,7 @@ class WebSocketManager {
           resolve(reponse);
           return reponse;
         };
-        
+
       }
       socket.emit('commande', enveloppe, reponseFunction);
     });

@@ -696,7 +696,7 @@ class RabbitMQWrapper {
       let objet_crypto = this;
       // console.debug("Demander certificat MaitreDesCles");
       var requete = {}
-      var routingKey = 'requete.millegrilles.domaines.MaitreDesCles.certMaitreDesCles';
+      var routingKey = 'requete.MaitreDesCles.certMaitreDesCles';
       return this.transmettreRequete(routingKey, requete)
       .then(reponse=>{
         let messageContent = decodeURIComponent(escape(reponse.content));
