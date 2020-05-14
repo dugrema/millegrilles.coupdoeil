@@ -276,7 +276,7 @@ class WebSocketApp {
 
         // Tout est correct, on transmet le nouveau token en transaction
         rabbitMQ.transmettreTransactionFormattee(
-            infoToken, 'millegrilles.domaines.Principale.ajouterToken')
+            infoToken, 'Principale.ajouterToken')
           .then( msg => {
             // console.debug("Recu confirmation d'ajout de device'");
             // console.debug(msg);

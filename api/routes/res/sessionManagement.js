@@ -173,10 +173,7 @@ class SessionManagement {
 
   creerChallengeUSB(rabbitMQ, socket) {
     // Authentifier le socket
-    let filtre = {"_mg-libelle": "cles"};
-
-    return rabbitMQ.get_document(
-      'millegrilles.domaines.Principale', filtre)
+    return rabbitMQ.transmettreRequete('requete.Principale.getAuthInfo', {}, {decoder: true})
     .then( doc => {
       // console.log(doc);
       if (!doc || doc.empreinte_absente) {
@@ -204,9 +201,7 @@ class SessionManagement {
             return reject('Challenge mismatch');
           }
 
-          let filtre = {"_mg-libelle": "cles"};
-          rabbitMQ.get_document(
-            'millegrilles.domaines.Principale', filtre)
+          rabbitMQ.transmettreRequete('requete.Principale.getAuthInfo', {}, {decoder: true})
           .then( doc => {
             // console.log(doc);
             if (!doc || doc.empreinte_absente) {
@@ -279,10 +274,8 @@ class SessionManagement {
 
     let requete = {'fingerprint': fingerprint};
     return rabbitMQ.transmettreRequete(
-      'requete.millegrilles.domaines.Pki.confirmerCertificat', requete)
-    .then( reponseCertVerif => {
-      // console.debug("Reponse verification certificat");
-      const contenuResponseCertVerif = JSON.parse(reponseCertVerif.content.toString('utf-8'));
+      'requete.Pki.confirmerCertificat', requete, {decoder: true})
+    .then( contenuResponseCertVerif => {
       // console.debug(contenuResponseCertVerif);
 
       if(contenuResponseCertVerif.valide && contenuResponseCertVerif.roles) {
@@ -361,7 +354,7 @@ class SessionManagement {
       };
 
       return rabbitMQ.transmettreTransactionFormattee(
-        transaction, 'millegrilles.domaines.MaitreDesCles.genererCertificatNavigateur'
+        transaction, 'transaction.MaitreDesCles.genererCertificatNavigateur'
       )
       .then( msg => {
         // console.log("Recu certificat pour navigateur");
@@ -398,9 +391,7 @@ class SessionManagement {
     if(pinCorrect) {
 
       // Verifier que la MilleGrille n'a pas deja d'empreinte usager
-      let filtre = {"_mg-libelle": "cles"};
-      return rabbitMQ.get_document(
-        'millegrilles.domaines.Principale', filtre)
+      return rabbitMQ.transmettreRequete('requete.Principale.getAuthInfo', {}, {decoder: true})
       .then( doc => {
 
         // Transmettre le challenge
@@ -427,7 +418,7 @@ class SessionManagement {
 
               // Noter que la transaction va echouer si l'empreinte a deja ete creee.
               rabbitMQ.transmettreTransactionFormattee(
-                infoToken, 'millegrilles.domaines.Principale.ajouterToken')
+                infoToken, 'Principale.ajouterToken')
               .then( msg => {
                 // console.log("Recu confirmation d'ajout de nouveau token");
                 // console.log(msg);
@@ -468,8 +459,7 @@ class SessionManagement {
 
     // Verifier que la MilleGrille n'a pas deja d'empreinte usager
     let filtre = {"_mg-libelle": "cles"};
-    return rabbitMQ.get_document(
-      'millegrilles.domaines.Principale', filtre)
+    return rabbitMQ.transmettreRequete('requete.Principale.getAuthInfo', {}, {decoder: true})
     .then( doc => {
 
       if(doc['empreinte_absente'] !== true) {
@@ -482,11 +472,12 @@ class SessionManagement {
             relyingParty: { name: 'coupdoeil' },
             user: { id: idmg, name: 'usager' }
         });
-        console.debug("Conserver challenge pour idmg %s", opts.idmg);
+        console.debug("Conserver challenge pour idmg %s", idmg);
         this.conserverChallenge(idmg, challengeResponse.challenge);
 
         return new Promise((resolve, reject)=>{
           socket.emit('challengeTokenUSBRegistration', challengeResponse, reponse=>{
+            console.debug("Reponse challenge recue");
 
             const { key, challenge } = parseRegisterRequest(reponse);
 
@@ -499,12 +490,14 @@ class SessionManagement {
                   'cle': key
               }
 
+              console.debug("Transmission transaction empreinte");
+              console.debug(infoToken)
               // Noter que la transaction va echouer si l'empreinte a deja ete creee.
               rabbitMQ.transmettreTransactionFormattee(
-                infoToken, 'millegrilles.domaines.Principale.creerEmpreinte')
+                infoToken, 'Principale.creerEmpreinte')
               .then( msg => {
-                // console.log("Recu confirmation d'empreinte");
-                // console.log(msg);
+                console.log("Recu confirmation d'empreinte");
+                console.log(msg);
                 resolve();
               })
               .catch( err => {

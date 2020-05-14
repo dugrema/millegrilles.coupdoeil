@@ -334,6 +334,8 @@ class RabbitMQWrapper {
   // Utiliser cette methode pour simplifier le formattage d'une transaction.
   // Il faut fournir le contenu de la transaction et le domaine (routing)
   transmettreTransactionFormattee(message, domaine, opts) {
+    if(!opts) opts = {};
+
     // Fare un shallow copy du message
     let messageFormatte = {};
     Object.assign(messageFormatte, message);
@@ -368,7 +370,8 @@ class RabbitMQWrapper {
 
       // Transmettre la nouvelle transaction. La promise permet de traiter
       // le message de reponse.
-      return this._transmettre(routingKeyNouvelleTransaction, jsonMessage, correlation);
+      const routingKey = 'transaction.' + domaine;
+      return this._transmettre(routingKey, jsonMessage, correlation);
     })
 
   }
