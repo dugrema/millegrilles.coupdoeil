@@ -183,8 +183,8 @@ class WebSocketApp {
     });
 
     socket.on('requete', (enveloppe, cb) => {
-      // console.debug("Enveloppe de requete recue");
-      // console.debug(enveloppe);
+      console.debug("Enveloppe de requete recue");
+      console.debug(enveloppe);
       const routingKey = enveloppe.routingKey;
       const requete = enveloppe.requete;
       const opts = enveloppe.opts || {};

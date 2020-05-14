@@ -21,15 +21,16 @@ function initialiserInfo(sessionManagement, opts) {
 
       // console.debug("Requete info")
 
-      rabbitMQ.transmettreRequete('requete.Principale.getAuthInfo', {}, {decoder: true})
+      rabbitMQ.transmettreRequete('Principale.getAuthInfo', {}, {decoder: true})
       .then(doc=>{
 
         // console.debug("reception info")
         // console.debug(doc)
 
+        const docCles = doc.cles;
         const infoCopie = Object.assign({}, info);
 
-        if (!doc || doc.empreinte_absente) {
+        if (!docCles || docCles.empreinte_absente) {
           infoCopie.empreinte = false;
         } else {
           infoCopie.empreinte = true;

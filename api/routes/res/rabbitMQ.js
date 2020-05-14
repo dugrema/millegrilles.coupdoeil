@@ -92,7 +92,7 @@ class RabbitMQWrapper {
 
         // Enregistrer routing key du certificat
         // Permet de repondre si un autre composant demande notre certificat
-        this.routingKeyCertificat = 'requete.certificat.' + fingerprint;
+        this.routingKeyCertificat = 'certificat.' + fingerprint;
         console.debug("Enregistrer routing key: " + fingerprint)
         this.channel.bindQueue(this.reply_q.queue, EXCHANGE_PROTEGE, this.routingKeyCertificat);
 
@@ -193,7 +193,7 @@ class RabbitMQWrapper {
       // Sauvegarder le certificat localement pour usage futur
       this.pki.sauvegarderMessageCertificat(messageContent, json_message.fingerprint);
       return; // Ce message ne correspond pas au format standard
-    } else if(routingKey && routingKey.startsWith('requete.certificat.')) {
+    } else if(routingKey && routingKey.startsWith('certificat.')) {
       // Transmettre le certificat
       // let messageCertificat = this.pki.preparerMessageCertificat();
       // let messageJSONStr = JSON.stringify(messageCertificat);
@@ -497,8 +497,9 @@ class RabbitMQWrapper {
     }
   }
 
-  transmettreRequete(routingKey, message, opts) {
+  transmettreRequete(domaineAction, message, opts) {
     if(!opts) opts = {};
+    const routingKey = 'requete.' + domaineAction;
 
     const infoTransaction = this._formatterInfoTransaction(routingKey);
 
@@ -509,6 +510,8 @@ class RabbitMQWrapper {
     const jsonMessage = JSON.stringify(message);
 
     // Transmettre requete - la promise permet de traiter la reponse
+    console.debug("Transmettre requete, routing : %s", routingKey)
+    console.debug(jsonMessage)
     var promise = this._transmettre(routingKey, jsonMessage, correlation);
 
     if(opts.decoder) {
@@ -696,7 +699,7 @@ class RabbitMQWrapper {
       let objet_crypto = this;
       // console.debug("Demander certificat MaitreDesCles");
       var requete = {}
-      var routingKey = 'requete.MaitreDesCles.certMaitreDesCles';
+      var routingKey = 'MaitreDesCles.certMaitreDesCles';
       return this.transmettreRequete(routingKey, requete)
       .then(reponse=>{
         let messageContent = decodeURIComponent(escape(reponse.content));
@@ -716,7 +719,7 @@ class RabbitMQWrapper {
 
   demanderCertificat(fingerprint) {
     var requete = {fingerprint}
-    var routingKey = 'requete.certificat.' + fingerprint;
+    var routingKey = 'certificat.' + fingerprint;
     // console.debug(routingKey);
     return this.transmettreRequete(routingKey, requete)
     .then(reponse=>{

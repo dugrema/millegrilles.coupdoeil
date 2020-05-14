@@ -173,15 +173,18 @@ class SessionManagement {
 
   creerChallengeUSB(rabbitMQ, socket) {
     // Authentifier le socket
-    return rabbitMQ.transmettreRequete('requete.Principale.getAuthInfo', {}, {decoder: true})
+
+    var docCles = null;
+    return rabbitMQ.transmettreRequete('Principale.getAuthInfo', {}, {decoder: true})
     .then( doc => {
-      // console.log(doc);
-      if (!doc || doc.empreinte_absente) {
+      console.log(doc);
+      docCles = doc.cles;
+      if (!docCles || docCles.empreinte_absente) {
           socket.emit('challenge', {'erreur': 'empreinte_absente'});
           socket.disconnect();
           return;
       }
-      return generateLoginChallenge(doc.cles);
+      return generateLoginChallenge(docCles.cles);
     })
     .then(challenge_genere=>{
       // console.log("Challenge login");
@@ -201,43 +204,35 @@ class SessionManagement {
             return reject('Challenge mismatch');
           }
 
-          rabbitMQ.transmettreRequete('requete.Principale.getAuthInfo', {}, {decoder: true})
-          .then( doc => {
-            // console.log(doc);
-            if (!doc || doc.empreinte_absente) {
-              return reject('Doc absent ou empreinte_absente==true');
+          // Trouve la bonne cle a verifier dans la collection de toutes les cles
+          var cle_match;
+          let cle_id_utilisee = reply.rawId;
+
+          let cles = docCles['cles'];
+          for(var i_cle in cles) {
+            let cle = cles[i_cle];
+            let credID = cle['credID'];
+            credID = credID.substring(0, cle_id_utilisee.length);
+
+            if(credID === cle_id_utilisee) {
+              cle_match = cle;
+              break;
             }
+          }
 
-            // Trouve la bonne cle a verifier dans la collection de toutes les cles
-            var cle_match;
-            let cle_id_utilisee = reply.rawId;
+          if(!cle_match) {
+            return reject("Cle inconnue: " + cle_id_utilisee);
+          }
 
-            let cles = doc['cles'];
-            for(var i_cle in cles) {
-              let cle = cles[i_cle];
-              let credID = cle['credID'];
-              credID = credID.substring(0, cle_id_utilisee.length);
+          const loggedIn = verifyAuthenticatorAssertion(reply, cle_match);
 
-              if(credID === cle_id_utilisee) {
-                cle_match = cle;
-                break;
-              }
-            }
-
-            if(!cle_match) {
-              return reject("Cle inconnue: " + cle_id_utilisee);
-            }
-
-            const loggedIn = verifyAuthenticatorAssertion(reply, cle_match);
-
-            socket.emit('login', loggedIn);
-            if(loggedIn) {
-              resolve();
-            } else {
-              reject('Invalid authenticator assertion');
-            }
-          })
-        });
+          socket.emit('login', loggedIn);
+          if(loggedIn) {
+            resolve();
+          } else {
+            reject('Invalid authenticator assertion');
+          }
+        })
       })
       .catch( err => {
         socket.emit('erreur.login', {'erreur': ''+err});
@@ -274,7 +269,7 @@ class SessionManagement {
 
     let requete = {'fingerprint': fingerprint};
     return rabbitMQ.transmettreRequete(
-      'requete.Pki.confirmerCertificat', requete, {decoder: true})
+      'Pki.confirmerCertificat', requete, {decoder: true})
     .then( contenuResponseCertVerif => {
       // console.debug(contenuResponseCertVerif);
 
@@ -391,10 +386,15 @@ class SessionManagement {
     if(pinCorrect) {
 
       // Verifier que la MilleGrille n'a pas deja d'empreinte usager
-      return rabbitMQ.transmettreRequete('requete.Principale.getAuthInfo', {}, {decoder: true})
+      return rabbitMQ.transmettreRequete('Principale.getAuthInfo', {}, {decoder: true})
       .then( doc => {
 
         // Transmettre le challenge
+        const docCles = doc.cles;
+        if( ! docCles.empreinte_absente ) {
+          throw new Error("Empreinte existe deja");
+        }
+
         const challengeResponse = generateRegistrationChallenge({
             relyingParty: { name: 'coupdoeil' },
             user: { id: idmg, name: 'usager' }
@@ -459,10 +459,10 @@ class SessionManagement {
 
     // Verifier que la MilleGrille n'a pas deja d'empreinte usager
     let filtre = {"_mg-libelle": "cles"};
-    return rabbitMQ.transmettreRequete('requete.Principale.getAuthInfo', {}, {decoder: true})
+    return rabbitMQ.transmettreRequete('Principale.getAuthInfo', {}, {decoder: true})
     .then( doc => {
-
-      if(doc['empreinte_absente'] !== true) {
+      const docCles = doc.cles;
+      if(docCles['empreinte_absente'] !== true) {
         socket.emit("erreur", "Empreinte deja appliquee");
         socket.emit('login', false);
         throw new Error("Empreinte deja appliquee");

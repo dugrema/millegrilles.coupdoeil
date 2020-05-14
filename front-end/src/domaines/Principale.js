@@ -412,7 +412,7 @@ class InformationMilleGrille extends React.Component {
   soumettreProfilMilleGrille = event => {
     let transaction = this.state.milleGrille;
 
-    let domaine = 'millegrilles.domaines.Principale.majProfilMilleGrille';
+    let domaine = 'Principale.majProfilMilleGrille';
     webSocketManager.transmettreTransaction(domaine, transaction)
     .then(reponse=>{
       if(reponse.err) {
@@ -428,7 +428,7 @@ class InformationMilleGrille extends React.Component {
   soumettreProfilUsager = event => {
     let transaction = this.state.usager;
 
-    let domaine = 'millegrilles.domaines.Principale.majProfilUsager';
+    let domaine = 'Principale.majProfilUsager';
     webSocketManager.transmettreTransaction(domaine, transaction)
     .then(reponse=>{
       if(reponse.err) {
@@ -529,42 +529,36 @@ class GestionTokens extends React.Component {
 }
 
 function chargerProfils() {
-  let routingKey = 'requete.millegrilles.domaines.Principale.profils';
-  let requete = {
-    'filtre': {
-        '_mg-libelle': {'$in': ['profil.usager', 'profil.millegrille']},
-    },
-  };
-  let requetes = {'requetes': [requete]};
-  return webSocketManager.transmettreRequete(routingKey, requetes)
-  .then( docsRecu => {
-    return docsRecu[0];
-   })
-   .then(documents => {
+  let routingKey = 'Principale.getProfilUsager';
+  return webSocketManager.transmettreRequete(routingKey, {})
+  .then(documents => {
 
-     const donnees = {};
-     for(let idx in documents) {
-       let docProfil = documents[idx];
+   const donnees = {
+     usager: documents.profil,
+     milleGrille: documents.millegrille,
+   };
+   for(let idx in documents) {
+     let docProfil = documents[idx];
 
-       let docFiltre = {};
-       for(let champ in docProfil) {
-         let valeur = docProfil[champ];
-         if(champ[0] !== '_') {
-           docFiltre[champ] = valeur || '';
-         }
-       }
-
-       if(docProfil['_mg-libelle'] === 'profil.usager') {
-         donnees.usager = docFiltre;
-       } else if(docProfil['_mg-libelle'] === 'profil.millegrille') {
-         donnees.milleGrille = docFiltre;
+     let docFiltre = {};
+     for(let champ in docProfil) {
+       let valeur = docProfil[champ];
+       if(champ[0] !== '_') {
+         docFiltre[champ] = valeur || '';
        }
      }
 
-     return donnees;
-   })
-   .catch(err=>{
-     console.error("Erreur requete documents profils");
-     console.error(err);
-   });
+     if(docProfil['_mg-libelle'] === 'profil.usager') {
+       donnees.usager = docFiltre;
+     } else if(docProfil['_mg-libelle'] === 'profil.millegrille') {
+       donnees.milleGrille = docFiltre;
+     }
+   }
+
+    return donnees;
+  })
+  .catch(err=>{
+    console.error("Erreur requete documents profils");
+    console.error(err);
+  });
   }

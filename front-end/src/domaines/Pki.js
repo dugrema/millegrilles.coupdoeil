@@ -32,7 +32,7 @@ export class SignerNoeud extends React.Component {
     // console.debug("Transaction de signature");
     // console.debug(transaction);
 
-    let domaine = 'millegrilles.domaines.MaitreDesCles.signerCertificatNoeud';
+    let domaine = 'MaitreDesCles.signerCertificatNoeud';
     webSocketManager.transmettreTransaction(domaine, transaction)
     .then(reponse=>{
       if(reponse.err) {
@@ -292,7 +292,7 @@ export class RenouvellerCertificats extends React.Component {
 
     this.setState({renouvellementMiddlewareTransmis: 'Demande transmise'});
 
-    let domaine = 'millegrilles.domaines.Pki.renouvellerCertDocker';
+    let domaine = 'Pki.renouvellerCertDocker';
     webSocketManager.transmettreTransaction(domaine, commande)
     .then(reponse=>{
       if(reponse.err) {
