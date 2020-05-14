@@ -185,11 +185,11 @@ class WebSocketApp {
     socket.on('requete', (enveloppe, cb) => {
       console.debug("Enveloppe de requete recue");
       console.debug(enveloppe);
-      const routingKey = enveloppe.routingKey;
+      const domaineAction = enveloppe.domaineAction;
       const requete = enveloppe.requete;
       const opts = enveloppe.opts || {};
 
-      rabbitMQ.transmettreRequete(routingKey, requete)
+      rabbitMQ.transmettreRequete(domaineAction, requete)
       .then( reponse => {
         let messageContent = reponse.content.toString('utf-8');
         let json_message = JSON.parse(messageContent);

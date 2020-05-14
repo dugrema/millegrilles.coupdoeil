@@ -532,30 +532,10 @@ function chargerProfils() {
   let routingKey = 'Principale.getProfilUsager';
   return webSocketManager.transmettreRequete(routingKey, {})
   .then(documents => {
-
-   const donnees = {
-     usager: documents.profil,
-     milleGrille: documents.millegrille,
-   };
-   for(let idx in documents) {
-     let docProfil = documents[idx];
-
-     let docFiltre = {};
-     for(let champ in docProfil) {
-       let valeur = docProfil[champ];
-       if(champ[0] !== '_') {
-         docFiltre[champ] = valeur || '';
-       }
-     }
-
-     if(docProfil['_mg-libelle'] === 'profil.usager') {
-       donnees.usager = docFiltre;
-     } else if(docProfil['_mg-libelle'] === 'profil.millegrille') {
-       donnees.milleGrille = docFiltre;
-     }
-   }
-
-    return donnees;
+    return{
+      usager: documents['profil.usager'],
+      milleGrille: documents['profil.millegrille'],
+    };
   })
   .catch(err=>{
     console.error("Erreur requete documents profils");

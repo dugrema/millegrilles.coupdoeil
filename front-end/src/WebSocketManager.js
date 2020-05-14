@@ -56,12 +56,10 @@ class WebSocketManager {
     if(!opts) opts = {};
 
     // Transmet une requete. Retourne une Promise pour recuperer la reponse.
-    const routingKey = 'requete.' + domaineAction;
-
     let socket = this.socket;
     let promise = new Promise((resolve, reject) => {
       let enveloppe = {
-        routingKey,
+        domaineAction,
         'requete': requete,
         opts
       };
@@ -69,12 +67,12 @@ class WebSocketManager {
       // Transmettre requete
       socket.emit('requete', enveloppe, reponse=>{
         if(!reponse) {
-          console.error("Erreur survenue durant requete vers " + routingKey);
+          console.error("Erreur survenue durant requete vers " + domaineAction);
           reject();
           return;
         }
-        // console.log("Reponse dans websocket pour requete");
-        // console.log(reponse);
+        console.log("Reponse dans websocket pour requete");
+        console.log(reponse);
         resolve(reponse);
         return reponse;
       });

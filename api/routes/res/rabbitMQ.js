@@ -511,7 +511,7 @@ class RabbitMQWrapper {
 
     // Transmettre requete - la promise permet de traiter la reponse
     console.debug("Transmettre requete, routing : %s", routingKey)
-    console.debug(jsonMessage)
+    // console.debug(jsonMessage)
     var promise = this._transmettre(routingKey, jsonMessage, correlation);
 
     if(opts.decoder) {
