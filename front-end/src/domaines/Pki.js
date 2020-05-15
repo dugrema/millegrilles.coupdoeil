@@ -452,32 +452,20 @@ export class AfficherCertificatsRoot extends React.Component {
   }
 
   componentDidMount() {
-    let requeteCerts =  {
-      'requetes': [
-        {
-          'filtre': {
-            '_mg-libelle': 'certificat.root',
-            'chaine_complete': true,
-          }
-        },
-        {
-          'filtre': {
-            '_mg-libelle': 'certificat.millegrille',
-            'chaine_complete': true,
-          }
-        },
-      ]};
-
     // Requete pour charger certificats root du domaine
-    let domaine = 'requete.millegrilles.domaines.Pki.certificatsCA';
+    let domaine = 'Pki.certificatsCA';
 
     // Enregistrer les routingKeys, demander le document initial.
-    webSocketManager.transmettreRequete(domaine, requeteCerts)
+    webSocketManager.transmettreRequete(domaine, {})
     .then( certificats => {
       // console.debug("Reponse certificats");
       // console.debug(certificats);
-      let certificatsRoot = certificats[0];
-      let certificatsMillegrille = certificats[1];
+
+      const roots = Object.values(certificats).filter(a=>{return a.type_certificat==='certificat.root'});
+      const intermediaires = Object.values(certificats).filter(a=>{return a.type_certificat==='certificat.millegrille'});
+
+      let certificatsRoot = roots;
+      let certificatsMillegrille = intermediaires;
       this.setState({certificatsRoot, certificatsMillegrille});
     })
     .catch( err=>{
