@@ -18,7 +18,7 @@ export class ParametresErreurs extends React.Component {
   }
 
   requeteErreurs = () => {
-    const domaine = 'requete.millegrilles.domaines.Parametres.erreurs';
+    const domaine = 'Parametres.erreurs';
     const requete = {};
 
     return webSocketManager.transmettreRequete(domaine, requete)
@@ -77,7 +77,7 @@ export class ParametresErreurs extends React.Component {
     // Note : normalement ce serait une transaction ou une commande
     //        mais le traitement d'erreur fait partie de l'admin systeme
     //        L'operation se fait au travers d'une requete protegee
-    const domaine = 'requete.millegrilles.domaines.Parametres.supprimerErreur';
+    const domaine = 'Parametres.supprimerErreur';
     return webSocketManager.transmettreCommande(domaine, commande)
     .then( result => {
       // console.debug("Resultats commande");

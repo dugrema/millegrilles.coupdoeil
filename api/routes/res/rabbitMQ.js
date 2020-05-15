@@ -541,10 +541,11 @@ class RabbitMQWrapper {
     return promise;
   }
 
-  transmettreCommande(routingKey, message, opts) {
+  transmettreCommande(domaineAction, message, opts) {
     if(!opts) opts = {};
+    const routingKey = 'commande.' + domaineAction;
 
-    const infoTransaction = this._formatterInfoTransaction(routingKey);
+    const infoTransaction = this._formatterInfoTransaction(domaineAction);
 
     message['en-tete'] = infoTransaction;
     this._signerMessage(message);
@@ -557,6 +558,7 @@ class RabbitMQWrapper {
     const jsonMessage = JSON.stringify(message);
 
     // Transmettre requete - la promise permet de traiter la reponse
+    console.debug("Transmettre commande %s", routingKey);
     const promise = this._transmettre(routingKey, jsonMessage, correlation);
     return promise;
   }
