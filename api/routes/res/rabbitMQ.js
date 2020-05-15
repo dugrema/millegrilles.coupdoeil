@@ -1,3 +1,4 @@
+const debug = require('debug')('millegrilles:rabbitmq');
 const amqplib = require('amqplib');
 const os = require('os');
 const fs = require('fs');
@@ -67,14 +68,14 @@ class RabbitMQWrapper {
       // }
       options['credentials'] = amqplib.credentials.external();
 
-      console.info("Connecter a RabbitMQ : %s", this.url);
+      console.info("rabbitMQ: Connecter a RabbitMQ : %s", this.url);
       return amqplib.connect(this.url, options)
       .then( conn => {
-        console.debug("Connexion a RabbitMQ reussie");
+        debug("Connexion a RabbitMQ reussie");
         this.connection = conn;
 
         conn.on('close', (reason)=>{
-          console.warn("Fermeture connexion RabbitMQ");
+          console.warn("rabbitMQ: Fermeture connexion RabbitMQ");
           console.info(reason);
           this.scheduleReconnect();
         });
@@ -82,10 +83,10 @@ class RabbitMQWrapper {
         return conn.createChannel();
       }).then( (ch) => {
         this.channel = ch;
-        console.debug("Channel ouvert");
+        debug("Channel ouvert");
         return this.ecouter();
       }).then(()=>{
-        console.debug("Connexion et channel prets");
+        debug("Connexion et channel prets");
 
         // Proactivement emettre le certificat
         let fingerprint = this.transmettreCertificat();
@@ -93,13 +94,13 @@ class RabbitMQWrapper {
         // Enregistrer routing key du certificat
         // Permet de repondre si un autre composant demande notre certificat
         this.routingKeyCertificat = 'certificat.' + fingerprint;
-        console.debug("Enregistrer routing key: " + fingerprint)
+        debug("Enregistrer routing key: " + fingerprint)
         this.channel.bindQueue(this.reply_q.queue, EXCHANGE_PROTEGE, this.routingKeyCertificat);
 
-        // console.debug("Certificat transmis");
+        debug("Certificat transmis");
       }).catch(err => {
         this.connection = null;
-        console.error("Erreur connexion RabbitMQ");
+        console.error("rabbitMQ: Erreur connexion RabbitMQ");
         console.error(err);
         this.scheduleReconnect();
       });
@@ -115,12 +116,12 @@ class RabbitMQWrapper {
     if(!this.reconnectTimeout) {
       var mq = this;
       this.reconnectTimeout = setTimeout(()=>{
-        console.debug("Reconnexion en cours");
+        debug("Reconnexion en cours");
         mq.reconnectTimeout = null;
         mq._connect();
       }, dureeAttente*1000);
 
-      console.info("Reconnexion a MQ dans " + dureeAttente + " secondes");
+      console.info("rabbitMQ: Reconnexion a MQ dans " + dureeAttente + " secondes");
 
       var conn = this.connection, channel = this.channel;
       this.connection = null;
@@ -130,8 +131,8 @@ class RabbitMQWrapper {
         try {
           channel.close();
         } catch (err) {
-          console.debug("Erreur fermeture channel");
-          console.debug(err);
+          debug("Erreur fermeture channel");
+          debug(err);
         }
       }
 
@@ -139,7 +140,7 @@ class RabbitMQWrapper {
         try {
           conn.close();
         } catch (err) {
-          console.info("Erreur fermeture connection");
+          console.info("rabbitMQ: Erreur fermeture connection");
           console.info(err);
         }
       }
@@ -156,7 +157,7 @@ class RabbitMQWrapper {
         exclusive: true,
       })
       .then( (q) => {
-        console.debug("Queue reponse globale cree"),
+        debug("Queue reponse globale cree"),
         // console.log(q);
         this.reply_q = q;
 
@@ -169,7 +170,7 @@ class RabbitMQWrapper {
         resolve();
       })
       .catch( err => {
-        console.error("Erreur creation Q pour ecouter");
+        console.error("rabbitMQ: Erreur creation Q pour ecouter");
         reject(err);
       })
     });
@@ -179,15 +180,13 @@ class RabbitMQWrapper {
   }
 
   traiterMessage(msg) {
-    // console.debug('1. Message recu');
-    // console.debug(msg);
+    debug('1. Message recu');
     let correlationId = msg.properties.correlationId;
     let replyQ = msg.properties.reply_q;
     let messageContent = msg.content.toString('utf-8');
     let routingKey = msg.fields.routingKey;
     let json_message = JSON.parse(messageContent);
-    // console.debug("Traiter message, routing: {0}", routingKey);
-    // console.debug(json_message);
+    debug("Traiter message, routing: %s", routingKey);
 
     if(routingKey && routingKey.startsWith('pki.certificat.')) {
       // Sauvegarder le certificat localement pour usage futur
@@ -195,12 +194,8 @@ class RabbitMQWrapper {
       return; // Ce message ne correspond pas au format standard
     } else if(routingKey && routingKey.startsWith('certificat.')) {
       // Transmettre le certificat
-      // let messageCertificat = this.pki.preparerMessageCertificat();
-      // let messageJSONStr = JSON.stringify(messageCertificat);
-      // console.debug(msg.properties);
-      // console.debug(messageJSONStr);
-      // this._repondre(messageJSONStr, replyQ, correlationId)
-      // console.debug("Repondre demande certificat ")
+      // debug(msg.properties);
+      debug("Repondre demande certificat ")
       this.transmettreCertificat()
       return; // Ce message ne correspond pas au format standard
     }
@@ -209,7 +204,7 @@ class RabbitMQWrapper {
     let hashTransactionCalcule = this.pki.hacherTransaction(json_message);
     let hashTransactionRecu = json_message['en-tete']['hachage-contenu'];
     if(hashTransactionCalcule !== hashTransactionRecu) {
-      console.warn("Erreur hachage incorrect : " + hashTransactionCalcule + ", message dropped");
+      console.warn("rabbitMQ: Erreur hachage incorrect : " + hashTransactionCalcule + ", message dropped");
       return;
     }
 
@@ -229,21 +224,20 @@ class RabbitMQWrapper {
         })
         .catch(err=>{
           if(err.inconnu) {
-            // Message inconnu, on va verifier si c'est une reponse de
-            // certificat.
+            // Message inconnu, on va verifier si c'est une reponse de certificat.
             if(json_message.resultats && json_message.resultats.certificat_pem) {
               // On laisse le message passer, c'est un certificat
-              // console.debug("Certificat recu");
+              debug("Certificat recu");
               callback(msg);
             } else {
               // On tente de charger le certificat
               let fingerprint = json_message['en-tete'].certificat;
-              console.warn("Certificat inconnu, on fait une demande : " + fingerprint);
+              console.warn("rabbitMQ: Certificat inconnu, on fait une demande : " + fingerprint);
               this.demanderCertificat(fingerprint)
               .then(reponse=>{
 
-                // console.debug("Reponse demande certificat");
-                // console.debug(reponse);
+                debug("Reponse demande certificat");
+                // debug(reponse);
 
                 // Sauvegarder le certificat et tenter de valider le message en attente
                 this.pki.sauvegarderMessageCertificat(JSON.stringify(reponse.resultats))
@@ -252,22 +246,22 @@ class RabbitMQWrapper {
                   if(signatureValide) {
                     callback(msg);
                   } else {
-                    console.warn("Signature invalide, message dropped");
+                    console.warn("rabbitMQ: Signature invalide, message dropped");
                   }
                 })
                 .catch(err=>{
-                  console.warn("Message non valide apres reception du certificat, message dropped");
+                  console.warn("rabbitMQ: Message non valide apres reception du certificat, message dropped");
                 });
 
               })
               .catch(err=>{
-                console.warn("Certificat non charge, message dropped");
-                console.debug(err);
+                console.warn("rabbitMQ: Certificat non charge, message dropped");
+                console.warn(err);
               })
             }
 
           } else {
-            console.error("Erreur verification signature message, message dropped");
+            console.error("rabbitMQ: Erreur verification signature message, message dropped");
             console.error(err);
           }
 
@@ -278,10 +272,10 @@ class RabbitMQWrapper {
       if(routingKey === this.routingKeyCertificat) {
         this.transmettreCertificat();
       } else {
-        console.error("Message avec routing key recu sur Q API global: " + routingKey + ". Message rejete");
+        console.error("rabbitMQ: Message avec routing key recu sur Q API global: " + routingKey + ". Message rejete");
       }
     } else {
-      console.debug("Recu message sans correlation Id ou routing key");
+      console.warn("rabbitMQ: Recu message sans correlation Id ou routing key");
       console.warn(msg);
     }
   }
@@ -309,16 +303,14 @@ class RabbitMQWrapper {
         })
       })
       .then(q=>{
-        // console.log("Queue reponse usager via websocket cree"),
-        // console.log(q);
+        debug("Queue reponse usager via websocket cree %s", q.queue);
         socketResources.reply_q = q;
 
         // Activer la lecture de message et callback pour notre websocket
         socketResources.mqChannel.consume(
           q.queue,
           (msg) => {
-            // console.log('2. Message recu');
-            // console.log(msg.content.toString('utf-8'));
+            debug('2. Message recu');
             let messageContent = msg.content.toString('utf-8');
             let json_message = JSON.parse(messageContent);
             let routingKey = msg.fields.routingKey;
@@ -558,7 +550,7 @@ class RabbitMQWrapper {
     const jsonMessage = JSON.stringify(message);
 
     // Transmettre requete - la promise permet de traiter la reponse
-    console.debug("Transmettre commande %s", routingKey);
+    console.debug("Transmettre : %s", routingKey);
     const promise = this._transmettre(routingKey, jsonMessage, correlation);
     return promise;
   }

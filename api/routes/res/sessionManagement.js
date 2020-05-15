@@ -1,4 +1,5 @@
 // const rabbitMQ = require('./rabbitMQ');
+const debug = require('debug')('millegrilles:sessionManagement');
 const {
     generateRegistrationChallenge,
     parseRegisterRequest,
@@ -40,7 +41,7 @@ class SessionManagement {
       }
     };
     tempsCourant.forEach(tokenKey=>{
-      // console.debug("Expiration token transfert " + tokenKey);
+      debug("Expiration token transfert " + tokenKey);
       delete this.transferTokens[tokenKey];
     });
 
@@ -72,7 +73,7 @@ class SessionManagement {
     if(token) {
       delete this.transferTokens[tokenKey]; // Delete si token utilise ou expire
       if(token.expiration>=(new Date()).getTime())  {
-        // console.debug("Token consomme " + tokenKey);
+        debug("Token consomme " + tokenKey);
         return token;
       }
     }
@@ -120,7 +121,7 @@ class SessionManagement {
   // Retourne la connexion a RabbitMQ si l'authentification reussi.
   // Lance une erreur en cas d'echec
   authentifier(socket, params) {
-    // console.debug("Authentifier");
+    debug("Authentifier");
     // console.debug(params);
 
     return new Promise((resolve, reject)=>{
@@ -134,15 +135,15 @@ class SessionManagement {
         reject(new Error("L'identificateur MilleGrille '" + idMillegrille + "' n'est pas connu"));
 
       } else if(params.methode === 'effectuerEmpreinte') {
-        console.debug("Effectuer l'empreinte de la MilleGrille");
+        debug("Effectuer l'empreinte de la MilleGrille");
         this.effectuerEmpreinte(rabbitMQ, socket, params)
         .then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
       } else if(params.methode === 'ajouterTokenUSB') {
-        console.debug("Ajouter un token a la MilleGrille avec un PIN");
+        debug("Ajouter un token a la MilleGrille avec un PIN");
         this.ajouterTokenUSB(rabbitMQ, socket, params)
         .then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
       } else if(params.methode === 'genererCertificat') {
-        console.debug("Generer un certificat de navigateur pour la MilleGrille avec un PIN");
+        debug("Generer un certificat de navigateur pour la MilleGrille avec un PIN");
         this.genererCertificat(rabbitMQ, socket, params)
         .then(()=>resolve(rabbitMQ))
         .catch(err=>{
@@ -150,17 +151,17 @@ class SessionManagement {
           this.creerChallengeUSB(rabbitMQ, socket).then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
         })
       } else if(params.methode === 'certificatLocal') {
-        // console.debug("Authentification par certificat");
+        debug("Authentification par certificat");
         let fingerprint = params.fingerprint;
         let certificat = params.certificat;
-        return this.creerChallengeCertificat(rabbitMQ, socket, fingerprint, certificat)
-          .then(()=>rabbitMQ)
+        this.creerChallengeCertificat(rabbitMQ, socket, fingerprint, certificat)
+          .then(()=>resolve(rabbitMQ))
           .catch(err=>{
             console.warn("Erreur challenge certificat, essayer USB");
             this.creerChallengeUSB(rabbitMQ, socket).then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
           });
       } else if (params.methode === 'tokenUSB') {
-        console.debug("Authentification par securityKey USB");
+        debug("Authentification par securityKey USB");
         this.creerChallengeUSB(rabbitMQ, socket).then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
       } else {
         // Erreur d'Authentification
@@ -177,7 +178,7 @@ class SessionManagement {
     var docCles = null;
     return rabbitMQ.transmettreRequete('Principale.getAuthInfo', {}, {decoder: true})
     .then( doc => {
-      console.log(doc);
+      debug(doc);
       docCles = doc.cles;
       if (!docCles || docCles.empreinte_absente) {
           socket.emit('challenge', {'erreur': 'empreinte_absente'});
@@ -187,7 +188,7 @@ class SessionManagement {
       return generateLoginChallenge(docCles.cles);
     })
     .then(challenge_genere=>{
-      // console.log("Challenge login");
+      debug("Challenge login");
 
       return new Promise((resolve, reject) => {
         socket.emit('challengeTokenUSB', challenge_genere, reply => {
@@ -196,7 +197,7 @@ class SessionManagement {
 
           const { challenge, keyId } = parseLoginRequest(reply);
           if (!challenge) {
-            // console.debug("Challenge pas recu")
+            debug("Challenge pas recu")
             return reject('Challenge pas initialise');
           }
 
@@ -242,7 +243,7 @@ class SessionManagement {
   }
 
   recevoirReponseChallengeCertificat(socket, challenge, reponse) {
-    // console.debug("Reponse challenge certificat");
+    debug("Reponse challenge certificat");
     // console.debug(reponse);
     const bufferReponse = Buffer.from(reponse.reponseChallenge, 'base64');
     // console.debug(bufferReponse.toString('utf-8'));
@@ -264,14 +265,14 @@ class SessionManagement {
   }
 
   creerChallengeCertificat(rabbitMQ, socket, fingerprint, pemCertificat) {
-    // console.debug("Requete verification " + fingerprint);
+    debug("Requete verification " + fingerprint);
     const pki = rabbitMQ.pki;
 
     let requete = {'fingerprint': fingerprint};
     return rabbitMQ.transmettreRequete(
       'Pki.confirmerCertificat', requete, {decoder: true})
     .then( contenuResponseCertVerif => {
-      // console.debug(contenuResponseCertVerif);
+      // debug(contenuResponseCertVerif);
 
       if(contenuResponseCertVerif.valide && contenuResponseCertVerif.roles) {
         // Certificat est valide, on verifie que c'est bien un certificat de navigateur
@@ -332,7 +333,6 @@ class SessionManagement {
     if(!opts) opts = {};
     const {pin, clePublique, sujet} = opts;
 
-    // console.debug("Requete verification " + fingerprint);
     const pki = rabbitMQ.pki;
     const idmg = pki.idmg;
 
@@ -349,7 +349,7 @@ class SessionManagement {
       };
 
       return rabbitMQ.transmettreTransactionFormattee(
-        transaction, 'transaction.MaitreDesCles.genererCertificatNavigateur'
+        transaction, 'MaitreDesCles.genererCertificatNavigateur'
       )
       .then( msg => {
         // console.log("Recu certificat pour navigateur");
@@ -399,7 +399,7 @@ class SessionManagement {
             relyingParty: { name: 'coupdoeil' },
             user: { id: idmg, name: 'usager' }
         });
-        console.debug("Conserver challenge pour idmg %s", opts.idmg);
+        debug("Conserver challenge pour idmg %s", opts.idmg);
         this.conserverChallenge(idmg, challengeResponse.challenge);
 
         return new Promise((resolve, reject)=>{
@@ -472,12 +472,12 @@ class SessionManagement {
             relyingParty: { name: 'coupdoeil' },
             user: { id: idmg, name: 'usager' }
         });
-        console.debug("Conserver challenge pour idmg %s", idmg);
+        debug("Conserver challenge pour idmg %s", idmg);
         this.conserverChallenge(idmg, challengeResponse.challenge);
 
         return new Promise((resolve, reject)=>{
           socket.emit('challengeTokenUSBRegistration', challengeResponse, reponse=>{
-            console.debug("Reponse challenge recue");
+            debug("Reponse challenge recue");
 
             const { key, challenge } = parseRegisterRequest(reponse);
 
@@ -490,14 +490,14 @@ class SessionManagement {
                   'cle': key
               }
 
-              console.debug("Transmission transaction empreinte");
-              console.debug(infoToken)
+              debug("Transmission transaction empreinte");
+              // debug(infoToken)
               // Noter que la transaction va echouer si l'empreinte a deja ete creee.
               rabbitMQ.transmettreTransactionFormattee(
                 infoToken, 'Principale.creerEmpreinte')
               .then( msg => {
-                console.log("Recu confirmation d'empreinte");
-                console.log(msg);
+                debug("Recu confirmation d'empreinte");
+                // debug(msg);
                 resolve();
               })
               .catch( err => {
@@ -534,7 +534,7 @@ class SessionManagement {
           resolve(rabbitMQ);
         })
         .catch(err=>{
-          reject(err);
+          reject();
         })
       });
 

@@ -3,7 +3,7 @@
 /**
  * Module dependencies.
  */
-const debug = require('debug')('api:server');
+const debug = require('debug')('millegrilles:server');
 const https = require('https');
 const fs = require("fs");
 const Path = require('path');
@@ -70,7 +70,7 @@ rabbitMQ.connect(mqConnectionUrl)
   // Serveurs supportes : https, spdy, (http2)
   const serverType = process.env.SERVER_TYPE || 'spdy';
   const serverTypeLib = require(serverType);
-  console.info("Type de serveur web : %s", serverType)
+  console.info("server: Type de serveur web : %s", serverType)
   const server = serverType === 'http2'?
     serverTypeLib.createSecureServer(config, app):
     serverTypeLib.createServer(config, app);
@@ -82,16 +82,16 @@ rabbitMQ.connect(mqConnectionUrl)
     const wss_server = socketio(server);
     // wss_server.listen(server);
     wss_server.on('connection', (socket) => {
-      console.info("Connexion WSS id = %s, remoteAddress = %s", socket.id, socket.conn.remoteAddress);
+      console.info("server:Connexion WSS id = %s, remoteAddress = %s", socket.id, socket.conn.remoteAddress);
       webSocketApp.addSocket(socket);
     });
 
-    console.info('Server is listening at https://localhost:%d.', port);
+    console.info('server: Server is listening at https://localhost:%d.', port);
   }
 
 })
 .catch(err=>{
-  console.error("Erreur connexion a RabbitMQ")
+  console.error("server: Erreur connexion a RabbitMQ")
   throw err;
 })
 
