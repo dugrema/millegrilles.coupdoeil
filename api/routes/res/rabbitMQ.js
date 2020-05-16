@@ -93,7 +93,7 @@ class RabbitMQWrapper {
 
         // Enregistrer routing key du certificat
         // Permet de repondre si un autre composant demande notre certificat
-        this.routingKeyCertificat = 'certificat.' + fingerprint;
+        this.routingKeyCertificat = 'requete.certificat.' + fingerprint;
         debug("Enregistrer routing key: " + fingerprint)
         this.channel.bindQueue(this.reply_q.queue, EXCHANGE_PROTEGE, this.routingKeyCertificat);
 
