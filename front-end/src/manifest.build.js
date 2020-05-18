@@ -1,5 +1,5 @@
 const build = {
-  date: '2020-05-05 16:58',
-  version: '1.24.5'
+  date: '2020-05-18 14:41',
+  version: '1.25.routingkeys.0'
 }
 module.exports = build;

@@ -10,7 +10,7 @@ if [ -z $VERSION ]; then
 fi
 
 BUILD_FILE=coupdoeil_react.$VERSION.tar.gz
-BUILD_PATH=/home/mathieu/git/MilleGrilles.coupdoeil
+BUILD_PATH=/home/mathieu/git/millegrilles.coupdoeil
 
 traiter_fichier_react() {
   # Decide si on bati ou telecharge un package pour le build react.
