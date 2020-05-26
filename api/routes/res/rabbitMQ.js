@@ -7,9 +7,10 @@ const forge = require('node-forge');
 
 // const pki = require('./pki.js');
 
-const EXCHANGE_PROTEGE = '3.protege';
-const ROUTING_EMETTRE_CERTIFICAT = 'evenement.Pki.infoCertificat';
-const routingKeyNouvelleTransaction = 'transaction.nouvelle';
+const EXCHANGE_PROTEGE = '3.protege'
+const ROUTING_CERTIFICAT = 'requete.certificat'
+const ROUTING_EMETTRE_CERTIFICAT = 'evenement.Pki.infoCertificat'
+const routingKeyNouvelleTransaction = 'transaction.nouvelle'
 
 class RabbitMQWrapper {
 
@@ -93,7 +94,7 @@ class RabbitMQWrapper {
 
         // Enregistrer routing key du certificat
         // Permet de repondre si un autre composant demande notre certificat
-        this.routingKeyCertificat = 'requete.certificat.' + fingerprint;
+        this.routingKeyCertificat = ROUTING_CERTIFICAT + '.' + fingerprint;
         debug("Enregistrer routing key: " + fingerprint)
         this.channel.bindQueue(this.reply_q.queue, EXCHANGE_PROTEGE, this.routingKeyCertificat);
 
