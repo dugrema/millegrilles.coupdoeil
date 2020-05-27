@@ -33,7 +33,7 @@ class Login extends React.Component {
     }
 
     // Charger l'information a partir du serveur (config/info.json)
-    const infoUrl = urlApi + '/config/info.json';
+    const infoUrl = urlApi + '/coupdoeil/config/info.json';
     fetch(infoUrl).then(response => {
       if(response.status === 200) {
         response.json().then(reponseJson => {
@@ -594,6 +594,7 @@ class App extends React.Component {
 
     if(opts.reconnection) {
       socket = openSocket('/', {
+        path: '/coupdoeil/socket.io',
         reconnection: true,
         reconnectionAttempts: 30,
         reconnectionDelay: 500,
@@ -601,7 +602,7 @@ class App extends React.Component {
         randomizationFactor: 0.5
       });
     } else {
-      socket = openSocket('/', {reconnection: false});
+      socket = openSocket('/', {path: '/coupdoeil/socket.io', reconnection: false});
     }
 
     this.enregistrerEvenementsGeneriques(socket);

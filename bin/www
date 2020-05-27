@@ -79,7 +79,7 @@ rabbitMQ.connect(mqConnectionUrl)
   server.listen(port, demarrer);
 
   function demarrer() {
-    const wss_server = socketio(server);
+    const wss_server = socketio(server, {path: '/coupdoeil/socket.io'});
     // wss_server.listen(server);
     wss_server.on('connection', (socket) => {
       console.info("server:Connexion WSS id = %s, remoteAddress = %s", socket.id, socket.conn.remoteAddress);
