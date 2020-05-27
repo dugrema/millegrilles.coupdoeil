@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node ./bin/www",
     "hebergement": "node ./bin/hebergement",
-    "test": "node ./bin/test"
+    "test": "node ./bin/test",
+    "client": "node ./bin/start-client"
   },
   "dependencies": {
     "@webauthn/client": "^0.1.2",

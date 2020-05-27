@@ -18,10 +18,10 @@ export MG_MQ_KEYFILE=$CERT_FOLDER/pki.coupdoeil.key
 export WEB_CERT=$MG_MQ_CERTFILE
 export WEB_KEY=$MG_MQ_KEYFILE
 export MG_MQ_URL=amqps://$HOST:5673
-export PORT=3001
+export PORT=3003
 
 export MG_HTTPPROXY_SECURE=false
-export MG_CONSIGNATION_HTTP=https://$HOST:3003
+export MG_CONSIGNATION_HTTP=https://$HOST:3005
 
 export SERVER_TYPE=spdy
 
