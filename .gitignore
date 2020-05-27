@@ -1,2 +1,3 @@
 react_build
 *.tar.gz
+**/node_modules
