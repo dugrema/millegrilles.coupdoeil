@@ -14,22 +14,35 @@ function initialiserApp(sessionManagement, opts) {
   // Logging requetes http
   initLogging(app)
 
+  app.use('/coupdoeil', initCoupdoeil(sessionManagement, opts))
+
+  return app;
+}
+
+function initLogging(app) {
+  const loggingType = process.env.NODE_ENV !== 'production' ? 'dev' : 'combined';
+  app.use(logger(loggingType));  // logging
+}
+
+function initCoupdoeil(sessionManagement, opts) {
+  const routeCoupdoeil = express()
+
   // Path /grosfichiers
-  app.use('/grosFichiers', initGrosFichiers(app, sessionManagement))
+  routeCoupdoeil.use('/grosFichiers', initGrosFichiers(routeCoupdoeil, sessionManagement))
 
   // Path /config
-  app.use('/config', initRouteurInfo(app, sessionManagement, opts))
+  routeCoupdoeil.use('/config', initRouteurInfo(routeCoupdoeil, sessionManagement, opts))
 
   // Config de base, paths statiques
-  app.use(express.static(path.join(__dirname, 'public')));
+  routeCoupdoeil.use(express.static(path.join(__dirname, 'public')));
 
   // catch 404 and forward to error handler
-  app.use(function(req, res, next) {
+  routeCoupdoeil.use(function(req, res, next) {
     next(createError(404));
   });
 
   // error handler
-  app.use(function(err, req, res, next) {
+  routeCoupdoeil.use(function(err, req, res, next) {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -42,12 +55,7 @@ function initialiserApp(sessionManagement, opts) {
     res.render('error');
   });
 
-  return app;
-}
-
-function initLogging(app) {
-  const loggingType = process.env.NODE_ENV !== 'production' ? 'dev' : 'combined';
-  app.use(logger(loggingType));  // logging
+  return routeCoupdoeil
 }
 
 function initGrosFichiers(app, sessionManagement) {
