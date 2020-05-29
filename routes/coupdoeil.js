@@ -66,7 +66,7 @@ function initialiser(fctRabbitMQParIdmg, opts) {
 function ajouterStaticRoute(route) {
   var folderStatic =
     process.env.MG_COUPDOEIL_STATIC_RES ||
-    path.join(__dirname, 'static', 'coupdoeil')
+    '/usr/src/app/static/coupdoeil'
 
   debug("Folder static pour coupdoeil : %s", folderStatic)
 
