@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const debug = require('debug')('millegrilles:www');
+const debug = require('debug')('millegrilles:www')
 const express = require('express')
 
 const {initialiser: initialiserServer} = require('./server')

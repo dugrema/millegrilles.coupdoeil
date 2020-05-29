@@ -39,6 +39,9 @@ function initialiser(fctRabbitMQParIdmg, opts) {
 
   routeCoupdoeil.get('/info.json', routeInfo)
 
+  // Lien vers code React de CoupDoeil
+  ajouterStaticRoute(routeCoupdoeil)
+
   // Config de base, paths statiques
   routeCoupdoeil.use(express.static(path.join(__dirname, 'public')));
 
@@ -63,6 +66,15 @@ function initialiser(fctRabbitMQParIdmg, opts) {
 
   return routeCoupdoeil
 
+}
+
+function ajouterStaticRoute(route) {
+  var folderStatic =
+    process.env.MG_MILLEGRILLES_STATIC_RES ||
+    process.env.MG_STATIC_RES ||
+    'static/coupdoeil'
+
+  route.use(express.static(folderStatic))
 }
 
 function initSocketIo(server, opts) {
