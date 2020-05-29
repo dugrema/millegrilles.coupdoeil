@@ -1,4 +1,4 @@
-const debug = require('debug')('coupdoeil:route')
+const debug = require('debug')('millegrilles:coupdoeil:route')
 const express = require('express')
 const logger = require('morgan')
 const path = require('path')
@@ -67,6 +67,8 @@ function ajouterStaticRoute(route) {
   var folderStatic =
     process.env.MG_COUPDOEIL_STATIC_RES ||
     path.join(__dirname, 'static', 'coupdoeil')
+
+  debug("Folder static pour coupdoeil : %s", folderStatic)
 
   route.use(express.static(folderStatic))
 }
