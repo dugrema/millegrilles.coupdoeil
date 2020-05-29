@@ -1,5 +1,5 @@
 var fs = require('fs');
-var {SocketIoUpload} = require('./routes/res/SocketioUpload');
+// var {SocketIoUpload} = require('../routes/res/SocketioUpload');
 const debug = require('debug')('coupdoeil:websocketsapp')
 
 // var sessionManagement = require('./routes/res/sessionManagement');
@@ -178,7 +178,7 @@ class WebSocketApp {
     let reply_q = socketResources.reply_q;
 
     // Enregistrer evenements upload
-    new SocketIoUpload(rabbitMQ, rabbitMQ.pki).enregistrer(socket);
+    // new SocketIoUpload(rabbitMQ, rabbitMQ.pki).enregistrer(socket);
 
     socket.on('subscribe', message => {
       rabbitMQ.routingKeyManager
@@ -201,13 +201,11 @@ class WebSocketApp {
 
       rabbitMQ.transmettreRequete(domaineAction, requete)
       .then( reponse => {
-        let messageContent = reponse.content.toString('utf-8');
-        let json_message = JSON.parse(messageContent);
-        if(json_message.resultats) {
-          cb(json_message.resultats); // On transmet juste les resultats
+        if(reponse.resultats) {
+          cb(reponse.resultats); // On transmet juste les resultats
         } else {
           // C'est une reponse custom
-          cb(json_message);
+          cb(reponse);
         }
 
       })
@@ -229,10 +227,8 @@ class WebSocketApp {
         .transmettreCommande(routingKey, commande, {nowait})
         .then( reponse => {
           if(reponse) {
-            let messageContent = reponse.content.toString('utf-8');
-            let json_message = JSON.parse(messageContent);
             if(cb) {
-              cb(json_message.resultats); // On transmet juste les resultats
+              cb(reponse.resultats || reponse); // On transmet juste les resultats
             }
           } else {
             if(!nowait) {

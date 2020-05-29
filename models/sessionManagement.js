@@ -1,4 +1,3 @@
-// const rabbitMQ = require('./rabbitMQ');
 const debug = require('debug')('millegrilles:sessionManagement');
 const {
     generateRegistrationChallenge,
@@ -8,7 +7,6 @@ const {
     verifyAuthenticatorAssertion,
 } = require('@webauthn/server');
 const crypto = require('crypto');
-// const pki = require('./pki')
 
 class SessionManagement {
 
@@ -565,8 +563,5 @@ class SessionManagement {
   }
 
 }
-
-// const sessionManagement = new SessionManagement();
-// sessionManagement.start();
 
 module.exports = {SessionManagement};

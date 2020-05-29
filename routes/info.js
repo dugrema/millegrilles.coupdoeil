@@ -1,6 +1,6 @@
 const express = require('express');
 
-function initialiserInfo(sessionManagement, opts) {
+function initialiser(sessionManagement, opts) {
 
   const router = express.Router();
   const modeHebergement = opts.hebergement===true;
@@ -62,4 +62,4 @@ function initialiserInfo(sessionManagement, opts) {
 
 }
 
-module.exports = {initialiserInfo};
+module.exports = {initialiser};

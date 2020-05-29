@@ -33,7 +33,7 @@ class Login extends React.Component {
     }
 
     // Charger l'information a partir du serveur (config/info.json)
-    const infoUrl = urlApi + '/coupdoeil/config/info.json';
+    const infoUrl = urlApi + '/coupdoeil/info.json';
     fetch(infoUrl).then(response => {
       if(response.status === 200) {
         response.json().then(reponseJson => {

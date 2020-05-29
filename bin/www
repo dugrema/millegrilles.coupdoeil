@@ -1,116 +1,37 @@
 #!/usr/bin/env node
 
-/**
- * Module dependencies.
- */
-const debug = require('debug')('millegrilles:server');
-const https = require('https');
-const fs = require("fs");
-const Path = require('path');
-const socketio = require('socket.io');
+const debug = require('debug')('millegrilles:www');
+const express = require('express')
 
-const {RabbitMQWrapper} = require('../routes/res/rabbitMQ')
-const {PKIUtils} = require('../routes/res/pki');
-const {initialiserApp} = require('../app');
-const {WebSocketApp} = require('../websocketsapp');
-const {SessionManagement} = require('../routes/res/sessionManagement');
+const {initialiser: initialiserServer} = require('./server')
+const {initialiser: initialiserApp, initSocketIo} = require('./app');
+const amqpdao = require('../models/amqpdao')
 
-//  Charger certificats web et MilleGrille
-const webkeyPem = fs.readFileSync(process.env.WEB_KEY).toString('utf-8');
-const webcertPem = fs.readFileSync(process.env.WEB_CERT).toString('utf-8');
-const certPem = fs.readFileSync(process.env.MG_MQ_CERTFILE).toString('utf-8');
-const keyPem = fs.readFileSync(process.env.MG_MQ_KEYFILE).toString('utf-8');
-const certMillegrillePem = fs.readFileSync(process.env.MG_MQ_CAFILE).toString('utf-8');
+async function init() {
 
-// Charger certificats, PKI
-const certPems = {
-  millegrille: certMillegrillePem,
-  cert: certPem,
-  key: keyPem,
-};
-const pki = new PKIUtils(certPems);
-pki.chargerPEMs(certPems);
+  // Connexion AMQ
+  const {amqpdao: instAmqpdao} = await amqpdao.init()
+  const idmg = instAmqpdao.pki.idmg
 
-// Configuration web
-const hostIp = process.env.HOST;
-const config = {
-    hostIp: hostIp,
-    cert: webcertPem,
-    key: webkeyPem,
-};
+  debug("Initialisation serveur IDMG : %s", idmg)
 
-// Connexion a RabbitMQ
-// amqps://mq:5673/[idmg]
-const rabbitMQ = new RabbitMQWrapper(pki);
-const mqConnectionUrl = process.env.MG_MQ_URL;
+  // Creer une collection avec la connexion a MQ (format qui supporte hebergement)
+  const rabbitMQParIdmg = {
+    [idmg]: instAmqpdao
+  }
 
-const rabbitMQParIdmg = {
-  [pki.idmg]: rabbitMQ,
+  const fctRabbitMQParIdmg = (idmg) => {
+    return rabbitMQParIdmg[idmg]
+  }
+
+  const root = express()
+  const serverInstance = initialiserServer(root)
+
+  const app = await initialiserApp(fctRabbitMQParIdmg, {idmg})
+  root.use('/coupdoeil', app)
+
+  // Initialiser Socket.IO sur /coupdoeil
+  initSocketIo(serverInstance)
 }
 
-function fctRabbitMQParIdmg(idmg) {
-  return rabbitMQParIdmg[idmg];
-}
-
-// Demarrer gestion de sessions websockets
-const sessionManagement = new SessionManagement(fctRabbitMQParIdmg);
-sessionManagement.start();
-
-rabbitMQ.connect(mqConnectionUrl)
-.then(()=>{
-
-  // Creer application CoupDOeil
-  const appOpts = {
-    idmg: pki.idmg,
-    hebergement: false,
-  }
-  const app = initialiserApp(sessionManagement, appOpts);
-  const webSocketApp = new WebSocketApp(sessionManagement);
-
-  // Serveurs supportes : https, spdy, (http2)
-  const serverType = process.env.SERVER_TYPE || 'spdy';
-  const serverTypeLib = require(serverType);
-  console.info("server: Type de serveur web : %s", serverType)
-  const server = serverType === 'http2'?
-    serverTypeLib.createSecureServer(config, app):
-    serverTypeLib.createServer(config, app);
-
-  var port = normalizePort(process.env.PORT || '443');
-  server.listen(port, demarrer);
-
-  function demarrer() {
-    const wss_server = socketio(server, {path: '/coupdoeil/socket.io'});
-    // wss_server.listen(server);
-    wss_server.on('connection', (socket) => {
-      console.info("server:Connexion WSS id = %s, remoteAddress = %s", socket.id, socket.conn.remoteAddress);
-      webSocketApp.addSocket(socket);
-    });
-
-    console.info('server: Server is listening at https://localhost:%d.', port);
-  }
-
-})
-.catch(err=>{
-  console.error("server: Erreur connexion a RabbitMQ")
-  throw err;
-})
-
-/**
- * Normalize a port into a number, string, or false.
- */
-
-function normalizePort(val) {
-  var port = parseInt(val, 10);
-
-  if (isNaN(port)) {
-    // named pipe
-    return val;
-  }
-
-  if (port >= 0) {
-    // port number
-    return port;
-  }
-
-  return false;
-}
+init()
