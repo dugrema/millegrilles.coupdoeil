@@ -52,7 +52,9 @@ class Login extends React.Component {
             stateUpdate.idMillegrille = idmgConfig;
             localStorage.setItem('idmg', idmgConfig);
           }
-          this.setState(stateUpdate);
+          this.setState(stateUpdate, ()=>{
+            this.login_method()
+          });
         });
       }
     })
@@ -544,7 +546,7 @@ class App extends React.Component {
 
         // Le certificat local est absent ou invalide
         // On va se connecter avec Token USB
-        socket = this.openSocketHelper({reconnection: false});
+        socket = this.openSocketHelper({reconnection: true});
         socket.on("authentifier", ()=>{
           socket.emit('authentification', {
             methode: 'tokenUSB',

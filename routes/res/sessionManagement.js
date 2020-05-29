@@ -117,10 +117,32 @@ class SessionManagement {
     return false;
   }
 
+  authentifier(socket, params) {
+
+    // Lier a l'instance de RabbitMQ correspondant a l'identificateur de MilleGrille
+    const idMillegrille = params.idMillegrille;
+    const idmg = idMillegrille;  // TODO: Faire lookup
+    const rabbitMQ = this.fctRabbitMQParIdmg(idmg);
+
+    const promise = new Promise((resolve, reject)=>{
+      if(!rabbitMQ) {
+        // La MilleGrille est inconnue
+        debug("MilleGrille non initialisee")
+        socket.emit('erreur.login', {'erreur': 'erreur init rabbitmq', 'methode': params.methode});
+        return reject(new Error("L'identificateur MilleGrille '" + idMillegrille + "' n'est pas connu"))
+      } else {
+        socket.emit('login', true)
+        return resolve(rabbitMQ)
+      }
+    })
+
+    return promise
+  }
+
   // Authentification de l'usager avec la MilleGrille fournie en parametre
   // Retourne la connexion a RabbitMQ si l'authentification reussi.
   // Lance une erreur en cas d'echec
-  authentifier(socket, params) {
+  promotionSecurite(socket, params) {
     debug("Authentifier");
     // console.debug(params);
 
@@ -134,14 +156,14 @@ class SessionManagement {
         // La MilleGrille est inconnue
         reject(new Error("L'identificateur MilleGrille '" + idMillegrille + "' n'est pas connu"));
 
-      } else if(params.methode === 'effectuerEmpreinte') {
-        debug("Effectuer l'empreinte de la MilleGrille");
-        this.effectuerEmpreinte(rabbitMQ, socket, params)
-        .then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
-      } else if(params.methode === 'ajouterTokenUSB') {
-        debug("Ajouter un token a la MilleGrille avec un PIN");
-        this.ajouterTokenUSB(rabbitMQ, socket, params)
-        .then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
+      // } else if(params.methode === 'effectuerEmpreinte') {
+      //   debug("Effectuer l'empreinte de la MilleGrille");
+      //   this.effectuerEmpreinte(rabbitMQ, socket, params)
+      //   .then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
+      // } else if(params.methode === 'ajouterTokenUSB') {
+      //   debug("Ajouter un token a la MilleGrille avec un PIN");
+      //   this.ajouterTokenUSB(rabbitMQ, socket, params)
+      //   .then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
       } else if(params.methode === 'genererCertificat') {
         debug("Generer un certificat de navigateur pour la MilleGrille avec un PIN");
         this.genererCertificat(rabbitMQ, socket, params)
@@ -150,16 +172,16 @@ class SessionManagement {
           console.warn("Erreur challenge certificat, essayer USB");
           this.creerChallengeUSB(rabbitMQ, socket).then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
         })
-      } else if(params.methode === 'certificatLocal') {
-        debug("Authentification par certificat");
-        let fingerprint = params.fingerprint;
-        let certificat = params.certificat;
-        this.creerChallengeCertificat(rabbitMQ, socket, fingerprint, certificat)
-          .then(()=>resolve(rabbitMQ))
-          .catch(err=>{
-            console.warn("Erreur challenge certificat, essayer USB");
-            this.creerChallengeUSB(rabbitMQ, socket).then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
-          });
+      // } else if(params.methode === 'certificatLocal') {
+      //   debug("Authentification par certificat");
+      //   let fingerprint = params.fingerprint;
+      //   let certificat = params.certificat;
+      //   this.creerChallengeCertificat(rabbitMQ, socket, fingerprint, certificat)
+      //     .then(()=>resolve(rabbitMQ))
+      //     .catch(err=>{
+      //       console.warn("Erreur challenge certificat, essayer USB");
+      //       this.creerChallengeUSB(rabbitMQ, socket).then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
+      //     });
       } else if (params.methode === 'tokenUSB') {
         debug("Authentification par securityKey USB");
         this.creerChallengeUSB(rabbitMQ, socket).then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
