@@ -1,5 +1,6 @@
 var fs = require('fs');
 var {SocketIoUpload} = require('./routes/res/SocketioUpload');
+const debug = require('debug')('coupdoeil:websocketsapp')
 
 // var sessionManagement = require('./routes/res/sessionManagement');
 // var pki = require('./routes/res/pki');
@@ -111,10 +112,19 @@ class WebSocketApp {
   // Methode utiliser pour ajouter une nouvelle connexion a partir de Socket.IO (listener)
   // L'authentification securitaire de l'usager est la premier action de addSocket.
   addSocket(socket) {
+    debug("Socket connecte")
+    debug(socket.request.headers)
+
+    const estProprietaire = socket.request.headers['est-proprietaire']
 
     // Ajoute un socket d'une nouvelle connexion
     // console.debug("Nouveau socket!");
-    if(!socket.disconnected) {
+    if(!estProprietaire) {
+      console.error("Usager n'est pas proprietaire de la millegrille sur socket " + socket.id + ", on le ferme.");
+      socket.disconnect();
+      delete this.new_sockets[socket.id];
+
+    } else if(!socket.disconnected) {
       let socketResources = new WebSocketResources(socket);
 
       // S'assure que le socket n'a pas ete deconnecte avant d'ajouter
