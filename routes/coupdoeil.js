@@ -40,9 +40,6 @@ function initialiser(fctRabbitMQParIdmg, opts) {
   // Lien vers code React de CoupDoeil
   ajouterStaticRoute(routeCoupdoeil)
 
-  // Config de base, paths statiques
-  routeCoupdoeil.use(express.static(path.join(__dirname, 'public')));
-
   // catch 404 and forward to error handler
   routeCoupdoeil.use(function(req, res, next) {
     throw {status: 404}
@@ -68,9 +65,8 @@ function initialiser(fctRabbitMQParIdmg, opts) {
 
 function ajouterStaticRoute(route) {
   var folderStatic =
-    process.env.MG_MILLEGRILLES_STATIC_RES ||
-    process.env.MG_STATIC_RES ||
-    'static/coupdoeil'
+    process.env.MG_COUPDOEIL_STATIC_RES ||
+    path.join(__dirname, 'static', 'coupdoeil')
 
   route.use(express.static(folderStatic))
 }
