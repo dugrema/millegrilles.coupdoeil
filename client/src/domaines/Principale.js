@@ -2,7 +2,7 @@ import React from 'react';
 import QRCode from 'qrcode.react';
 import { Alert, Form, Container, Row, Col,
          Button, ButtonGroup, InputGroup} from 'react-bootstrap';
-import manifest from '../manifest.build.js';  // App version, build date
+// import manifest from '../manifest.build.js';  // App version, build date
 import { solveRegistrationChallenge } from '@webauthn/client';
 import webSocketManager from '../WebSocketManager';
 import { Trans, Translation } from 'react-i18next';
@@ -47,6 +47,10 @@ export class InterfacePrincipale extends React.Component {
     var qrCode = null;
     if(this.state.milleGrille.idmg) {
       qrCode = <QRCode value={'idmg:' + this.state.milleGrille.idmg} size={75} />;
+    }
+    const manifest = {
+      date: "DUMMY",
+      version: "DUMMY",
     }
 
     return (
