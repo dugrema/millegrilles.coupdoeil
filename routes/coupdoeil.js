@@ -35,8 +35,6 @@ function initialiser(fctRabbitMQParIdmg, opts) {
   const routeCoupdoeil = express()
 
   // Aucune fonctionnalite n'est disponible via REST, tout est sur socket.io
-  routeCoupdoeil.get('/', (req, res) => res.sendStatus(403))
-
   routeCoupdoeil.get('/info.json', routeInfo)
 
   // Lien vers code React de CoupDoeil
