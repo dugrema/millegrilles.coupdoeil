@@ -203,13 +203,11 @@
       }
     },
     "menu": {
-      "albums": "Albums",
-      "messages": "Messages",
-      "blogs": "Blog",
-      "podcasts": "Podcasts",
-      "fichiers": "Fichiers",
-      "senseursPassifs": "Senseurs Passifs",
-      "autres": "Autres",
+      "Principal": "Principal",
+      "Parametres": "Parametres",
+      "Backup": "Backup",
+      "Hebergement": "Hebergement",
+      "Pki": "Pki",
       "changerLangue": "English"
     }
   }
