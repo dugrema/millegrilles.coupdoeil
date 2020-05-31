@@ -2,12 +2,12 @@ import React from 'react';
 import QRCode from 'qrcode.react';
 import { Alert, Form, Container, Row, Col,
          Button, ButtonGroup, InputGroup} from 'react-bootstrap';
-// import manifest from '../manifest.build.js';  // App version, build date
 import { solveRegistrationChallenge } from '@webauthn/client';
-import webSocketManager from '../WebSocketManager';
+
+// import manifest from '../manifest.build.js';  // App version, build date
 import { Trans, Translation } from 'react-i18next';
-import { Feuille } from '../mgcomponents/Feuilles';
-import { InputTextMultilingue } from '../mgcomponents/InputMultilingue';
+import { Feuille } from '../components/Feuilles';
+import { InputTextMultilingue } from '../components/InputMultilingue';
 
 import './Principale.css';
 
@@ -19,7 +19,7 @@ export class InterfacePrincipale extends React.Component {
   }
 
   componentDidMount() {
-    chargerProfils()
+    chargerProfils(this.props)
     .then(donnees=>{
       if(donnees && donnees.milleGrille) {
         this.setState({milleGrille: donnees.milleGrille});
@@ -85,11 +85,6 @@ export class InterfacePrincipale extends React.Component {
               <Trans>principale.accueil.lienUsager</Trans>
             </Button>
           </li>
-          <li>
-            <Button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="gestionTokens">
-              <Trans>principale.accueil.lienTokens</Trans>
-            </Button>
-          </li>
         </ul>
       </Feuille>
     );
@@ -101,12 +96,8 @@ export class InterfacePrincipale extends React.Component {
     if(this.state.ecranCourant === 'information') {
       contenu = (
         <InformationMilleGrille
-          {...this.fonctionsNavigation} />
-      );
-    } else if(this.state.ecranCourant === 'gestionTokens') {
-      contenu = (
-        <GestionTokens
-          {...this.fonctionsNavigation} />
+          {...this.fonctionsNavigation}
+          rootProps={this.props.rootProps} />
       );
     } else {
       contenu = (
@@ -146,7 +137,7 @@ class InformationMilleGrille extends React.Component {
   }
 
   componentDidMount() {
-    chargerProfils()
+    chargerProfils(this.props)
     .then(donnees=>{this.setState(donnees);})
     .catch(err=> {
       console.error("Erreur chargement profil");
@@ -417,7 +408,7 @@ class InformationMilleGrille extends React.Component {
     let transaction = this.state.milleGrille;
 
     let domaine = 'Principale.majProfilMilleGrille';
-    webSocketManager.transmettreTransaction(domaine, transaction)
+    this.props.rootProps.websocketApp.transmettreTransaction(domaine, transaction)
     .then(reponse=>{
       if(reponse.err) {
         console.error("Erreur transaction");
@@ -433,7 +424,7 @@ class InformationMilleGrille extends React.Component {
     let transaction = this.state.usager;
 
     let domaine = 'Principale.majProfilUsager';
-    webSocketManager.transmettreTransaction(domaine, transaction)
+    this.props.rootProps.websocketApp.transmettreTransaction(domaine, transaction)
     .then(reponse=>{
       if(reponse.err) {
         console.error("Erreur transaction");
@@ -447,94 +438,9 @@ class InformationMilleGrille extends React.Component {
 
 }
 
-class GestionTokens extends React.Component {
-
-  state = {
-    pin: null,
-  }
-
-  ajouterToken = () => {
-
-    // Le processus comporte plusieurs etapes. On commence par ajouter
-    // un handler pour repondre au challenge du serveur.
-    var callbackChallenge = null;
-    webSocketManager.emitWEventCallback(
-      'enregistrerDevice', {}, 'challengeEnregistrerDevice')
-    .then(event=>{
-      let challenge = event[0];
-      let cb = event[1];
-      console.log("Challenge recu");
-      console.log(challenge);
-      console.log(cb);
-      callbackChallenge = cb;
-
-      return solveRegistrationChallenge(challenge);
-    }).then(credentials=>{
-      console.log("Transmission de la reponse au challenge");
-      console.log(credentials);
-
-      // Transmettre reponse
-      callbackChallenge(credentials);
-    }).catch(err=>{
-      console.error("Erreur traitement ajouter token");
-      console.error(err);
-    });
-
-  }
-
-  genererPinTemporaireAjoutDevice = () => {
-    let self = this;
-    webSocketManager.emit('creerPINTemporaireDevice', {})
-    .then(reponse => {
-      let pin = reponse.pin;
-      self.setState({pin: pin});
-    })
-  }
-
-  render() {
-
-    var pinSection = null;
-    if(this.state.pin) {
-      pinSection = (
-        <Alert variant="success">
-          PIN genere : {this.state.pin}
-        </Alert>
-      )
-    }
-
-    return(
-      <div className="w3-col m9">
-        <div className="w3-row-padding">
-          <Feuille>
-            <h1>Gestion tokens</h1>
-
-            {pinSection}
-
-            <Row>
-              <Col>
-                <Button className="aslink" onClick={this.ajouterToken}>
-                  Ajouter token
-                </Button>
-              </Col>
-            </Row>
-            <Row>
-              <Col>
-                <Button className="aslink" onClick={this.genererPinTemporaireAjoutDevice}>
-                  Generer un PIN
-                </Button> temporaire pour connecter un nouveau token.
-              </Col>
-            </Row>
-          </Feuille>
-        </div>
-      </div>
-    );
-  }
-
-}
-
-function chargerProfils() {
+function chargerProfils(props) {
   let routingKey = 'Principale.getProfilUsager';
-  return webSocketManager.transmettreRequete(routingKey, {})
+  return props.rootProps.websocketApp.transmettreRequete(routingKey, {})
   .then(documents => {
     return{
       usager: documents['profil.usager'],
@@ -545,4 +451,4 @@ function chargerProfils() {
     console.error("Erreur requete documents profils");
     console.error(err);
   });
-  }
+}

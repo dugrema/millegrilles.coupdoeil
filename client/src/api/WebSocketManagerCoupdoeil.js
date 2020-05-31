@@ -1,21 +1,23 @@
 import {WebSocketManager} from './WebSocketManager'
 import openSocket from 'socket.io-client'
 
-export class WebSocketManagerCoupdoeil {
+export class WebSocketManagerCoupdoeil extends WebSocketManager {
 
   constructor(opts) {
+    super()
+
     if(!opts) opts = {}
     this.opts = opts
 
     this.path = opts.path || '/coupdoeil/socket.io'
-    this.websocketManager = new WebSocketManager()
+    // this.websocketManager = new WebSocketManager()
   }
 
   async connecter() {
     console.debug("Connecter socket.io")
     const socket = this.openSocketHelper()
     await this.enregistrerEvenementsGeneriques(socket)
-    this.websocketManager.setupWebSocket(socket)
+    this.setupWebSocket(socket)
   }
 
   deconnecter() {

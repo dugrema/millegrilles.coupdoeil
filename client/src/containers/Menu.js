@@ -8,7 +8,7 @@ export function Menu(props) {
       <Navbar.Brand href='/'><i className="fa fa-home"/></Navbar.Brand>
       <Navbar.Toggle aria-controls="responsive-navbar-menu" />
       <Navbar.Collapse id="responsive-navbar-menu">
-        <MenuItems />
+        <MenuItems changerPage={props.changerPage} />
         <Nav className="justify-content-end">
           <Nav.Link eventKey={props.languageChangement} onSelect={props.changeLanguage}><Trans>menu.changerLangue</Trans></Nav.Link>
         </Nav>
@@ -19,7 +19,7 @@ export function Menu(props) {
 
 function MenuItems(props) {
   return (
-    <Nav className="mr-auto" activeKey={props.section}>
+    <Nav className="mr-auto" activeKey={props.section} onSelect={props.changerPage}>
       <Nav.Item>
         <Nav.Link eventKey='Principal'>
           <Trans>menu.Principal</Trans>
@@ -28,9 +28,9 @@ function MenuItems(props) {
       <Dropdown as={NavItem}>
         <Dropdown.Toggle as={NavLink}><Trans>menu.Parametres</Trans></Dropdown.Toggle>
         <Dropdown.Menu>
-          <Dropdown.Item><Trans>menu.Backup</Trans></Dropdown.Item>
-          <Dropdown.Item><Trans>menu.Hebergement</Trans></Dropdown.Item>
-          <Dropdown.Item><Trans>menu.Pki</Trans></Dropdown.Item>
+          <Dropdown.Item eventKey="Backup"><Trans>menu.Backup</Trans></Dropdown.Item>
+          <Dropdown.Item eventKey="Hebergement"><Trans>menu.Hebergement</Trans></Dropdown.Item>
+          <Dropdown.Item eventKey="Pki"><Trans>menu.Pki</Trans></Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
     </Nav>

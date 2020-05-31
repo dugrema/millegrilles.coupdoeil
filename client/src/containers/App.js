@@ -2,6 +2,7 @@ import React from 'react'
 import { Alert, Container, Row, Col, Button, InputGroup, Form, FormControl } from 'react-bootstrap'
 
 import {VerificationInfoServeur, ConnexionWebsocket} from './Authentification'
+import { SectionContenu } from './SectionContenu'
 import { LayoutCoudpoeil } from './Layout'
 
 import './App.css'
@@ -15,6 +16,8 @@ export class ApplicationCoupdoeil extends React.Component {
     idmg: null,                 // IDMG actif
     hebergement: false,
     modeProtege: false,         // Mode par defaut est lecture seule (prive)
+
+    page: 'Principale',
   }
 
   setInfoServeur = (info) => {
@@ -30,6 +33,10 @@ export class ApplicationCoupdoeil extends React.Component {
     this.setState({modeProtege: mode})
   }
 
+  changerPage = page => {
+    this.setState({page})
+  }
+
   render() {
 
     let page;
@@ -41,7 +48,7 @@ export class ApplicationCoupdoeil extends React.Component {
       page = <ConnexionWebsocket setWebsocketApp={this.setWebsocketApp} />
     } else {
       // 3. Afficher application
-      page = <ApplicationConnectee rootProps={{...this.state}} />
+      page = <SectionContenu rootProps={{...this.state}} />
     }
 
     return <LayoutCoudpoeil idmg={this.state.idmg} page={page} />
