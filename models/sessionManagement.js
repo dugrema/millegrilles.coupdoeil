@@ -115,28 +115,6 @@ class SessionManagement {
     return false;
   }
 
-  authentifier(socket, params) {
-
-    // Lier a l'instance de RabbitMQ correspondant a l'identificateur de MilleGrille
-    const idMillegrille = params.idMillegrille;
-    const idmg = idMillegrille;  // TODO: Faire lookup
-    const rabbitMQ = this.fctRabbitMQParIdmg(idmg);
-
-    const promise = new Promise((resolve, reject)=>{
-      if(!rabbitMQ) {
-        // La MilleGrille est inconnue
-        debug("MilleGrille non initialisee")
-        socket.emit('erreur.login', {'erreur': 'erreur init rabbitmq', 'methode': params.methode});
-        return reject(new Error("L'identificateur MilleGrille '" + idMillegrille + "' n'est pas connu"))
-      } else {
-        socket.emit('login', true)
-        return resolve(rabbitMQ)
-      }
-    })
-
-    return promise
-  }
-
   // Authentification de l'usager avec la MilleGrille fournie en parametre
   // Retourne la connexion a RabbitMQ si l'authentification reussi.
   // Lance une erreur en cas d'echec
@@ -547,19 +525,34 @@ class SessionManagement {
 
   // Ajoute un socket et attend l'evenement d'authentification
   addSocketConnection(socket) {
-    return new Promise((resolve, reject)=>{
-      socket.on('authentification', params=>{
-        this.authentifier(socket, params)
-        .then(rabbitMQ=>{
-          resolve(rabbitMQ);
-        })
-        .catch(err=>{
-          reject();
-        })
-      });
 
-      socket.emit("authentifier", {});
-    });
+    // Authentification privee
+    // Doit s'assurer que la connexion est pour le bon IDMG
+    // et que c'est le proprietaire
+    const estProprietaire = socket.request.headers['est-proprietaire']
+    const idmgClient = socket.request.headers['idmg']
+    const rabbitMQ = this.fctRabbitMQParIdmg(idmgClient);
+
+    return new Promise(async (resolve, reject)=>{
+      const params = {
+        idMillegrille: idmgClient
+      }
+
+      if(!estProprietaire) {
+        debug("Usager n'est pas proprietaire")
+        socket.emit('erreur.login', {'erreur': 'erreur pas proprietaire'});
+        return reject(new Error("Usager n'est pas proprietaire de la millegrille sur socket " + socket.id))
+      } else if(!rabbitMQ) {
+        // La MilleGrille est inconnue
+        debug("MilleGrille non initialisee")
+        socket.emit('erreur.login', {'erreur': 'erreur init rabbitmq'});
+        return reject(new Error("L'identificateur MilleGrille '" + idmgClient + "' n'est pas connu"))
+      } else {
+        socket.emit("pret", {login: true})
+        return resolve(rabbitMQ)
+      }
+    })
+
   }
 
 }

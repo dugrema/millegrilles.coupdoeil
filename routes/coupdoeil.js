@@ -82,9 +82,15 @@ function initSocketIo(server, opts) {
   const path = opts.pathSocketio || '/coupdoeil/socket.io'
   const socketIo = socketio(server, {path});
 
-  socketIo.on('connection', (socket) => {
+  socketIo.on('connection', async (socket) => {
     debug("server:Connexion socket.IO id = %s, remoteAddress = %s", socket.id, socket.conn.remoteAddress);
-    webSocketApp.addSocket(socket);
+    try {
+      await webSocketApp.addSocket(socket);
+    } catch(err) {
+      console.error("Erreur connexion websocket")
+      console.error(err)
+      socket.close()
+    }
   });
 
 }

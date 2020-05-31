@@ -116,6 +116,7 @@ class WebSocketApp {
     debug(socket.request.headers)
 
     const estProprietaire = socket.request.headers['est-proprietaire']
+    const idmgClient = socket.request.headers['idmg']
 
     // Ajoute un socket d'une nouvelle connexion
     // console.debug("Nouveau socket!");
@@ -123,7 +124,6 @@ class WebSocketApp {
       console.error("Usager n'est pas proprietaire de la millegrille sur socket " + socket.id + ", on le ferme.");
       socket.disconnect();
       delete this.new_sockets[socket.id];
-
     } else if(!socket.disconnected) {
       let socketResources = new WebSocketResources(socket);
 
@@ -143,8 +143,10 @@ class WebSocketApp {
           throw new Error("Idmg inconnu");
         }
         rabbitMQ_local = rabbitMQ;
+
         const idmg = rabbitMQ.pki.idmg;
-        console.debug("Authentification est completee, idmg: " + idmg);
+        debug("Authentification est completee, idmg: %s", idmg);
+
         return rabbitMQ.createChannel(socketResources);
       })
       .then(()=>{

@@ -1,8 +1,9 @@
 // Authentification avec U2F
 import React from 'react'
 import axios from 'axios'
-
 import { solveRegistrationChallenge, solveLoginChallenge } from '@webauthn/client'
+
+import { WebSocketManagerCoupdoeil } from '../api/WebSocketManagerCoupdoeil'
 
 // ConnexionServeur sert a verifier que le serveur est accessible, set info de base en memoire
 // Transfere le controle a <ApplicationCoupdoeil /> via props.setInfoServeur
@@ -79,12 +80,40 @@ export class VerificationInfoServeur extends React.Component {
 }
 
 export class ConnexionWebsocket extends React.Component {
+
+  state = {
+    erreur: false,
+    erreurMessage: '',
+  }
+
   componentDidMount() {
-    
+    this.authentifier()
+  }
+
+  async authentifier() {
+    const websocketConnexion = new WebSocketManagerCoupdoeil()
+
+    try {
+      await websocketConnexion.connecter()
+      this.props.setWebsocketApp(websocketConnexion)
+      console.debug("Authentification completee")
+    } catch(err) {
+      console.error("Erreur authentification")
+      console.error(err)
+      this.setState({erreur: true, erreurMessage: err.cause})
+    }
+
   }
 
   render() {
-    return <p>Connexion a Socket.IO de Coup D'Oeil en cours...</p>
+    let page;
+    if(this.state.erreur) {
+      page = <p>Erreur : {this.state.erreurMessage}</p>
+    } else {
+      page = <p>Connexion a Socket.IO de Coup D'Oeil en cours ...</p>
+    }
+
+    return page
   }
 }
 
@@ -93,13 +122,18 @@ class AuthentificationProtege extends React.Component {
   async repondreChallengeTokenUSBRegistration(socket, challenge, callback) {
     solveRegistrationChallenge(challenge)
     .then(credentials=>{
-      callback(credentials);
+      callback(credentials)
     })
     .catch(err=>{
-      console.error("Erreur challenge reply registration security key");
-      console.error(err);
-      try{this.state.wss_socket.disconnect();} catch(err) {}
-      this.setState({wss_socket: null});
+      console.error("Erreur challenge reply registration security key")
+      console.error(err)
+      try{
+        this.state.wss_socket.disconnect()
+      } catch(err) {
+
+      }
+
+      this.setState({wss_socket: null})
     });
   }
 
@@ -114,10 +148,14 @@ class AuthentificationProtege extends React.Component {
       callback(credentials); // Callback du challenge via websocket
     })
     .catch(err=>{
-      console.error("Erreur challenge reply");
+      console.error("Erreur challenge reply")
       console.error(err);
-      try{this.state.wss_socket.disconnect();} catch(err) {}
-      this.setState({wss_socket: null});
+      try{
+        this.state.wss_socket.disconnect()
+      } catch(err) {
+
+      }
+      this.setState({wss_socket: null})
     });
   }
 

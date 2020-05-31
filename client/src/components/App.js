@@ -1,11 +1,10 @@
 import React from 'react'
 import { Alert, Container, Row, Col, Button, InputGroup, Form, FormControl } from 'react-bootstrap'
-import openSocket from 'socket.io-client'
 
 import {VerificationInfoServeur, ConnexionWebsocket} from './Authentification'
+import { LayoutCoudpoeil } from './Layout'
 
 // import Ecran from './Ecran'
-import {WebSocketManagerCoupdoeil} from '../api/WebSocketManagerCoupdoeil'
 // import {CryptageAsymetrique} from '../api/CryptoSubtle'
 // import {DateTimeAfficher} from './ReactFormatters'
 
@@ -45,7 +44,7 @@ export class ApplicationCoupdoeil extends React.Component {
     if(!this.state.serveurInfo) {
       // 1. Recuperer information du serveur
       page = <VerificationInfoServeur setInfoServeur={this.setInfoServeur} />
-    } else if(!this.state.webSocketApp) {
+    } else if(!this.state.websocketApp) {
       // 2. Connecter avec Socket.IO
       page = <ConnexionWebsocket setWebsocketApp={this.setWebsocketApp} />
     } else {
@@ -53,25 +52,12 @@ export class ApplicationCoupdoeil extends React.Component {
       page = <ApplicationConnectee rootProps={this.state} />
     }
 
-    return page
+    return <LayoutCoudpoeil page={page} />
   }
 
 }
 
 class ApplicationConnectee extends React.Component {
-
-  constructor(props) {
-    super(props)
-    this.webSocketApp = new WebSocketManagerCoupdoeil()
-  }
-
-  componentDidMount() {
-    this.webSocketApp.connecter()
-  }
-
-  componentWillUnmount() {
-    this.webSocketApp.deconnecter()
-  }
 
   render() {
     return (
