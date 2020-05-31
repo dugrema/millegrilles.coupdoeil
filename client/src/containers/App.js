@@ -34,6 +34,7 @@ export class ApplicationCoupdoeil extends React.Component {
   }
 
   changerPage = page => {
+    console.debug("Page : %s", page)
     this.setState({page})
   }
 
@@ -51,7 +52,7 @@ export class ApplicationCoupdoeil extends React.Component {
       page = <SectionContenu rootProps={{...this.state}} />
     }
 
-    return <LayoutCoudpoeil idmg={this.state.idmg} page={page} />
+    return <LayoutCoudpoeil idmg={this.state.idmg} page={page} changerPage={this.changerPage} />
   }
 
 }

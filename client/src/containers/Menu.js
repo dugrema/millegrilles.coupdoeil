@@ -21,7 +21,7 @@ function MenuItems(props) {
   return (
     <Nav className="mr-auto" activeKey={props.section} onSelect={props.changerPage}>
       <Nav.Item>
-        <Nav.Link eventKey='Principal'>
+        <Nav.Link eventKey='Principale'>
           <Trans>menu.Principal</Trans>
         </Nav.Link>
       </Nav.Item>
