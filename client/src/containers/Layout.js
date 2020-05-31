@@ -1,6 +1,7 @@
 import React from 'react'
-import { Nav, Navbar, NavDropdown, Container, Row, Col} from 'react-bootstrap';
-import { Trans, Translation, withTranslation } from 'react-i18next';
+import { Nav, Navbar, NavDropdown, Container, Row, Col} from 'react-bootstrap'
+import { Trans, Translation, withTranslation } from 'react-i18next'
+import QRCode from 'qrcode.react'
 
 import { Menu } from './Menu'
 
@@ -12,7 +13,7 @@ export function LayoutCoudpoeil(props) {
     <div>
       <Entete changerPage={props.changerPage}/>
       <Contenu page={props.page}/>
-      <Footer/>
+      <Footer rootProps={props.rootProps}/>
     </div>
   )
 
@@ -36,17 +37,30 @@ function Contenu(props) {
 }
 
 function Footer(props) {
+
+  const idmg = props.rootProps.idmg
+  var qrCode = null
+
+  if(props.rootProps.idmg) {
+    qrCode = <QRCode value={'idmg:' + idmg} size={75} />;
+  }
+
   return (
     <Container fluid className="footer bg-info">
       <Row>
-        <Col>
-          <Row><h2>Information</h2></Row>
+        <Col sm={2} className="footer-left"></Col>
+        <Col sm={8} className="footer-center">
+          <div className="millegrille-footer">
+            <div>IDMG : {idmg}</div>
+            <div>
+              <Trans>application.coupdoeilAdvert</Trans>{' '}
+              <span title={props.rootProps.manifest.date}>
+                <Trans values={{version: props.rootProps.manifest.version}}>application.coupdoeilVersion</Trans>
+              </span>
+            </div>
+          </div>
         </Col>
-      </Row>
-      <Row className="millegrille-footer">
-        <Col>
-          <Trans>application.coupdoeilAdvert</Trans>
-        </Col>
+        <Col sm={2} className="footer-right">{qrCode}</Col>
       </Row>
     </Container>
   )

@@ -23,7 +23,8 @@
       "desactiver": "Desactiver"
     },
     "application": {
-      "coupdoeilAdvert": "Coup D'Oeil sur MilleGrilles"
+      "coupdoeilAdvert": "Coup D'Oeil sur MilleGrilles",
+      "coupdoeilVersion": "Version {{version}}"
     },
     "formulaire": {
       "prenom": "Prénom :",

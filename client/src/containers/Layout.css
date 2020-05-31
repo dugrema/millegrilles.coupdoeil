@@ -23,8 +23,37 @@
 }
 
 .millegrille-footer {
-  padding-top: 2em;
+  padding-top: 4em;
   text-align: center;
   font-size: 0.75rem;
   font-family: "Tahoma", sans-serif;
+}
+
+@media screen and (min-width: 768px) {
+  .millegrille-footer {
+    padding-top: 4em;
+  }
+
+  .footer-center {
+    text-align: center;
+  }
+
+  .footer-right {
+    text-align: right;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .millegrille-footer {
+    padding-top: 0.5em;
+  }
+
+  .footer-right {
+    text-align: center;
+    padding-top: 0.5em;
+  }
+}
+
+.idmg {
+  font-size: smaller;
 }

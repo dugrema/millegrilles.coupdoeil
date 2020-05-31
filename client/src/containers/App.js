@@ -7,6 +7,12 @@ import { LayoutCoudpoeil } from './Layout'
 
 import './App.css'
 
+import manifest from '../manifest.build.js'
+// const manifest = {
+//   date: "DUMMY",
+//   version: "DUMMY",
+// }
+
 export class ApplicationCoupdoeil extends React.Component {
 
   state = {
@@ -58,7 +64,7 @@ export class ApplicationCoupdoeil extends React.Component {
       page = <SectionContenu rootProps={{...this.state}} />
     }
 
-    return <LayoutCoudpoeil idmg={this.state.idmg} page={page} changerPage={this.changerPage} />
+    return <LayoutCoudpoeil changerPage={this.changerPage} page={page} rootProps={{...this.state, manifest}}/>
   }
 
 }
