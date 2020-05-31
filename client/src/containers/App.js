@@ -34,8 +34,14 @@ export class ApplicationCoupdoeil extends React.Component {
   }
 
   changerPage = page => {
-    console.debug("Page : %s", page)
-    this.setState({page})
+    if(page === this.state.page) {
+      // Reset de la page
+      // console.debug("Reset page : %s", page)
+      this.setState({page: ''}, ()=>{this.setState({page})})
+    } else {
+      // console.debug("Page : %s", page)
+      this.setState({page})
+    }
   }
 
   render() {

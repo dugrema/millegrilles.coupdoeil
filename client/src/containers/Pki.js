@@ -3,10 +3,9 @@ import { Row, Col, Button, Form } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 import forge from 'node-forge';
 
-import Checkbox from "../mgcomponents/Checkbox";
-import webSocketManager from '../WebSocketManager';
-import {dateformatter} from '../formatters';
-import { Feuille } from '../mgcomponents/Feuilles';
+import Checkbox from "../components/Checkbox";
+import { DateTimeFormatter } from '../components/ReactFormatters';
+import { Feuille } from '../components/Feuilles';
 
 // import {dateformatter} from '../formatters'
 import './Pki.css';
@@ -42,7 +41,7 @@ export class SignerNoeud extends React.Component {
     // console.debug(transaction);
 
     let domaine = 'MaitreDesCles.signerCertificatNoeud';
-    webSocketManager.transmettreTransaction(domaine, transaction)
+    this.props.rootProps.websocketApp.transmettreTransaction(domaine, transaction)
     .then(reponse=>{
       if(reponse.err) {
         console.error("Erreur transaction");
@@ -283,7 +282,7 @@ export class RenouvellerCertificats extends React.Component {
     };
     let requetes = {'requetes': [requete]};
 
-    webSocketManager.transmettreRequete(requeteDomaine, requetes)
+    this.props.rootProps.websocketApp.transmettreRequete(requeteDomaine, requetes)
     .then( docsRecu => {
       // console.debug("Docs recus");
       // console.debug(docsRecu);
@@ -361,7 +360,7 @@ export class RenouvellerCertificats extends React.Component {
     this.setState({renouvellementMiddlewareTransmis: 'Demande transmise'});
 
     let domaine = 'Pki.renouvellerCertDocker';
-    webSocketManager.transmettreTransaction(domaine, commande)
+    this.props.rootProps.websocketApp.transmettreTransaction(domaine, commande)
     .then(reponse=>{
       if(reponse.err) {
         this.setState({renouvellementMiddlewareTransmis: 'Erreur dans la demande, reessayer plus tard'});
@@ -524,7 +523,7 @@ export class AfficherCertificatsRoot extends React.Component {
     let domaine = 'Pki.certificatsCA';
 
     // Enregistrer les routingKeys, demander le document initial.
-    webSocketManager.transmettreRequete(domaine, {})
+    this.props.rootProps.websocketApp.transmettreRequete(domaine, {})
     .then( certificats => {
       // console.debug("Reponse certificats");
       // console.debug(certificats);
@@ -585,11 +584,11 @@ export class AfficherCertificatsRoot extends React.Component {
           </Row>
           <Row>
             <Col lg={3}>Not valid before</Col>
-            <Col lg={9}>{dateformatter.format_datetime(certRoot.not_valid_before)}</Col>
+            <Col lg={9}><DateTimeFormatter date={certRoot.not_valid_before}/></Col>
           </Row>
           <Row>
             <Col lg={3}>Not valid after</Col>
-            <Col lg={9}>{dateformatter.format_datetime(certRoot.not_valid_after)}</Col>
+            <Col lg={9}><DateTimeFormatter date={certRoot.not_valid_after}/></Col>
           </Row>
           <Row>
             <Col>
@@ -714,7 +713,7 @@ export class Pki extends React.Component {
       contenu = (
         <ModuleGestion
           {...this.fonctionsNavigation}
-          documentIdMillegrille={this.props.documentIdMillegrille}
+          rootProps={this.props.rootProps}
           />
       );
     } else {

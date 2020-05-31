@@ -4,14 +4,14 @@ import {InterfacePrincipale} from './Principale.js'
 import {Parametres} from './Parametres.js'
 import {Backup} from './Backup'
 import {Hebergement} from './Hebergement'
-// import {Pki} from './Pki.js'
+import {Pki} from './Pki.js'
 
 const domainesConnus = {
   'Principale': InterfacePrincipale,
   Parametres,
   Backup,
   Hebergement,
-  // Pki,
+  Pki,
 };
 
 export function SectionContenu(props) {
