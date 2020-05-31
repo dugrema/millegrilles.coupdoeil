@@ -2,10 +2,10 @@ import React from 'react'
 import { Alert, Container, Row, Col, Button, InputGroup, Form, FormControl } from 'react-bootstrap'
 import openSocket from 'socket.io-client'
 
-import {VerificationInfoServeur} from './Authentification'
+import {VerificationInfoServeur, ConnexionWebsocket} from './Authentification'
 
 // import Ecran from './Ecran'
-// import webSocketManager from '../api/WebSocketManager'
+import {WebSocketManagerCoupdoeil} from '../api/WebSocketManagerCoupdoeil'
 // import {CryptageAsymetrique} from '../api/CryptoSubtle'
 // import {DateTimeAfficher} from './ReactFormatters'
 
@@ -22,23 +22,64 @@ export class ApplicationCoupdoeil extends React.Component {
     serveurInfo: null,   // Provient de /coupdoeil/info.json
     idmg: null, // IDMG actif
     hebergement: false,
+    websocketApp: null, // Connexion socket.io
+    modeProtege: false, // Mode par defaut est lecture seule (prive)
   }
 
-  // Methode invoquee par
   setInfoServeur = (info) => {
     this.setState(info)
+  }
+
+  setWebsocketApp = websocketApp => {
+    // Set la connexion Socket.IO. Par defaut, le mode est prive (lecture seule)
+    this.setState({websocketApp, modeProtege: false})
+  }
+
+  setModeProtege = mode => {
+    this.setState({modeProtege: mode})
   }
 
   render() {
 
     let page;
-    if(this.state.serveurInfo) {
-      page = <p>IDMG : {this.state.serveurInfo.idmg}</p>
-    } else {
+    if(!this.state.serveurInfo) {
+      // 1. Recuperer information du serveur
       page = <VerificationInfoServeur setInfoServeur={this.setInfoServeur} />
+    } else if(!this.state.webSocketApp) {
+      // 2. Connecter avec Socket.IO
+      page = <ConnexionWebsocket setWebsocketApp={this.setWebsocketApp} />
+    } else {
+      // 3. Afficher application
+      page = <ApplicationConnectee rootProps={this.state} />
     }
 
     return page
+  }
+
+}
+
+class ApplicationConnectee extends React.Component {
+
+  constructor(props) {
+    super(props)
+    this.webSocketApp = new WebSocketManagerCoupdoeil()
+  }
+
+  componentDidMount() {
+    this.webSocketApp.connecter()
+  }
+
+  componentWillUnmount() {
+    this.webSocketApp.deconnecter()
+  }
+
+  render() {
+    return (
+      <div>
+         <p>IDMG : {this.props.rootProps.serveurInfo.idmg}</p>
+         <p>AppConnectee</p>
+      </div>
+    )
   }
 
 }

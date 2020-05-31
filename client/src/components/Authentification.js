@@ -78,6 +78,15 @@ export class VerificationInfoServeur extends React.Component {
   }
 }
 
+export class ConnexionWebsocket extends React.Component {
+  componentDidMount() {
+    
+  }
+
+  render() {
+    return <p>Connexion a Socket.IO de Coup D'Oeil en cours...</p>
+  }
+}
 
 class AuthentificationProtege extends React.Component {
 

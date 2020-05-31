@@ -1,4 +1,4 @@
-class WebSocketManager {
+export class WebSocketManager {
 
   constructor() {
     this.socket = null;
@@ -227,7 +227,3 @@ class WebSocketManager {
   }
 
 }
-
-const manager = new WebSocketManager();
-
-export default manager;
