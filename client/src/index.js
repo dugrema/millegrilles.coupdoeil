@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import {ApplicationCoupdoeil} from './components/App';
+import {ApplicationCoupdoeil} from './containers/App';
 import './components/i18n';
 
 import * as serviceWorker from './serviceWorker';
