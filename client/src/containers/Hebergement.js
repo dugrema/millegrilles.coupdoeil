@@ -1,6 +1,6 @@
 import React from 'react';
 import { Row, Col, Button, ButtonGroup} from 'react-bootstrap';
-import { Feuille } from '../mgcomponents/Feuilles';
+import { Feuille } from '../components/Feuilles';
 import { Trans } from 'react-i18next';
 
 import './Hebergement.css';
@@ -9,8 +9,6 @@ export class Hebergement extends React.Component {
 
   constructor(props) {
     super(props);
-
-    this.webSocketManager = props.webSocketManager;
 
     this.state = {
       ecranCourant: null,
@@ -26,12 +24,12 @@ export class Hebergement extends React.Component {
 
   componentDidMount() {
     // Enregistrer les routingKeys de documents
-    this.webSocketManager.subscribe(this.config.subscriptions, this.processMessage);
+    this.props.rootProps.websocketApp.subscribe(this.config.subscriptions, this.processMessage);
   }
 
   componentWillUnmount() {
     // Retirer les routingKeys de documents
-    this.webSocketManager.unsubscribe(this.config.subscriptions);
+    this.props.rootProps.websocketApp.unsubscribe(this.config.subscriptions);
   }
 
   afficherEcran = event => {
@@ -48,7 +46,7 @@ export class Hebergement extends React.Component {
     let contenu;
     if(sousEcran === 'millegrillesHebergees') {
       contenu = <MillegrillesHebergees
-                  webSocketManager={this.props.webSocketManager}
+                  rootProps={this.props.rootProps}
                   fonctionsNavigation={{afficherEcran: this.afficherEcran, retourInitiale: this.retourInitiale}}
                   />;
     } else {
@@ -104,12 +102,12 @@ class MillegrillesHebergees extends React.Component {
 
   componentDidMount() {
     // Enregistrer les routingKeys de documents
-    this.props.webSocketManager.subscribe([MESSAGE_MAJ_DOCUMENT], this.majDocument);
+    this.props.rootProps.websocketApp.subscribe([MESSAGE_MAJ_DOCUMENT], this.majDocument);
 
     // Aller chercher la liste des MilleGrilles hebergees
     const routing = 'requete.millegrilles.domaines.Hebergement.requeteMilleGrillesHebergees';
     const requete = {}
-    this.props.webSocketManager.transmettreRequete(routing, requete)
+    this.props.rootProps.websocketApp.transmettreRequete(routing, requete)
     .then(reponse=>{
       // console.debug("Reponse millegrilles hebergees");
       // console.debug(reponse);
@@ -119,7 +117,7 @@ class MillegrillesHebergees extends React.Component {
   }
 
   componentWillUnmount() {
-    this.props.webSocketManager.unsubscribe(this.subscriptions);
+    this.props.rootProps.websocketApp.unsubscribe(this.subscriptions);
   }
 
   // Mise a jour document MilleGrille hebergee
@@ -144,7 +142,7 @@ class MillegrillesHebergees extends React.Component {
     this.setState({desactiverBoutons: true});
     const routing = 'commande.millegrilles.domaines.Hebergement.creerMilleGrilleHebergee';
     const commande = {};
-    this.props.webSocketManager.transmettreCommande(routing, commande)
+    this.props.rootProps.websocketApp.transmettreCommande(routing, commande)
     .catch(err=>{
       console.error("Erreur bouton ajouter millegrille");
       console.error(err);
@@ -159,7 +157,7 @@ class MillegrillesHebergees extends React.Component {
     this.setState({desactiverBoutons: true});
     const routing = 'millegrilles.domaines.Hebergement.activerMilleGrilleHebergee';
     const transaction = {idmg: value};
-    this.props.webSocketManager.transmettreTransaction(routing, transaction)
+    this.props.rootProps.websocketApp.transmettreTransaction(routing, transaction)
     .catch(err=>{
       console.error("Erreur bouton activer millegrille");
       console.error(err);
@@ -174,7 +172,7 @@ class MillegrillesHebergees extends React.Component {
     this.setState({desactiverBoutons: true});
     const routing = 'millegrilles.domaines.Hebergement.desactiverMilleGrilleHebergee';
     const transaction = {idmg: value};
-    this.props.webSocketManager.transmettreTransaction(routing, transaction)
+    this.props.rootProps.websocketApp.transmettreTransaction(routing, transaction)
     .catch(err=>{
       console.error("Erreur bouton desactiver millegrille");
       console.error(err);
@@ -189,7 +187,7 @@ class MillegrillesHebergees extends React.Component {
     this.setState({desactiverBoutons: true});
     const routing = 'millegrilles.domaines.Hebergement.supprimerMilleGrilleHebergee';
     const transaction = {idmg: value};
-    this.props.webSocketManager.transmettreTransaction(routing, transaction)
+    this.props.rootProps.websocketApp.transmettreTransaction(routing, transaction)
     .then(reponse=>{
       const listeMillegrilles = this.state.listeMillegrilles.filter(info=>{
         // Reponse recue, on retire la MilleGrille de la liste
