@@ -11,7 +11,7 @@
     "start": "node ./bin/www",
     "hebergement": "node ./bin/hebergement",
     "test": "node ./bin/test",
-    "client": "node ./bin/start-client"
+    "client": "export WDS_SOCKET_PATH=/coupdoeil/sockjs-node && node ./bin/start-client"
   },
   "dependencies": {
     "millegrilles.common": "git+ssh://git.maceroc.com/git/millegrilles.common.nodejs#1.26",
