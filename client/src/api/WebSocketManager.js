@@ -1,12 +1,8 @@
-const {UploadFichierSocketio} = require('./mgcomponents/TransfertFichiers');
-
 class WebSocketManager {
 
   constructor() {
     this.socket = null;
     this.routingKeyCallbacks = {};
-
-    this.uploadFichierManager = new UploadFichierSocketio();
   }
 
   setupWebSocket(webSocket) {
