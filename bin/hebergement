@@ -11,11 +11,11 @@ const socketio = require('socket.io');
 
 const {RabbitMQWrapper} = require('../routes/res/rabbitMQ')
 const {PKIUtils} = require('../routes/res/pki');
-const {HebergementCoupdoeil} = require('../routes/res/hebergement');
+const {HebergementCoupdoeil} = require('../models/hebergement');
 
-const {initialiserApp} = require('../app');
-const {WebSocketApp} = require('../websocketsapp');
-const {SessionManagement} = require('../routes/res/sessionManagement');
+const {initialiserApp} = require('./app');
+const {WebSocketApp} = require('../models/websocketsapp');
+const {SessionManagement} = require('../models/sessionManagement');
 
 function demarrerHebergement() {
   return new Promise(async (resolve, reject)=>{
