@@ -2,20 +2,18 @@ import React from 'react'
 import { Alert, Container, Row, Col, Button, InputGroup, Form, FormControl } from 'react-bootstrap'
 import openSocket from 'socket.io-client'
 
+import {VerificationInfoServeur} from './Authentification'
+
 // import Ecran from './Ecran'
-
-import axios from 'axios'
-
-import webSocketManager from '../api/WebSocketManager'
-import {CryptageAsymetrique} from '../api/CryptoSubtle'
-
-import {DateTimeAfficher} from './ReactFormatters'
+// import webSocketManager from '../api/WebSocketManager'
+// import {CryptageAsymetrique} from '../api/CryptoSubtle'
+// import {DateTimeAfficher} from './ReactFormatters'
 
 import './App.css'
 
-const urlApi = ''  // Meme serveur
+// const urlApi = ''  // Meme serveur
 
-const cryptageAsymetrique = new CryptageAsymetrique()
+// const cryptageAsymetrique = new CryptageAsymetrique()
 
 export class ApplicationCoupdoeil extends React.Component {
 
@@ -26,69 +24,21 @@ export class ApplicationCoupdoeil extends React.Component {
     hebergement: false,
   }
 
-  componentDidMount() {
-    const infoUrl = 'coupdoeil/info.json'
-    axios.get(infoUrl)
-    .then(response=>{
-      console.debug("Reponse config/info.json");
-      console.debug(response);
-
-      if(response.status === 200) {
-        const serveurInfo = response.data
-        this.traiterServeurJson(serveurInfo)
-      } else {
-        // Erreur acces serveur
-        this.setState({serveurInfo: null})
-      }
-
-    })
-    .catch(err=>{
-      console.error("Erreur access information du serveur")
-      console.error(err)
-
-      // Afficher message erreur a l'ecran
-      this.setState({
-        serveurInfo: null,
-        erreurAccesServeur: true,
-      })
-
-    })
-  }
-
-  traiterServeurJson(serveurInfo) {
-    var hebergement = serveurInfo.modeHebergement
-
-    const stateUpdate = {
-      serveurInfo,
-      erreurAccesServeur: false,
-    }
-
-    const idmgSauvegarde = localStorage.getItem('idmg')
-    if(!idmgSauvegarde || !hebergement) {
-
-      if(!hebergement) {
-        // Hebergement inactif, override du idmg sauvegarde
-        stateUpdate.idmg = serveurInfo.idmg
-      } else {
-        // Hebergement, on utilise le IDMG sauvegarde (si disponible)
-        stateUpdate.idmg = idmgSauvegarde
-      }
-
-    } else {
-      // idmg sauvegarde
-      stateUpdate.idmg = idmgSauvegarde
-    }
-
-    // Mise a jour du idmg sauvegarde
-    localStorage.setItem('idmg', stateUpdate.idmg)
-
-    this.setState(stateUpdate)
+  // Methode invoquee par
+  setInfoServeur = (info) => {
+    this.setState(info)
   }
 
   render() {
-    return (
-      <p>Allo</p>
-    )
+
+    let page;
+    if(this.state.serveurInfo) {
+      page = <p>IDMG : {this.state.serveurInfo.idmg}</p>
+    } else {
+      page = <VerificationInfoServeur setInfoServeur={this.setInfoServeur} />
+    }
+
+    return page
   }
 
 }
