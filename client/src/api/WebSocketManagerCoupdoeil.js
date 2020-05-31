@@ -1,5 +1,6 @@
 import {WebSocketManager} from './WebSocketManager'
 import openSocket from 'socket.io-client'
+import { solveRegistrationChallenge, solveLoginChallenge } from '@webauthn/client'
 
 export class WebSocketManagerCoupdoeil extends WebSocketManager {
 
@@ -11,6 +12,9 @@ export class WebSocketManagerCoupdoeil extends WebSocketManager {
 
     this.path = opts.path || '/coupdoeil/socket.io'
     // this.websocketManager = new WebSocketManager()
+
+    this.callbackModeProtege = null
+    this.timeoutModeProtege = null
   }
 
   async connecter() {
@@ -52,12 +56,20 @@ export class WebSocketManagerCoupdoeil extends WebSocketManager {
       console.error(erreur);
     })
 
-    socket.on("authentifier", ()=>{
-      console.debug("Message authentifier")
-      // socket.emit('authentification', {
-      //   methode: 'tokenUSB',
-      //   idMillegrille,
-      // });
+    socket.on("challengeU2f", async (message, callback) => {
+      console.debug("Message authentifier U2F")
+      console.debug(message)
+      try {
+        const credentials = await solveLoginChallenge(message)
+        callback(credentials)   // Callback du challenge via websocket
+      } catch(err) {
+        console.error("Erreur challenge reply")
+        console.error(err)
+      }
+    })
+
+    socket.on("confirmationModeProtege", confirmation => {
+      console.debug("Mode protege active")
     })
 
     socket.on('disconnect', () => {
@@ -69,16 +81,14 @@ export class WebSocketManagerCoupdoeil extends WebSocketManager {
         reject({erreur: true, cause: "Timeout login Socket.IO"})
       }, 15000);
 
-
-      socket.on(
-        'erreur.login',
+      socket.on('erreur.login',
         erreur => {
           console.error("Erreur connexion");
           console.error(erreur);
           clearTimeout(echecTimeout)
           reject({erreur: true, cause: erreur.erreur || erreur})
         }
-      )
+      ) // erreur.login
 
       socket.on('pret', confirmation=>{
         console.debug("Message pret recu");
@@ -91,10 +101,53 @@ export class WebSocketManagerCoupdoeil extends WebSocketManager {
         } else {
           reject({erreur: true, cause: "Login Socket.IO refuse"})
         }
-      });
-    })
+      }) // Pret
+
+    }) // Premise connexion
 
   }
 
+  demandeActiverModeProtege() {
+    if(!this.timeoutModeProtege) {
+      console.debug("WebsocketManagerCoupdoeil : Demande activation mode protege")
+      this.socket.emit("activerModeProtege")
+      this.timeoutModeProtege = setTimeout(() => {this.clearTimeoutModeProtege()}, 5000)
+
+      return new Promise((resolve, reject) => {
+        this.callbackModeProtege = (resultat) => {
+          console.debug("Callback : %s", resultat)
+
+          // Nettoyage
+          this.callbackModeProtege = null
+          this.clearTimeoutModeProtege()
+
+          if(resultat) {
+            resolve()
+          } else {
+            reject()
+          }
+        }
+      })
+    }
+
+    throw new Error("Demande deja faite")
+  }
+
+  clearTimeoutModeProtege() {
+    console.debug("Clear timeout")
+    try {
+      if(this.timeoutModeProtege) {
+        clearTimeout(this.timeoutModeProtege)
+      }
+      if(this.callbackModeProtege) {
+        this.callbackModeProtege(false)
+      }
+    } catch(err) {
+      console.error("Erreur nettoyage timeout mode protege")
+    }
+
+    this.callbackModeProtege = null
+    this.timeoutModeProtege = null
+  }
 
 }

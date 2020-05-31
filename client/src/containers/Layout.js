@@ -11,7 +11,7 @@ export function LayoutCoudpoeil(props) {
 
   return (
     <div>
-      <Entete changerPage={props.changerPage}/>
+      <Entete changerPage={props.changerPage} rootProps={props.rootProps}/>
       <Contenu page={props.page}/>
       <Footer rootProps={props.rootProps}/>
     </div>
@@ -22,7 +22,7 @@ export function LayoutCoudpoeil(props) {
 function Entete(props) {
   return (
     <Container>
-      <Menu changerPage={props.changerPage}/>
+      <Menu changerPage={props.changerPage} rootProps={props.rootProps}/>
       <h1>Coup D'Oeil</h1>
     </Container>
   )

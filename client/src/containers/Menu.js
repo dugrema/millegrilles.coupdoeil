@@ -3,6 +3,14 @@ import { Nav, Navbar, NavDropdown, NavLink, NavItem, Dropdown, Container, Row, C
 import { Trans, Translation, withTranslation } from 'react-i18next';
 
 export function Menu(props) {
+
+  let boutonProtege
+  if(props.rootProps.modeProtege) {
+    boutonProtege = <i className="fa fa-lg fa-lock protege"/>
+  } else {
+    boutonProtege = <i className="fa fa-lg fa-unlock"/>
+  }
+
   return (
     <Navbar collapseOnSelect expand="md" bg="info" variant="dark" fixed="top">
       <Navbar.Brand href='/'><i className="fa fa-home"/></Navbar.Brand>
@@ -10,7 +18,8 @@ export function Menu(props) {
       <Navbar.Collapse id="responsive-navbar-menu">
         <MenuItems changerPage={props.changerPage} />
         <Nav className="justify-content-end">
-          <Nav.Link eventKey={props.languageChangement} onSelect={props.changeLanguage}><Trans>menu.changerLangue</Trans></Nav.Link>
+          <Nav.Link onClick={props.rootProps.toggleProtege}>{boutonProtege}</Nav.Link>
+          <Nav.Link onClick={props.rootProps.changerLanguage}><Trans>menu.changerLangue</Trans></Nav.Link>
         </Nav>
       </Navbar.Collapse>
     </Navbar>

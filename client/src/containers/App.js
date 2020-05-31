@@ -35,10 +35,6 @@ export class ApplicationCoupdoeil extends React.Component {
     this.setState({websocketApp, modeProtege: false})
   }
 
-  setModeProtege = mode => {
-    this.setState({modeProtege: mode})
-  }
-
   changerPage = page => {
     if(page === this.state.page) {
       // Reset de la page
@@ -50,7 +46,34 @@ export class ApplicationCoupdoeil extends React.Component {
     }
   }
 
+  toggleProtege = async event => {
+    const modeToggle = ! this.state.modeProtege
+    if(modeToggle) {
+      console.debug("Activer mode protege")
+
+      if(this.state.websocketApp) {
+        try {
+          await this.state.websocketApp.demandeActiverModeProtege()
+          this.setState({modeProtege: true})
+        } catch(err) {
+          console.error("Erreur activation mode protege")
+          console.error(err)
+        }
+      } else {
+        console.error("Connexion Socket.IO absente")
+      }
+
+    } else {
+      console.debug("Revenir a mode prive")
+      this.state.websocketApp.desactiverModeProtege()
+      this.setState({modeProtege: false})
+    }
+
+  }
+
   render() {
+
+    const rootProps = {...this.state, manifest, toggleProtege: this.toggleProtege}
 
     let page;
     if(!this.state.serveurInfo) {
@@ -61,10 +84,10 @@ export class ApplicationCoupdoeil extends React.Component {
       page = <ConnexionWebsocket setWebsocketApp={this.setWebsocketApp} />
     } else {
       // 3. Afficher application
-      page = <SectionContenu rootProps={{...this.state}} />
+      page = <SectionContenu rootProps={rootProps} />
     }
 
-    return <LayoutCoudpoeil changerPage={this.changerPage} page={page} rootProps={{...this.state, manifest}}/>
+    return <LayoutCoudpoeil changerPage={this.changerPage} page={page} rootProps={rootProps}/>
   }
 
 }
