@@ -2,13 +2,12 @@ import React from 'react';
 import QRCode from 'qrcode.react';
 import Dropzone from 'react-dropzone';
 
-import webSocketManager from '../WebSocketManager';
-import {MilleGrillesCryptoHelper, CryptageAsymetrique} from '../mgcomponents/CryptoSubtle';
-import {chiffrerPrivateKeyPEM} from '../mgcomponents/CryptoForge';
+import {MilleGrillesCryptoHelper, CryptageAsymetrique} from '../api/CryptoSubtle';
+import {chiffrerPrivateKeyPEM} from '../api/CryptoForge';
 
 import { Alert, Form, Row, Col,
          Button, ButtonGroup, InputGroup, FormControl} from 'react-bootstrap';
-import { Feuille } from '../mgcomponents/Feuilles';
+import { Feuille } from '../components/Feuilles';
 import { Trans } from 'react-i18next';
 
 import './Backup.css';
@@ -36,7 +35,7 @@ export class Backup extends React.Component {
 
   componentDidMount() {
     // Enregistrer les routingKeys de documents
-    webSocketManager.subscribe(this.config.subscriptions, this.processMessage);
+    this.props.rootProps.websocketApp.subscribe(this.config.subscriptions, this.processMessage);
     // console.debug(this.props);
   }
 
@@ -46,21 +45,22 @@ export class Backup extends React.Component {
   }
 
   retourInitiale = () => {
-    this.setState({ecranCourant: null});
+    this.setState({ecranCourant: null})
   }
 
   render() {
-    let ecranCourant = this.state.ecranCourant;
+    let ecranCourant = this.state.ecranCourant
 
     let contenu;
     if(ecranCourant === 'backupCles') {
       contenu = <PageBackupCles
-                  idmg={this.props.documentIdMillegrille.idmg}
-                  />;
+                  idmg={this.props.idmg}
+                  rootProps={this.props.rootProps}
+                  />
     } else if(ecranCourant === 'configurer') {
-      contenu = null;
+      contenu = null
     } else if(ecranCourant === 'lancerBackup') {
-      contenu = <PageOperationsBackup />;
+      contenu = <PageOperationsBackup rootProps={this.props.rootProps}/>
     } else {
       contenu = <PageInitiale
                   fonctionsNavigation={{afficherEcran: this.afficherEcran}}
@@ -130,7 +130,7 @@ class PageBackupCles extends React.Component {
     // S'assurer que la cle publique du maitre des cles est disponible
     if( ! sessionStorage.clePubliqueMaitredescles ) {
       // console.debug("Charger cle publique du maitre des cles");
-      webSocketManager.emit('demandeClePubliqueMaitredescles', {})
+      this.props.rootProps.websocketApp.emit('demandeClePubliqueMaitredescles', {})
       .then(infoCertificat=>{
         sessionStorage.clePubliqueMaitredescles = infoCertificat.clePublique;
         sessionStorage.fingerprintMaitredescles = infoCertificat.fingerprint;
@@ -199,7 +199,7 @@ class PageBackupCles extends React.Component {
       const requete = {
         'mot_de_passe_chiffre': cleSecreteCryptee,
       }
-      webSocketManager.transmettreRequete(routingRequete, requete)
+      this.props.rootProps.websocketApp.transmettreRequete(routingRequete, requete)
       .then(reponse=>{
         // console.debug("Information racine");
         // console.debug(reponse);
@@ -246,7 +246,7 @@ class PageBackupCles extends React.Component {
       }
       // console.debug(commande);
 
-      webSocketManager.transmettreCommande(routing, commande)
+      this.props.rootProps.websocketApp.transmettreCommande(routing, commande)
       .then(reponseSignature=>{
         // console.debug(reponseSignature)
         const clePriveeChiffree = chiffrerPrivateKeyPEM(privateKeyPEM, this.state.motDePasse);
@@ -501,7 +501,7 @@ class PageOperationsBackup extends React.Component {
 
   declencherBackup = event => {
     const routing = 'commande.global.declencherBackupHoraire';
-    webSocketManager.transmettreCommande(
+    this.props.rootProps.websocketApp.transmettreCommande(
       routing,
       {
         heure: Math.trunc(new Date().getTime() / 1000),
@@ -514,7 +514,7 @@ class PageOperationsBackup extends React.Component {
   resetBackup = event => {
     // console.debug("Commande reset backup");
     const routing = 'commande.global.resetBackup';
-    webSocketManager.transmettreCommande(
+    this.props.rootProps.websocketApp.transmettreCommande(
       routing,
       {},
       {nowait: true}
@@ -524,7 +524,7 @@ class PageOperationsBackup extends React.Component {
   restaurerBackup = event => {
     // console.debug("Commande restaurer backup");
     const routing = 'commande.backup.preparerStagingRestauration';
-    webSocketManager.transmettreCommande(
+    this.props.rootProps.websocketApp.transmettreCommande(
       routing,
       {},
       {nowait: true}
@@ -533,7 +533,7 @@ class PageOperationsBackup extends React.Component {
 
   regenerer = event => {
     const routing = 'commande.global.regenerer';
-    webSocketManager.transmettreCommande(
+    this.props.rootProps.websocketApp.transmettreCommande(
       routing,
       {},
       {nowait: true}
@@ -598,7 +598,7 @@ class PageOperationsBackup extends React.Component {
       'mot_de_passe_chiffre': motDePasse,
       "cle_privee": this.state.backupCle,
     }
-    webSocketManager.transmettreCommande(
+    this.props.rootProps.websocketApp.transmettreCommande(
       routing,
       commande,
       {nowait: true}
