@@ -22,6 +22,9 @@
       "activer": "Activer",
       "desactiver": "Desactiver"
     },
+    "application": {
+      "coupdoeilAdvert": "Coup D'Oeil sur MilleGrilles"
+    },
     "formulaire": {
       "prenom": "Prénom :",
       "nomFamille": "Nom de famille :",
@@ -198,6 +201,16 @@
         "etat": "État",
         "actions": "Actions"
       }
+    },
+    "menu": {
+      "albums": "Albums",
+      "messages": "Messages",
+      "blogs": "Blog",
+      "podcasts": "Podcasts",
+      "fichiers": "Fichiers",
+      "senseursPassifs": "Senseurs Passifs",
+      "autres": "Autres",
+      "changerLangue": "English"
     }
   }
 }

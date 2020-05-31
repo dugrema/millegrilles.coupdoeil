@@ -1,0 +1,30 @@
+.footer {
+  width: 100%;
+  margin-top: 3em;
+  padding: 1em;
+  padding-bottom: 0.5em;
+  min-height: 4em;
+  color: White;
+}
+
+.footer H2 {
+  font-size: 1.25rem;
+  font-family: "Tahoma", sans-serif;
+}
+
+.footer div.row {
+  padding-left: 1em;
+  padding-right: 1em;
+}
+
+.footer A, .footer A:visited {
+  color: White;
+  text-decoration: underline;
+}
+
+.millegrille-footer {
+  padding-top: 2em;
+  text-align: center;
+  font-size: 0.75rem;
+  font-family: "Tahoma", sans-serif;
+}
