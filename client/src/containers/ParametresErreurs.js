@@ -1,9 +1,8 @@
 import React from 'react';
-import { Feuille } from '../mgcomponents/Feuilles';
+import { Feuille } from '../components/Feuilles';
 import { Button, Row, Col } from 'react-bootstrap';
-import webSocketManager from '../WebSocketManager';
 import { Trans } from 'react-i18next';
-import { DateTimeFormatter } from '../mgcomponents/ReactFormatters';
+import { DateTimeFormatter } from '../components/ReactFormatters';
 
 import './ParametresErreurs.css';
 
@@ -21,7 +20,7 @@ export class ParametresErreurs extends React.Component {
     const domaine = 'Parametres.erreurs';
     const requete = {};
 
-    return webSocketManager.transmettreRequete(domaine, requete)
+    return this.props.rootProps.websocketApp.transmettreRequete(domaine, requete)
     .then( listeErreurs => {
       // console.debug("Resultats requete");
       // console.debug(listeErreurs);
@@ -78,7 +77,7 @@ export class ParametresErreurs extends React.Component {
     //        mais le traitement d'erreur fait partie de l'admin systeme
     //        L'operation se fait au travers d'une requete protegee
     const domaine = 'Parametres.supprimerErreur';
-    return webSocketManager.transmettreCommande(domaine, commande)
+    return this.props.rootProps.websocketApp.transmettreCommande(domaine, commande)
     .then( result => {
       // console.debug("Resultats commande");
       // console.debug(result);

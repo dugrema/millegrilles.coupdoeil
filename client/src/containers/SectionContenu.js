@@ -1,14 +1,14 @@
 import React from 'react'
 
 import {InterfacePrincipale} from './Principale.js'
-// import {Parametres} from './Parametres.js'
+import {Parametres} from './Parametres.js'
 // import {Pki} from './Pki.js'
 // import {Backup} from './Backup'
 // import {Hebergement} from './Hebergement'
 
 const domainesConnus = {
   'Principale': InterfacePrincipale,
-  // Parametres,
+  Parametres,
   // Backup,
   // Hebergement,
   // Pki,

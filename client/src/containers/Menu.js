@@ -28,6 +28,7 @@ function MenuItems(props) {
       <Dropdown as={NavItem}>
         <Dropdown.Toggle as={NavLink}><Trans>menu.Parametres</Trans></Dropdown.Toggle>
         <Dropdown.Menu>
+          <Dropdown.Item eventKey="Parametres"><Trans>menu.Parametres</Trans></Dropdown.Item>
           <Dropdown.Item eventKey="Backup"><Trans>menu.Backup</Trans></Dropdown.Item>
           <Dropdown.Item eventKey="Hebergement"><Trans>menu.Hebergement</Trans></Dropdown.Item>
           <Dropdown.Item eventKey="Pki"><Trans>menu.Pki</Trans></Dropdown.Item>

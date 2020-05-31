@@ -1,9 +1,7 @@
 import React from 'react';
 // import { Form, Container, Row, Col } from 'react-bootstrap';
 // import { Trans } from 'react-i18next';
-import webSocketManager from '../WebSocketManager';
-import { Feuille } from '../mgcomponents/Feuilles';
-import { GestionEmailSmtp } from './ParametresGestionEmailSmtp';
+import { Feuille } from '../components/Feuilles';
 import { NoeudsPublics } from './ParametresNoeudsPublics'
 import { ParametresErreurs } from './ParametresErreurs'
 import './Parametres.css';
@@ -15,7 +13,7 @@ class ActionsInterdites extends React.Component {
     }
     let domaine = 'millegrilles.domaines.Parametres.fermerMilleGrilles';
 
-    webSocketManager.transmettreTransaction(domaine, transaction)
+    this.props.rootProps.websocketApp.transmettreTransaction(domaine, transaction)
     .then(reponse=>{
       if(reponse.err) {
         console.error("Erreur transaction");
@@ -65,7 +63,6 @@ export class Parametres extends React.Component {
   }
 
   sousPages = {
-    'GestionEmailSmtp': GestionEmailSmtp,
     'ActionsInterdites': ActionsInterdites,
     NoeudsPublics, ParametresErreurs,
   }
@@ -98,11 +95,6 @@ export class Parametres extends React.Component {
             </button>
           </li>
           <li>
-            <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="GestionEmailSmtp">
-              Gerer serveurs de notification par courriel (SMTP)
-            </button>
-          </li>
-          <li>
             <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="ParametresErreurs">
               Erreurs systeme
             </button>
@@ -119,7 +111,8 @@ export class Parametres extends React.Component {
 
       contenu = (
         <ModuleGestion
-          {...this.fonctionsNavigation} />
+          {...this.fonctionsNavigation}
+          rootProps={this.props.rootProps} />
       );
     } else {
       contenu = (

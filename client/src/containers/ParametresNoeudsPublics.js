@@ -4,9 +4,8 @@ import { Form, Button, ButtonGroup, ButtonToolbar, ListGroup, InputGroup,
 import { Trans } from 'react-i18next';
 import Backend from 'react-dnd-html5-backend'
 import { DndProvider, useDrag, useDrop } from "react-dnd";
-import webSocketManager from '../WebSocketManager';
-import { Feuille } from '../mgcomponents/Feuilles';
-import { MilleGrillesCryptoHelper, bufferToBase64 } from '../mgcomponents/CryptoSubtle'
+import { Feuille } from '../components/Feuilles';
+import { MilleGrillesCryptoHelper, bufferToBase64 } from '../api/CryptoSubtle'
 import uuidv4 from 'uuid/v4';
 
 import './Parametres.css';
@@ -45,11 +44,11 @@ export class NoeudsPublics extends React.Component {
 
   componentDidMount() {
     this.chargerNoeudsPublics();
-    webSocketManager.subscribe(subscriptions_noeudsPublics, this._recevoirMessageNoeuds);
+    this.props.rootProps.websocketApp.subscribe(subscriptions_noeudsPublics, this._recevoirMessageNoeuds);
 
     // S'assurer que la cle publique du maitre des cles est disponible
     if(!sessionStorage.clePubliqueMaitredescles) {
-      webSocketManager.emit('demandeClePubliqueMaitredescles', {})
+      this.props.rootProps.websocketApp.emit('demandeClePubliqueMaitredescles', {})
       .then(infoCertificat=>{
         sessionStorage.clePubliqueMaitredescles = infoCertificat.clePublique;
         sessionStorage.fingerprintMaitredescles = infoCertificat.fingerprint;
@@ -62,7 +61,7 @@ export class NoeudsPublics extends React.Component {
   }
 
   componentWillUnmount() {
-    webSocketManager.unsubscribe(subscriptions_noeudsPublics);
+    this.props.rootProps.websocketApp.unsubscribe(subscriptions_noeudsPublics);
   }
 
   render() {
@@ -148,7 +147,7 @@ export class NoeudsPublics extends React.Component {
     var nouveauNoeud = {...noeudTemplate};
     nouveauNoeud.url_web = url;
     let domaine = 'millegrilles.domaines.Parametres.majNoeudPublic';
-    webSocketManager.transmettreTransaction(domaine, nouveauNoeud)
+    this.props.rootProps.websocketApp.transmettreTransaction(domaine, nouveauNoeud)
     .then(reponse=>{
       if(reponse.err) {
         console.error("Erreur transaction");
@@ -165,7 +164,7 @@ export class NoeudsPublics extends React.Component {
     const url = event.currentTarget.value;
 
     let domaine = 'millegrilles.domaines.Parametres.supprimerNoeudPublic';
-    webSocketManager.transmettreTransaction(domaine, {url_web: url})
+    this.props.rootProps.websocketApp.transmettreTransaction(domaine, {url_web: url})
     .then(reponse=>{
       if(reponse.err) {
         console.error("Erreur transaction");
@@ -249,7 +248,7 @@ export class NoeudsPublics extends React.Component {
 
   chargerNoeudsPublics() {
     let routingKey = 'requete.millegrilles.domaines.Parametres.noeudPublic';
-    webSocketManager.transmettreRequete(routingKey, {})
+    this.props.rootProps.websocketApp.transmettreRequete(routingKey, {})
     .then( docsRecu => {
       return docsRecu;
    })
@@ -320,7 +319,7 @@ export class NoeudsPublics extends React.Component {
         noeudTransaction.awsSecretAccessKeyChiffre = awsSecretAccessKeyChiffre;
 
         // Transmettre la cle
-        webSocketManager.transmettreCle(
+        this.props.rootProps.websocketApp.transmettreCle(
           domaine, uuidTransaction,
           {
             url_web,
@@ -343,7 +342,7 @@ export class NoeudsPublics extends React.Component {
       }
     }
     promiseChiffrer.then(()=>{
-      return webSocketManager.transmettreTransaction(domaine, noeudTransaction, opts)
+      return this.props.rootProps.websocketApp.transmettreTransaction(domaine, noeudTransaction, opts)
     })
     .then(reponse=>{
       if(reponse.err) {
