@@ -1,3 +1,3 @@
-const {initialiser, initSocketIo} = require('./routes/coupdoeil')
+const {initialiser} = require('./routes/coupdoeil')
 
-module.exports = {initialiser, initSocketIo}
+module.exports = {initialiser}
