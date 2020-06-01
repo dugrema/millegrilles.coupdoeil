@@ -69,7 +69,8 @@ export class WebSocketManagerCoupdoeil extends WebSocketManager {
     })
 
     socket.on("confirmationModeProtege", confirmation => {
-      console.debug("Mode protege active")
+      console.debug("Mode protege active : %s", confirmation.actif)
+      this.callbackModeProtege(confirmation.actif)
     })
 
     socket.on('disconnect', () => {
@@ -148,6 +149,10 @@ export class WebSocketManagerCoupdoeil extends WebSocketManager {
 
     this.callbackModeProtege = null
     this.timeoutModeProtege = null
+  }
+
+  desactiverModeProtege() {
+    console.debug("Desactiver mode protege")
   }
 
 }

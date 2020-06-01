@@ -324,6 +324,10 @@ class WebSocketApp {
       });
     });
 
+    socket.on('activerModeProtege', () => {
+      this.sessionManagement.creerChallengeUSB(rabbitMQ, socket)
+    })
+
   }
 
   extraireClePubliqueMaitredescles(rabbitMQ) {

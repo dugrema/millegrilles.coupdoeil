@@ -140,14 +140,14 @@ class SessionManagement {
       //   debug("Ajouter un token a la MilleGrille avec un PIN");
       //   this.ajouterTokenUSB(rabbitMQ, socket, params)
       //   .then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
-      } else if(params.methode === 'genererCertificat') {
-        debug("Generer un certificat de navigateur pour la MilleGrille avec un PIN");
-        this.genererCertificat(rabbitMQ, socket, params)
-        .then(()=>resolve(rabbitMQ))
-        .catch(err=>{
-          console.warn("Erreur challenge certificat, essayer USB");
-          this.creerChallengeUSB(rabbitMQ, socket).then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
-        })
+      // } else if(params.methode === 'genererCertificat') {
+      //   debug("Generer un certificat de navigateur pour la MilleGrille avec un PIN");
+      //   this.genererCertificat(rabbitMQ, socket, params)
+      //   .then(()=>resolve(rabbitMQ))
+      //   .catch(err=>{
+      //     console.warn("Erreur challenge certificat, essayer USB");
+      //     this.creerChallengeUSB(rabbitMQ, socket).then(()=>resolve(rabbitMQ)).catch(err=>reject(err));
+      //   })
       // } else if(params.methode === 'certificatLocal') {
       //   debug("Authentification par certificat");
       //   let fingerprint = params.fingerprint;
@@ -170,73 +170,73 @@ class SessionManagement {
     });
   }
 
-  creerChallengeUSB(rabbitMQ, socket) {
+  async creerChallengeUSB(rabbitMQ, socket) {
     // Authentifier le socket
 
     var docCles = null;
-    return rabbitMQ.transmettreRequete('Principale.getAuthInfo', {}, {decoder: true})
-    .then( doc => {
-      debug(doc);
-      docCles = doc.cles;
-      if (!docCles || docCles.empreinte_absente) {
-          socket.emit('challenge', {'erreur': 'empreinte_absente'});
-          socket.disconnect();
-          return;
-      }
-      return generateLoginChallenge(docCles.cles);
-    })
-    .then(challenge_genere=>{
-      debug("Challenge login");
+    const domaineAction = 'MaitreDesComptes.infoProprietaire'
+    const requete = {}
+    debug("Requete info proprietaire")
+    const compteProprietaire = await rabbitMQ.transmettreRequete(domaineAction, requete, {decoder: true})
+    debug("Reponse compte proprietaire")
+    debug(compteProprietaire)
 
-      return new Promise((resolve, reject) => {
-        socket.emit('challengeTokenUSB', challenge_genere, reply => {
-          // console.log("/login-challenge appele");
-          // console.log(reply);
-
-          const { challenge, keyId } = parseLoginRequest(reply);
-          if (!challenge) {
-            debug("Challenge pas recu")
-            return reject('Challenge pas initialise');
-          }
-
-          if (challenge_genere.challenge !== challenge) {
-            return reject('Challenge mismatch');
-          }
-
-          // Trouve la bonne cle a verifier dans la collection de toutes les cles
-          var cle_match;
-          let cle_id_utilisee = reply.rawId;
-
-          let cles = docCles['cles'];
-          for(var i_cle in cles) {
-            let cle = cles[i_cle];
-            let credID = cle['credID'];
-            credID = credID.substring(0, cle_id_utilisee.length);
-
-            if(credID === cle_id_utilisee) {
-              cle_match = cle;
-              break;
-            }
-          }
-
-          if(!cle_match) {
-            return reject("Cle inconnue: " + cle_id_utilisee);
-          }
-
-          const loggedIn = verifyAuthenticatorAssertion(reply, cle_match);
-
-          socket.emit('login', loggedIn);
-          if(loggedIn) {
-            resolve();
-          } else {
-            reject('Invalid authenticator assertion');
-          }
-        })
-      })
-      .catch( err => {
-        socket.emit('erreur.login', {'erreur': ''+err});
+    if(!compteProprietaire.cles) {
+        socket.emit('erreur.login', {'erreur': 'cles_absentes'});
         socket.disconnect();
-      });
+        return;
+    }
+    const challenge_genere = await generateLoginChallenge(compteProprietaire.cles);
+    debug("Challenge login")
+
+    await new Promise((resolve, reject) => {
+      socket.emit('challengeU2f', challenge_genere, reply => {
+        debug("challengeU2f appele")
+        // console.log(reply);
+
+        const { challenge, keyId } = parseLoginRequest(reply)
+        if (!challenge) {
+          debug("Challenge pas recu")
+          return reject('Challenge pas initialise')
+        }
+
+        if (challenge_genere.challenge !== challenge) {
+          return reject('Challenge mismatch')
+        }
+
+        // Trouve la bonne cle a verifier dans la collection de toutes les cles
+        var cle_match
+        let cle_id_utilisee = reply.rawId
+
+        let cles = compteProprietaire.cles
+        for(var i_cle in cles) {
+          let cle = cles[i_cle]
+          let credID = cle.credID
+          credID = credID.substring(0, cle_id_utilisee.length);
+
+          if(credID === cle_id_utilisee) {
+            cle_match = cle;
+            break;
+          }
+        }
+
+        if(!cle_match) {
+          return reject("Cle inconnue: " + cle_id_utilisee);
+        }
+
+        const loggedIn = verifyAuthenticatorAssertion(reply, cle_match);
+
+        socket.emit('confirmationModeProtege', {actif: loggedIn});
+        debug("Mode protege actif : %s", loggedIn)
+        if(loggedIn) {
+          resolve();
+        } else {
+          reject('Invalid authenticator assertion');
+        }
+      })
+    })
+    .catch( err => {
+      socket.emit('erreur.login', {'erreur': ''+err});
     });
   }
 
@@ -371,156 +371,6 @@ class SessionManagement {
       socket.emit("erreur", "PIN invalide");
       return Promise.resolve();
     }
-  }
-
-  ajouterTokenUSB(rabbitMQ, socket, opts) {
-    if(!opts) opts = {};
-    const {pin} = opts;
-    const idmg = rabbitMQ.pki.idmg;
-
-    // Verifier que le pin est correct
-    let pinCorrect = this.consommerPinTemporaireDevice(idmg, pin);
-
-    if(pinCorrect) {
-
-      // Verifier que la MilleGrille n'a pas deja d'empreinte usager
-      return rabbitMQ.transmettreRequete('Principale.getAuthInfo', {}, {decoder: true})
-      .then( doc => {
-
-        // Transmettre le challenge
-        const docCles = doc.cles;
-        if( ! docCles.empreinte_absente ) {
-          throw new Error("Empreinte existe deja");
-        }
-
-        const challengeResponse = generateRegistrationChallenge({
-            relyingParty: { name: 'coupdoeil' },
-            user: { id: idmg, name: 'usager' }
-        });
-        debug("Conserver challenge pour idmg %s", opts.idmg);
-        this.conserverChallenge(idmg, challengeResponse.challenge);
-
-        return new Promise((resolve, reject)=>{
-          socket.emit('challengeTokenUSBRegistration', challengeResponse, reponse=>{
-
-            const { key, challenge } = parseRegisterRequest(reponse);
-
-            const challengeConserve = this.consommerChallenge(idmg);
-            if (challengeConserve !== challenge) {
-              reject(new Error("Challenge incorrect, ajout token echoue"));
-            } else {
-
-              const infoToken = {
-                  'cle': key
-              }
-
-              // Noter que la transaction va echouer si l'empreinte a deja ete creee.
-              rabbitMQ.transmettreTransactionFormattee(
-                infoToken, 'Principale.ajouterToken')
-              .then( msg => {
-                // console.log("Recu confirmation d'ajout de nouveau token");
-                // console.log(msg);
-                resolve();
-              })
-              .catch( err => {
-                console.error("Erreur message");
-                console.error(err);
-
-                reject(err);
-              });
-
-            }
-          });
-        })
-
-      })
-      .then(()=>{
-        socket.emit('login', true);
-      })
-      .catch( err => {
-        console.error("Erreur initialiser-empreinte");
-        console.error(err);
-        socket.emit("erreur.login", "Erreur initialiser-empreinte");
-        socket.emit('login', false);
-      });
-
-    } else {
-      socket.emit("erreur.login", "Erreur PIN incorrect");
-      socket.emit('login', false);
-    }
-
-  }
-
-  effectuerEmpreinte(rabbitMQ, socket, opts) {
-    if(!opts) opts = {};
-    const idmg = rabbitMQ.pki.idmg;
-
-    // Verifier que la MilleGrille n'a pas deja d'empreinte usager
-    let filtre = {"_mg-libelle": "cles"};
-    return rabbitMQ.transmettreRequete('Principale.getAuthInfo', {}, {decoder: true})
-    .then( doc => {
-      const docCles = doc.cles;
-      if(docCles['empreinte_absente'] !== true) {
-        socket.emit("erreur", "Empreinte deja appliquee");
-        socket.emit('login', false);
-        throw new Error("Empreinte deja appliquee");
-      } else {
-        // Transmettre le challenge
-        const challengeResponse = generateRegistrationChallenge({
-            relyingParty: { name: 'coupdoeil' },
-            user: { id: idmg, name: 'usager' }
-        });
-        debug("Conserver challenge pour idmg %s", idmg);
-        this.conserverChallenge(idmg, challengeResponse.challenge);
-
-        return new Promise((resolve, reject)=>{
-          socket.emit('challengeTokenUSBRegistration', challengeResponse, reponse=>{
-            debug("Reponse challenge recue");
-
-            const { key, challenge } = parseRegisterRequest(reponse);
-
-            const challengeConserve = this.consommerChallenge(idmg);
-            if (challengeConserve !== challenge) {
-              reject(new Error("Challenge incorrect, ajout token echoue"));
-            } else {
-
-              const infoToken = {
-                  'cle': key
-              }
-
-              debug("Transmission transaction empreinte");
-              // debug(infoToken)
-              // Noter que la transaction va echouer si l'empreinte a deja ete creee.
-              rabbitMQ.transmettreTransactionFormattee(
-                infoToken, 'Principale.creerEmpreinte')
-              .then( msg => {
-                debug("Recu confirmation d'empreinte");
-                // debug(msg);
-                resolve();
-              })
-              .catch( err => {
-                console.error("Erreur message");
-                console.error(err);
-
-                reject(err);
-              });
-
-            }
-          });
-        })
-
-      }
-
-    })
-    .then(()=>{
-      socket.emit('login', true);
-    })
-    .catch( err => {
-      console.error("Erreur initialiser-empreinte");
-      console.error(err);
-      socket.emit("erreur", "Erreur initialiser-empreinte");
-      socket.emit('login', false);
-    });
   }
 
   // Ajoute un socket et attend l'evenement d'authentification
