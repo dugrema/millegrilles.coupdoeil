@@ -4,8 +4,8 @@ const logger = require('morgan')
 const path = require('path')
 const socketio = require('socket.io')
 
-const {WebSocketApp} = require('../models/websocketsapp')
-const {SessionManagement} = require('../models/sessionManagement')
+const {WebSocketApp} = require('millegrilles.common/lib/websocketsapp')
+const {SessionManagement} = require('millegrilles.common/lib/sessionManagement')
 
 var _idmg = null
 var _modeHebergement = false
