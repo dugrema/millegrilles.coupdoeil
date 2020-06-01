@@ -2,7 +2,7 @@
 import React from 'react'
 import axios from 'axios'
 
-import { WebSocketManagerCoupdoeil } from '../api/WebSocketManagerCoupdoeil'
+import { WebSocketManager } from 'millegrilles.common/react/WebSocketManager'
 
 // ConnexionServeur sert a verifier que le serveur est accessible, set info de base en memoire
 // Transfere le controle a <ApplicationCoupdoeil /> via props.setInfoServeur
@@ -90,7 +90,11 @@ export class ConnexionWebsocket extends React.Component {
   }
 
   async authentifier() {
-    const websocketConnexion = new WebSocketManagerCoupdoeil({reconnection: true})
+    const config = {
+      path: '/coupdoeil/socket.io',
+      reconnection: true,
+    }
+    const websocketConnexion = new WebSocketManager(config)
     websocketConnexion.disconnectHandler = this.props.desactiverProtege
 
     try {
