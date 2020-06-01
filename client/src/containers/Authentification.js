@@ -90,7 +90,8 @@ export class ConnexionWebsocket extends React.Component {
   }
 
   async authentifier() {
-    const websocketConnexion = new WebSocketManagerCoupdoeil()
+    const websocketConnexion = new WebSocketManagerCoupdoeil({reconnection: true})
+    websocketConnexion.disconnectHandler = this.props.desactiverProtege
 
     try {
       await websocketConnexion.connecter()

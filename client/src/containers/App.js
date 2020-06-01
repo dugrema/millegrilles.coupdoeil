@@ -64,11 +64,15 @@ export class ApplicationCoupdoeil extends React.Component {
       }
 
     } else {
-      console.debug("Revenir a mode prive")
-      this.state.websocketApp.desactiverModeProtege()
-      this.setState({modeProtege: false})
+      this.desactiverProtege()
     }
 
+  }
+
+  desactiverProtege = () => {
+    console.debug("Revenir a mode prive")
+    this.state.websocketApp.desactiverModeProtege()
+    this.setState({modeProtege: false})
   }
 
   render() {
@@ -81,7 +85,7 @@ export class ApplicationCoupdoeil extends React.Component {
       page = <VerificationInfoServeur setInfoServeur={this.setInfoServeur} />
     } else if(!this.state.websocketApp) {
       // 2. Connecter avec Socket.IO
-      page = <ConnexionWebsocket setWebsocketApp={this.setWebsocketApp} />
+      page = <ConnexionWebsocket setWebsocketApp={this.setWebsocketApp} desactiverProtege={this.desactiverProtege} />
     } else {
       // 3. Afficher application
       page = <SectionContenu rootProps={rootProps} />
