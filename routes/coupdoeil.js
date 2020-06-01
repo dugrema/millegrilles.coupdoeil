@@ -48,7 +48,8 @@ function initialiser(fctRabbitMQParIdmg, opts) {
 
   // catch 404 and forward to error handler
   routeCoupdoeil.use(function(req, res, next) {
-    throw {status: 404}
+    res.status(404);
+    res.end()
   });
 
   // error handler
@@ -57,8 +58,9 @@ function initialiser(fctRabbitMQParIdmg, opts) {
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-    console.error("Error handler");
+    console.error(" ************** Unhandled error begin ************** ");
     console.error(err);
+    console.error(" ************** Unhandled error end   ************** ");
 
     // render the error page
     res.status(err.status || 500);
@@ -85,28 +87,6 @@ function ajouterStaticRoute(route) {
 async function addSocket(socket) {
   await _webSocketApp.addSocket(socket);
 }
-
-// function initSocketIo(server, opts) {
-//   if(!opts) opts = {}
-//
-//   // Demarrer application qui s'occupe de Socket.IO pour Coup D'Oeil
-//   const webSocketApp = new WebSocketApp(_sessionManagement);
-//
-//   const path = opts.pathSocketio || '/coupdoeil/socket.io'
-//   const socketIo = socketio(server, {path});
-//
-//   socketIo.on('connection', async (socket) => {
-//     debug("server:Connexion socket.IO id = %s, remoteAddress = %s", socket.id, socket.conn.remoteAddress);
-//     try {
-//       await webSocketApp.addSocket(socket);
-//     } catch(err) {
-//       console.error("Erreur connexion websocket")
-//       console.error(err)
-//       socket.close()
-//     }
-//   });
-//
-// }
 
 function routeInfo(req, res, next) {
 
