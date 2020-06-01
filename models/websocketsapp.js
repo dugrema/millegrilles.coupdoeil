@@ -218,35 +218,6 @@ class WebSocketApp {
       });
     });
 
-    socket.on('commande', (enveloppe, cb) => {
-      // console.debug("Enveloppe de commande recue");
-      // console.debug(enveloppe);
-      let routingKey = enveloppe.routingKey;
-      let commande = enveloppe.commande;
-      let nowait = !cb;
-
-      rabbitMQ
-        .transmettreCommande(routingKey, commande, {nowait})
-        .then( reponse => {
-          if(reponse) {
-            if(cb) {
-              cb(reponse.resultats || reponse); // On transmet juste les resultats
-            }
-          } else {
-            if(!nowait) {
-              console.error("Erreur reception reponse commande " + routingKey);
-            }
-          }
-        })
-        .catch( err => {
-          console.error("Erreur commande");
-          console.error(err);
-          if(cb) {
-            cb(); // Callback sans valeurs
-          }
-        });
-    });
-
     socket.on('creerTokenTransfert', (message, cb) => {
       let token = this.sessionManagement.createTokenTransfert(rabbitMQ.pki.idmg);
       if(cb) {
@@ -298,36 +269,81 @@ class WebSocketApp {
 
     });
 
-    // Expose l'appel aux transactions MQ.
-    socket.on('transaction', (message, cb) => {
-      // console.log("Message");
-      // console.log(message);
-      let routingKey = message.routingKey;
-      let transaction = message.transaction;
-      let opts = message.opts;
-      rabbitMQ.transmettreTransactionFormattee(
-        transaction, routingKey, opts
-      ).then(msg=>{
-        let messageContent = msg.content.toString('utf-8');
-        let json_message = JSON.parse(messageContent);
-        cb(json_message);
-      }).catch(err =>{
-        console.error("Erreur transmission transaction");
-        console.error(err);
-        cb({'err': err.toString()});
-      })
-    });
-
     socket.on('demandeClePubliqueMaitredescles', (msg, cb) => {
       this.extraireClePubliqueMaitredescles(rabbitMQ).then(clePublique=>{
         cb(clePublique);
       });
     });
 
-    socket.on('activerModeProtege', () => {
-      this.sessionManagement.creerChallengeUSB(rabbitMQ, socket)
+    socket.on('activerModeProtege', async () => {
+      const actif = await this.sessionManagement.creerChallengeUSB(rabbitMQ, socket)
+
+      socket.modeProtege = actif
+      if(actif) {
+        // Connecte les operations protegees au socket
+
+        // Expose l'appel aux transactions MQ.
+        socket.on('transaction', (message, cb) => {this.traiterTransaction(rabbitMQ, message, cb)})
+        socket.on('commande', (message, cb) => {this.traiterCommande(rabbitMQ, message, cb)})
+      } else {
+
+      }
     })
 
+    socket.on('desactiverModeProtege', async () => {
+      console.debug("Desactiver le mode protege")
+      socket.modeProtege = false
+
+      // Desactiver listeners disponibles uniquement dans le mode protege
+      socket.removeAllListeners('transaction')
+      socket.removeAllListeners('commande')
+    })
+
+  }
+
+  traiterTransaction(rabbitMQ, message, cb) {
+    // console.log("Message");
+    // console.log(message);
+    let routingKey = message.routingKey;
+    let transaction = message.transaction;
+    let opts = message.opts;
+    rabbitMQ.transmettreTransactionFormattee(
+      transaction, routingKey, opts
+    ).then(messageReponse=>{
+      cb(messageReponse);
+    }).catch(err =>{
+      console.error("Erreur transmission transaction");
+      console.error(err);
+      cb({'err': err.toString()});
+    })
+  }
+
+  traiterCommande(rabbitMQ, enveloppe, cb) {
+    // console.debug("Enveloppe de commande recue");
+    // console.debug(enveloppe);
+    let routingKey = enveloppe.routingKey;
+    let commande = enveloppe.commande;
+    let nowait = !cb;
+
+    rabbitMQ.transmettreCommande(routingKey, commande, {nowait})
+      .then( reponse => {
+        if(reponse) {
+          if(cb) {
+            cb(reponse.resultats || reponse); // On transmet juste les resultats
+          }
+        } else {
+          if(!nowait) {
+            console.error("Erreur reception reponse commande " + routingKey);
+          }
+        }
+      })
+      .catch( err => {
+        console.error("Erreur commande");
+        console.error(err);
+        if(cb) {
+          cb(); // Callback sans valeurs
+        }
+      });
   }
 
   extraireClePubliqueMaitredescles(rabbitMQ) {

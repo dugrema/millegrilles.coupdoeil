@@ -153,6 +153,7 @@ export class WebSocketManagerCoupdoeil extends WebSocketManager {
 
   desactiverModeProtege() {
     console.debug("Desactiver mode protege")
+    this.socket.emit("desactiverModeProtege")
   }
 
 }

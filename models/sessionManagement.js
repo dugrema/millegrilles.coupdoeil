@@ -189,7 +189,7 @@ class SessionManagement {
     const challenge_genere = await generateLoginChallenge(compteProprietaire.cles);
     debug("Challenge login")
 
-    await new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       socket.emit('challengeU2f', challenge_genere, reply => {
         debug("challengeU2f appele")
         // console.log(reply);
@@ -229,7 +229,7 @@ class SessionManagement {
         socket.emit('confirmationModeProtege', {actif: loggedIn});
         debug("Mode protege actif : %s", loggedIn)
         if(loggedIn) {
-          resolve();
+          resolve(loggedIn);
         } else {
           reject('Invalid authenticator assertion');
         }
