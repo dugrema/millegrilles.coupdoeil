@@ -9,7 +9,7 @@ import { WebSocketManager } from 'millegrilles.common/react/WebSocketManager'
 export class VerificationInfoServeur extends React.Component {
 
   componentDidMount() {
-    const infoUrl = 'coupdoeil/info.json'
+    const infoUrl = '/coupdoeil/info.json'
     axios.get(infoUrl)
     .then(response=>{
       console.debug("Reponse %s", infoUrl);

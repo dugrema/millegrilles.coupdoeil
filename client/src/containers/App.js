@@ -71,7 +71,9 @@ export class ApplicationCoupdoeil extends React.Component {
 
   desactiverProtege = () => {
     console.debug("Revenir a mode prive")
-    this.state.websocketApp.desactiverModeProtege()
+    if(this.state.websocketApp) {
+      this.state.websocketApp.desactiverModeProtege()
+    }
     this.setState({modeProtege: false})
   }
 
