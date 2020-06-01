@@ -13,6 +13,9 @@ var _modeHebergement = false
 // Demarrer gestion de sessions websockets
 var _sessionManagement = null
 
+// Application de gestion des evenements de Socket.IO
+var _webSocketApp = null
+
 const _info = {
   modeHebergement: false,
 };
@@ -31,6 +34,9 @@ function initialiser(fctRabbitMQParIdmg, opts) {
   // Session management, utilise par /info.json et Socket.IO
   _sessionManagement = new SessionManagement(fctRabbitMQParIdmg);
   _sessionManagement.start();
+
+  // Demarrer application qui s'occupe de Socket.IO pour Coup D'Oeil
+  _webSocketApp = new WebSocketApp(_sessionManagement);
 
   const routeCoupdoeil = express()
 
@@ -59,8 +65,10 @@ function initialiser(fctRabbitMQParIdmg, opts) {
     res.end()
   });
 
-  return routeCoupdoeil
+  // Ajouter parametres pour Socket.IO
+  const socketio = {addSocket}
 
+  return {route: routeCoupdoeil, socketio}
 }
 
 function ajouterStaticRoute(route) {
@@ -73,27 +81,32 @@ function ajouterStaticRoute(route) {
   route.use(express.static(folderStatic))
 }
 
-function initSocketIo(server, opts) {
-  if(!opts) opts = {}
-
-  // Demarrer application qui s'occupe de Socket.IO pour Coup D'Oeil
-  const webSocketApp = new WebSocketApp(_sessionManagement);
-
-  const path = opts.pathSocketio || '/coupdoeil/socket.io'
-  const socketIo = socketio(server, {path});
-
-  socketIo.on('connection', async (socket) => {
-    debug("server:Connexion socket.IO id = %s, remoteAddress = %s", socket.id, socket.conn.remoteAddress);
-    try {
-      await webSocketApp.addSocket(socket);
-    } catch(err) {
-      console.error("Erreur connexion websocket")
-      console.error(err)
-      socket.close()
-    }
-  });
-
+// Fonction qui permet d'activer Socket.IO pour l'application
+async function addSocket(socket) {
+  await _webSocketApp.addSocket(socket);
 }
+
+// function initSocketIo(server, opts) {
+//   if(!opts) opts = {}
+//
+//   // Demarrer application qui s'occupe de Socket.IO pour Coup D'Oeil
+//   const webSocketApp = new WebSocketApp(_sessionManagement);
+//
+//   const path = opts.pathSocketio || '/coupdoeil/socket.io'
+//   const socketIo = socketio(server, {path});
+//
+//   socketIo.on('connection', async (socket) => {
+//     debug("server:Connexion socket.IO id = %s, remoteAddress = %s", socket.id, socket.conn.remoteAddress);
+//     try {
+//       await webSocketApp.addSocket(socket);
+//     } catch(err) {
+//       console.error("Erreur connexion websocket")
+//       console.error(err)
+//       socket.close()
+//     }
+//   });
+//
+// }
 
 function routeInfo(req, res, next) {
 
@@ -103,4 +116,4 @@ function routeInfo(req, res, next) {
 
 };
 
-module.exports = {initialiser, initSocketIo};
+module.exports = {initialiser};

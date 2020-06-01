@@ -1,6 +1,6 @@
 var fs = require('fs');
 // var {SocketIoUpload} = require('../routes/res/SocketioUpload');
-const debug = require('debug')('coupdoeil:websocketsapp')
+const debug = require('debug')('millegrilles:coupdoeil:websocketsapp')
 
 // var sessionManagement = require('./routes/res/sessionManagement');
 // var pki = require('./routes/res/pki');

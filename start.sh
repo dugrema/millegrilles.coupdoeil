@@ -28,6 +28,6 @@ export SERVER_TYPE=spdy
 export NODE_ENV=development
 
 # Parametre module logging debug
-export DEBUG=coupdoeil:*,millegrilles:*
+export DEBUG=millegrilles:*
 
 npm start

@@ -1,4 +1,4 @@
-const debug = require('debug')('millegrilles:sessionManagement');
+const debug = require('debug')('millegrilles:coupdoeil:sessionManagement');
 const {
     generateRegistrationChallenge,
     parseRegisterRequest,
