@@ -2,8 +2,8 @@ import React from 'react';
 import QRCode from 'qrcode.react';
 import Dropzone from 'react-dropzone';
 
-import {MilleGrillesCryptoHelper, CryptageAsymetrique} from '../api/CryptoSubtle';
-import {chiffrerPrivateKeyPEM} from '../api/CryptoForge';
+import {MilleGrillesCryptoHelper, CryptageAsymetrique} from 'millegrilles.common/react/CryptoSubtle';
+import {chiffrerPrivateKeyPEM} from 'millegrilles.common/react/CryptoForge';
 
 import { Alert, Form, Row, Col,
          Button, ButtonGroup, InputGroup, FormControl} from 'react-bootstrap';

@@ -1,4 +1,5 @@
-import {WebSocketManager} from './WebSocketManager'
+// import {WebSocketManager} from './WebSocketManager'
+import {WebSocketManager} from 'millegrilles.common/react/WebSocketManager'
 import openSocket from 'socket.io-client'
 import { solveRegistrationChallenge, solveLoginChallenge } from '@webauthn/client'
 

@@ -5,7 +5,7 @@ import { Trans } from 'react-i18next';
 import Backend from 'react-dnd-html5-backend'
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { Feuille } from '../components/Feuilles';
-import { MilleGrillesCryptoHelper, bufferToBase64 } from '../api/CryptoSubtle'
+import { MilleGrillesCryptoHelper, bufferToBase64 } from 'millegrilles.common/react/CryptoSubtle'
 import uuidv4 from 'uuid/v4';
 
 import './Parametres.css';
