@@ -1,3 +1,10 @@
+.flex-wrapper {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
 .footer {
   width: 100%;
   margin-top: 3em;

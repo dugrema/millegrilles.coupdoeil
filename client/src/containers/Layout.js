@@ -10,9 +10,11 @@ import './Layout.css'
 export function LayoutCoudpoeil(props) {
 
   return (
-    <div>
-      <Entete changerPage={props.changerPage} rootProps={props.rootProps}/>
-      <Contenu page={props.page}/>
+    <div className="flex-wrapper">
+      <div>
+        <Entete changerPage={props.changerPage} rootProps={props.rootProps}/>
+        <Contenu page={props.page}/>
+      </div>
       <Footer rootProps={props.rootProps}/>
     </div>
   )
