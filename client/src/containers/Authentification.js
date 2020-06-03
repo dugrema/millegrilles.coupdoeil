@@ -2,7 +2,7 @@
 import React from 'react'
 import axios from 'axios'
 
-import { WebSocketManager } from 'millegrilles.common/react/WebSocketManager'
+import { WebSocketManager } from 'millegrilles.common/lib/webSocketManager'
 
 // ConnexionServeur sert a verifier que le serveur est accessible, set info de base en memoire
 // Transfere le controle a <ApplicationCoupdoeil /> via props.setInfoServeur

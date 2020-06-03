@@ -62,7 +62,6 @@ function initialiser(fctRabbitMQParIdmg, opts) {
     console.error(err);
     console.error(" ************** Unhandled error end   ************** ");
 
-    // render the error page
     res.status(err.status || 500);
     res.end()
   });
