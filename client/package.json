@@ -1,9 +1,9 @@
 {
   "name": "front-end",
-  "version": "1.27.0",
+  "version": "1.28.0",
   "private": true,
   "dependencies": {
-    "millegrilles.common": "git+ssh://git.maceroc.com/git/millegrilles.common.nodejs#1.27",
+    "millegrilles.common": "git+ssh://git.maceroc.com/git/millegrilles.common.nodejs#1.28",
     "@webauthn/client": "^0.1.2",
     "@wojtekmaj/react-daterange-picker": "^2.5.0",
     "axios": "^0.19.2",

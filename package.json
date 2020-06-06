@@ -1,6 +1,6 @@
 {
   "name": "api",
-  "version": "1.27.0",
+  "version": "1.28.0",
   "main": "index.js",
   "private": true,
   "repository": {
@@ -14,7 +14,7 @@
     "client": "export WDS_SOCKET_PATH=/coupdoeil/sockjs-node && node ./bin/start-client"
   },
   "dependencies": {
-    "millegrilles.common": "git+ssh://git.maceroc.com/git/millegrilles.common.nodejs#1.27",
+    "millegrilles.common": "git+ssh://git.maceroc.com/git/millegrilles.common.nodejs#1.28",
     "@webauthn/client": "^0.1.2",
     "@webauthn/server": "^0.1.1",
     "amqplib": "^0.5.3",
