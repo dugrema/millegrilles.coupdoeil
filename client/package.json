@@ -3,7 +3,6 @@
   "version": "1.30.0",
   "private": true,
   "dependencies": {
-    "millegrilles.common": "git+ssh://git.maceroc.com/git/millegrilles.common.nodejs#1.30",
     "@webauthn/client": "^0.1.2",
     "@wojtekmaj/react-daterange-picker": "^2.5.0",
     "axios": "^0.19.2",
@@ -12,6 +11,7 @@
     "font-awesome": "^4.7.0",
     "i18next": "^19.4.4",
     "i18next-browser-languagedetector": "^4.1.1",
+    "millegrilles.common": "git+ssh://git.maceroc.com/git/millegrilles.common.nodejs#1.30",
     "moment": "^2.25.3",
     "moment-timezone": "^0.5.28",
     "qrcode.react": "^1.0.0",
@@ -27,6 +27,7 @@
     "react-textarea-autosize": "^7.1.2",
     "socket.io-client": "^2.2.0",
     "universal-cookie": "^4.0.2",
+    "uuid": "^8.2.0",
     "webpack": "^4.41.5"
   },
   "scripts": {
