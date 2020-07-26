@@ -1,6 +1,6 @@
 {
   "name": "front-end",
-  "version": "1.30.0",
+  "version": "1.31.0",
   "private": true,
   "dependencies": {
     "@webauthn/client": "^0.1.2",
@@ -11,7 +11,7 @@
     "font-awesome": "^4.7.0",
     "i18next": "^19.4.4",
     "i18next-browser-languagedetector": "^4.1.1",
-    "millegrilles.common": "git+ssh://git.maceroc.com/git/millegrilles.common.nodejs#1.30",
+    "millegrilles.common": "git+ssh://git.maceroc.com/git/millegrilles.common.nodejs#1.31",
     "moment": "^2.25.3",
     "moment-timezone": "^0.5.28",
     "qrcode.react": "^1.0.0",
