@@ -4,7 +4,7 @@ const logger = require('morgan')
 const path = require('path')
 const socketio = require('socket.io')
 
-const {WebSocketApp} = require('millegrilles.common/lib/websocketsapp')
+const {WebSocketApp} = require('../models/coupdoeilSocketApp')
 const {SessionManagement} = require('millegrilles.common/lib/sessionManagement')
 
 var _idmg = null
@@ -36,7 +36,7 @@ function initialiser(fctRabbitMQParIdmg, opts) {
   _sessionManagement.start();
 
   // Demarrer application qui s'occupe de Socket.IO pour Coup D'Oeil
-  _webSocketApp = new WebSocketApp(_sessionManagement);
+  _webSocketApp = new WebSocketApp(fctRabbitMQParIdmg);
 
   const routeCoupdoeil = express()
 
@@ -84,6 +84,7 @@ function ajouterStaticRoute(route) {
 
 // Fonction qui permet d'activer Socket.IO pour l'application
 async function addSocket(socket) {
+  debug("addSocket, request\n%O", socket.request)
   await _webSocketApp.addSocket(socket);
 }
 

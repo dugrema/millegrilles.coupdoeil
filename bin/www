@@ -13,6 +13,12 @@ async function init() {
   const {amqpdao: instAmqpdao} = await amqpdao.init()
   const idmg = instAmqpdao.pki.idmg
 
+  function stubDev(req, res, next) {
+    req.mq = instAmqpdao
+    req.idmg = idmg
+    next()
+  }
+
   debug("Initialisation serveur IDMG : %s", idmg)
 
   // Creer une collection avec la connexion a MQ (format qui supporte hebergement)
@@ -29,6 +35,7 @@ async function init() {
   const mappingApps = {coupdoeil}
 
   const root = express()
+  root.use(stubDev)
   const serverInstance = initialiserServer(root, mappingApps)
 
 }
