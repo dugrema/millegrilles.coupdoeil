@@ -67,9 +67,9 @@ function initialiser(fctRabbitMQParIdmg, opts) {
   });
 
   // Ajouter parametres pour Socket.IO
-  const socketio = {addSocket}
+  // const socketio = {addSocket}
 
-  return {route: routeCoupdoeil, socketio}
+  return {route: routeCoupdoeil, addSocket}
 }
 
 function ajouterStaticRoute(route) {
@@ -84,8 +84,8 @@ function ajouterStaticRoute(route) {
 
 // Fonction qui permet d'activer Socket.IO pour l'application
 async function addSocket(socket) {
-  debug("addSocket, request\n%O", socket.request)
-  await _webSocketApp.addSocket(socket);
+  debug("Coupdoeil addSocket, request\n%O", socket.request)
+  return await _webSocketApp.addSocket(socket);
 }
 
 function routeInfo(req, res, next) {
