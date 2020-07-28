@@ -56,6 +56,8 @@ function devRouteStub(fctRabbitMQParIdmg, opts) {
 // Fonction qui permet d'activer Socket.IO pour l'application
 function devAddSocket(socket) {
   debug("devAddSocket, ID %s", socket.id)
+  socket.estProprietaire = true
+  socket.modeProtege = true
 }
 
 init()

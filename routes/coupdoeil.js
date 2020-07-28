@@ -84,7 +84,7 @@ function ajouterStaticRoute(route) {
 
 // Fonction qui permet d'activer Socket.IO pour l'application
 async function addSocket(socket) {
-  debug("Coupdoeil addSocket, request\n%O", socket.request)
+  debug("Coupdoeil addSocket id %s", socket.id)
   return await _webSocketApp.addSocket(socket);
 }
 

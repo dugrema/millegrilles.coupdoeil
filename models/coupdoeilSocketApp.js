@@ -188,6 +188,7 @@ class WebSocketApp {
   // }
 
   registerEvents(rabbitMQ, socket) {
+    debug("Register events")
     // Enregistre tous les evenements transmis par le front-end coupdoeil.
     // registerDocument: Enregistrer nouvelle routingKey pour le socket
     // unregisterDocument: Retirer routingKey pour socket
@@ -195,22 +196,21 @@ class WebSocketApp {
     let channel = socket.mqChannel;
     let reply_q = socket.reply_q;
 
+    const listeners = []
+
     // Enregistrer evenements upload
     // new SocketIoUpload(rabbitMQ, rabbitMQ.pki).enregistrer(socket);
-
-    socket.on('subscribe', message => {
+    listeners.push({eventName: 'subscribe', callback: message => {
       rabbitMQ.routingKeyManager
         .addRoutingKeysForSocket(socket, message, channel, reply_q);
-    });
-
-    socket.on('unsubscribe', message => {
+    }})
+    listeners.push({eventName: 'unsubscribe', callback: message => {
       // console.debug("Message unsubscribe");
       // console.debug(message);
       rabbitMQ.routingKeyManager
         .removeRoutingKeysForSocket(socket, message, channel, reply_q);
-    });
-
-    socket.on('requete', (enveloppe, cb) => {
+    }})
+    listeners.push({eventName: 'requete', callback: (enveloppe, cb) => {
       // console.debug("Enveloppe de requete recue");
       // console.debug(enveloppe);
       const domaineAction = enveloppe.domaineAction;
@@ -226,8 +226,59 @@ class WebSocketApp {
         console.error(err);
         cb(); // Callback sans valeurs
       });
-    });
+    }})
+    listeners.push({eventName: 'transaction', callback: (message, cb) => {
+      this.traiterTransaction(rabbitMQ, message, cb)
+    }})
+    listeners.push({eventName: 'commande', callback: (message, cb) => {
+      this.traiterCommande(rabbitMQ, message, cb)
+    }})
+    listeners.push({eventName: 'ajouterMotdepasse', callback: params => {
+      debug("Ajouter mot de passe")
+    }})
 
+    for(let idx in listeners) {
+      const listener = listeners[idx]
+      socket.listenersProprietaires.push(listener)
+      // if(socket.modeProtege && socket.estProprietaire) {
+      //   debug("Enregistrement event %s immediat", listener.eventName)
+      //   socket.on(listener.eventName, listener.callback)
+      // }
+    }
+
+    // socket.on('transaction', (message, cb) => {this.traiterTransaction(rabbitMQ, message, cb)})
+    // socket.on('commande', (message, cb) => {this.traiterCommande(rabbitMQ, message, cb)})
+    //
+    // socket.on('subscribe', message => {
+    //   rabbitMQ.routingKeyManager
+    //     .addRoutingKeysForSocket(socket, message, channel, reply_q);
+    // });
+    //
+    // socket.on('unsubscribe', message => {
+    //   // console.debug("Message unsubscribe");
+    //   // console.debug(message);
+    //   rabbitMQ.routingKeyManager
+    //     .removeRoutingKeysForSocket(socket, message, channel, reply_q);
+    // });
+    //
+    // socket.on('requete', (enveloppe, cb) => {
+    //   // console.debug("Enveloppe de requete recue");
+    //   // console.debug(enveloppe);
+    //   const domaineAction = enveloppe.domaineAction;
+    //   const requete = enveloppe.requete;
+    //   const opts = enveloppe.opts || {};
+    //
+    //   rabbitMQ.transmettreRequete(domaineAction, requete)
+    //   .then( reponse => {
+    //     cb(reponse.resultats || reponse)
+    //   })
+    //   .catch( err => {
+    //     console.error("Erreur requete");
+    //     console.error(err);
+    //     cb(); // Callback sans valeurs
+    //   });
+    // });
+    //
     // socket.on('creerTokenTransfert', (message, cb) => {
     //   let token = this.sessionManagement.createTokenTransfert(rabbitMQ.pki.idmg);
     //   if(cb) {
@@ -284,33 +335,33 @@ class WebSocketApp {
     //     cb(clePublique);
     //   });
     // });
-
-    socket.on('activerModeProtege', async () => {
-      console.warn("!!! ATTENTION - Mode Protege non protege !!!")
-      // const actif = await this.sessionManagement.creerChallengeUSB(rabbitMQ, socket)
-
-      const actif = true
-
-      socket.modeProtege = actif
-      if(actif) {
-        // Connecte les operations protegees au socket
-
-        // Expose l'appel aux transactions MQ.
-        socket.on('transaction', (message, cb) => {this.traiterTransaction(rabbitMQ, message, cb)})
-        socket.on('commande', (message, cb) => {this.traiterCommande(rabbitMQ, message, cb)})
-      } else {
-
-      }
-    })
-
-    socket.on('desactiverModeProtege', async () => {
-      // console.debug("Desactiver le mode protege")
-      socket.modeProtege = false
-
-      // Desactiver listeners disponibles uniquement dans le mode protege
-      socket.removeAllListeners('transaction')
-      socket.removeAllListeners('commande')
-    })
+    //
+    // socket.on('activerModeProtege', async () => {
+    //   console.warn("!!! ATTENTION - Mode Protege non protege !!!")
+    //   // const actif = await this.sessionManagement.creerChallengeUSB(rabbitMQ, socket)
+    //
+    //   const actif = true
+    //
+    //   socket.modeProtege = actif
+    //   if(actif) {
+    //     // Connecte les operations protegees au socket
+    //
+    //     // Expose l'appel aux transactions MQ.
+    //     socket.on('transaction', (message, cb) => {this.traiterTransaction(rabbitMQ, message, cb)})
+    //     socket.on('commande', (message, cb) => {this.traiterCommande(rabbitMQ, message, cb)})
+    //   } else {
+    //
+    //   }
+    // })
+    //
+    // socket.on('desactiverModeProtege', async () => {
+    //   // console.debug("Desactiver le mode protege")
+    //   socket.modeProtege = false
+    //
+    //   // Desactiver listeners disponibles uniquement dans le mode protege
+    //   socket.removeAllListeners('transaction')
+    //   socket.removeAllListeners('commande')
+    // })
 
   }
 
