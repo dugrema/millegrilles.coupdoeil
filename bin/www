@@ -25,6 +25,7 @@ async function init() {
   const rabbitMQParIdmg = {
     [idmg]: instAmqpdao
   }
+  const mqList = [instAmqpdao]
 
   const fctRabbitMQParIdmg = (idmg) => {
     return rabbitMQParIdmg[idmg]
@@ -37,7 +38,7 @@ async function init() {
 
   const root = express()
   root.use(stubDev)
-  const serverInstance = initialiserServer(root, mappingApps, {pathSocketio: 'coupdoeil'})
+  const serverInstance = initialiserServer(root, mappingApps, {pathSocketio: 'coupdoeil', mqList})
 
 }
 

@@ -5,13 +5,13 @@ const path = require('path')
 const socketio = require('socket.io')
 
 const {WebSocketApp} = require('../models/coupdoeilSocketApp')
-const {SessionManagement} = require('millegrilles.common/lib/sessionManagement')
+// const {SessionManagement} = require('millegrilles.common/lib/sessionManagement')
 
 var _idmg = null
 var _modeHebergement = false
 
 // Demarrer gestion de sessions websockets
-var _sessionManagement = null
+// var _sessionManagement = null
 
 // Application de gestion des evenements de Socket.IO
 var _webSocketApp = null
@@ -32,8 +32,8 @@ function initialiser(fctRabbitMQParIdmg, opts) {
   }
 
   // Session management, utilise par /info.json et Socket.IO
-  _sessionManagement = new SessionManagement(fctRabbitMQParIdmg);
-  _sessionManagement.start();
+  // _sessionManagement = new SessionManagement(fctRabbitMQParIdmg);
+  // _sessionManagement.start();
 
   // Demarrer application qui s'occupe de Socket.IO pour Coup D'Oeil
   _webSocketApp = new WebSocketApp(fctRabbitMQParIdmg);

@@ -51,8 +51,8 @@ class WebSocketApp {
     // this.pki = pki;
     // this.sessionManagement = sessionManagement;
 
-    this.new_sockets = false;
-    this.authenticated_sockets = false;
+    // this.new_sockets = false;
+    // this.authenticated_sockets = false;
 
     // setInterval(()=>{
     //   this.cleanNew();
@@ -141,8 +141,8 @@ class WebSocketApp {
     } else if(!socket.disconnected) {
       // let socketResources = new WebSocketResources(socket);
 
-      socket.mqChannel = null;
-      socket.reply_q = null;
+      // socket.mqChannel = null;
+      // socket.reply_q = null;
 
       // S'assure que le socket n'a pas ete deconnecte avant d'ajouter
       // l'evenement de gestion du disconnect
@@ -193,16 +193,20 @@ class WebSocketApp {
     // registerDocument: Enregistrer nouvelle routingKey pour le socket
     // unregisterDocument: Retirer routingKey pour socket
     // requete: Executer une requete
-    let channel = socket.mqChannel;
-    let reply_q = socket.reply_q;
+    // let channel = socket.mqChannel;
+    // let reply_q = socket.reply_q;
+
+    let channel = rabbitMQ.channel
+    const reply_q = rabbitMQ.reply_q
 
     const listeners = []
 
     // Enregistrer evenements upload
     // new SocketIoUpload(rabbitMQ, rabbitMQ.pki).enregistrer(socket);
     listeners.push({eventName: 'subscribe', callback: message => {
+      const {routingKeys, niveauSecurite} = message
       rabbitMQ.routingKeyManager
-        .addRoutingKeysForSocket(socket, message, channel, reply_q);
+        .addRoutingKeysForSocket(socket, routingKeys, niveauSecurite, channel, reply_q);
     }})
     listeners.push({eventName: 'unsubscribe', callback: message => {
       // console.debug("Message unsubscribe");
@@ -240,128 +244,7 @@ class WebSocketApp {
     for(let idx in listeners) {
       const listener = listeners[idx]
       socket.listenersProprietaires.push(listener)
-      // if(socket.modeProtege && socket.estProprietaire) {
-      //   debug("Enregistrement event %s immediat", listener.eventName)
-      //   socket.on(listener.eventName, listener.callback)
-      // }
     }
-
-    // socket.on('transaction', (message, cb) => {this.traiterTransaction(rabbitMQ, message, cb)})
-    // socket.on('commande', (message, cb) => {this.traiterCommande(rabbitMQ, message, cb)})
-    //
-    // socket.on('subscribe', message => {
-    //   rabbitMQ.routingKeyManager
-    //     .addRoutingKeysForSocket(socket, message, channel, reply_q);
-    // });
-    //
-    // socket.on('unsubscribe', message => {
-    //   // console.debug("Message unsubscribe");
-    //   // console.debug(message);
-    //   rabbitMQ.routingKeyManager
-    //     .removeRoutingKeysForSocket(socket, message, channel, reply_q);
-    // });
-    //
-    // socket.on('requete', (enveloppe, cb) => {
-    //   // console.debug("Enveloppe de requete recue");
-    //   // console.debug(enveloppe);
-    //   const domaineAction = enveloppe.domaineAction;
-    //   const requete = enveloppe.requete;
-    //   const opts = enveloppe.opts || {};
-    //
-    //   rabbitMQ.transmettreRequete(domaineAction, requete)
-    //   .then( reponse => {
-    //     cb(reponse.resultats || reponse)
-    //   })
-    //   .catch( err => {
-    //     console.error("Erreur requete");
-    //     console.error(err);
-    //     cb(); // Callback sans valeurs
-    //   });
-    // });
-    //
-    // socket.on('creerTokenTransfert', (message, cb) => {
-    //   let token = this.sessionManagement.createTokenTransfert(rabbitMQ.pki.idmg);
-    //   if(cb) {
-    //     cb(token); // Renvoit le token pour amorcer le transfert via PUT
-    //   }
-    // });
-    //
-    // socket.on('creerPINTemporaireDevice', (message, cb) => {
-    //   let pin = this.sessionManagement.createPinTemporaireDevice(rabbitMQ.pki.idmg);
-    //   if(cb) {
-    //     cb({pin: pin});
-    //   }
-    // })
-
-    // socket.on('enregistrerDevice', (message)=> {
-    //   // Declenche l'ajout d'un nouveau device d'Authentification
-    //
-    //   // La requete est faite par websocket, l'usager est deja authentifie alors
-    //   // aucune verification supplementaire n'est faite (note: on pourrait re-demander l'authentification)
-    //   // Envoyer le challenge et utiliser callback pour recevoir la confirmation
-    //   // Transmettre le challenge
-    //   const challengeResponse = generateRegistrationChallenge({
-    //       relyingParty: { name: 'coupdoeil' },
-    //       user: { id: 'usager', name: 'usager' }
-    //   });
-    //   var challenge_conserve = challengeResponse.challenge;
-    //
-    //   socket.emit('challengeEnregistrerDevice', challengeResponse, (reponse)=>{
-    //     const { key, challenge } = parseRegisterRequest(reponse);
-    //
-    //     // console.debug("Parsed: key, challenge de nouveau device");
-    //
-    //     var infoToken = {
-    //         'cle': key
-    //     }
-    //
-    //     // Tout est correct, on transmet le nouveau token en transaction
-    //     rabbitMQ.transmettreTransactionFormattee(
-    //         infoToken, 'Principale.ajouterToken')
-    //       .then( msg => {
-    //         // console.debug("Recu confirmation d'ajout de device'");
-    //         // console.debug(msg);
-    //       })
-    //       .catch( err => {
-    //         console.error("Erreur message");
-    //         console.error(err);
-    //       });
-    //   });
-    //
-    // });
-
-    // socket.on('demandeClePubliqueMaitredescles', (msg, cb) => {
-    //   this.extraireClePubliqueMaitredescles(rabbitMQ).then(clePublique=>{
-    //     cb(clePublique);
-    //   });
-    // });
-    //
-    // socket.on('activerModeProtege', async () => {
-    //   console.warn("!!! ATTENTION - Mode Protege non protege !!!")
-    //   // const actif = await this.sessionManagement.creerChallengeUSB(rabbitMQ, socket)
-    //
-    //   const actif = true
-    //
-    //   socket.modeProtege = actif
-    //   if(actif) {
-    //     // Connecte les operations protegees au socket
-    //
-    //     // Expose l'appel aux transactions MQ.
-    //     socket.on('transaction', (message, cb) => {this.traiterTransaction(rabbitMQ, message, cb)})
-    //     socket.on('commande', (message, cb) => {this.traiterCommande(rabbitMQ, message, cb)})
-    //   } else {
-    //
-    //   }
-    // })
-    //
-    // socket.on('desactiverModeProtege', async () => {
-    //   // console.debug("Desactiver le mode protege")
-    //   socket.modeProtege = false
-    //
-    //   // Desactiver listeners disponibles uniquement dans le mode protege
-    //   socket.removeAllListeners('transaction')
-    //   socket.removeAllListeners('commande')
-    // })
 
   }
 
