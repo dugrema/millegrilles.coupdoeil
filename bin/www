@@ -16,6 +16,8 @@ async function init() {
   function stubDev(req, res, next) {
     req.mq = instAmqpdao
     req.idmg = idmg
+    if(!req.session) req.session = {}
+    req.session.estProprietaire = true
     next()
   }
 

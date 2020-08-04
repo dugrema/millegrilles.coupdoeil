@@ -5,6 +5,7 @@ const path = require('path')
 const socketio = require('socket.io')
 
 const {WebSocketApp} = require('../models/coupdoeilSocketApp')
+const {initialiserBackupRoute} = require('../models/backupProcess')
 // const {SessionManagement} = require('millegrilles.common/lib/sessionManagement')
 
 var _idmg = null
@@ -45,6 +46,9 @@ function initialiser(fctRabbitMQParIdmg, opts) {
 
   // Lien vers code React de CoupDoeil
   ajouterStaticRoute(routeCoupdoeil)
+
+  const backupRoute = initialiserBackupRoute()
+  routeCoupdoeil.use('/backup', backupRoute)
 
   // catch 404 and forward to error handler
   routeCoupdoeil.use(function(req, res, next) {
