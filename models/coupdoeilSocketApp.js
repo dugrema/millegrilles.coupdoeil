@@ -231,6 +231,23 @@ class WebSocketApp {
         cb(); // Callback sans valeurs
       });
     }})
+    listeners.push({eventName: 'requeteMultiDomaines', callback: (enveloppe, cb) => {
+      // console.debug("Enveloppe de requete recue");
+      // console.debug(enveloppe);
+      const domaineAction = enveloppe.domaineAction;
+      const requete = enveloppe.requete;
+      const opts = enveloppe.opts || {};
+
+      rabbitMQ.transmettreRequeteMultiDomaines(domaineAction, requete)
+      .then( reponse => {
+        cb(reponse.resultats || reponse)
+      })
+      .catch( err => {
+        console.error("Erreur requete multi-domaines");
+        console.error(err);
+        cb(); // Callback sans valeurs
+      });
+    }})
     listeners.push({eventName: 'transaction', callback: (message, cb) => {
       this.traiterTransaction(rabbitMQ, message, cb)
     }})
