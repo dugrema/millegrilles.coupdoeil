@@ -114,8 +114,10 @@ function initialiserBackupRoute() {
     // const pki = rabbitMQ.pki;
     const pki = req.mq.pki
 
+    const domaineFichiers = process.env.MG_CONSIGNATION_HTTP || 'https://fichiers'
+
     const options = {
-      url: 'https://mg-dev4:3021/backup/backup.tar',
+      url: domaineFichiers + '/backup/backup.tar',
       headers: headers,
       agentOptions: {
         ca: pki.hoteCA,

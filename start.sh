@@ -21,7 +21,7 @@ export MG_MQ_URL=amqps://$HOST:5673
 export PORT=3003
 
 export MG_HTTPPROXY_SECURE=false
-export MG_CONSIGNATION_HTTP=https://$HOST:3005
+export MG_CONSIGNATION_HTTP=https://$HOST:3021
 
 export SERVER_TYPE=spdy
 
