@@ -1,6 +1,6 @@
 var fs = require('fs');
 // var {SocketIoUpload} = require('../routes/res/SocketioUpload');
-const debug = require('debug')('millegrilles:coupdoeil:websocketsapp')
+const debug = require('debug')('millegrilles:coupdoeil:coupdoeilSocketApp')
 
 // var sessionManagement = require('./routes/res/sessionManagement');
 // var pki = require('./routes/res/pki');
@@ -205,14 +205,17 @@ class WebSocketApp {
     // new SocketIoUpload(rabbitMQ, rabbitMQ.pki).enregistrer(socket);
     listeners.push({eventName: 'subscribe', callback: message => {
       const {routingKeys, niveauSecurite} = message
+      debug("Subscribe %O", message)
       rabbitMQ.routingKeyManager
         .addRoutingKeysForSocket(socket, routingKeys, niveauSecurite, channel, reply_q);
     }})
     listeners.push({eventName: 'unsubscribe', callback: message => {
       // console.debug("Message unsubscribe");
       // console.debug(message);
+      debug("Unsubscribe %O", message)
+      const {routingKeys, niveauSecurite} = message
       rabbitMQ.routingKeyManager
-        .removeRoutingKeysForSocket(socket, message, channel, reply_q);
+        .removeRoutingKeysForSocket(socket, message, niveauSecurite, channel, reply_q);
     }})
     listeners.push({eventName: 'requete', callback: (enveloppe, cb) => {
       // console.debug("Enveloppe de requete recue");
