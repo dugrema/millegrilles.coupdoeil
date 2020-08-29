@@ -57,12 +57,7 @@ class WebSocketApp {
         rabbitMQ_local = rabbitMQ;
 
         const idmg = rabbitMQ.pki.idmg;
-        debug("Authentification est completee, idmg: %s", idmg);
-
-        return rabbitMQ.createChannel(socket);
-      })
-      .then(()=>{
-        // this.saveAuthenticated(socketResources);
+        debug("Enregistrer evenements sur idmg: %s", idmg);
         this.registerEvents(rabbitMQ_local, socket);
       }).catch(err=>{
         console.error("Erreur traitement socket " + socket.id + ", on le ferme.");
