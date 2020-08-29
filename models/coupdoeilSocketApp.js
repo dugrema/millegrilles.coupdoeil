@@ -1,102 +1,11 @@
 var fs = require('fs');
-// var {SocketIoUpload} = require('../routes/res/SocketioUpload');
 const debug = require('debug')('millegrilles:coupdoeil:coupdoeilSocketApp')
-
-// var sessionManagement = require('./routes/res/sessionManagement');
-// var pki = require('./routes/res/pki');
-// var rabbitMQ = require('./routes/res/rabbitMQ');
-
-// const {
-//     generateRegistrationChallenge,
-//     parseRegisterRequest,
-//     generateLoginChallenge,
-//     parseLoginRequest,
-//     verifyAuthenticatorAssertion,
-// } = require('@webauthn/server');
-//
-// class WebSocketResources {
-//   // Classe utilisee pour conserver les references vers les ressources privees
-//   // d'une connexion websocket (e.g. channel MQ, reply_Q).
-//
-//   constructor(socket) {
-//     this.socket = socket;
-//
-//     this.mqChannel = null;
-//     this.reply_q = null;
-//     this.expiration = (new Date()).getTime()+120000; // 2 minutes pour socket connect
-//   }
-//
-//   close() {
-//     if(this.mqChannel) {
-//       try {
-//         if(this.reply_q) {
-//           // console.debug("Delete reply Q pour socket " + this.socket.id);
-//           this.mqChannel.deleteQueue(this.reply_q.queue).catch(err=>{});
-//         }
-//       } finally {
-//         // console.debug("Fermeture channel MQ pour socket " + this.socket.id);
-//         this.mqChannel.close().catch(err=>{});
-//       }
-//
-//     }
-//   }
-//
-// }
 
 class WebSocketApp {
 
   constructor(fctRabbitMQParIdmg) {
     this.fctRabbitMQParIdmg = fctRabbitMQParIdmg
-    // this.rabbitMQ = rabbitMQ;
-    // this.pki = pki;
-    // this.sessionManagement = sessionManagement;
-
-    // this.new_sockets = false;
-    // this.authenticated_sockets = false;
-
-    // setInterval(()=>{
-    //   this.cleanNew();
-    // }, 5000);
-    //
-    // setInterval(()=>{
-    //   this.cleanDisconnected();
-    // }, 60000);
-
-    // this.rabbitMQ.routingKeyManager.setWebSocketsManager(this); // Permet transmettre incoming msg
   }
-
-  // cleanNew() {
-  //   // Nettoyage des sockets nouveaux connectes qui ne sont pas authentifies
-  //   // Limite le temps permis pour authentifier
-  //   let tempsCourant = (new Date()).getTime();
-  //   for(var socket_id in this.new_sockets) {
-  //     let socketResources = this.new_sockets[socket_id];
-  //
-  //     let socket = socketResources.socket;
-  //     if(socketResources.expiration < tempsCourant){
-  //       // console.debug("On deconnecte un socket pas authentifie expire: " + socket_id);
-  //       socket.disconnect();
-  //     }
-  //
-  //     if(socket.disconnected) {
-  //       // console.debug("Nettoyage socket pas authentifie: " + socket_id);
-  //       socketResources.close();
-  //       delete this.new_sockets[socket_id];
-  //     }
-  //   }
-  // }
-  //
-  // cleanDisconnected() {
-  //   // Housekeeping, normalement l'evenement disconnect du socket va
-  //   // declencher la suppression du socket.
-  //   for(var socket_id in this.authenticated_sockets) {
-  //     let socketResources = this.authenticated_sockets[socket_id];
-  //     if(socketResources.socket.disconnected) {
-  //       socketResources.close();
-  //       delete this.authenticated_sockets[socket_id];
-  //     }
-  //   }
-  // }
 
   disconnectedHandler(socket) {
     // console.debug("Socket deconnecte " + socket.id);
@@ -114,13 +23,6 @@ class WebSocketApp {
 
     }
 
-    // let socketResources = this.new_sockets[socket.id] || this.authenticated_sockets[socket.id];
-    // if(socketResources) {
-    //   socketResources.close();
-    // }
-    //
-    // delete this.new_sockets[socket.id];
-    // delete this.authenticated_sockets[socket.id];
   }
 
   // Methode utiliser pour ajouter une nouvelle connexion a partir de Socket.IO (listener)
@@ -139,17 +41,10 @@ class WebSocketApp {
       socket.disconnect();
       delete this.new_sockets[socket.id];
     } else if(!socket.disconnected) {
-      // let socketResources = new WebSocketResources(socket);
 
-      // socket.mqChannel = null;
-      // socket.reply_q = null;
-
-      // S'assure que le socket n'a pas ete deconnecte avant d'ajouter
-      // l'evenement de gestion du disconnect
       socket.on('disconnect', ()=>{
         this.disconnectedHandler(socket);
       });
-      // this.new_sockets[socket.id] = socketResources;
 
       // Ouvrir Channel MQ
       // console.debug("Debut de l'authentification");
@@ -180,21 +75,9 @@ class WebSocketApp {
 
   }
 
-  // saveAuthenticated(socketResources) {
-  //   let socket = socketResources.socket;
-  //   this.authenticated_sockets[socket.id] = socketResources;
-  //   delete this.new_sockets[socket.id];
-  //   // console.debug("Moved socket " + socket.id + " from new_sockets to authenticated_sockets");
-  // }
-
+  // Enregistre tous les evenements transmis par le front-end coupdoeil.
   registerEvents(rabbitMQ, socket) {
     debug("Register events")
-    // Enregistre tous les evenements transmis par le front-end coupdoeil.
-    // registerDocument: Enregistrer nouvelle routingKey pour le socket
-    // unregisterDocument: Retirer routingKey pour socket
-    // requete: Executer une requete
-    // let channel = socket.mqChannel;
-    // let reply_q = socket.reply_q;
 
     let channel = rabbitMQ.channel
     const reply_q = rabbitMQ.reply_q
@@ -322,8 +205,6 @@ class WebSocketApp {
       const infoCertificat = rabbitMQ.pki.extraireClePubliqueFingerprint(certificat);
 
       // console.debug(infoCertificat);
-
-      // Enlever le wrapping pour faciliter l'usage pour le navigateur
       return infoCertificat;
     })
   }
@@ -364,8 +245,5 @@ class WebSocketApp {
   }
 
 }
-
-//const websocketapp = new WebSocketApp();
-
 
 module.exports = {WebSocketApp};
