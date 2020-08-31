@@ -170,7 +170,10 @@ class WebSocketApp {
     let commande = enveloppe.commande;
     let nowait = !cb;
 
-    rabbitMQ.transmettreCommande(routingKey, commande, {nowait})
+    let params = {nowait}
+    if(enveloppe.exchange) params.exchange = enveloppe.exchange
+
+    rabbitMQ.transmettreCommande(routingKey, commande, params)
       .then( reponse => {
         if(reponse) {
           if(cb) {
