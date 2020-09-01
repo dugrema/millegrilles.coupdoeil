@@ -4,7 +4,7 @@ const logger = require('morgan')
 const path = require('path')
 const socketio = require('socket.io')
 
-const {WebSocketApp} = require('../models/coupdoeilSocketApp')
+const {configurationEvenements} = require('../models/coupdoeilSocketApp')
 const {initialiserBackupRoute} = require('../models/backupProcess')
 // const {SessionManagement} = require('millegrilles.common/lib/sessionManagement')
 
@@ -37,7 +37,7 @@ function initialiser(fctRabbitMQParIdmg, opts) {
   // _sessionManagement.start();
 
   // Demarrer application qui s'occupe de Socket.IO pour Coup D'Oeil
-  _webSocketApp = new WebSocketApp(fctRabbitMQParIdmg);
+  // _webSocketApp = new WebSocketApp(fctRabbitMQParIdmg);
 
   const routeCoupdoeil = express()
 
@@ -73,7 +73,9 @@ function initialiser(fctRabbitMQParIdmg, opts) {
   // Ajouter parametres pour Socket.IO
   // const socketio = {addSocket}
 
-  return {route: routeCoupdoeil, addSocket}
+  const socketio = {configurationEvenements}
+
+  return {route: routeCoupdoeil, socketio}
 }
 
 function ajouterStaticRoute(route) {

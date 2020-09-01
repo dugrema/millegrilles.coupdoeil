@@ -3,7 +3,7 @@
 CERT_FOLDER=/home/mathieu/mgdev/certs
 # export MG_IDMG=vPXTaPjpUErFjV5d8pKrAHHqKhFUr7GSEruCL7
 # export MG_CONSIGNATION_PATH=/var/opt/millegrilles/$IDMG/mounts/consignation
-export HOST=`hostname`
+export HOST=`hostname --fqdn`
 
 # CERT_FOLDER=/opt/millegrilles/$MG_NOM_MILLEGRILLE/pki/deployeur
 CERT_FOLDER=/home/mathieu/mgdev/certs
@@ -17,7 +17,8 @@ export MG_MQ_KEYFILE=$CERT_FOLDER/pki.web_protege.key
 # export WEB_KEY=~/.acme.sh/mg-dev3.maple.maceroc.com/mg-dev3.maple.maceroc.com.key
 export WEB_CERT=$MG_MQ_CERTFILE
 export WEB_KEY=$MG_MQ_KEYFILE
-export MG_MQ_URL=amqps://$HOST:5673
+MQ_HOST=`hostname`
+export MG_MQ_URL=amqps://$MQ_HOST:5673
 export PORT=3003
 
 export MG_HTTPPROXY_SECURE=false
