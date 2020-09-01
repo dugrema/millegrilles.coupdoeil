@@ -84,7 +84,6 @@ function devRouteStub(instAmqpdao, opts) {
 
   // Ajouter parametres de hook commun pour Socket.IO (dev)
   const socketio = {
-    addSocket: socket=>{devAddSocket(socket, instAmqpdao)},
     callbackPreSetup: socketio=>preconfigSocketioCallback(socketio, instAmqpdao),
   }
 
@@ -99,12 +98,6 @@ function preconfigSocketioCallback(socketIo, instAmqpdao) {
     socket.handshake.session.idmgCompte = instAmqpdao.pki.idmg
 
     socket.estProprietaire = true
-    // socket.modeProtege = true
-    // socket.application = 'coupdoeil'
-
-    // socket.upgradeProtege = _=>{upgradeProtege(socket)}
-    // socket.downgradePrive = _=>{downgradePrive(socket)}
-    // socket.changerApplication = application =>{changerApplication(socket, application)}
 
     socket.on('upgradeProtege', socket.upgradeProtege)
     socket.on('downgradePrive', socket.downgradePrive)
@@ -113,33 +106,6 @@ function preconfigSocketioCallback(socketIo, instAmqpdao) {
     next()
   })
 
-  // socketIo.on('connection', socket=>{
-  //   debug("Ajout dev params dans req sur socket.io")
-  //
-  //   socket.estProprietaire = true
-  //   // socket.modeProtege = true
-  //   // socket.application = 'coupdoeil'
-  //
-  //   // socket.upgradeProtege = _=>{upgradeProtege(socket)}
-  //   // socket.downgradePrive = _=>{downgradePrive(socket)}
-  //   // socket.changerApplication = application =>{changerApplication(socket, application)}
-  //
-  //   socket.on('upgradeProtege', socket.upgradeProtege)
-  //   socket.on('downgradePrive', socket.downgradePrive)
-  //   socket.on('changerApplication', socket.changerApplication)
-  // })
-
 }
-
-// // Fonction qui permet d'activer Socket.IO pour l'application
-// function devAddSocket(socket, instAmqpdao) {
-//   debug("devAddSocket, ID %s", socket.id)
-//   socket.estProprietaire = true
-//   socket.modeProtege = true
-//   socket.application = 'coupdoeil'
-//
-//   const session = socket.handshake.session
-//   session.idmgCompte = instAmqpdao.pki.idmg
-// }
 
 init()
