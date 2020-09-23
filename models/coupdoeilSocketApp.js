@@ -4,28 +4,28 @@ const debug = require('debug')('millegrilles:coupdoeil:coupdoeilSocketApp')
 function configurationEvenements(socket) {
   const configurationEvenements = {
     listenersPrives: [
-      {eventName: 'subscribe', callback: message => {
-        const {routingKeys, niveauSecurite} = message
-        debug("Subscribe %O", message)
-
-        const channel = socket.amqpdao.channel,
-              reply_q = socket.amqpdao.reply_q
-
-        socket.amqpdao.routingKeyManager
-          .addRoutingKeysForSocket(socket, routingKeys, niveauSecurite, channel, reply_q);
-      }},
-      {eventName: 'unsubscribe', callback: message => {
-        // console.debug("Message unsubscribe");
-        // console.debug(message);
-        debug("Unsubscribe %O", message)
-        const {routingKeys, niveauSecurite} = message
-
-        const channel = socket.amqpdao.channel,
-              reply_q = socket.amqpdao.reply_q
-
-        socket.amqpdao.routingKeyManager
-          .removeRoutingKeysForSocket(socket, message, niveauSecurite, channel, reply_q);
-      }},
+      // {eventName: 'subscribe', callback: message => {
+      //   const {routingKeys, niveauSecurite} = message
+      //   debug("Subscribe %O", message)
+      //
+      //   const channel = socket.amqpdao.channel,
+      //         reply_q = socket.amqpdao.reply_q
+      //
+      //   socket.amqpdao.routingKeyManager
+      //     .addRoutingKeysForSocket(socket, routingKeys, niveauSecurite, channel, reply_q);
+      // }},
+      // {eventName: 'unsubscribe', callback: message => {
+      //   // console.debug("Message unsubscribe");
+      //   // console.debug(message);
+      //   debug("Unsubscribe %O", message)
+      //   const {routingKeys, niveauSecurite} = message
+      //
+      //   const channel = socket.amqpdao.channel,
+      //         reply_q = socket.amqpdao.reply_q
+      //
+      //   socket.amqpdao.routingKeyManager
+      //     .removeRoutingKeysForSocket(socket, message, niveauSecurite, channel, reply_q);
+      // }},
       {eventName: 'requete', callback: (enveloppe, cb) => {
          debug("Enveloppe de requete recue");
          debug(enveloppe);
