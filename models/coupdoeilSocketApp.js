@@ -68,6 +68,9 @@ function configurationEvenements(socket) {
       }},
       {eventName: 'commande', callback: (message, cb) => {
         traiterCommande(socket.amqpdao, message, cb)
+      }},
+      {eventName: 'coupdoeil/ajouterCatalogueApplication', callback: (transaction, cb) => {
+        ajouterCatalogueApplication(socket, transaction, cb)
       }}
     ]
   }
@@ -90,6 +93,19 @@ function traiterTransaction(rabbitMQ, message, cb) {
     console.error(err);
     cb({'err': err.toString()});
   })
+}
+
+async function ajouterCatalogueApplication(socket, transaction, cb) {
+  // Ajout d'un catalogue d'application avec transaction preformattee
+  console.debug("Recu ajouterCatalogueApplication : %O", transaction)
+  if(transaction['en-tete'].domaine === 'CatalogueApplications.catalogueApplication') {
+    const amqpdao = socket.amqpdao
+    const reponse = await amqpdao.transmettreEnveloppeTransaction(transaction)
+    return cb(reponse)
+  }
+
+  // Par defaut
+  cb({err: 'Mauvais domaine pour ajouterCatalogueApplication : ' + transaction.domaine})
 }
 
 function traiterCommande(rabbitMQ, enveloppe, cb) {
