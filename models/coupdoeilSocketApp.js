@@ -71,7 +71,13 @@ function configurationEvenements(socket) {
       }},
       {eventName: 'coupdoeil/ajouterCatalogueApplication', callback: (transaction, cb) => {
         ajouterCatalogueApplication(socket, transaction, cb)
-      }}
+      }},
+      {eventName: 'coupdoeil/requeteClesNonDechiffrables', callback: (params, cb) => {
+        requeteClesNonDechiffrables(socket, params, cb)
+      }},
+      {eventName: 'coupdoeil/transactionCleRechiffree', callback: (transaction, cb) => {
+        transactionCleRechiffree(socket, transaction, cb)
+      }},
     ]
   }
 
@@ -106,6 +112,30 @@ async function ajouterCatalogueApplication(socket, transaction, cb) {
 
   // Par defaut
   cb({err: 'Mauvais domaine pour ajouterCatalogueApplication : ' + transaction.domaine})
+}
+
+async function requeteClesNonDechiffrables(socket, params, cb) {
+  const domaineAction = 'MaitreDesCles.clesNonDechiffrables'
+  try {
+    const amqpdao = socket.amqpdao
+    const reponse = await amqpdao.transmettreRequete(domaineAction, params)
+    return cb(reponse)
+  } catch(err) {
+    return cb({err})
+  }
+}
+
+async function transactionCleRechiffree(socket, transaction, cb) {
+  try {
+    const domaineAction = transaction['en-tete'].domaine
+    // Verifier domaineAction du bon type
+
+    const amqpdao = socket.amqpdao
+    const reponse = await amqpdao.transmettreEnveloppeTransaction(transaction)
+    return cb(reponse)
+  } catch(err) {
+    return cb({err})
+  }
 }
 
 function traiterCommande(rabbitMQ, enveloppe, cb) {
