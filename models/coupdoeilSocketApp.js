@@ -7,6 +7,7 @@ function configurationEvenements(socket) {
       {eventName: 'coupdoeil/requeteListeNoeuds', callback: (params, cb) => {requeteListeNoeuds(socket, params, cb)}},
       {eventName: 'coupdoeil/requeteListeDomaines', callback: cb => {requeteListeDomaines(socket, cb)}},
       {eventName: 'coupdoeil/requeteCatalogueDomaines', callback: cb => {requeteCatalogueDomaines(socket, cb)}},
+      {eventName: 'coupdoeil/requeteCatalogueApplications', callback: cb => {requeteCatalogueApplications(socket, cb)}},
 
       // {eventName: 'subscribe', callback: message => {
       //   const {routingKeys, niveauSecurite} = message
@@ -119,14 +120,20 @@ function traiterTransaction(rabbitMQ, message, cb) {
 async function ajouterCatalogueApplication(socket, transaction, cb) {
   // Ajout d'un catalogue d'application avec transaction preformattee
   console.debug("Recu ajouterCatalogueApplication : %O", transaction)
-  if(transaction['en-tete'].domaine === 'CatalogueApplications.catalogueApplication') {
-    const amqpdao = socket.amqpdao
-    const reponse = await amqpdao.transmettreEnveloppeTransaction(transaction)
-    return cb(reponse)
+  try {
+    if(transaction['en-tete'].domaine === 'CatalogueApplications.catalogueApplication') {
+      const amqpdao = socket.amqpdao
+      const reponse = await amqpdao.transmettreEnveloppeTransaction(transaction)
+      return cb(reponse)
+    } else {
+      // Par defaut
+      cb({err: 'Mauvais domaine pour ajouterCatalogueApplication : ' + transaction.domaine})
+    }
+  } catch(err) {
+    console.error("ajouterCatalogueApplication %O", err)
+    cb({err: ''+err})
   }
 
-  // Par defaut
-  cb({err: 'Mauvais domaine pour ajouterCatalogueApplication : ' + transaction.domaine})
 }
 
 async function requeteClesNonDechiffrables(socket, params, cb) {
@@ -262,6 +269,10 @@ function requeteListeDomaines(socket, cb) {
 
 function requeteCatalogueDomaines(socket, cb) {
   executerRequete('CatalogueApplications.listeDomaines', socket, {}, cb)
+}
+
+function requeteCatalogueApplications(socket, cb) {
+  executerRequete('CatalogueApplications.listeApplications', socket, {}, cb)
 }
 
 module.exports = {configurationEvenements};
