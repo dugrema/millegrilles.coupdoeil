@@ -76,6 +76,38 @@ async function init() {
 
 }
 
+// function devRouteStub(instAmqpdao, opts) {
+//   const routeTest = express()
+//   // Aucune fonctionnalite n'est disponible via REST, tout est sur socket.io
+//   routeTest.get('/index.html', (req, res)=>{res.end("Allo")})
+//   routeTest.use(function(req, res, next) {res.sendStatus(404)});
+//
+//   // Ajouter parametres de hook commun pour Socket.IO (dev)
+//   const socketio = {
+//     callbackPreSetup: socketio=>preconfigSocketioCallback(socketio, instAmqpdao),
+//   }
+//
+//   return {route: routeTest, socketio}
+// }
+//
+// function preconfigSocketioCallback(socketIo, instAmqpdao) {
+//   debug("Callback, preconfig socket.io avec middleware")
+//   socketIo.use((socket, next)=>{
+//     debug("Ajout dev params dans req sur socket.io")
+//
+//     socket.handshake.session.idmgCompte = instAmqpdao.pki.idmg
+//
+//     socket.estProprietaire = true
+//
+//     socket.on('upgradeProtege', socket.upgradeProtege)
+//     socket.on('downgradePrive', socket.downgradePrive)
+//     socket.on('changerApplication', socket.changerApplication)
+//
+//     next()
+//   })
+//
+// }
+
 function devRouteStub(instAmqpdao, opts) {
   const routeTest = express()
   // Aucune fonctionnalite n'est disponible via REST, tout est sur socket.io
@@ -102,10 +134,13 @@ function preconfigSocketioCallback(socketIo, instAmqpdao) {
     socket.on('upgradeProtege', socket.upgradeProtege)
     socket.on('downgradePrive', socket.downgradePrive)
     socket.on('changerApplication', socket.changerApplication)
+    socket.on('subscribe', socket.subscribe)
+    socket.on('unsubscribe', socket.unsubscribe)
 
     next()
   })
 
 }
+
 
 init()

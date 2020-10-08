@@ -4,6 +4,10 @@ const debug = require('debug')('millegrilles:coupdoeil:coupdoeilSocketApp')
 function configurationEvenements(socket) {
   const configurationEvenements = {
     listenersPrives: [
+      {eventName: 'coupdoeil/requeteListeNoeuds', callback: (params, cb) => {requeteListeNoeuds(socket, params, cb)}},
+      {eventName: 'coupdoeil/requeteListeDomaines', callback: cb => {requeteListeDomaines(socket, cb)}},
+      {eventName: 'coupdoeil/requeteCatalogueDomaines', callback: cb => {requeteCatalogueDomaines(socket, cb)}},
+
       // {eventName: 'subscribe', callback: message => {
       //   const {routingKeys, niveauSecurite} = message
       //   debug("Subscribe %O", message)
@@ -26,49 +30,51 @@ function configurationEvenements(socket) {
       //   socket.amqpdao.routingKeyManager
       //     .removeRoutingKeysForSocket(socket, message, niveauSecurite, channel, reply_q);
       // }},
-      {eventName: 'requete', callback: (enveloppe, cb) => {
-         debug("Enveloppe de requete recue");
-         debug(enveloppe);
-        const domaineAction = enveloppe.domaineAction;
-        const requete = enveloppe.requete;
-        const opts = enveloppe.opts || {};
 
-        socket.amqpdao.transmettreRequete(domaineAction, requete)
-        .then( reponse => {
-          debug("Reponse recue : %O", reponse)
-          cb(reponse.resultats || reponse)
-        })
-        .catch( err => {
-          console.error("Erreur requete");
-          console.error(err);
-          cb(); // Callback sans valeurs
-        });
-      }},
-      {eventName: 'requeteMultiDomaines', callback: (enveloppe, cb) => {
-        // console.debug("Enveloppe de requete recue");
-        // console.debug(enveloppe);
-        const domaineAction = enveloppe.domaineAction;
-        const requete = enveloppe.requete;
-        const opts = enveloppe.opts || {};
+      // {eventName: 'requete', callback: (enveloppe, cb) => {
+      //    debug("Enveloppe de requete recue");
+      //    debug(enveloppe);
+      //   const domaineAction = enveloppe.domaineAction;
+      //   const requete = enveloppe.requete;
+      //   const opts = enveloppe.opts || {};
+      //
+      //   socket.amqpdao.transmettreRequete(domaineAction, requete)
+      //   .then( reponse => {
+      //     debug("Reponse recue : %O", reponse)
+      //     cb(reponse.resultats || reponse)
+      //   })
+      //   .catch( err => {
+      //     console.error("Erreur requete");
+      //     console.error(err);
+      //     cb(); // Callback sans valeurs
+      //   });
+      // }},
+      // {eventName: 'requeteMultiDomaines', callback: (enveloppe, cb) => {
+      //   // console.debug("Enveloppe de requete recue");
+      //   // console.debug(enveloppe);
+      //   const domaineAction = enveloppe.domaineAction;
+      //   const requete = enveloppe.requete;
+      //   const opts = enveloppe.opts || {};
+      //
+      //   socket.amqpdao.transmettreRequeteMultiDomaines(domaineAction, requete)
+      //   .then( reponse => {
+      //     cb(reponse.resultats || reponse)
+      //   })
+      //   .catch( err => {
+      //     console.error("Erreur requete multi-domaines");
+      //     console.error(err);
+      //     cb(); // Callback sans valeurs
+      //   });
+      // }}
 
-        socket.amqpdao.transmettreRequeteMultiDomaines(domaineAction, requete)
-        .then( reponse => {
-          cb(reponse.resultats || reponse)
-        })
-        .catch( err => {
-          console.error("Erreur requete multi-domaines");
-          console.error(err);
-          cb(); // Callback sans valeurs
-        });
-      }}
     ],
     listenersProteges: [
-      {eventName: 'transaction', callback: (message, cb) => {
-        traiterTransaction(socket.amqpdao, message, cb)
-      }},
-      {eventName: 'commande', callback: (message, cb) => {
-        traiterCommande(socket.amqpdao, message, cb)
-      }},
+      // {eventName: 'transaction', callback: (message, cb) => {
+      //   traiterTransaction(socket.amqpdao, message, cb)
+      // }},
+      // {eventName: 'commande', callback: (message, cb) => {
+      //   traiterCommande(socket.amqpdao, message, cb)
+      // }},
       {eventName: 'coupdoeil/ajouterCatalogueApplication', callback: (transaction, cb) => {
         ajouterCatalogueApplication(socket, transaction, cb)
       }},
@@ -77,6 +83,12 @@ function configurationEvenements(socket) {
       }},
       {eventName: 'coupdoeil/transactionCleRechiffree', callback: (transaction, cb) => {
         transactionCleRechiffree(socket, transaction, cb)
+      }},
+      {eventName: 'coupdoeil/restaurationChargerCles', callback: (params, cb) => {
+        restaurationChargerCles(socket, params, cb)
+      }},
+      {eventName: 'coupdoeil/restaurationDomaines', callback: (params, cb) => {
+        restaurationDomaines(socket, params, cb)
       }},
     ]
   }
@@ -180,6 +192,58 @@ function extraireClePubliqueMaitredescles(rabbitMQ) {
     // console.debug(infoCertificat);
     return infoCertificat;
   })
+}
+
+async function restaurationChargerCles(socket, commande, cb) {
+  debug("Restaurer cles maitredescles")
+  const amqpdao = socket.amqpdao
+  const domaineAction = 'commande.MaitreDesCles.restaurerTransactions'
+
+  try {
+    let params = {exchange: '3.protege'}
+    const reponse = await amqpdao.transmettreCommande(domaineAction, commande)
+    cb(reponse)
+  } catch(err) {
+    console.error("restaurationChargerCles: Erreur %O", err)
+    cb({err: ''+err})
+  }
+}
+
+async function restaurationDomaines(socket, commande, cb) {
+  debug("Restaurer transactions de tous les domaines")
+  const amqpdao = socket.amqpdao
+  const domaineAction = 'commande.global.restaurerTransactions'
+  try {
+    let params = {exchange: '3.protege'}
+    const reponse = await amqpdao.transmettreCommande(domaineAction, commande)
+    cb(reponse)
+  } catch(err) {
+    console.error("restaurationDomaines: Erreur %O", err)
+    cb({err: ''+err})
+  }
+}
+
+async function executerRequete(domaineAction, socket, params, cb) {
+  const amqpdao = socket.amqpdao
+  try {
+    const reponse = await amqpdao.transmettreRequete(domaineAction, params, {decoder: true})
+    cb(reponse)
+  } catch(err) {
+    debug("Erreur executerRequete\n%O", err)
+    cb({err: 'Erreur: ' + err})
+  }
+}
+
+function requeteListeNoeuds(socket, params, cb) {
+  executerRequete('Topologie.listeNoeuds', socket, params, cb)
+}
+
+function requeteListeDomaines(socket, cb) {
+  executerRequete('Topologie.listeDomaines', socket, {}, cb)
+}
+
+function requeteCatalogueDomaines(socket, cb) {
+  executerRequete('CatalogueApplications.listeDomaines', socket, {}, cb)
 }
 
 module.exports = {configurationEvenements};
