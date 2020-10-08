@@ -81,14 +81,17 @@ function configurationEvenements(socket) {
       {eventName: 'coupdoeil/requeteClesNonDechiffrables', callback: (params, cb) => {
         requeteClesNonDechiffrables(socket, params, cb)
       }},
-      {eventName: 'coupdoeil/transactionCleRechiffree', callback: (transaction, cb) => {
-        transactionCleRechiffree(socket, transaction, cb)
+      {eventName: 'coupdoeil/transactionsCleRechiffree', callback: (transactions, cb) => {
+        transactionsCleRechiffree(socket, transactions, cb)
       }},
       {eventName: 'coupdoeil/restaurationChargerCles', callback: (params, cb) => {
         restaurationChargerCles(socket, params, cb)
       }},
       {eventName: 'coupdoeil/restaurationDomaines', callback: (params, cb) => {
         restaurationDomaines(socket, params, cb)
+      }},
+      {eventName: 'coupdoeil/restaurationGrosfichiers', callback: (params, cb) => {
+        restaurationGrosfichiers(socket, params, cb)
       }},
     ]
   }
@@ -137,14 +140,15 @@ async function requeteClesNonDechiffrables(socket, params, cb) {
   }
 }
 
-async function transactionCleRechiffree(socket, transaction, cb) {
+async function transactionsCleRechiffree(socket, transactions, cb) {
+  const amqpdao = socket.amqpdao
+  const reponses = []
   try {
-    const domaineAction = transaction['en-tete'].domaine
-    // Verifier domaineAction du bon type
-
-    const amqpdao = socket.amqpdao
-    const reponse = await amqpdao.transmettreEnveloppeTransaction(transaction)
-    return cb(reponse)
+    for(let idx in transactions) {
+      const transaction = transactions[idx]
+      reponses.push(await amqpdao.transmettreEnveloppeTransaction(transaction))
+    }
+    return cb(reponses)
   } catch(err) {
     return cb({err})
   }
@@ -195,7 +199,7 @@ function extraireClePubliqueMaitredescles(rabbitMQ) {
 }
 
 async function restaurationChargerCles(socket, commande, cb) {
-  debug("Restaurer cles maitredescles")
+  debug("Restaurer cles maitredescles : %O", commande)
   const amqpdao = socket.amqpdao
   const domaineAction = 'commande.MaitreDesCles.restaurerTransactions'
 
@@ -219,6 +223,20 @@ async function restaurationDomaines(socket, commande, cb) {
     cb(reponse)
   } catch(err) {
     console.error("restaurationDomaines: Erreur %O", err)
+    cb({err: ''+err})
+  }
+}
+
+async function restaurationGrosfichiers(socket, commande, cb) {
+  debug("Restaurer grosfichiers")
+  const amqpdao = socket.amqpdao
+  const domaineAction = 'commande.backup.restaurerGrosFichiers'
+  try {
+    let params = {exchange: '3.protege'}
+    const reponse = await amqpdao.transmettreCommande(domaineAction, commande)
+    cb(reponse)
+  } catch(err) {
+    console.error("restaurationGrosfichiers: Erreur %O", err)
     cb({err: ''+err})
   }
 }
