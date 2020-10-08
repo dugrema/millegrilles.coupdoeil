@@ -8,6 +8,7 @@ function configurationEvenements(socket) {
       {eventName: 'coupdoeil/requeteListeDomaines', callback: cb => {requeteListeDomaines(socket, cb)}},
       {eventName: 'coupdoeil/requeteCatalogueDomaines', callback: cb => {requeteCatalogueDomaines(socket, cb)}},
       {eventName: 'coupdoeil/requeteCatalogueApplications', callback: cb => {requeteCatalogueApplications(socket, cb)}},
+      {eventName: 'coupdoeil/requeteInfoApplications', callback: (params, cb) => {requeteInfoApplications(socket, params, cb)}},
 
       // {eventName: 'subscribe', callback: message => {
       //   const {routingKeys, niveauSecurite} = message
@@ -93,6 +94,9 @@ function configurationEvenements(socket) {
       }},
       {eventName: 'coupdoeil/restaurationGrosfichiers', callback: (params, cb) => {
         restaurationGrosfichiers(socket, params, cb)
+      }},
+      {eventName: 'coupdoeil/installerApplication', callback: (params, cb) => {
+        installerApplication(socket, params, cb)
       }},
     ]
   }
@@ -248,6 +252,20 @@ async function restaurationGrosfichiers(socket, commande, cb) {
   }
 }
 
+async function installerApplication(socket, commande, cb) {
+  debug("Installer application : %O", commande)
+  const amqpdao = socket.amqpdao
+  const domaineAction = ['servicemonitor', commande.noeudId ,'installerApplication'].join('.')
+  try {
+    let params = {exchange: '2.prive'}
+    const reponse = await amqpdao.transmettreCommande(domaineAction, commande)
+    cb(reponse)
+  } catch(err) {
+    console.error("installerApplication: Erreur %O", err)
+    cb({err: ''+err})
+  }
+}
+
 async function executerRequete(domaineAction, socket, params, cb) {
   const amqpdao = socket.amqpdao
   try {
@@ -273,6 +291,10 @@ function requeteCatalogueDomaines(socket, cb) {
 
 function requeteCatalogueApplications(socket, cb) {
   executerRequete('CatalogueApplications.listeApplications', socket, {}, cb)
+}
+
+function requeteInfoApplications(socket, params, cb) {
+  executerRequete('CatalogueApplications.infoApplication', socket, params, cb)
 }
 
 module.exports = {configurationEvenements};
