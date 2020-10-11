@@ -101,6 +101,9 @@ function configurationEvenements(socket) {
       {eventName: 'coupdoeil/installerDomaine', callback: (params, cb) => {
         installerDomaine(socket, params, cb)
       }},
+      {eventName: 'coupdoeil/lancerBackupSnapshot', callback: (params, cb) => {
+        lancerBackupSnapshot(socket, params, cb)
+      }},
     ]
   }
 
@@ -278,6 +281,22 @@ async function installerDomaine(socket, commande, cb) {
     cb(reponse)
   } catch(err) {
     console.error("installerApplication: Erreur %O", err)
+    cb({err: ''+err})
+  }
+}
+
+async function lancerBackupSnapshot(socket, commande, cb) {
+  debug("Lancer backup snapshot : %O", commande)
+  const amqpdao = socket.amqpdao
+  const domaineAction = 'global.declencherBackupSnapshot'
+  try {
+    // Commande nowait - c'est un broadcast (global), il faut capturer les
+    // evenements de demarrage individuels (evenement.backup.backupTransactions)
+    // pour savoir quels domaines ont repondu
+    const reponse = await amqpdao.transmettreCommande(domaineAction, commande, {nowait: true})
+    cb(reponse)
+  } catch(err) {
+    console.error("lancerBackupSnapshot: Erreur %O", err)
     cb({err: ''+err})
   }
 }
