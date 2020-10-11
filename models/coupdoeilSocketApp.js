@@ -98,6 +98,9 @@ function configurationEvenements(socket) {
       {eventName: 'coupdoeil/installerApplication', callback: (params, cb) => {
         installerApplication(socket, params, cb)
       }},
+      {eventName: 'coupdoeil/installerDomaine', callback: (params, cb) => {
+        installerDomaine(socket, params, cb)
+      }},
     ]
   }
 
@@ -257,7 +260,20 @@ async function installerApplication(socket, commande, cb) {
   const amqpdao = socket.amqpdao
   const domaineAction = ['servicemonitor', commande.noeudId ,'installerApplication'].join('.')
   try {
-    let params = {exchange: '2.prive'}
+    let params = {exchange: commande.exchange}
+    const reponse = await amqpdao.transmettreCommande(domaineAction, commande, params)
+    cb(reponse)
+  } catch(err) {
+    console.error("installerApplication: Erreur %O", err)
+    cb({err: ''+err})
+  }
+}
+
+async function installerDomaine(socket, commande, cb) {
+  debug("Installer domaine : %O", commande)
+  const amqpdao = socket.amqpdao
+  const domaineAction = 'domaines.demarrer'
+  try {
     const reponse = await amqpdao.transmettreCommande(domaineAction, commande)
     cb(reponse)
   } catch(err) {
