@@ -107,6 +107,9 @@ function configurationEvenements(socket) {
       {eventName: 'coupdoeil/lancerBackupSnapshot', callback: (params, cb) => {
         lancerBackupSnapshot(socket, params, cb)
       }},
+      {eventName: 'coupdoeil/genererCertificatNoeud', callback: (params, cb) => {
+        genererCertificatNoeud(socket, params, cb)
+      }},
     ]
   }
 
@@ -315,6 +318,29 @@ async function lancerBackupSnapshot(socket, commande, cb) {
     cb(reponse)
   } catch(err) {
     console.error("lancerBackupSnapshot: Erreur %O", err)
+    cb({err: ''+err})
+  }
+}
+
+async function genererCertificatNoeud(socket, commande, cb) {
+  debug("Generer nouveau certificat de noeud : %O", commande)
+
+  const amqpdao = socket.amqpdao
+  const domaineAction = 'MaitreDesCles.signerCsr'
+
+  try {
+    // Commande nowait - c'est un broadcast (global), il faut capturer les
+    // evenements de demarrage individuels (evenement.backup.backupTransactions)
+    // pour savoir quels domaines ont repondu
+    const reponse = await amqpdao.transmettreCommande(domaineAction, commande)
+    debug("genererCertificatNoeud: Reponse demande certificat\n%O", reponse)
+
+    const certificatPem = reponse.resultats.certificats_pem[0]
+    const chaine = reponse.resultats.chaines[0].pems
+
+    cb({certificatPem, chaine})
+  } catch(err) {
+    console.error("genererCertificatNoeud: Erreur %O", err)
     cb({err: ''+err})
   }
 }
