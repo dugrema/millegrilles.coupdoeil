@@ -110,6 +110,18 @@ function configurationEvenements(socket) {
       {eventName: 'coupdoeil/genererCertificatNoeud', callback: (params, cb) => {
         genererCertificatNoeud(socket, params, cb)
       }},
+      {eventName: 'coupdoeil/desinstallerApplication', callback: (params, cb) => {
+        desinstallerApplication(socket, params, cb)
+      }},
+      {eventName: 'coupdoeil/requeteConfigurationApplication', callback: (params, cb) => {
+        requeteConfigurationApplication(socket, params, cb)
+      }},
+      {eventName: 'coupdoeil/configurerApplication', callback: (params, cb) => {
+        configurerApplication(socket, params, cb)
+      }},
+      {eventName: 'coupdoeil/demarrerApplication', callback: (params, cb) => {
+        demarrerApplication(socket, params, cb)
+      }},
     ]
   }
 
@@ -341,6 +353,70 @@ async function genererCertificatNoeud(socket, commande, cb) {
     cb({certificatPem, chaine})
   } catch(err) {
     console.error("genererCertificatNoeud: Erreur %O", err)
+    cb({err: ''+err})
+  }
+}
+
+async function desinstallerApplication(socket, commande, cb) {
+  debug("Desinstaller application %O", commande)
+
+  const amqpdao = socket.amqpdao
+  const domaineAction = ['servicemonitor', commande.noeudId ,'supprimerApplication'].join('.')
+
+  try {
+    // Commande nowait - c'est un broadcast (global), il faut capturer les
+    // evenements de demarrage individuels (evenement.backup.backupTransactions)
+    // pour savoir quels domaines ont repondu
+    const reponse = await amqpdao.transmettreCommande(domaineAction, commande, {exchange: commande.exchange})
+    debug("desinstallerApplication: Reponse \n%O", reponse)
+    cb(reponse)
+  } catch(err) {
+    console.error("desinstallerApplication: Erreur %O", err)
+    cb({err: ''+err})
+  }
+}
+
+async function requeteConfigurationApplication(socket, params, cb) {
+  debug("Requete configuration %O", params)
+  const amqpdao = socket.amqpdao
+  const domaineAction = ['servicemonitor', params.noeud_id ,'requeteConfigurationApplication'].join('.')
+  try {
+    // Commande nowait - c'est un broadcast (global), il faut capturer les
+    // evenements de demarrage individuels (evenement.backup.backupTransactions)
+    // pour savoir quels domaines ont repondu
+    const reponse = await amqpdao.transmettreCommande(domaineAction, params, {exchange: params.exchange})
+    debug("requeteConfigurationApplication: Reponse \n%O", reponse)
+    cb(reponse)
+  } catch(err) {
+    console.error("requeteConfigurationApplication: Erreur %O", err)
+    cb({err: ''+err})
+  }
+}
+
+async function configurerApplication(socket, params, cb) {
+  debug("Configurer application %s sur noeud %s", params.nom_application, params.noeud_id)
+  const amqpdao = socket.amqpdao
+  const domaineAction = ['servicemonitor', params.noeud_id ,'configurerApplication'].join('.')
+  try {
+    const reponse = await amqpdao.transmettreCommande(domaineAction, params, {exchange: params.exchange})
+    debug("configurerApplication: Reponse \n%O", reponse)
+    cb(reponse)
+  } catch(err) {
+    console.error("configurerApplication: Erreur %O", err)
+    cb({err: ''+err})
+  }
+}
+
+async function demarrerApplication(socket, params, cb) {
+  debug("Demarrer application %O", params)
+  const amqpdao = socket.amqpdao
+  const domaineAction = ['servicemonitor', params.noeud_id ,'demarrerApplication'].join('.')
+  try {
+    const reponse = await amqpdao.transmettreCommande(domaineAction, params, {exchange: params.exchange})
+    debug("demarrerApplication: Reponse \n%O", reponse)
+    cb(reponse)
+  } catch(err) {
+    console.error("demarrerApplication: Erreur %O", err)
     cb({err: ''+err})
   }
 }
