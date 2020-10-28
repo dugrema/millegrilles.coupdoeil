@@ -95,6 +95,9 @@ function configurationEvenements(socket) {
       {eventName: 'coupdoeil/restaurationGrosfichiers', callback: (params, cb) => {
         restaurationGrosfichiers(socket, params, cb)
       }},
+      {eventName: 'coupdoeil/backupApplication', callback: (params, cb) => {
+        backupApplication(socket, params, cb)
+      }},
       {eventName: 'coupdoeil/restaurerApplication', callback: (params, cb) => {
         restaurerApplication(socket, params, cb)
       }},
@@ -276,13 +279,28 @@ async function restaurationGrosfichiers(socket, commande, cb) {
   }
 }
 
+async function backupApplication(socket, commande, cb) {
+  debug("Backup application")
+  const amqpdao = socket.amqpdao
+  const noeudId = commande.noeudId
+  const domaineAction = `commande.servicemonitor.${noeudId}.backupApplication`
+  try {
+    let params = {exchange: commande.securite || '3.protege'}
+    const reponse = await amqpdao.transmettreCommande(domaineAction, commande)
+    cb(reponse)
+  } catch(err) {
+    console.error("restaurerApplication: Erreur %O", err)
+    cb({err: ''+err})
+  }
+}
+
 async function restaurerApplication(socket, commande, cb) {
   debug("Restaurer application")
   const amqpdao = socket.amqpdao
   const noeudId = commande.noeudId
   const domaineAction = `commande.servicemonitor.${noeudId}.restoreApplication`
   try {
-    let params = {exchange: '3.protege'}
+    let params = {exchange: commande.securite || '3.protege'}
     const reponse = await amqpdao.transmettreCommande(domaineAction, commande)
     cb(reponse)
   } catch(err) {
