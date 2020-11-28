@@ -131,6 +131,9 @@ function configurationEvenements(socket) {
       {eventName: 'coupdoeil/demarrerApplication', callback: (params, cb) => {
         demarrerApplication(socket, params, cb)
       }},
+      {eventName: 'coupdoeil/regenererPreviews', callback: (params, cb) => {
+        regenererPreviews(socket, params, cb)
+      }},
     ]
   }
 
@@ -452,6 +455,20 @@ async function demarrerApplication(socket, params, cb) {
     cb(reponse)
   } catch(err) {
     console.error("demarrerApplication: Erreur %O", err)
+    cb({err: ''+err})
+  }
+}
+
+async function regenererPreviews(socket, params, cb) {
+  debug("Regenerer previews %O", params)
+  const amqpdao = socket.amqpdao
+  const domaineAction = 'commande.GrosFichiers.regenererPreviews'
+  try {
+    const reponse = await amqpdao.transmettreCommande(domaineAction, params)
+    debug("regenererPreviews: Reponse \n%O", reponse)
+    cb(reponse)
+  } catch(err) {
+    console.error("regenererPreviews: Erreur %O", err)
     cb({err: ''+err})
   }
 }
