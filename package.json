@@ -1,6 +1,6 @@
 {
   "name": "coupdoeil-api",
-  "version": "1.35.2",
+  "version": "1.36.0",
   "main": "index.js",
   "private": true,
   "repository": {
@@ -14,6 +14,7 @@
     "client": "export WDS_SOCKET_PATH=/coupdoeil/sockjs-node && node ./bin/start-client"
   },
   "dependencies": {
+    "@dugrema/millegrilles.common": "git+ssh://git.maceroc.com/git/millegrilles.common.nodejs#1.36",
     "@webauthn/client": "^0.1.2",
     "@webauthn/server": "^0.1.1",
     "amqplib": "^0.5.3",
@@ -26,7 +27,6 @@
     "jade": "~1.11.0",
     "json-stable-stringify": "^1.0.1",
     "memorystore": "^1.6.2",
-    "millegrilles.common": "git+ssh://git.maceroc.com/git/millegrilles.common.nodejs#1.35",
     "morgan": "~1.9.1",
     "multer": "^1.4.2",
     "node-forge": "^0.8.5",
