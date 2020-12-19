@@ -9,6 +9,7 @@ function configurationEvenements(socket) {
       {eventName: 'coupdoeil/requeteCatalogueDomaines', callback: cb => {requeteCatalogueDomaines(socket, cb)}},
       {eventName: 'coupdoeil/requeteCatalogueApplications', callback: cb => {requeteCatalogueApplications(socket, cb)}},
       {eventName: 'coupdoeil/requeteInfoApplications', callback: (params, cb) => {requeteInfoApplications(socket, params, cb)}},
+      {eventName: 'coupdoeil/getCertificatsMaitredescles', callback: cb => {getCertificatsMaitredescles(socket, cb)}},
 
       // {eventName: 'subscribe', callback: message => {
       //   const {routingKeys, niveauSecurite} = message
@@ -502,6 +503,10 @@ function requeteCatalogueApplications(socket, cb) {
 
 function requeteInfoApplications(socket, params, cb) {
   executerRequete('CatalogueApplications.infoApplication', socket, params, cb)
+}
+
+function getCertificatsMaitredescles(socket, cb) {
+  executerRequete('MaitreDesCles.certMaitreDesCles', socket, {}, cb)
 }
 
 module.exports = {configurationEvenements};
