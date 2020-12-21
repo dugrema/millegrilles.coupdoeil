@@ -81,6 +81,9 @@ function configurationEvenements(socket) {
       {eventName: 'coupdoeil/clearFichierPublie', callback: (commande, cb) => {
         clearFichierPublie(socket, commande, cb)
       }},
+      {eventName: 'coupdoeil/uploadCollectionsPubliques', callback: (commande, cb) => {
+        uploadCollectionsPubliques(socket, commande, cb)
+      }},
     ]
   }
 
@@ -473,6 +476,25 @@ async function clearFichierPublie(socket, commande, cb) {
     cb(reponse)
   } catch(err) {
     console.error("clearFichierPublie: Erreur %O", err)
+    cb({err: ''+err})
+  }
+}
+
+async function uploadCollectionsPubliques(socket, commande, cb) {
+  debug("Upload collections publiques %O", commande)
+  const amqpdao = socket.amqpdao
+
+  const domaineAction = commande['en-tete'].domaine
+  if ( domaineAction !== 'GrosFichiers.uploadCollectionsPubliques' ) {
+    return cb({err: "Mauvais type d'action : " + domaineAction})
+  }
+
+  try {
+    const reponse = await amqpdao.transmettreCommande(domaineAction, commande)
+    debug("uploadCollectionsPubliques: Reponse \n%O", reponse)
+    cb(reponse)
+  } catch(err) {
+    console.error("uploadCollectionsPubliques: Erreur %O", err)
     cb({err: ''+err})
   }
 }
