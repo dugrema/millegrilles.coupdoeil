@@ -10,74 +10,11 @@ function configurationEvenements(socket) {
       {eventName: 'coupdoeil/requeteCatalogueApplications', callback: cb => {requeteCatalogueApplications(socket, cb)}},
       {eventName: 'coupdoeil/requeteInfoApplications', callback: (params, cb) => {requeteInfoApplications(socket, params, cb)}},
       {eventName: 'coupdoeil/getCertificatsMaitredescles', callback: cb => {getCertificatsMaitredescles(socket, cb)}},
-
-      // {eventName: 'subscribe', callback: message => {
-      //   const {routingKeys, niveauSecurite} = message
-      //   debug("Subscribe %O", message)
-      //
-      //   const channel = socket.amqpdao.channel,
-      //         reply_q = socket.amqpdao.reply_q
-      //
-      //   socket.amqpdao.routingKeyManager
-      //     .addRoutingKeysForSocket(socket, routingKeys, niveauSecurite, channel, reply_q);
-      // }},
-      // {eventName: 'unsubscribe', callback: message => {
-      //   // console.debug("Message unsubscribe");
-      //   // console.debug(message);
-      //   debug("Unsubscribe %O", message)
-      //   const {routingKeys, niveauSecurite} = message
-      //
-      //   const channel = socket.amqpdao.channel,
-      //         reply_q = socket.amqpdao.reply_q
-      //
-      //   socket.amqpdao.routingKeyManager
-      //     .removeRoutingKeysForSocket(socket, message, niveauSecurite, channel, reply_q);
-      // }},
-
-      // {eventName: 'requete', callback: (enveloppe, cb) => {
-      //    debug("Enveloppe de requete recue");
-      //    debug(enveloppe);
-      //   const domaineAction = enveloppe.domaineAction;
-      //   const requete = enveloppe.requete;
-      //   const opts = enveloppe.opts || {};
-      //
-      //   socket.amqpdao.transmettreRequete(domaineAction, requete)
-      //   .then( reponse => {
-      //     debug("Reponse recue : %O", reponse)
-      //     cb(reponse.resultats || reponse)
-      //   })
-      //   .catch( err => {
-      //     console.error("Erreur requete");
-      //     console.error(err);
-      //     cb(); // Callback sans valeurs
-      //   });
-      // }},
-      // {eventName: 'requeteMultiDomaines', callback: (enveloppe, cb) => {
-      //   // console.debug("Enveloppe de requete recue");
-      //   // console.debug(enveloppe);
-      //   const domaineAction = enveloppe.domaineAction;
-      //   const requete = enveloppe.requete;
-      //   const opts = enveloppe.opts || {};
-      //
-      //   socket.amqpdao.transmettreRequeteMultiDomaines(domaineAction, requete)
-      //   .then( reponse => {
-      //     cb(reponse.resultats || reponse)
-      //   })
-      //   .catch( err => {
-      //     console.error("Erreur requete multi-domaines");
-      //     console.error(err);
-      //     cb(); // Callback sans valeurs
-      //   });
-      // }}
+      {eventName: 'coupdoeil/getUploadsEnCours', callback: cb => {getUploadsEnCours(socket, cb)}},
+      {eventName: 'coupdoeil/getDocumentParFuuid', callback: (params, cb) => {getDocumentParFuuid(socket, params, cb)}},
 
     ],
     listenersProteges: [
-      // {eventName: 'transaction', callback: (message, cb) => {
-      //   traiterTransaction(socket.amqpdao, message, cb)
-      // }},
-      // {eventName: 'commande', callback: (message, cb) => {
-      //   traiterCommande(socket.amqpdao, message, cb)
-      // }},
       {eventName: 'coupdoeil/ajouterCatalogueApplication', callback: (transaction, cb) => {
         ajouterCatalogueApplication(socket, transaction, cb)
       }},
@@ -134,6 +71,15 @@ function configurationEvenements(socket) {
       }},
       {eventName: 'coupdoeil/regenererPreviews', callback: (params, cb) => {
         regenererPreviews(socket, params, cb)
+      }},
+      {eventName: 'coupdoeil/configurerConsignationWeb', callback: (params, cb) => {
+        configurerConsignationWeb(socket, params, cb)
+      }},
+      {eventName: 'coupdoeil/soumettreTransactionMaitredescles', callback: (params, cb) => {
+        soumettreTransactionMaitredescles(socket, params, cb)
+      }},
+      {eventName: 'coupdoeil/clearFichierPublie', callback: (commande, cb) => {
+        clearFichierPublie(socket, commande, cb)
       }},
     ]
   }
@@ -474,6 +420,63 @@ async function regenererPreviews(socket, params, cb) {
   }
 }
 
+async function configurerConsignationWeb(socket, params, cb) {
+  debug("Configurer consignation web %O", params)
+  const amqpdao = socket.amqpdao
+  const domaineAction = params['en-tete'].domaine
+
+  if(domaineAction !== 'Topologie.configurerConsignationWeb') {
+    return cb({err: "Mauvais type d'action : " + domaineAction})
+  }
+
+  try {
+    const reponse = await amqpdao.transmettreEnveloppeTransaction(params)
+    debug("configurerConsignationWeb: Reponse \n%O", reponse)
+    cb(reponse)
+  } catch(err) {
+    console.error("configurerConsignationWeb: Erreur %O", err)
+    cb({err: ''+err})
+  }
+}
+
+async function soumettreTransactionMaitredescles(socket, params, cb) {
+  debug("Soumettre transaction maitredescles %O", params)
+  const amqpdao = socket.amqpdao
+
+  const domaineAction = params['en-tete'].domaine
+  if ( ! domaineAction.startsWith('MaitreDesCles.') ) {
+    return cb({err: "Mauvais type d'action : " + domaineAction})
+  }
+
+  try {
+    const reponse = await amqpdao.transmettreEnveloppeTransaction(params)
+    debug("soumettreTransactionMaitredescles: Reponse \n%O", reponse)
+    cb(reponse)
+  } catch(err) {
+    console.error("soumettreTransactionMaitredescles: Erreur %O", err)
+    cb({err: ''+err})
+  }
+}
+
+async function clearFichierPublie(socket, commande, cb) {
+  debug("Clear fichier publie %O", commande)
+  const amqpdao = socket.amqpdao
+
+  const domaineAction = commande['en-tete'].domaine
+  if ( domaineAction !== 'GrosFichiers.clearFichierPublie' ) {
+    return cb({err: "Mauvais type d'action : " + domaineAction})
+  }
+
+  try {
+    const reponse = await amqpdao.transmettreCommande(domaineAction, commande)
+    debug("clearFichierPublie: Reponse \n%O", reponse)
+    cb(reponse)
+  } catch(err) {
+    console.error("clearFichierPublie: Erreur %O", err)
+    cb({err: ''+err})
+  }
+}
+
 async function executerRequete(domaineAction, socket, params, cb) {
   const amqpdao = socket.amqpdao
   try {
@@ -507,6 +510,14 @@ function requeteInfoApplications(socket, params, cb) {
 
 function getCertificatsMaitredescles(socket, cb) {
   executerRequete('MaitreDesCles.certMaitreDesCles', socket, {}, cb)
+}
+
+function getUploadsEnCours(socket, cb) {
+  executerRequete('GrosFichiers.transfertsEnCours', socket, {}, cb)
+}
+
+function getDocumentParFuuid(socket, params, cb) {
+  executerRequete('GrosFichiers.documentsParFuuid', socket, params, cb)
 }
 
 module.exports = {configurationEvenements};
