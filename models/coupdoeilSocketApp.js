@@ -326,7 +326,7 @@ async function genererCertificatNoeud(socket, commande, cb) {
   debug("Generer nouveau certificat de noeud : %O", commande)
 
   const amqpdao = socket.amqpdao
-  const domaineAction = 'MaitreDesCles.signerCsr'
+  const domaineAction = 'servicemonitor.signerNoeud'
 
   try {
     // Commande nowait - c'est un broadcast (global), il faut capturer les
@@ -335,8 +335,8 @@ async function genererCertificatNoeud(socket, commande, cb) {
     const reponse = await amqpdao.transmettreCommande(domaineAction, commande)
     debug("genererCertificatNoeud: Reponse demande certificat\n%O", reponse)
 
-    const certificatPem = reponse.resultats.certificats_pem[0]
-    const chaine = reponse.resultats.chaines[0].pems
+    const certificatPem = reponse.cert
+    const chaine = reponse.fullchain
 
     cb({certificatPem, chaine})
   } catch(err) {
