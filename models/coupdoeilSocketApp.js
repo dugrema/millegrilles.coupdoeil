@@ -84,6 +84,9 @@ function configurationEvenements(socket) {
       {eventName: 'coupdoeil/uploadCollectionsPubliques', callback: (commande, cb) => {
         uploadCollectionsPubliques(socket, commande, cb)
       }},
+      {eventName: 'coupdoeil/commandeTransmettreCatalogues', callback: (commande, cb) => {
+        commandeTransmettreCatalogues(socket, commande, cb)
+      }},
     ]
   }
 
@@ -495,6 +498,25 @@ async function uploadCollectionsPubliques(socket, commande, cb) {
     cb(reponse)
   } catch(err) {
     console.error("uploadCollectionsPubliques: Erreur %O", err)
+    cb({err: ''+err})
+  }
+}
+
+async function commandeTransmettreCatalogues(socket, commande, cb) {
+  debug("Commande retransmettre collections %O", commande)
+  const amqpdao = socket.amqpdao
+
+  const domaineAction = commande['en-tete'].domaine
+  if ( domaineAction !== 'servicemonitor.transmettreCatalogues' ) {
+    return cb({err: "Mauvais type d'action : " + domaineAction})
+  }
+
+  try {
+    const reponse = await amqpdao.transmettreCommande(domaineAction, commande)
+    debug("commandeTransmettreCatalogues: Reponse \n%O", reponse)
+    cb(reponse)
+  } catch(err) {
+    console.error("commandeTransmettreCatalogues: Erreur %O", err)
     cb({err: ''+err})
   }
 }
