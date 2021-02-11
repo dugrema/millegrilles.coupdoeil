@@ -27,8 +27,8 @@ function configurationEvenements(socket) {
       {eventName: 'coupdoeil/requeteCompterClesNonDechiffrables', callback: (transactions, cb) => {
         requeteCompterClesNonDechiffrables(socket, transactions, cb)
       }},
-      {eventName: 'coupdoeil/transactionsCleRechiffree', callback: (transactions, cb) => {
-        transactionsCleRechiffree(socket, transactions, cb)
+      {eventName: 'coupdoeil/transactionCleRechiffree', callback: (commande, cb) => {
+        commandeCleRechiffree(socket, commande, cb)
       }},
       {eventName: 'coupdoeil/restaurationChargerCles', callback: (params, cb) => {
         restaurationChargerCles(socket, params, cb)
@@ -151,14 +151,13 @@ async function requeteCompterClesNonDechiffrables(socket, params, cb) {
   }
 }
 
-async function transactionsCleRechiffree(socket, transactions, cb) {
+async function commandeCleRechiffree(socket, commande, cb) {
+  debug("Commande cle rechiffree : %O", commande)
   const amqpdao = socket.amqpdao
   const reponses = []
   try {
-    for(let idx in transactions) {
-      const transaction = transactions[idx]
-      reponses.push(await amqpdao.transmettreEnveloppeTransaction(transaction))
-    }
+    const domaineAction = 'commande.MaitreDesCles.sauvegarderCle'
+    await amqpdao.transmettreCommande(domaineAction, commande, {noformat: true})
     return cb(reponses)
   } catch(err) {
     return cb({err})
