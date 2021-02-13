@@ -21,9 +21,6 @@ function configurationEvenements(socket) {
       {eventName: 'coupdoeil/requeteClesNonDechiffrables', callback: (params, cb) => {
         requeteClesNonDechiffrables(socket, params, cb)
       }},
-      {eventName: 'coupdoeil/requeteClesNonDechiffrables', callback: (params, cb) => {
-        requeteClesNonDechiffrables(socket, params, cb)
-      }},
       {eventName: 'coupdoeil/requeteCompterClesNonDechiffrables', callback: (transactions, cb) => {
         requeteCompterClesNonDechiffrables(socket, transactions, cb)
       }},
@@ -133,7 +130,7 @@ async function requeteClesNonDechiffrables(socket, params, cb) {
   const domaineAction = 'MaitreDesCles.clesNonDechiffrables'
   try {
     const amqpdao = socket.amqpdao
-    const reponse = await amqpdao.transmettreRequete(domaineAction, params)
+    const reponse = await amqpdao.transmettreRequete(domaineAction, {...params})
     return cb(reponse)
   } catch(err) {
     return cb({err})
