@@ -249,16 +249,16 @@ async function restaurationGrosfichiers(socket, commande, cb) {
 }
 
 async function backupApplication(socket, commande, cb) {
-  debug("Backup application")
   const amqpdao = socket.amqpdao
   const noeudId = commande.noeudId
+  debug("Backup application %s sur noeud %s", noeudId)
   const domaineAction = `commande.servicemonitor.${noeudId}.backupApplication`
   try {
     let params = {exchange: commande.securite || '3.protege'}
     const reponse = await amqpdao.transmettreCommande(domaineAction, commande)
     cb(reponse)
   } catch(err) {
-    console.error("restaurerApplication: Erreur %O", err)
+    console.error("backupApplication: Erreur %O", err)
     cb({err: ''+err})
   }
 }
