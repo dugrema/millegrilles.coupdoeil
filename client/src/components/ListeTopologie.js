@@ -31,7 +31,7 @@ export class ListeNoeuds extends React.Component {
   componentDidMount() {
     const websocketApp = this.props.rootProps.websocketApp
 
-    websocketApp.subscribe(subscriptionsMonitor, this.processMessageNoeud, {exchange: ['2.prive', '3.protege']})
+    websocketApp.subscribe(subscriptionsMonitor, this.processMessageNoeud, {DEBUG: false, exchange: ['2.prive', '3.protege']})
 
     const noeud_id = this.props.noeud_id
     if(noeud_id) {
@@ -40,7 +40,7 @@ export class ListeNoeuds extends React.Component {
 
       var mappingSubscriptionsDocker = subscriptionsDocker.map(item=>{return item.replace('__noeudId__', this.props.noeud_id)})
       // console.debug("Mapping subscriptions docker : %O", mappingSubscriptionsDocker)
-      websocketApp.subscribe(mappingSubscriptionsDocker, this.processMessageDocker, {exchange: ['2.prive', '3.protege']})
+      websocketApp.subscribe(mappingSubscriptionsDocker, this.processMessageDocker, {DEBUG: false, exchange: ['2.prive', '3.protege']})
     }
 
     chargerListeNoeuds(websocketApp, this.props.noeud_id).then(noeuds=>this.setState({noeuds}))
@@ -166,8 +166,8 @@ export class ListeDomaines extends React.Component {
   }
 
   processMessagePrive = comlinkProxy(message => {
-    console.debug("Message recu : %O", message)
-    const domaines = majDomaines(this.state, '2.prive', message.message)
+    // console.debug("Message recu : %O", message)
+    const domaines = majDomaines(this.state, message.exchange, message.message)
     this.setState({domaines})
   })
   // processMessageProtege = comlinkProxy(message => {
