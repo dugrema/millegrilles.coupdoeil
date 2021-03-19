@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "node ./bin/www",
-    "serveur": "node ./bin/www",
+    "server": "node ./bin/www",
     "test": "node ./bin/test"
   },
   "dependencies": {
