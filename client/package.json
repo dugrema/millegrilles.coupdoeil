@@ -31,10 +31,8 @@
     "uuid": "^8.3.2"
   },
   "scripts": {
-    "start": "export WDS_SOCKET_PATH=/coupdoeil/sockjs-node && react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "export WDS_SOCKET_PATH=/coupdoeil/sockjs-node && rescripts start",
+    "build": "rescripts build"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -54,6 +52,8 @@
   "proxy": "https://localhost:3003",
   "homepage": "/coupdoeil",
   "devDependencies": {
+    "@rescripts/cli": "0.0.16",
+    "rescript-worker-loader": "^1.0.4",
     "worker-loader": "^3.0.8"
   }
 }
