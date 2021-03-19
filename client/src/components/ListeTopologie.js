@@ -1,4 +1,5 @@
 import React from 'react'
+import {proxy as comlinkProxy} from 'comlink'
 
 const subscriptionsMonitor = [
   'evenement.presence.monitor',
@@ -30,60 +31,54 @@ export class ListeNoeuds extends React.Component {
   componentDidMount() {
     const websocketApp = this.props.rootProps.websocketApp
 
-    websocketApp.subscribe(subscriptionsMonitor, this.processMessageNoeud, {exchange: '2.prive'})
-    websocketApp.subscribe(subscriptionsMonitor, this.processMessageNoeud, {exchange: '3.protege'})
+    websocketApp.subscribe(subscriptionsMonitor, this.processMessageNoeud, {exchange: ['2.prive', '3.protege']})
 
     const noeud_id = this.props.noeud_id
     if(noeud_id) {
       var mappingSubscriptionsApplications = subscriptionsApplications.map(item=>{return item.replace('__noeudId__', this.props.noeud_id)})
-      websocketApp.subscribe(mappingSubscriptionsApplications, this.processMessageApplication, {exchange: '2.prive'})
-      websocketApp.subscribe(mappingSubscriptionsApplications, this.processMessageApplication, {exchange: '3.protege'})
+      websocketApp.subscribe(mappingSubscriptionsApplications, this.processMessageApplication, {exchange: ['2.prive', '3.protege']})
 
       var mappingSubscriptionsDocker = subscriptionsDocker.map(item=>{return item.replace('__noeudId__', this.props.noeud_id)})
       // console.debug("Mapping subscriptions docker : %O", mappingSubscriptionsDocker)
-      websocketApp.subscribe(mappingSubscriptionsDocker, this.processMessageDocker, {exchange: '2.prive'})
-      websocketApp.subscribe(mappingSubscriptionsDocker, this.processMessageDocker, {exchange: '3.protege'})
+      websocketApp.subscribe(mappingSubscriptionsDocker, this.processMessageDocker, {exchange: ['2.prive', '3.protege']})
     }
 
-    chargerListeNoeuds(websocketApp, this, this.props)
+    chargerListeNoeuds(websocketApp, this.props.noeud_id).then(noeuds=>this.setState({noeuds}))
   }
 
   componentWillUnmount() {
     const websocketApp = this.props.rootProps.websocketApp
     this.listenersSocket.forEach(listener=>{websocketApp.unsubscribe([], listener)})
 
-    websocketApp.unsubscribe(subscriptionsMonitor, this.processMessageNoeud, {exchange: '2.prive'})
-    websocketApp.unsubscribe(subscriptionsMonitor, this.processMessageNoeud, {exchange: '3.protege'})
+    websocketApp.unsubscribe(subscriptionsMonitor, this.processMessageNoeud, {exchange: ['2.prive', '3.protege']})
 
     const noeud_id = this.props.noeud_id
     if(noeud_id) {
       var mappingSubscriptionsApplications = subscriptionsApplications.map(item=>{return item.replace('__noeudId__', this.props.noeud_id)})
-      websocketApp.unsubscribe(mappingSubscriptionsApplications, this.processMessageApplication, {exchange: '2.prive'})
-      websocketApp.unsubscribe(mappingSubscriptionsApplications, this.processMessageApplication, {exchange: '3.protege'})
+      websocketApp.unsubscribe(mappingSubscriptionsApplications, this.processMessageApplication, {exchange: ['2.prive', '3.protege']})
 
       var mappingSubscriptionsDocker = subscriptionsDocker.map(item=>{return item.replace('__noeudId__', this.props.noeud_id)})
-      websocketApp.unsubscribe(mappingSubscriptionsDocker, this.processMessageDocker, {exchange: '2.prive'})
-      websocketApp.unsubscribe(mappingSubscriptionsDocker, this.processMessageDocker, {exchange: '3.protege'})
+      websocketApp.unsubscribe(mappingSubscriptionsDocker, this.processMessageDocker, {exchange: ['2.prive', '3.protege']})
     }
   }
 
-  processMessageNoeud = event => {
+  processMessageNoeud = comlinkProxy(event => {
     // console.debug("Message noeud : %o", event)
     const noeud_id = this.props.noeud_id
     if( ! noeud_id || noeud_id === event.message.noeud_id) {
       const noeuds = majNoeuds(this.state, '3.protege', event.message)
       this.setState({noeuds})
     }
-  }
+  })
 
-  processMessageApplication = message => {
+  processMessageApplication = comlinkProxy(message => {
     // console.debug("Message application : %O", message)
     if(this.props.noeud_id) {
       var noeud = this.state.noeuds.filter(item=>item.noeud_id===this.props.noeud_id)[0]
     }
-  }
+  })
 
-  processMessageDocker = event => {
+  processMessageDocker = comlinkProxy(event => {
     const message = event.message
     const domaineAction = event.routingKey.split('.').pop()
 
@@ -125,7 +120,7 @@ export class ListeNoeuds extends React.Component {
       })
       this.setState({noeuds: listeCopie})
     }
-  }
+  })
 
   render() {
     // console.warn("Render liste topologie : %O", this)
@@ -154,30 +149,31 @@ export class ListeDomaines extends React.Component {
   componentDidMount() {
     const websocketApp = this.props.rootProps.websocketApp
 
-    var listenerMessagePrive = websocketApp.subscribe(
-      subscriptionsDomaine, this.processMessagePrive, {niveauSecurite: '2.prive'})
-    var listenerMessageProtege = websocketApp.subscribe(
-      subscriptionsDomaine, this.processMessageProtege, {niveauSecurite: '3.protege'})
+    websocketApp.subscribe(
+      subscriptionsDomaine, this.processMessagePrive, {exchange: ['2.prive', '3.protege']})
 
-    this.listenersSocket.push(listenerMessagePrive)
-    this.listenersSocket.push(listenerMessageProtege)
-
-    chargerListeDomaines(websocketApp, this, this.props)
+    chargerListeDomaines(websocketApp).then(domaines=>{
+      console.debug("Domaines charges : %O", domaines)
+      this.setState({domaines})
+    })
   }
 
   componentWillUnmount() {
     const websocketApp = this.props.rootProps.websocketApp
-    this.listenersSocket.forEach(listener=>{websocketApp.unsubscribe([], listener)})
+
+    websocketApp.unsubscribe(
+      subscriptionsDomaine, this.processMessagePrive, {exchange: ['2.prive', '3.protege']})
   }
 
-  processMessagePrive = message => {
+  processMessagePrive = comlinkProxy(message => {
+    console.debug("Message recu : %O", message)
     const domaines = majDomaines(this.state, '2.prive', message.message)
     this.setState({domaines})
-  }
-  processMessageProtege = message => {
-    const domaines = majDomaines(this.state, '3.protege', message.message)
-    this.setState({domaines})
-  }
+  })
+  // processMessageProtege = comlinkProxy(message => {
+  //   const domaines = majDomaines(this.state, '3.protege', message.message)
+  //   this.setState({domaines})
+  // })
 
   render() {
     const children = this.props.children
@@ -190,11 +186,11 @@ export class ListeDomaines extends React.Component {
 }
 
 // Charge la liste courante des noeuds
-async function chargerListeNoeuds(websocketApp, inst, props) {
+async function chargerListeNoeuds(websocketApp, noeud_id) {
   // console.debug("Charger liste noeuds")
   const requete = {}
-  if(props.noeud_id) {
-    requete.noeud_id = props.noeud_id
+  if(noeud_id) {
+    requete.noeud_id = noeud_id
     requete.all_info = true
   }
 
@@ -214,10 +210,7 @@ async function chargerListeNoeuds(websocketApp, inst, props) {
   // Trier la liste par descriptif, avec Principal en premier
   noeuds = trierNoeuds(noeuds)
 
-  // console.debug("Noeuds filtres:\n%O", noeuds)
-
-  inst.setState({noeuds})
-
+  return noeuds
 }
 
 // Detecter nouveau noeud, ajoute a la liste
@@ -310,29 +303,21 @@ function mapperNoeud(noeudInfo, derniereModification) {
 }
 
 // Charge la liste courante des noeuds
-async function chargerListeDomaines(websocketApp, inst, props) {
-  try {
-    const reponseDomaines = await websocketApp.requeteListeDomaines()
+async function chargerListeDomaines(websocketApp) {
+  const reponseDomaines = await websocketApp.requeteListeDomaines()
 
-    // console.debug("Liste domaines\n%O", reponseDomaines)
+  console.debug("Liste domaines\n%O", reponseDomaines)
 
-    var domaines = reponseDomaines.map(domaine=>{
-      const derniereModification = domaine['_mg-derniere-modification']
-      const infoDomaine = mapperDomaine(domaine, derniereModification)
-      return infoDomaine
-    })
+  var domaines = reponseDomaines.map(domaine=>{
+    const derniereModification = domaine['_mg-derniere-modification']
+    const infoDomaine = mapperDomaine(domaine, derniereModification)
+    return infoDomaine
+  })
 
-    // Trier la liste par descriptif, avec Principal en premier
-    domaines = trierDomaines(domaines)
+  // Trier la liste par descriptif, avec Principal en premier
+  domaines = trierDomaines(domaines)
 
-    // console.debug("Domaines filtres:\n%O", domaines)
-    inst.setState({domaines}, _=>{
-      // console.debug("Domaines charges : %O", domaines)
-    })
-  } catch(err) {
-    console.error("Erreur chargement liste domaines : %O", err)
-  }
-
+  return domaines
 }
 
 // Detecter nouveau noeud, ajoute a la liste

@@ -19,7 +19,7 @@ export class ParametresGrosFichiers extends React.Component {
     console.debug("PROPPYS : %O", this.props)
     const wsa = this.props.rootProps.websocketApp
 
-    wsa.subscribe(RK_EVENEMENTS, this.processMessageEvenement, {exchange: '3.protege'})
+    wsa.subscribe(RK_EVENEMENTS, this.processMessageEvenement, {exchange: ['3.protege']})
 
     wsa.getUploadsEnCours().then(uploadsEnCours=>{
       console.debug("Document uploads en cours : %O", uploadsEnCours)
@@ -38,7 +38,7 @@ export class ParametresGrosFichiers extends React.Component {
 
   componentWillUnmount() {
     const wsa = this.props.rootProps.websocketApp
-    wsa.unsubscribe(RK_EVENEMENTS, this.processMessageEvenement, {exchange: '3.protege'})
+    wsa.unsubscribe(RK_EVENEMENTS, this.processMessageEvenement, {exchange: ['3.protege']})
   }
 
   processMessageEvenement = evenement => {

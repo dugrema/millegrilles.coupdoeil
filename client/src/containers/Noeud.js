@@ -2,6 +2,7 @@ import React from 'react'
 import { Row, Col, Button, ButtonGroup, Form, Modal, Alert, InputGroup, FormControl, Nav, NavDropdown } from 'react-bootstrap'
 import path from 'path'
 import axios from 'axios'
+import {proxy as comlinkProxy} from 'comlink'
 
 import {CommandeHttp, ConsignationNoeud} from './NoeudConfiguration'
 
@@ -49,7 +50,7 @@ class AffichageNoeud extends React.Component {
     // console.debug("Enregistrer routing keys : %O", routingNoeud)
 
     const securite = this.getNoeud().securite
-    wsa.subscribe(routingNoeud, this.traiterMessageEvenementApplication, {exchange: securite})
+    wsa.subscribe(routingNoeud, this.traiterMessageEvenementApplication, {exchange: [securite]})
   }
 
   componentWillUnmount() {
@@ -59,7 +60,7 @@ class AffichageNoeud extends React.Component {
     const routingNoeud = traiterMessageEvenementApplications.map(item=>{return item.replace('__noeudId__', this.props.noeud_id)})
     subscriptionsEvenementsApplication.forEach(item=>{routingNoeud.push(item)})
 
-    wsa.unsubscribe(routingNoeud, this.traiterMessageEvenementApplication, {exchange: securite})
+    wsa.unsubscribe(routingNoeud, this.traiterMessageEvenementApplication, {exchange: [securite]})
   }
 
   setSection = section => {
@@ -119,7 +120,7 @@ class AffichageNoeud extends React.Component {
     })
   }
 
-  traiterMessageEvenementApplication = event => {
+  traiterMessageEvenementApplication = comlinkProxy(event => {
     // console.debug("Evenement application : %O", event)
     var {nom_application, evenement} = event.message
     var routingAction = event.routingKey.split('.').pop()
@@ -127,7 +128,7 @@ class AffichageNoeud extends React.Component {
     this.setState(
       {evenementApplication: {...this.state.evenementApplication, [nom_application]: evenement}}
     )
-  }
+  })
 
   getNoeud = _ => {
     const noeuds = this.props.noeuds.filter(item=>{
@@ -381,7 +382,7 @@ class ApplicationsNoeud extends React.Component {
 
     console.debug("Routing evenements noeuds securite %s : %O", securite, routingNoeud)
 
-    wsa.subscribe(routingNoeud, this.traiterMessageEvenementApplications, {exchange: securite})
+    wsa.subscribe(routingNoeud, this.traiterMessageEvenementApplications, {exchange: [securite]})
   }
 
   componentWillUnmount() {
@@ -391,7 +392,7 @@ class ApplicationsNoeud extends React.Component {
     const routingNoeud = traiterMessageEvenementApplications.map(item=>{return item.replace('__noeudId__', noeudId)})
     const securite = this.props.noeud.securite
 
-    wsa.unsubscribe(routingNoeud, this.traiterMessageEvenementApplications, {exchange: securite})
+    wsa.unsubscribe(routingNoeud, this.traiterMessageEvenementApplications, {exchange: [securite]})
   }
 
   configurerApplication = async event => {
@@ -447,7 +448,7 @@ class ApplicationsNoeud extends React.Component {
     installerApplication(wsa, noeud, app)
   }
 
-  traiterMessageEvenementApplications = event => {
+  traiterMessageEvenementApplications = comlinkProxy(event => {
     // console.debug("Evenement monitor %O", event)
     var action = event.routingKey.split('.').pop()
     // console.debug("Action : %s", action)
@@ -461,7 +462,7 @@ class ApplicationsNoeud extends React.Component {
       console.error("Erreur demarrage application %s", nomApplication)
     }
 
-  }
+  })
 
   changerContenuConfiguration = event => {
     this.setState({contenuConfiguration: event.currentTarget.value})

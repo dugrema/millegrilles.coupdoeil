@@ -23,20 +23,27 @@ export class ApplicationCoupdoeil extends React.Component {
 
   componentDidMount() {
 
-    const webSocketManager = new WebSocketManager(this.props.rootProps.connexionSocketIo)
-    this.props.rootProps.connexionSocketIo.emit('changerApplication', 'coupdoeil', reponse=>{
-      if(reponse && reponse.err) {
-        console.error("Erreur enregistrements coupdoeil socket.io :\n%O", reponse)
-        return
-      }
-      this.setState({websocketApp: webSocketManager})
-    })
+    const wsa = this.props.rootProps.connexionWorker
+    wsa.isFormatteurReady()
+      .then( async _ =>{
+        console.debug("Fortteur ready sur connexion")
+        this.setState({websocketApp: wsa})
+      })
+
+    // const webSocketManager = new WebSocketManager(this.props.rootProps.connexionSocketIo)
+    // this.props.rootProps.connexionSocketIo.emit('changerApplication', 'coupdoeil', reponse=>{
+    //   if(reponse && reponse.err) {
+    //     console.error("Erreur enregistrements coupdoeil socket.io :\n%O", reponse)
+    //     return
+    //   }
+    //   this.setState({websocketApp: webSocketManager})
+    // })
 
     this.props.setSousMenuApplication(
       <MenuItems
         changerPage={this.changerPage}
         rootProps={this.props.rootProps}
-        websocketApp={webSocketManager}
+        websocketApp={wsa}
         />
     )
 

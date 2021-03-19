@@ -1,25 +1,24 @@
 import React from 'react'
 import { Container, Row, Col, Nav, Navbar } from 'react-bootstrap'
 import openSocket from 'socket.io-client'
-import * as Comlink from 'comlink'
 
-import {wrap as comlinkWrap, releaseProxy} from 'comlink'
-import {getCertificats, getClesPrivees} from '../components/pkiHelper'
+import {proxy as comlinkProxy, wrap as comlinkWrap, releaseProxy} from 'comlink'
 import {splitPEMCerts} from '@dugrema/millegrilles.common/lib/forgecommon'
 
-/* eslint-disable import/no-webpack-loader-syntax */
-import WebWorker from 'worker-loader!@dugrema/millegrilles.common/lib/browser/chiffrage.worker'
+// /* eslint-disable import/no-webpack-loader-syntax */
+// import WebWorker from 'worker-loader!@dugrema/millegrilles.common/lib/browser/chiffrage.worker'
+import {setupWorkers, cleanupWorkers, preparerWorkersAvecCles} from './workers/workers.load'
 
-// import { WebSocketManager } from 'millegrilles.common/lib/webSocketManager'
-import { Trans } from 'react-i18next';
+import { Trans } from 'react-i18next'
 
 // import {ConnexionWebsocket} from '../containers/Authentification'
-import {ApplicationCoupdoeil} from '../containers/App'
+import {getCertificats, getClesPrivees} from './components/pkiHelper'
+import {ApplicationCoupdoeil} from './containers/App'
 
-import '../containers/App.css'
-import '../containers/Layout.css'
+import './containers/App.css'
+import './containers/Layout.css'
 
-import manifest from '../manifest.build.js'
+import manifest from './manifest.build.js'
 // const manifest = {
 //   date: "DUMMY",
 //   version: "DUMMY",
@@ -27,35 +26,35 @@ import manifest from '../manifest.build.js'
 
 const NOM_USAGER_PROPRIETAIRE = 'proprietaire'
 
-async function initWorker() {
-  const worker = new WebWorker()
-  const proxy = comlinkWrap(worker)
+// async function initWorker() {
+//   const worker = new WebWorker()
+//   const proxy = comlinkWrap(worker)
+//
+//   const certInfo = await getCertificats(NOM_USAGER_PROPRIETAIRE)
+//   if(certInfo && certInfo.fullchain) {
+//     const fullchain = splitPEMCerts(certInfo.fullchain)
+//     const clesPrivees = await getClesPrivees(NOM_USAGER_PROPRIETAIRE)
+//
+//     // Initialiser le CertificateStore
+//     await proxy.initialiserCertificateStore([...fullchain].pop(), {isPEM: true, DEBUG: false})
+//     console.debug("Certificat : %O, Cles privees : %O", certInfo.fullchain, clesPrivees)
+//
+//     // Initialiser web worker
+//     await proxy.initialiserFormatteurMessage({
+//       certificatPem: certInfo.fullchain,
+//       clePriveeSign: clesPrivees.signer,
+//       clePriveeDecrypt: clesPrivees.dechiffrer,
+//       DEBUG: false
+//     })
+//
+//   } else {
+//     throw new Error("Pas de cert charge")
+//   }
+//
+//   return {worker, proxy}
+// }
 
-  const certInfo = await getCertificats(NOM_USAGER_PROPRIETAIRE)
-  if(certInfo && certInfo.fullchain) {
-    const fullchain = splitPEMCerts(certInfo.fullchain)
-    const clesPrivees = await getClesPrivees(NOM_USAGER_PROPRIETAIRE)
-
-    // Initialiser le CertificateStore
-    await proxy.initialiserCertificateStore([...fullchain].pop(), {isPEM: true, DEBUG: false})
-    console.debug("Certificat : %O, Cles privees : %O", certInfo.fullchain, clesPrivees)
-
-    // Initialiser web worker
-    await proxy.initialiserFormatteurMessage({
-      certificatPem: certInfo.fullchain,
-      clePriveeSign: clesPrivees.signer,
-      clePriveeDecrypt: clesPrivees.dechiffrer,
-      DEBUG: false
-    })
-
-  } else {
-    throw new Error("Pas de cert charge")
-  }
-
-  return {worker, proxy}
-}
-
-export class AppDev extends React.Component {
+export default class AppTopLevel extends React.Component {
 
   state = {
     //websocketApp: null,         // Connexion socket.io
@@ -68,15 +67,27 @@ export class AppDev extends React.Component {
     webWorkerInstance: '',
 
     cleMillegrilleChargee: false,
+    signateurTransaction: '',
   }
 
   componentDidMount() {
-    initWorker()
-      .then(({worker, proxy}) => {
-        this.setState({webWorkerInstance: worker, webWorker: proxy})
-        const cb = Comlink.proxy(this.setEtatCleMillegrille)
-        proxy.initialiserCallbackCleMillegrille(cb)
+    setupWorkers(this).then( async _ =>{
+      console.debug("Workers charges, info session : %O, proppys : %O", this.state, this.props)
+
+      this.setState({
+        signateurTransaction: {preparerTransaction: this.state.chiffrageWorker.formatterMessage}, // Legacy
       })
+
+      await this.preparerWorkersAvecCles()
+      this.toggleProtege()  // Tenter upgrade protege automatiquement
+    })
+
+    // initWorker()
+    //   .then(({worker, proxy}) => {
+    //     this.setState({webWorkerInstance: worker, webWorker: proxy})
+    //     const cb = Comlink.proxy(this.setEtatCleMillegrille)
+    //     proxy.initialiserCallbackCleMillegrille(cb)
+    //   })
   }
 
   componentWillUnmount() {
@@ -87,10 +98,61 @@ export class AppDev extends React.Component {
     }
   }
 
-  setEtatCleMillegrille = (chargee) => {
+  callbackCleMillegrille = comlinkProxy(chargee => {
     console.debug("Recu changement etat cle de millegrille dans le web worker : chargee = %s", chargee)
     this.setState({cleMillegrilleChargee: chargee===true})
+  })
+
+  async preparerWorkersAvecCles() {
+    const {nomUsager, chiffrageWorker, connexionWorker} = this.state
+
+    // Initialiser certificat de MilleGrille et cles si presentes
+    const certInfo = await getCertificats(nomUsager)
+    if(certInfo && certInfo.fullchain) {
+      const fullchain = splitPEMCerts(certInfo.fullchain)
+      const clesPrivees = await getClesPrivees(nomUsager)
+
+      // Initialiser le CertificateStore
+      await chiffrageWorker.initialiserCertificateStore([...fullchain].pop(), {isPEM: true, DEBUG: false})
+      console.debug("Certificat : %O, Cles privees : %O", certInfo.fullchain, clesPrivees)
+
+      // Initialiser web worker
+      await chiffrageWorker.initialiserFormatteurMessage({
+        certificatPem: certInfo.fullchain,
+        clePriveeSign: clesPrivees.signer,
+        clePriveeDecrypt: clesPrivees.dechiffrer,
+        DEBUG: true
+      })
+
+      await connexionWorker.initialiserFormatteurMessage({
+        certificatPem: certInfo.fullchain,
+        clePriveeSign: clesPrivees.signer,
+        clePriveeDecrypt: clesPrivees.dechiffrer,
+        DEBUG: true
+      })
+    } else {
+      throw new Error("Pas de cert")
+    }
   }
+
+  setEtatProtege = comlinkProxy(reponse => {
+    console.debug("Callback etat protege : %O", reponse)
+    const modeProtege = reponse.etat
+    console.debug("Toggle mode protege, nouvel etat : %O", reponse)
+    this.setState({modeProtege})
+  })
+
+  deconnexionSocketIo = comlinkProxy(event => {
+    console.debug("Socket.IO deconnecte : %O", event)
+    this.setState({modeProtege: false})
+  })
+
+  reconnectSocketIo = comlinkProxy(event => {
+    console.debug("Socket.IO reconnecte : %O", event)
+    if(!this.state.modeProtege) {
+      this.toggleProtege()
+    }
+  })
 
   setSousMenuApplication = sousMenuApplication => {
     console.debug("Set sous-menu application")
@@ -102,24 +164,23 @@ export class AppDev extends React.Component {
   //   this.setState({websocketApp, modeProtege: false})
   // }
 
-  setConnexionSocketIo = connexionSocketIo => {
-    this.setState({connexionSocketIo})
-  }
+  // setConnexionSocketIo = connexionSocketIo => {
+  //   this.setState({connexionSocketIo})
+  // }
 
-  toggleProtege = async event => {
-    const modeToggle = ! this.state.modeProtege
-    if(modeToggle) {
-      console.debug("Activer mode protege")
-      this.state.connexionSocketIo.emit('upgradeProtege', reponse=>{
-        if(reponse && reponse.err) {
-          console.error("Erreur activation mode protege")
-        }
-        this.setState({modeProtege: reponse})
-      })
+  toggleProtege = async () => {
+    if( this.state.modeProtege ) {
+      // Desactiver mode protege
+      this.state.connexionWorker.downgradePrive()
     } else {
-      this.desactiverProtege()
+      // Activer mode protege, upgrade avec certificat (implicite)
+      console.debug("toggleProtege")
+      try {
+        const resultat = await this.state.connexionWorker.upgradeProteger()
+      } catch(err) {
+        console.error("Erreur upgrade protege %O", err)
+      }
     }
-
   }
 
   desactiverProtege = () => {
@@ -156,9 +217,9 @@ export class AppDev extends React.Component {
     }
 
     let page;
-    if(!this.state.connexionSocketIo) {
+    if(!this.state.nomUsager || !this.state.connexionWorker) {
       // Connecter avec Socket.IO
-      page = <ConnexionWebsocket setConnexionSocketIo={this.setConnexionSocketIo} desactiverProtege={this.desactiverProtege} />
+      page = <p>Chargement en cours</p>
     } else {
       // 3. Afficher application
       page = <ApplicationCoupdoeil setSousMenuApplication={this.setSousMenuApplication} rootProps={rootProps} />
@@ -174,33 +235,33 @@ export class AppDev extends React.Component {
 
 }
 
-export class ConnexionWebsocket extends React.Component {
-
-  state = {
-    erreur: false,
-    erreurMessage: '',
-  }
-
-  componentDidMount() {
-    this.authentifier()
-  }
-
-  async authentifier() {
-    const connexionSocketIo = openSocketHelper()
-    this.props.setConnexionSocketIo(connexionSocketIo)
-  }
-
-  render() {
-    let page;
-    if(this.state.erreur) {
-      page = <p>Erreur : {this.state.erreurMessage}</p>
-    } else {
-      page = <p>Connexion a Socket.IO de Coup D'Oeil en cours ...</p>
-    }
-
-    return page
-  }
-}
+// export class ConnexionWebsocket extends React.Component {
+//
+//   state = {
+//     erreur: false,
+//     erreurMessage: '',
+//   }
+//
+//   componentDidMount() {
+//     this.authentifier()
+//   }
+//
+//   async authentifier() {
+//     const connexionSocketIo = openSocketHelper()
+//     this.props.setConnexionSocketIo(connexionSocketIo)
+//   }
+//
+//   render() {
+//     let page;
+//     if(this.state.erreur) {
+//       page = <p>Erreur : {this.state.erreurMessage}</p>
+//     } else {
+//       page = <p>Connexion a Socket.IO de Coup D'Oeil en cours ...</p>
+//     }
+//
+//     return page
+//   }
+// }
 
 export class LayoutCoudpoeil extends React.Component {
 
@@ -324,15 +385,15 @@ function Menu(props) {
 //   )
 // }
 
-function openSocketHelper() {
-  let socket = openSocket('/', {
-    path: '/coupdoeil/socket.io',
-    reconnection: true,
-    reconnectionAttempts: 30,
-    reconnectionDelay: 500,
-    reconnectionDelayMax: 30000,
-    randomizationFactor: 0.5
-  })
-
-  return socket;
-}
+// function openSocketHelper() {
+//   let socket = openSocket('/', {
+//     path: '/coupdoeil/socket.io',
+//     reconnection: true,
+//     reconnectionAttempts: 30,
+//     reconnectionDelay: 500,
+//     reconnectionDelayMax: 30000,
+//     randomizationFactor: 0.5
+//   })
+//
+//   return socket;
+// }

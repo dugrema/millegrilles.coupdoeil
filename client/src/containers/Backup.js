@@ -87,12 +87,12 @@ class BackupOperation extends React.Component {
 
   componentDidMount() {
     console.debug("Enregistrer routing keys : %O", subscriptionsBackup)
-    this.props.wsa.subscribe(subscriptionsBackup, this.traiterMessageEvenement, {exchange: '3.protege'})
+    this.props.wsa.subscribe(subscriptionsBackup, this.traiterMessageEvenement, {exchange: ['3.protege']})
   }
 
   componentWillUnmount() {
     console.debug("Retirer routing keys : %O", subscriptionsBackup)
-    this.props.wsa.unsubscribe(subscriptionsBackup, this.traiterMessageEvenement, {exchange: '3.protege'})
+    this.props.wsa.unsubscribe(subscriptionsBackup, this.traiterMessageEvenement, {exchange: ['3.protege']})
   }
 
   traiterMessageEvenement = event => {
@@ -273,14 +273,14 @@ class RestaurerOperation extends React.Component {
 
   componentDidMount() {
     console.debug("Enregistrer routing keys : %O", subscriptionsRestauration)
-    this.props.wsa.subscribe(subscriptionsRestauration, this.traiterMessageEvenement, {exchange: '3.protege'})
-    this.props.wsa.subscribe(subscriptionsFichiers, this.traiterMessageEvenementFichiers, {exchange: '3.protege'})
+    this.props.wsa.subscribe(subscriptionsRestauration, this.traiterMessageEvenement, {exchange: ['3.protege']})
+    this.props.wsa.subscribe(subscriptionsFichiers, this.traiterMessageEvenementFichiers, {exchange: ['3.protege']})
   }
 
   componentWillUnmount() {
     console.debug("Retirer routing keys : %O", subscriptionsRestauration)
-    this.props.wsa.unsubscribe(subscriptionsRestauration, this.traiterMessageEvenement, {exchange: '3.protege'})
-    this.props.wsa.unsubscribe(subscriptionsFichiers, this.traiterMessageEvenementFichiers, {exchange: '3.protege'})
+    this.props.wsa.unsubscribe(subscriptionsRestauration, this.traiterMessageEvenement, {exchange: ['3.protege']})
+    this.props.wsa.unsubscribe(subscriptionsFichiers, this.traiterMessageEvenementFichiers, {exchange: ['3.protege']})
   }
 
   changerChamp = event => {
