@@ -1,7 +1,7 @@
 var fs = require('fs');
 const debug = require('debug')('millegrilles:coupdoeil:coupdoeilSocketApp')
 
-function configurationEvenements(socket) {
+function configurerEvenements(socket) {
   const configurationEvenements = {
     listenersPrives: [
       {eventName: 'coupdoeil/requeteListeNoeuds', callback: (params, cb) => {requeteListeNoeuds(socket, params, cb)}},
@@ -560,4 +560,4 @@ function getDocumentParFuuid(socket, params, cb) {
   executerRequete('GrosFichiers.documentsParFuuid', socket, params, cb)
 }
 
-module.exports = {configurationEvenements};
+module.exports = {configurerEvenements}
