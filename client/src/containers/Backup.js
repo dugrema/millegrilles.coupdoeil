@@ -1,6 +1,7 @@
 import React from 'react';
 import { Row, Col, Button, Nav, Alert, Form } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
+import {proxy as comlinkProxy} from 'comlink'
 
 import { DateTimeAfficher } from '../components/ReactFormatters'
 import { chargerStatsTransactionsDomaines } from '../components/UtilDomaines'
@@ -95,7 +96,7 @@ class BackupOperation extends React.Component {
     this.props.wsa.unsubscribe(subscriptionsBackup, this.traiterMessageEvenement, {exchange: ['3.protege']})
   }
 
-  traiterMessageEvenement = event => {
+  traiterMessageEvenement = comlinkProxy(event => {
     console.debug("Message evenement backup %O", event)
     const message = event.message
     const {domaine, nom_application: application} = message
@@ -119,7 +120,7 @@ class BackupOperation extends React.Component {
         _=>{console.debug("State : %O", this.state)}
       )
     }
-  }
+  })
 
   lancerBackup = async event => {
     console.debug("Lancer backup snapshot")
@@ -314,7 +315,7 @@ class RestaurerOperation extends React.Component {
     console.debug("Reponse restaurer grosfichiers : %O", reponse)
   }
 
-  traiterMessageEvenement = evenement => {
+  traiterMessageEvenement = comlinkProxy(evenement => {
     console.debug("Evenement restauration recu : %O", evenement)
     const {message} = evenement
 
@@ -333,11 +334,11 @@ class RestaurerOperation extends React.Component {
       this.setState({restaurationDomaines, afficherDomaines: true})
     }
 
-  }
+  })
 
-  traiterMessageEvenementFichiers = evenement => {
+  traiterMessageEvenementFichiers = comlinkProxy(evenement => {
     console.debug("Evenement restauration fichier recu : %O", evenement)
-  }
+  })
 
   showParamsAvances = event => {
     this.setState({showParamsAvances: true})

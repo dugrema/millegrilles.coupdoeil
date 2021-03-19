@@ -1,5 +1,6 @@
 import React from 'react'
 import { Row, Col, Alert, Button, ProgressBar } from 'react-bootstrap'
+import {proxy as comlinkProxy} from 'comlink'
 
 const RK_EVENEMENTS = [
   'evenement.fichiers.publicAwsS3'
@@ -41,7 +42,7 @@ export class ParametresGrosFichiers extends React.Component {
     wsa.unsubscribe(RK_EVENEMENTS, this.processMessageEvenement, {exchange: ['3.protege']})
   }
 
-  processMessageEvenement = evenement => {
+  processMessageEvenement = comlinkProxy(evenement => {
     const message = evenement.message
     // console.debug("Message evenement : %O", message)
     const etat = message.etat,
@@ -90,7 +91,7 @@ export class ParametresGrosFichiers extends React.Component {
       })
       this.setState({uploadsEnCours})
     }
-  }
+  })
 
   regenererPreviews = async event => {
     console.debug("Regenerer previews")

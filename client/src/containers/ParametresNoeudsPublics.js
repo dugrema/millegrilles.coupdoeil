@@ -7,6 +7,7 @@ import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { Feuille } from '../components/Feuilles';
 import { MilleGrillesCryptoHelper, bufferToBase64 } from '@dugrema/millegrilles.common/lib/cryptoSubtle'
 import { v4 as uuidv4 } from 'uuid'
+import {proxy as comlinkProxy} from 'comlink'
 
 import './Parametres.css';
 
@@ -44,7 +45,7 @@ export class NoeudsPublics extends React.Component {
 
   componentDidMount() {
     this.chargerNoeudsPublics();
-    this.props.rootProps.websocketApp.subscribe(subscriptions_noeudsPublics, this._recevoirMessageNoeuds);
+    this.props.rootProps.websocketApp.subscribe(subscriptions_noeudsPublics, this._recevoirMessageNoeuds)
 
     // S'assurer que la cle publique du maitre des cles est disponible
     if(!sessionStorage.clePubliqueMaitredescles) {
@@ -268,7 +269,7 @@ export class NoeudsPublics extends React.Component {
    });
   }
 
-  _recevoirMessageNoeuds = (routingKey, message) => {
+  _recevoirMessageNoeuds = comlinkProxy((routingKey, message) => {
     const url = message.url_web;
 
     var ordreNoeuds = this.state.ordreNoeuds;
@@ -281,7 +282,7 @@ export class NoeudsPublics extends React.Component {
     stateUpdate[url] = {awsSecretAccessKey: '', ...message};
 
     this.setState(stateUpdate);
-  }
+  })
 
   _sauvegarder = event => {
     const url_web = event.currentTarget.value;
