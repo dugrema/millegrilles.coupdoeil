@@ -32,7 +32,7 @@ export class DomaineMaitredescles extends React.Component {
     // this.setState({clePriveeSubtle}, _=>{console.debug("State apres cle privee : %O", this.state)})
     // this.props.rootProps.setCleMillegrille(clePriveeForge)
     const clePriveePem = sauvegarderPrivateKeyToPEM(clePrivee)
-    await this.props.rootProps.webWorker.chargerCleMillegrilleSubtle(clePriveePem)
+    await this.props.rootProps.chiffrageWorker.chargerCleMillegrilleSubtle(clePriveePem)
   }
 
   render() {
@@ -65,7 +65,7 @@ export class DomaineMaitredescles extends React.Component {
                         idmg={this.props.rootProps.idmg}
                         nombreClesNonDechiffrables={this.state.nombreClesNonDechiffrables}
                         updateEtatRechiffrage={this.updateEtatRechiffrage}
-                        webWorker={this.props.rootProps.webWorker} />
+                        webWorker={this.props.rootProps.chiffrageWorker} />
       </>
     )
   }

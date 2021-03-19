@@ -143,8 +143,8 @@ class FormulaireAjout extends React.Component {
       const domaineAction = 'servicemonitor.transmettreCatalogues'
       //const signateurTransaction = this.props.rootProps.signateurTransaction
       // await signateurTransaction.preparerTransaction(commande, domaineAction)
-      const webWorker = this.props.rootProps.webWorker
-      const commande = await webWorker.formatterMessage({}, domaineAction)
+      const chiffrageWorker = this.props.rootProps.chiffrageWorker
+      const commande = await chiffrageWorker.formatterMessage({}, domaineAction)
       console.debug("Demande de recharge des catalogues : %O", commande)
 
       const wsa = this.props.wsa
