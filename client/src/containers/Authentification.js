@@ -10,8 +10,7 @@ export class VerificationInfoServeur extends React.Component {
     const infoUrl = '/coupdoeil/info.json'
     axios.get(infoUrl)
     .then(response=>{
-      console.debug("Reponse %s", infoUrl);
-      console.debug(response);
+      console.debug("Reponse %s : %O", infoUrl, response)
 
       if(response.status === 200) {
         const serveurInfo = response.data

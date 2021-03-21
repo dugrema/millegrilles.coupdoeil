@@ -49,7 +49,7 @@ export class CommandeHttp extends React.Component {
 
       const domaineAction = 'servicemonitor.genererCsr'
       // await signateurTransaction.preparerTransaction(transaction, domaineTransaction)
-      const commande = await this.props.rootProps.webWorker.formatterMessage({}, domaineAction)
+      const commande = await this.props.rootProps.chiffrageWorker.formatterMessage({}, domaineAction)
 
       const reponse = await axios({
         method: 'post',
@@ -90,7 +90,7 @@ export class CommandeHttp extends React.Component {
     console.debug("URL verification noeud : %O", url)
     try {
       const reponse = await axios.get(url)
-      console.debug("Response noeud : %O", reponse)
+      console.debug("Response noeud : %O, proppys: %O", reponse, this.props)
 
       const idmg = reponse.data.idmg
       if(idmg === this.props.rootProps.idmg) {
@@ -216,7 +216,7 @@ class ConfigurerMQ extends React.Component {
 
     const domaineAction = 'Monitor.changerConfigurationMq'
     // await signateurTransaction.preparerTransaction(transaction, domaineTransaction)
-    commande = await this.props.rootProps.webWorker.formatterMessage(commande, domaineAction)
+    commande = await this.props.rootProps.chiffrageWorker.formatterMessage(commande, domaineAction)
 
     console.debug("Commande a transmettre : %O", commande)
     const url = 'https:/' + path.join('/', this.props.urlNoeud, '/installation/api/configurerMQ')
@@ -366,7 +366,7 @@ class ConfigurerDomaine extends React.Component {
     // await signateurTransaction.preparerTransaction(commande, 'Monitor.changerConfigurationDomaine')
 
     const domaineAction = 'Monitor.changerConfigurationDomaine'
-    commande = await this.props.rootProps.webWorker.formatterMessage(commande, domaineAction)
+    commande = await this.props.rootProps.chiffrageWorker.formatterMessage(commande, domaineAction)
 
     console.debug("Commande a transmettre : %O", commande)
     const url = 'https:/' + path.join('/', this.props.urlNoeud, '/installation/api/configurerDomaine')
@@ -575,7 +575,7 @@ export class ConsignationNoeud extends React.Component {
   soumettre = async event => {
     // console.debug("Proppuss : %O, Statuss : %O", this.props, this.state)
     // const signateurTransaction = this.props.rootProps.signateurTransaction
-    const webWorker = this.props.rootProps.webWorker,
+    const webWorker = this.props.rootProps.chiffrageWorker,
           noeud_id = this.props.noeud_id,
           wsa = this.props.rootProps.websocketApp,
           consignationWeb = this.props.noeud.consignation_web || {}

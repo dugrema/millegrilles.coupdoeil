@@ -121,6 +121,10 @@ function initialiser(amqpdao, opts) {
   debug("IDMG: %s, AMQPDAO : %s", idmg, amqpdao !== undefined)
 
   const route = express.Router()
+  route.use((req, res, next)=>{
+    req.amqpdao = amqpdao
+    next()
+  })
   route.get('/info.json', routeInfo)
   ajouterStaticRoute(route)
 
@@ -151,12 +155,15 @@ function ajouterStaticRoute(route) {
 
 function routeInfo(req, res, next) {
   debug(req.headers)
-  const idmgCompte = req.headers['idmg-compte']
-  const nomUsager = req.headers['user-prive']
+  const idmg = req.amqpdao.pki.idmg
+  const nomUsager = req.headers['user-name']
+  const userId = req.headers['user-id']
+  const niveauSecurite = req.headers['user-securite']
   const host = req.headers.host
 
-  const reponse = {idmgCompte, nomUsager, hostname: host}
+  const reponse = {idmg, nomUsager, userId, hostname: host, niveauSecurite}
   return res.send(reponse)
 }
+
 
 module.exports = {initialiser}

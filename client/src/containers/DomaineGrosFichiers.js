@@ -117,7 +117,7 @@ export class ParametresGrosFichiers extends React.Component {
     // const signateurTransaction = this.props.rootProps.signateurTransaction
     // signateurTransaction.preparerTransaction(commande, 'GrosFichiers.clearFichierPublie')
     const domaineAction = 'GrosFichiers.clearFichierPublie'
-    const webWorker = this.props.rootProps.webWorker
+    const webWorker = this.props.rootProps.chiffrageWorker
     commande = await webWorker.formatterMessage(commande, domaineAction)
 
     const wsa = this.props.rootProps.websocketApp
@@ -146,7 +146,7 @@ export class ParametresGrosFichiers extends React.Component {
     // const signateurTransaction = this.props.rootProps.signateurTransaction
     // signateurTransaction.preparerTransaction(commande, 'GrosFichiers.uploadCollectionsPubliques')
     const domaineAction = 'GrosFichiers.uploadCollectionsPubliques'
-    const webWorker = this.props.rootProps.webWorker
+    const webWorker = this.props.rootProps.chiffrageWorker
     const commande = await webWorker.formatterMessage({}, domaineAction)
 
     const wsa = this.props.rootProps.websocketApp
