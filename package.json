@@ -1,6 +1,6 @@
 {
   "name": "millegrilles.coupdoeil",
-  "version": "1.40.0",
+  "version": "1.41.0",
   "main": "index.js",
   "private": true,
   "repository": {
@@ -13,7 +13,7 @@
     "test": "node ./bin/test"
   },
   "dependencies": {
-    "@dugrema/millegrilles.common": "git+ssh://git.maceroc.com/git/millegrilles.common.nodejs#1.40",
+    "@dugrema/millegrilles.common": "git+ssh://git.maceroc.com/git/millegrilles.common.nodejs#1.41",
     "@webauthn/client": "^0.1.3",
     "@webauthn/server": "^0.1.3",
     "debug": "~2.6.9",
