@@ -277,12 +277,17 @@ class RechiffrerCles extends React.Component {
 
     const clesRechiffrees = await rechiffrerCles(
       webWorker, this.state.clesNonDechiffrables.cles, this.state.certificatRechiffragePem)
-    console.debug("Cles rechiffrees : %O", clesRechiffrees)
+    console.debug("Operation terminee, cles rechiffrees : %O", clesRechiffrees)
 
+    // Associer information des cles a hachage_bytes pour retransmettre info
     const clesParHachage = this.state.clesNonDechiffrables.cles.reduce((accumulateur, item)=>{
-      accumulateur[item.hachage_bytes] = item
+      accumulateur[item.hachage_bytes] = {
+        ...item,
+        cleRechiffree: clesRechiffrees[item.hachage_bytes]
+      }
       return accumulateur
-    })
+    }, {})
+    console.debug("Information cles par hachages : %O", clesParHachage)
 
     // const clePriveeSubtle = this.props.clePriveeSubtle
     // const certificatRechiffrageForge = this.state.certificatRechiffrageForge
@@ -520,8 +525,8 @@ function rechiffrerCles(webWorker, cles, pemRechiffrage) {
     return secretsChiffres
   }, {})
 
-  console.debug("Preparation secrets : %O", secretsChiffres)
+  // console.debug("rechiffrerCles: Preparation secrets : %O", secretsChiffres)
 
   return webWorker.rechiffrerAvecCleMillegrille(
-    secretsChiffres, pemRechiffrage, {DEBUG: true})
+    secretsChiffres, pemRechiffrage, {DEBUG: false})
 }
