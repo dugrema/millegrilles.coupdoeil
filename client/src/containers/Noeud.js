@@ -96,6 +96,7 @@ class AffichageNoeud extends React.Component {
 
   restaurerApplication = async event => {
     const nomApplication = event.currentTarget.value
+    console.debug("Restaurer application %s", nomApplication)
     const wsa = this.props.rootProps.websocketApp
     this.setState({evenementApplication: {...this.state.evenementApplication, [nomApplication]: 'debut'}})
     try {
@@ -210,7 +211,7 @@ class AffichageNoeud extends React.Component {
                       noeud={noeudInfo}
                       evenementApplication={this.state.evenementApplication}
                       backupApplication={this.backupApplication}
-                      restaurerApplication={this.restaurerApplication}
+                      restaurer={this.restaurerApplication}
                       setPageConfiguration={this.setPageConfiguration}
                       setErreur={this.setErreur}
                       {...this.props} />
