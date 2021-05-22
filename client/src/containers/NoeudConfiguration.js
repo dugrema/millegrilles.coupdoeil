@@ -351,7 +351,7 @@ class ConfigurerDomaine extends React.Component {
 
   soumettre = async event => {
     const infoInternet = this.state
-    const commande = {
+    var commande = {
       domaine: infoInternet.domaine,
       modeTest: infoInternet.modeTest,
     }
