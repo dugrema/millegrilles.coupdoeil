@@ -1,10 +1,11 @@
-import React from 'react'
+import React, {useState, useEffect} from 'react'
 import {Row, Col, Button, Form, InputGroup, FormControl, Alert} from 'react-bootstrap'
 import path from 'path'
 import axios from 'axios'
 
 import {MilleGrillesCryptoHelper} from '@dugrema/millegrilles.common/lib/cryptoSubtle'
-import { chargerCertificatPEM } from '@dugrema/millegrilles.common/lib/forgecommon'
+//import { chargerCertificatPEM } from '@dugrema/millegrilles.common/lib/forgecommon'
+import { pki as forgePki } from 'node-forge'
 import { prendrePossession } from './ConfigurationNoeudsListe'
 
 export class CommandeHttp extends React.Component {
@@ -13,13 +14,14 @@ export class CommandeHttp extends React.Component {
     urlNoeud: '',
     etatNoeud: 'inconnu',
     confirmation: '',
+    noeudInfo: '',
     erreur: '',
   }
 
   componentDidMount() {
     // console.debug("Configuration MQ noeud, props : %O", this.props)
 
-    const noeudInfo = this.props.noeudInfo
+    const noeudInfo = this.props.noeudInfo || ''
     var urlNoeud = noeudInfo.domaine || noeudInfo.ip_detectee
     this.setState({urlNoeud})
 
@@ -96,7 +98,7 @@ export class CommandeHttp extends React.Component {
       if(idmg === this.props.rootProps.idmg) {
         var certificat = null, expirationCertificat = null
         try {
-          certificat = chargerCertificatPEM(reponse.data.certificat)
+          certificat = forgePki.certificateFromPem(reponse.data.certificat)
           console.debug("Certificat noeud : %O", certificat)
         } catch(err) {console.warn("Erreur chargement certificat %O", err)}
         this.setState({
@@ -162,8 +164,7 @@ export class CommandeHttp extends React.Component {
           </InputGroup.Append>
         </InputGroup>
 
-        <AfficherInfoConfiguration noeudInfo={this.state.noeudInfo}
-                                   certificat={this.state.certificat}
+        <AfficherInfoConfiguration noeudInfo={this.state.noeudInfo || ''}
                                    renouveler={this.renouvelerCertificat}
                                    rootProps={this.props.rootProps} />
 
@@ -819,16 +820,67 @@ function AfficherInfoConfiguration(props) {
       </Row>
 
       <h2>Certificat</h2>
-      <Row>
-        <Col>Expiration du certificat</Col>
-        <Col>{props.certificat?''+props.certificat.validity.notAfter:"N/D"}</Col>
-      </Row>
+      <AfficherExpirationCertificat pem={props.noeudInfo.certificat || ''}/>
       <Row>
         <Col></Col>
         <Col>
           <Button onClick={props.renouveler}
                   disabled={!props.rootProps.modeProtege}>Renouveler</Button>
         </Col>
+      </Row>
+    </>
+  )
+}
+
+function AfficherExpirationCertificat(props) {
+  const [certificat, setCertificat] = useState('')
+  useEffect(_=>{
+    const pem = props.pem
+    var cert = ''
+    if(pem) {
+      try {
+        console.debug("PEM : %O", pem)
+        cert = forgePki.certificateFromPem(pem)
+        console.debug("Cert : %O", cert)
+      } catch(err) {
+        console.error("Erreur chargement certificat noeud: %O", err)
+      }
+    }
+    setCertificat(cert)
+  }, [props.pem])
+
+  const validity = certificat.validity || ''
+
+  var notAfter = '', expirationDuree = ''
+  if(validity) {
+    notAfter = '' + validity.notAfter
+    const expirationDureeMs = validity.notAfter.getTime() - new Date().getTime()
+    if(expirationDureeMs < 0) {
+      expirationDuree = 'Expire'
+    } else {
+      const jourMs = 1000*60*60*24
+      if(expirationDureeMs > jourMs) {
+        const expirationDureeJours = expirationDureeMs / jourMs
+        expirationDuree = Math.floor(expirationDureeJours) + ' jours'
+      } else {
+        const expirationDureeHeures = expirationDureeMs / (1000*60*60)
+        expirationDuree = Math.floor(expirationDureeHeures) + ' heures'
+      }
+    }
+    console.debug("Expiration duree : %O", expirationDuree)
+  } else {
+    return ''
+  }
+
+  return (
+    <>
+      <Row>
+        <Col>Expiration du certificat</Col>
+        <Col>{notAfter}</Col>
+      </Row>
+      <Row>
+        <Col>Expiration duree</Col>
+        <Col>{expirationDuree}</Col>
       </Row>
     </>
   )
