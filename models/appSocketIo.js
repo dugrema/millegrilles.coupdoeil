@@ -331,7 +331,7 @@ async function genererCertificatNoeud(socket, commande, cb) {
     // Commande nowait - c'est un broadcast (global), il faut capturer les
     // evenements de demarrage individuels (evenement.backup.backupTransactions)
     // pour savoir quels domaines ont repondu
-    const reponse = await amqpdao.transmettreCommande(domaineAction, commande)
+    const reponse = await amqpdao.transmettreCommande(domaineAction, commande, {attacherCertificat: true})
     debug("genererCertificatNoeud: Reponse demande certificat\n%O", reponse)
 
     const certificatPem = reponse.cert

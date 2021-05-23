@@ -49,7 +49,7 @@ export class CommandeHttp extends React.Component {
 
       const domaineAction = 'servicemonitor.genererCsr'
       // await signateurTransaction.preparerTransaction(transaction, domaineTransaction)
-      const commande = await this.props.rootProps.chiffrageWorker.formatterMessage({}, domaineAction)
+      const commande = await this.props.rootProps.chiffrageWorker.formatterMessage({}, domaineAction, {attacherCertificat: true})
 
       const reponse = await axios({
         method: 'post',
