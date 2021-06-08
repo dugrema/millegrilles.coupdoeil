@@ -3,7 +3,7 @@ import {getCertificats, getClesPrivees} from '@dugrema/millegrilles.common/lib/b
 import {splitPEMCerts} from '@dugrema/millegrilles.common/lib/forgecommon'
 
 /* eslint-disable-next-line */
-import ChiffrageWorker from 'worker-loader!@dugrema/millegrilles.common/lib/browser/chiffrage.worker'
+import ChiffrageWorker from '@dugrema/millegrilles.common/lib/browser/chiffrage.worker'
 import ConnexionWorker from './connexion.worker'
 
 export async function setupWorkers(app) {
@@ -89,23 +89,24 @@ export async function preparerWorkersAvecCles(nomUsager, chiffrageWorker, connex
     const clesPrivees = await getClesPrivees(nomUsager)
 
     // Initialiser le CertificateStore
+    console.debug("chiffrageWorker.initialiserCertificateStore")
     await chiffrageWorker.initialiserCertificateStore([...fullchain].pop(), {isPEM: true, DEBUG: false})
     console.debug("Certificat : %O, Cles privees : %O", certInfo.fullchain, clesPrivees)
 
-    // Initialiser web worker
-    await chiffrageWorker.initialiserFormatteurMessage({
+    const paramsCert = {
       certificatPem: certInfo.fullchain,
       clePriveeSign: clesPrivees.signer,
       clePriveeDecrypt: clesPrivees.dechiffrer,
       DEBUG: true
-    })
+    }
 
-    await connexionWorker.initialiserFormatteurMessage({
-      certificatPem: certInfo.fullchain,
-      clePriveeSign: clesPrivees.signer,
-      clePriveeDecrypt: clesPrivees.dechiffrer,
-      DEBUG: true
-    })
+    // Initialiser web worker
+    await chiffrageWorker.initialiserFormatteurMessage(paramsCert)
+    console.debug("chiffrageWorker certs/cles initialises")
+
+    await connexionWorker.initialiserFormatteurMessage(paramsCert)
+    console.debug("connexionWorker certs/cles initialises")
+
   } else {
     throw new Error("Pas de cert")
   }

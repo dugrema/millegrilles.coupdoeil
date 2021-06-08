@@ -104,36 +104,10 @@ export default class AppTopLevel extends React.Component {
   })
 
   async preparerWorkersAvecCles() {
+    console.debug("Preparation workers avec cle %O", this.state)
     const {nomUsager, chiffrageWorker, connexionWorker} = this.state
     await preparerWorkersAvecCles(nomUsager, chiffrageWorker, connexionWorker)
-
-    // // Initialiser certificat de MilleGrille et cles si presentes
-    // const certInfo = await getCertificats(nomUsager)
-    // if(certInfo && certInfo.fullchain) {
-    //   const fullchain = splitPEMCerts(certInfo.fullchain)
-    //   const clesPrivees = await getClesPrivees(nomUsager)
-    //
-    //   // Initialiser le CertificateStore
-    //   await chiffrageWorker.initialiserCertificateStore([...fullchain].pop(), {isPEM: true, DEBUG: false})
-    //   console.debug("Certificat : %O, Cles privees : %O", certInfo.fullchain, clesPrivees)
-    //
-    //   // Initialiser web worker
-    //   await chiffrageWorker.initialiserFormatteurMessage({
-    //     certificatPem: certInfo.fullchain,
-    //     clePriveeSign: clesPrivees.signer,
-    //     clePriveeDecrypt: clesPrivees.dechiffrer,
-    //     DEBUG: true
-    //   })
-    //
-    //   await connexionWorker.initialiserFormatteurMessage({
-    //     certificatPem: certInfo.fullchain,
-    //     clePriveeSign: clesPrivees.signer,
-    //     clePriveeDecrypt: clesPrivees.dechiffrer,
-    //     DEBUG: true
-    //   })
-    // } else {
-    //   throw new Error("Pas de cert")
-    // }
+    console.debug("preparerWorkersAvecCles pret")
   }
 
   setEtatProtege = comlinkProxy(reponse => {
@@ -159,15 +133,6 @@ export default class AppTopLevel extends React.Component {
     console.debug("Set sous-menu application")
     this.setState({sousMenuApplication})
   }
-
-  // setWebsocketApp = websocketApp => {
-  //   // Set la connexion Socket.IO. Par defaut, le mode est prive (lecture seule)
-  //   this.setState({websocketApp, modeProtege: false})
-  // }
-
-  // setConnexionSocketIo = connexionSocketIo => {
-  //   this.setState({connexionSocketIo})
-  // }
 
   toggleProtege = async () => {
     if( this.state.modeProtege ) {
@@ -200,15 +165,6 @@ export default class AppTopLevel extends React.Component {
     }
   }
 
-  // // Cle de MilleGrille, dict format {signer: subtle, dechiffrer: subtle}.
-  // setCleMillegrille = cleMillegrille => {
-  //   if(cleMillegrille.currentTarget) {
-  //     // Reset la cle (vider)
-  //     cleMillegrille = null
-  //   }
-  //   this.setState({cleMillegrille}, _=>{console.debug("State cle MilleGrille : %O", this.state)})
-  // }
-
   render() {
 
     const rootProps = {
@@ -235,34 +191,6 @@ export default class AppTopLevel extends React.Component {
   }
 
 }
-
-// export class ConnexionWebsocket extends React.Component {
-//
-//   state = {
-//     erreur: false,
-//     erreurMessage: '',
-//   }
-//
-//   componentDidMount() {
-//     this.authentifier()
-//   }
-//
-//   async authentifier() {
-//     const connexionSocketIo = openSocketHelper()
-//     this.props.setConnexionSocketIo(connexionSocketIo)
-//   }
-//
-//   render() {
-//     let page;
-//     if(this.state.erreur) {
-//       page = <p>Erreur : {this.state.erreurMessage}</p>
-//     } else {
-//       page = <p>Connexion a Socket.IO de Coup D'Oeil en cours ...</p>
-//     }
-//
-//     return page
-//   }
-// }
 
 export class LayoutCoudpoeil extends React.Component {
 
@@ -364,37 +292,3 @@ function Menu(props) {
     </Navbar>
   )
 }
-
-// export function MenuItems(props) {
-//   return (
-//     <Nav className="mr-auto" activeKey={props.section} onSelect={props.changerPage}>
-//       <Nav.Item>
-//         <Nav.Link eventKey='Principale'>
-//           <Trans>menu.Principal</Trans>
-//         </Nav.Link>
-//       </Nav.Item>
-//       <Dropdown as={NavItem}>
-//         <Dropdown.Toggle as={NavLink}><Trans>menu.Parametres</Trans></Dropdown.Toggle>
-//         <Dropdown.Menu>
-//           <Dropdown.Item eventKey="Parametres"><Trans>menu.Parametres</Trans></Dropdown.Item>
-//           <Dropdown.Item eventKey="Backup"><Trans>menu.Backup</Trans></Dropdown.Item>
-//           <Dropdown.Item eventKey="Hebergement"><Trans>menu.Hebergement</Trans></Dropdown.Item>
-//           <Dropdown.Item eventKey="Pki"><Trans>menu.Pki</Trans></Dropdown.Item>
-//         </Dropdown.Menu>
-//       </Dropdown>
-//     </Nav>
-//   )
-// }
-
-// function openSocketHelper() {
-//   let socket = openSocket('/', {
-//     path: '/coupdoeil/socket.io',
-//     reconnection: true,
-//     reconnectionAttempts: 30,
-//     reconnectionDelay: 500,
-//     reconnectionDelayMax: 30000,
-//     randomizationFactor: 0.5
-//   })
-//
-//   return socket;
-// }
