@@ -85,6 +85,12 @@ export class MenuItems extends React.Component {
 
         {domaines}
 
+        <Nav.Item>
+          <Nav.Link eventKey='GestionUsagers'>
+            <Trans>menu.GestionUsagers</Trans>
+          </Nav.Link>
+        </Nav.Item>
+
       </Nav>
     )
   }

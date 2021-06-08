@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {Suspense} from 'react'
 
 import {Backup} from './Backup'
 import {PageConfigurationNoeudsListe as ConfigurationNoeuds} from './ConfigurationNoeudsListe'
@@ -14,6 +14,8 @@ import {ParametresCataloguesApplications} from './DomaineCatalogueApplications'
 import {ParametresGrosFichiers} from './DomaineGrosFichiers'
 import {DomaineMaitredescles} from './DomaineMaitredescles'
 
+const GestionUsagers = React.lazy(_=>import('./GestionUsagers'))
+
 const domainesConnus = {
   Accueil,
   Principale,
@@ -27,6 +29,7 @@ const domainesConnus = {
   CatalogueApplications: ParametresCataloguesApplications,
   MaitreDesCles: DomaineMaitredescles,
   GrosFichiers: ParametresGrosFichiers,
+  GestionUsagers,
 };
 
 export function SectionContenu(props) {
@@ -40,5 +43,13 @@ export function SectionContenu(props) {
     contenu = <p>Section non definie : "{props.rootProps.page}"</p>
   }
 
-  return contenu
+  return (
+    <Suspense fallback={<ChargementEnCours/>}>
+      {contenu}
+    </Suspense>
+  )
+}
+
+function ChargementEnCours(props) {
+  return <p>Chargement en cours</p>
 }

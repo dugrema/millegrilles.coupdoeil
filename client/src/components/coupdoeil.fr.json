@@ -83,16 +83,6 @@
         "modeDeploiement": "Mode de déploiement",
         "modeDeploiementExplication": "Sélectionner le mode de transfert des fichiers vers Vitrine."
       },
-      "menuVitrine": {
-        "albums": "Albums",
-        "messages": "Messages",
-        "blogs": "Blog",
-        "podcasts": "Podcasts",
-        "fichiers": "Fichiers",
-        "senseursPassifs": "Senseurs Passifs",
-        "autres": "Autres",
-        "changerLangue": "English"
-      },
       "erreurs": {
         "titre": "Erreurs",
         "date": "Date :",
@@ -101,47 +91,6 @@
         "messageOriginal": "Message original",
         "traceback": "StackTrace / TraceBack",
         "supprimerTout": "Supprimer tout"
-      }
-    },
-    "plume": {
-      "pageTitre": {
-        "titre": "Plume",
-        "description": "Plume est un éditeur de documents.",
-        "liensAnnonces": "Annonces",
-        "liensDocuments": "Documents",
-        "liensVitrine": "Vitrine",
-        "liensBlogs": "Blogs"
-      },
-      "annonces": {
-        "titre": "Annonces",
-        "description": "Les annonces sont de courts messages publics affichés dans Vitrine.",
-        "nouvelleAnnonce": "Nouvelle annonce",
-        "descriptionNouvelleAnnonce": "Publier une annonce",
-        "recentes": "Annonces récentes",
-        "sujetNouvelleAnnonce": "Sujet (optionnel)",
-        "sujetNouvelleAnnonceInfo": "Disponible : {{restants}} sur {{max}}",
-        "texteNouvelleAnnonce": "Texte",
-        "texteNouvelleAnnonceInfo": "Disponible : {{restants}} sur {{max}}",
-        "nouvelleAnnonceBoutonPublier": "Publier"
-      },
-      "vitrine": {
-        "titre": "Vitrine",
-        "sectionAccueil": "Accueil",
-        "messageBienvenue": "Message de bienvenue du Jumbotron",
-        "ajouterColonne": "Ajouter une colonne",
-        "accueilImage": "Image",
-        "selectionnerImage": "Sélectionner une image (fuuid)",
-        "changerImage": "Changer",
-        "retirerImage": "Supprimer",
-        "accueilTitre": "Titre de la colonne",
-        "accueilTexte": "Texte de la colonne",
-        "accueilLiens": "Liens au bas de la colonne",
-        "ajouterLiens": "Ajouter lien"
-      },
-      "blogs": {
-        "titre": "Blogs",
-        "nouveauBlogpost": "Nouveau",
-        "chargerBlogposts": "Suivant"
       }
     },
     "grosFichiers": {
@@ -191,18 +140,6 @@
         "boutonResetBackup": "Reset transactions"
       }
     },
-    "hebergement": {
-      "initiale": {
-        "titre": "Hébergement de MilleGrilles",
-        "millegrillesHebergees": "MilleGrilles hébergées"
-      },
-      "millegrillesHebergees": {
-        "titre": "MilleGrilles hébergées",
-        "idmg": "MilleGrille",
-        "etat": "État",
-        "actions": "Actions"
-      }
-    },
     "menu": {
       "Accueil": "Accueil",
       "Noeuds": "Noeuds",
@@ -210,6 +147,7 @@
       "Favoris": "Favoris",
       "AjouterNoeuds": "Ajouter",
       "GererFavoris": "Gestion favoris",
+      "GestionUsagers": "Usagers",
       "Principal": "Principal",
       "Parametres": "Parametres",
       "Backup": "Backup",
