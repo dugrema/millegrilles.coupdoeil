@@ -1,6 +1,6 @@
 {
   "name": "millegrilles.coupdoeil",
-  "version": "1.42.0",
+  "version": "1.43.0",
   "main": "index.js",
   "private": true,
   "repository": {
@@ -13,19 +13,19 @@
     "test": "node ./bin/test"
   },
   "dependencies": {
-    "@dugrema/millegrilles.common": "https://github.com/dugrema/millegrilles.common.nodejs.git#1.42",
-    "debug": "~2.6.9",
-    "express": "~4.16.4",
-    "express-session": "^1.17.1",
+    "@dugrema/millegrilles.common": "https://github.com/dugrema/millegrilles.common.nodejs.git#1.43",
+    "debug": "~4.3.1",
+    "express": "~4.17.1",
+    "express-session": "^1.17.2",
     "express-socket.io-session": "^1.3.5",
-    "http-errors": "~1.6.3",
+    "http-errors": "~1.8.0",
     "json-stable-stringify": "^1.0.1",
-    "morgan": "~1.9.1",
-    "node-forge": "^0.8.5",
+    "morgan": "~1.10.0",
+    "node-forge": "^0.10.0",
     "request": "^2.88.2",
     "socket.io": "^3.1.2",
     "spdy": "^4.0.2",
     "tmp": "^0.2.1",
-    "uuid": "^3.4.0"
+    "uuid": "^8.3.2"
   }
 }

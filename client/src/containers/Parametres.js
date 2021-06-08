@@ -2,7 +2,6 @@ import React from 'react';
 // import { Form, Container, Row, Col } from 'react-bootstrap';
 // import { Trans } from 'react-i18next';
 import { Feuille } from '../components/Feuilles';
-import { NoeudsPublics } from './ParametresNoeudsPublics'
 import { ParametresErreurs } from './ParametresErreurs'
 import './Parametres.css';
 
@@ -64,7 +63,6 @@ export class Parametres extends React.Component {
 
   sousPages = {
     'ActionsInterdites': ActionsInterdites,
-    NoeudsPublics, ParametresErreurs,
   }
 
   fonctionsNavigation = {
@@ -83,12 +81,6 @@ export class Parametres extends React.Component {
         <h2 className="w3-opacity">Parametres d&apos;administration de la MilleGrille</h2>
 
         <ul>
-          <li>
-            <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="NoeudsPublics">
-              Noeuds publics
-            </button>
-            : Déploiements de la MilleGrille sur internet
-          </li>
           <li>
             <button className="aslink" onClick={this.fonctionsNavigation.afficherEcran} value="ActionsInterdites">
               Actions interdites

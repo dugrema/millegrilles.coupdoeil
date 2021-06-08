@@ -72,7 +72,7 @@ async function connecterReact(connexionWorker, app) {
   /* Helper pour connecter le worker avec socketIo.
      - connexionWorker : proxu de connexionWorker deja initialise
      - app : this d'une classe React */
-  const infoIdmg = await connexionWorker.connecter()
+  const infoIdmg = await connexionWorker.connecter({location: ''+window.location})
   console.debug("Connexion socket.io completee, info idmg : %O", infoIdmg)
   app.setState({...infoIdmg})
 
