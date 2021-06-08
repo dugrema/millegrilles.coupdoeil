@@ -30,15 +30,6 @@ export class ApplicationCoupdoeil extends React.Component {
         this.setState({websocketApp: wsa})
       })
 
-    // const webSocketManager = new WebSocketManager(this.props.rootProps.connexionSocketIo)
-    // this.props.rootProps.connexionSocketIo.emit('changerApplication', 'coupdoeil', reponse=>{
-    //   if(reponse && reponse.err) {
-    //     console.error("Erreur enregistrements coupdoeil socket.io :\n%O", reponse)
-    //     return
-    //   }
-    //   this.setState({websocketApp: webSocketManager})
-    // })
-
     this.props.setSousMenuApplication(
       <MenuItems
         changerPage={this.changerPage}

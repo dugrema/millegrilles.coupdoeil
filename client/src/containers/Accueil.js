@@ -133,22 +133,6 @@ class AfficherSommaireDomaines extends React.Component {
       <div>
         <h2>Domaines</h2>
 
-        <Row>
-          <Col md={10}>
-            <Form.Group controlId="installer_domaine">
-              <Form.Control as="select" onChange={this.setInstallerDomaine}>
-                <option>Choisir un nouveau domaine a installer</option>
-                {domainesDynamiques}
-              </Form.Control>
-            </Form.Group>
-          </Col>
-          <Col>
-            <Button onClick={this.installerDomaine}
-                    variant="secondary"
-                    disabled={!this.props.rootProps.modeProtege}>Installer</Button>
-          </Col>
-        </Row>
-
         {mappingDomaines}
       </div>
     )
