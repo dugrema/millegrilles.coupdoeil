@@ -128,6 +128,9 @@ function commandeTransmettreCatalogues(commande) {
 function genererCertificatNavigateur(params) {
   return connexionClient.emitBlocking('genererCertificatNavigateur', params)
 }
+function resetWebauthn(userId) {
+  return connexionClient.emitBlocking('maitrecomptes/resetWebauthn', {userId})
+}
 
 comlinkExpose({
   ...connexionClient,
@@ -145,5 +148,5 @@ comlinkExpose({
   configurerConsignationWeb, soumettreTransactionMaitredescles, clearFichierPublie,
   uploadCollectionsPubliques, commandeTransmettreCatalogues,
 
-  requeteListeUsagers, requeteUsager, genererCertificatNavigateur,
+  requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
 })

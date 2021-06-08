@@ -65,6 +65,10 @@ function AfficherUsager(props) {
     chargerUsager(props.workers.connexion, {userId: props.userId}, setUsager)
   }, [])
 
+  const reloadUsager = useCallback(_=>{
+    chargerUsager(props.workers.connexion, {userId: props.userId}, setUsager)
+  }, [])
+
   return (
     <>
       <h2>Usager</h2>
@@ -76,7 +80,8 @@ function AfficherUsager(props) {
                                  workers={props.workers} />
 
       <GestionWebauthn usager={usager}
-                       workers={props.workers} />
+                       workers={props.workers}
+                       reloadUsager={reloadUsager} />
 
     </>
   )
@@ -145,201 +150,46 @@ function AfficherActivationsUsager(props) {
 
 function GestionWebauthn(props) {
 
-  const webauthn = props.usager.webauthn || []
+  const [err, setErr] = useState('')
+  const [confirmation, setConfirmation] = useState('')
+
+  const usager = props.usager || {},
+        webauthn = usager.webauthn || [],
+        userId = usager.userId
+
+  const {connexion} = props.workers
+
+  const resetWebauthn = async event => {
+    try {
+      await connexion.resetWebauthn(userId)
+      setConfirmation('Reset webauthn complete')
+      props.reloadUsager()
+    } catch(err) {
+      setErr(''+err)
+    }
+  }
 
   return (
     <>
       <h3>Authentification webauthn</h3>
 
+      <Alert variant="danger" show={err?true:false}>{err}</Alert>
+      <Alert variant="success" show={confirmation?true:false}>{confirmation}</Alert>
+
       <Row>
         <Col lg={3}>Nombre autorisations</Col>
         <Col lg={3}>{webauthn.length}</Col>
         <Col>
-          <Button variant="danger" disabled={webauthn.length===0}>Reset webauthn</Button>
+          <Button variant="danger"
+                  onClick={resetWebauthn}
+                  disabled={webauthn.length===0}>
+            Reset webauthn
+          </Button>
         </Col>
       </Row>
     </>
   )
 }
-
-// class ActiverCSR extends React.Component {
-//
-//   state = {
-//     appareils: '',  // videoinput doit etre dans la liste pour camera
-//     modeScanQR: false,
-//     modeCollerCSR: false,
-//     data: '',
-//     pem: '',
-//     pemTextArea: '',
-//     certificatOk: false,
-//     err: '',
-//   }
-//
-//   componentDidMount() {
-//     detecterAppareilsDisponibles().then(apps=>{
-//       console.debug("Apps detectees : %O", apps);
-//       this.setState({appareils: apps})
-//     })
-//   }
-//
-//   activerScanQr = _ => {this.setState({modeScanQR: true})}
-//   fermerScanQr = _ => {this.setState({modeScanQR: false})}
-//   erreurScanQr = event => {console.error("Erreur scan QR: %O", event); this.fermerScanQr()}
-//
-//   activerCollerCSR = _=> {this.setState({modeCollerCSR: true})}
-//
-//   handleScan = async data => {
-//     this.setState({data}, _=>{ this.traiterCsr() })
-//   }
-//
-//   traiterCsr() {
-//     console.debug("State : %O", this.state)
-//
-//     // Convertir data en base64, puis ajouter header/footer CSR
-//     const dataB64 = btoa(this.state.data)
-//     const pem = `-----BEGIN CERTIFICATE REQUEST-----\n${dataB64}\n-----END CERTIFICATE REQUEST-----`
-//
-//     // Verifier avec nodeForge
-//     try {
-//       const csrForge = forgePki.certificationRequestFromPem(pem)
-//       const nomUsager = csrForge.subject.getField('CN').value
-//
-//       if(this.props.rootProps.nomUsager !== nomUsager) {
-//         throw new Error(`Nom usager ${nomUsager} du code QR ne correspond pas a votre compte actuel`)
-//       }
-//
-//       this.setState({data: '', err: '', pem, nomUsager, modeScanQR: false})
-//     } catch(err) {
-//       this.setState({err})
-//     }
-//   }
-//
-//   setPemTextArea = event => {
-//     const pem = event.currentTarget.value
-//     this.setState({pemTextArea: pem})
-//
-//     if(!pem) return
-//
-//     // Valider le contenu
-//     try {
-//       const csrForge = forgePki.certificationRequestFromPem(pem)
-//       const nomUsager = csrForge.subject.getField('CN').value
-//
-//       if(this.props.rootProps.nomUsager !== nomUsager) {
-//         throw new Error(`Nom usager ${nomUsager} du code QR ne correspond pas a votre compte actuel`)
-//       }
-//
-//       this.setState({data: '', err: '', pem, nomUsager, modeCollerCSR: false})
-//     } catch(err) {
-//       console.error("Erreur PEM : %O", err)
-//     }
-//
-//   }
-//
-//   activer = async _ => {
-//     const cw = this.props.rootProps.connexionWorker
-//     const nomUsager = this.props.rootProps.nomUsager
-//
-//     const requeteGenerationCertificat = {
-//       nomUsager,
-//       csr: this.state.pem,
-//       activationTierce: true,  // Flag qui indique qu'on active manuellement un certificat
-//     }
-//     console.debug("Requete generation certificat navigateur: \n%O", requeteGenerationCertificat)
-//
-//     try {
-//       const reponse = await cw.genererCertificatNavigateur(requeteGenerationCertificat)
-//       console.debug("Reponse cert recue %O", reponse)
-//       // var {cert: certificatNavigateur, fullchain} = reponse
-//       if(reponse && !reponse.err) {
-//         this.setState({pem: '', err: '', certificatOk: true})
-//       } else {
-//         this.setState({pem: '', err: "Erreur reception confirmation d'activation"})
-//       }
-//     } catch(err) {
-//       console.error("Erreur activation CSR : %O", err)
-//       this.setState({err})
-//     }
-//
-//   }
-//
-//   render() {
-//     var errStack = ''
-//     if(this.err) {
-//       errStack = <pre>this.err.stack</pre>
-//     }
-//
-//     return (
-//       <Container>
-//         <h2>Activer code QR</h2>
-//
-//         <Alert variant="danger" show={this.err?true:false}>
-//           <Alert.Heading>Erreur</Alert.Heading>
-//           <p>{''+this.err}</p>
-//           {errStack}
-//         </Alert>
-//
-//         <p>
-//           Cette page permet de copier ou scanner un code QR pour activer
-//           votre compte sur un nouvel appareil.
-//         </p>
-//
-//         <Row>
-//           <Col>
-//             <BoutonScan modeScanQR={this.state.modeScanQR}
-//                         activerScanQr={this.activerScanQr}
-//                         fermerScanQr={this.fermerScanQr} />
-//           </Col>
-//         </Row>
-//
-//         <QRCodeReader actif={this.state.modeScanQR}
-//                       handleScan={this.handleScan}
-//                       handleError={this.erreurScanQr} />
-//
-//         <Row>
-//           <Col>
-//             <CollerCSR afficherCollerCsr={this.state.modeCollerCSR}
-//                        activerCollerCSR={this.activerCollerCSR}
-//                        changerTexte={this.setPemTextArea}
-//                        texte={this.state.pemTextArea} />
-//           </Col>
-//         </Row>
-//
-//         <Alert variant="info" show={this.state.pem?true:false}>
-//           <Alert.Heading>Code QR pret</Alert.Heading>
-//           <p>Le code QR correspond a l'usager {this.state.nomUsager}</p>
-//           <p>
-//             Si cette information est correcte, cliquez sur le bouton activer pour poursuivre.
-//           </p>
-//         </Alert>
-//
-//         <Alert variant="success" show={this.state.certificatOk}>
-//           <Alert.Heading>Succes</Alert.Heading>
-//           <p>
-//             Vous pouvez maintenant cliquer sur Suivant avec votre autre appareil,
-//             le compte est active.
-//           </p>
-//         </Alert>
-//
-//         <Row>
-//           <Col className="button-list">
-//             <Button onClick={this.activer} variant="primary">Activer</Button>
-//             <Button onClick={this.props.revenir} variant="secondary">Annuler</Button>
-//           </Col>
-//         </Row>
-//
-//       </Container>
-//     )
-//   }
-// }
-
-// function BoutonScan(props) {
-//   if(props.modeScanQR) {
-//     return <Button onClick={props.fermerScanQr}>Arreter</Button>
-//   } else {
-//     return <Button onClick={props.activerScanQr}>Scan</Button>
-//   }
-// }
 
 function CollerCSR(props) {
 
@@ -418,10 +268,12 @@ function CollerCSR(props) {
 }
 
 async function activerCsr(connexionWorker, csr, nomUsager, userId) {
-  console.debug("Activer CSR %O", csr)
+  // console.debug("Activer CSR %O", csr)
+
   // Generer certificat - l'usager va pouvoir y acceder a son prochain login
   const cert = await connexionWorker.genererCertificatNavigateur({csr, nomUsager, userId})
-  console.debug("Certificat genere : %O", cert)
+
+  // console.debug("Certificat genere : %O", cert)
 }
 
 function QRCodeReader(props) {
@@ -526,7 +378,7 @@ function QRCodeReader(props) {
         </Row>
         <Row>
           <Col>
-e            <Button onClick={_activerCsr} disabled={csr?false:true}>Activer</Button>
+            <Button onClick={_activerCsr} disabled={csr?false:true}>Activer</Button>
           </Col>
         </Row>
 
@@ -536,15 +388,6 @@ e            <Button onClick={_activerCsr} disabled={csr?false:true}>Activer</Bu
 }
 
 function traiterCsr(pem, nomUsager) {
-  // Convertir data en base64, puis ajouter header/footer CSR
-  // let pem
-  // if(typeof(csr) === 'string') {
-  //   pem = csr
-  // } else {
-  //   const dataB64 = btoa(csr)
-  //   pem = `-----BEGIN CERTIFICATE REQUEST-----\n${dataB64}\n-----END CERTIFICATE REQUEST-----`
-  // }
-
   // Verifier avec nodeForge
   const csrForge = forgePki.certificationRequestFromPem(pem)
   const nomUsagerCsr = csrForge.subject.getField('CN').value

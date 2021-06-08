@@ -15,6 +15,7 @@ function configurerEvenements(socket) {
 
       {eventName: 'maitrecomptes/requeteListeUsagers', callback: (params, cb) => {requeteListeUsagers(socket, params, cb)}},
       {eventName: 'maitrecomptes/requeteUsager', callback: (params, cb) => {requeteUsager(socket, params, cb)}},
+      {eventName: 'maitrecomptes/resetWebauthn', callback: (params, cb) => {resetWebauthn(socket, params, cb)}},
     ],
     listenersProteges: [
       {eventName: 'coupdoeil/ajouterCatalogueApplication', callback: (transaction, cb) => {
@@ -524,51 +525,30 @@ async function commandeTransmettreCatalogues(socket, commande, cb) {
 
 async function genererCertificatNavigateurWS(socket, params) {
   debug("Generer certificat navigateur, params: %O", params)
-  // const session = socket.handshake.session
-  //
-  // const nomUsager = session.nomUsager,
-  //       userId = session.userId
-  // const modeProtege = socket.modeProtege
 
   const csr = params.csr,
         nomUsager = params.nomUsager,
         userId = params.userId
-
+  const comptesUsagers = socket.comptesUsagers
   const opts = {}
-  // if(params.activationTierce) {
-  //   opts.activationTierce = true
-  // }
 
-  // const paramsCreationCertificat = {estProprietaire, modeProtege, nomUsager, csr}
-  // debug("Parametres creation certificat navigateur\n%O", paramsCreationCertificat)
+  const reponse = await comptesUsagers.signerCertificatNavigateur(csr, nomUsager, userId, opts)
+  debug("Reponse signature certificat:\n%O", reponse)
 
-  // if(modeProtege) {
-    // debug("Handshake du socket sous genererCertificatNavigateurWS : %O", socket.handshake)
-    // const session = socket.handshake.session
-    const comptesUsagers = socket.comptesUsagers
-    //
-    // // Valider l'existence du compte et verifier si on a un compte special (e.g. proprietaire)
-    // const compteUsager = await comptesUsagers.chargerCompte(nomUsager)
-    // if(!compteUsager) {
-    //   throw new Error("Compte usager inconnu : " + nomUsager)
-    // }
-    //
-    // debug("Information compte usager pour signature certificat : %O", compteUsager)
-    // debug("Usager : nomUsager=%s, userId=%s", nomUsager, userId)
-    // opts.estProprietaire = compteUsager.est_proprietaire?true:false
+  return reponse
+}
 
-    const reponse = await comptesUsagers.signerCertificatNavigateur(csr, nomUsager, userId, opts)
-    debug("Reponse signature certificat:\n%O", reponse)
+async function resetWebauthn(socket, params) {
+  debug("resetWebauthn params: %O", params)
 
-    // const maitreClesDao = socket.handshake.maitreClesDao
-    // const reponse = await maitreClesDao.signerCertificatNavigateur(csr, nomUsager, estProprietaire)
-    // debug("Reponse signature certificat:\n%O", reponse)
+  const userId = params.userId
+  const comptesUsagers = socket.comptesUsagers
+  const opts = {}
 
-    return reponse
-  // } else {
-  //   throw new Error("Erreur, le socket n'est pas en mode protege")
-  // }
+  const reponse = await comptesUsagers.resetWebauthn(userId)
+  debug("Reponse reset webauthn %s:\n%O", userId, reponse)
 
+  return reponse
 }
 
 async function executerRequete(domaineAction, socket, params, cb) {
