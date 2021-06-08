@@ -84,7 +84,7 @@ export class ApplicationCoupdoeil extends React.Component {
       page = <p>Attente de connexion</p>
     } else {
       // 3. Afficher application
-      page = <SectionContenu rootProps={rootProps} />
+      page = <SectionContenu workers={this.props.workers} rootProps={rootProps} />
     }
 
     return page

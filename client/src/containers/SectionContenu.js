@@ -38,7 +38,7 @@ export function SectionContenu(props) {
 
   let contenu
   if(Page) {
-    contenu = <Page rootProps={props.rootProps} />
+    contenu = <Page workers={props.workers} rootProps={props.rootProps} />
   } else {
     contenu = <p>Section non definie : "{props.rootProps.page}"</p>
   }

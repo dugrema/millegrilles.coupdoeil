@@ -26,43 +26,13 @@ import manifest from './manifest.build.js'
 
 const NOM_USAGER_PROPRIETAIRE = 'proprietaire'
 
-// async function initWorker() {
-//   const worker = new WebWorker()
-//   const proxy = comlinkWrap(worker)
-//
-//   const certInfo = await getCertificats(NOM_USAGER_PROPRIETAIRE)
-//   if(certInfo && certInfo.fullchain) {
-//     const fullchain = splitPEMCerts(certInfo.fullchain)
-//     const clesPrivees = await getClesPrivees(NOM_USAGER_PROPRIETAIRE)
-//
-//     // Initialiser le CertificateStore
-//     await proxy.initialiserCertificateStore([...fullchain].pop(), {isPEM: true, DEBUG: false})
-//     console.debug("Certificat : %O, Cles privees : %O", certInfo.fullchain, clesPrivees)
-//
-//     // Initialiser web worker
-//     await proxy.initialiserFormatteurMessage({
-//       certificatPem: certInfo.fullchain,
-//       clePriveeSign: clesPrivees.signer,
-//       clePriveeDecrypt: clesPrivees.dechiffrer,
-//       DEBUG: false
-//     })
-//
-//   } else {
-//     throw new Error("Pas de cert charge")
-//   }
-//
-//   return {worker, proxy}
-// }
-
 export default class AppTopLevel extends React.Component {
 
   state = {
-    //websocketApp: null,         // Connexion socket.io
     modeProtege: false,         // Mode par defaut est lecture seule (prive)
     sousMenuApplication: null,
     connexionSocketIo: null,
 
-    // cleMillegrille: '',         // Cle de millegrille, key : signer, dechiffrer, value: format subtle
     webWorker: '',
     webWorkerInstance: '',
 
@@ -82,12 +52,6 @@ export default class AppTopLevel extends React.Component {
       this.toggleProtege()  // Tenter upgrade protege automatiquement
     })
 
-    // initWorker()
-    //   .then(({worker, proxy}) => {
-    //     this.setState({webWorkerInstance: worker, webWorker: proxy})
-    //     const cb = Comlink.proxy(this.setEtatCleMillegrille)
-    //     proxy.initialiserCallbackCleMillegrille(cb)
-    //   })
   }
 
   componentWillUnmount() {
@@ -173,13 +137,20 @@ export default class AppTopLevel extends React.Component {
       // setCleMillegrille: this.setCleMillegrille,
     }
 
+    const workers = {
+      connexion: this.state.connexionWorker,
+      chiffrage: this.state.chiffrageWorker,
+    }
+
     let page;
     if(!this.state.nomUsager || !this.state.connexionWorker) {
       // Connecter avec Socket.IO
       page = <p>Chargement en cours</p>
     } else {
       // 3. Afficher application
-      page = <ApplicationCoupdoeil setSousMenuApplication={this.setSousMenuApplication} rootProps={rootProps} />
+      page = <ApplicationCoupdoeil setSousMenuApplication={this.setSousMenuApplication}
+                                   workers={workers}
+                                   rootProps={rootProps} />
     }
 
     return <LayoutCoudpoeil

@@ -26,6 +26,9 @@ function requeteListeNoeuds(params) {
 function requeteListeDomaines() {
   return connexionClient.emitBlocking('coupdoeil/requeteListeDomaines')
 }
+function requeteListeUsagers() {
+  return connexionClient.emitBlocking('maitrecomptes/requeteListeUsagers', {})
+}
 function requeteCatalogueDomaines() {
   return connexionClient.emitBlocking('coupdoeil/requeteCatalogueDomaines')
 }
@@ -134,4 +137,6 @@ comlinkExpose({
   configurerApplication, demarrerApplication, regenererPreviews,
   configurerConsignationWeb, soumettreTransactionMaitredescles, clearFichierPublie,
   uploadCollectionsPubliques, commandeTransmettreCatalogues,
+
+  requeteListeUsagers,
 })

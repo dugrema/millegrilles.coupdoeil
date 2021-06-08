@@ -13,6 +13,7 @@ function configurerEvenements(socket) {
       {eventName: 'coupdoeil/getUploadsEnCours', callback: cb => {getUploadsEnCours(socket, cb)}},
       {eventName: 'coupdoeil/getDocumentParFuuid', callback: (params, cb) => {getDocumentParFuuid(socket, params, cb)}},
 
+      {eventName: 'maitrecomptes/requeteListeUsagers', callback: (params, cb) => {requeteListeUsagers(socket, params, cb)}},
     ],
     listenersProteges: [
       {eventName: 'coupdoeil/ajouterCatalogueApplication', callback: (transaction, cb) => {
@@ -558,6 +559,10 @@ function getUploadsEnCours(socket, cb) {
 
 function getDocumentParFuuid(socket, params, cb) {
   executerRequete('GrosFichiers.documentsParFuuid', socket, params, cb)
+}
+
+function requeteListeUsagers(socket, params, cb) {
+  executerRequete('MaitreDesComptes.getListeUsagers', socket, params, cb)
 }
 
 module.exports = {configurerEvenements}
