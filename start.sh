@@ -29,7 +29,8 @@ export SERVER_TYPE=spdy
 export NODE_ENV=development
 
 # Parametre module logging debug
-export DEBUG=millegrilles:*
+# export DEBUG=millegrilles:*
+export DEBUG=millegrilles:coupdoeil:coupdoeilSocketApp
 export DEV=1
 # export IDMG=JPtGcNcFSkfSdw49YsDpQHKxqTHMitpbPZW17a2JC54T
 

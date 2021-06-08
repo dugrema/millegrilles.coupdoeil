@@ -26,8 +26,12 @@ function requeteListeNoeuds(params) {
 function requeteListeDomaines() {
   return connexionClient.emitBlocking('coupdoeil/requeteListeDomaines')
 }
-function requeteListeUsagers() {
-  return connexionClient.emitBlocking('maitrecomptes/requeteListeUsagers', {})
+function requeteListeUsagers(params) {
+  params = params || {}
+  return connexionClient.emitBlocking('maitrecomptes/requeteListeUsagers', params)
+}
+function requeteUsager(params) {
+  return connexionClient.emitBlocking('maitrecomptes/requeteUsager', params)
 }
 function requeteCatalogueDomaines() {
   return connexionClient.emitBlocking('coupdoeil/requeteCatalogueDomaines')
@@ -121,6 +125,9 @@ function uploadCollectionsPubliques(commande) {
 function commandeTransmettreCatalogues(commande) {
   return connexionClient.emitBlocking('coupdoeil/commandeTransmettreCatalogues', commande)
 }
+function genererCertificatNavigateur(params) {
+  return connexionClient.emitBlocking('genererCertificatNavigateur', params)
+}
 
 comlinkExpose({
   ...connexionClient,
@@ -138,5 +145,5 @@ comlinkExpose({
   configurerConsignationWeb, soumettreTransactionMaitredescles, clearFichierPublie,
   uploadCollectionsPubliques, commandeTransmettreCatalogues,
 
-  requeteListeUsagers,
+  requeteListeUsagers, requeteUsager, genererCertificatNavigateur,
 })

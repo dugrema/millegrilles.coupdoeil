@@ -14,6 +14,7 @@ function configurerEvenements(socket) {
       {eventName: 'coupdoeil/getDocumentParFuuid', callback: (params, cb) => {getDocumentParFuuid(socket, params, cb)}},
 
       {eventName: 'maitrecomptes/requeteListeUsagers', callback: (params, cb) => {requeteListeUsagers(socket, params, cb)}},
+      {eventName: 'maitrecomptes/requeteUsager', callback: (params, cb) => {requeteUsager(socket, params, cb)}},
     ],
     listenersProteges: [
       {eventName: 'coupdoeil/ajouterCatalogueApplication', callback: (transaction, cb) => {
@@ -84,6 +85,9 @@ function configurerEvenements(socket) {
       }},
       {eventName: 'coupdoeil/commandeTransmettreCatalogues', callback: (commande, cb) => {
         commandeTransmettreCatalogues(socket, commande, cb)
+      }},
+      {eventName: 'genererCertificatNavigateur', callback: async (params, cb) => {
+        cb(await genererCertificatNavigateurWS(socket, params))
       }},
     ]
   }
@@ -518,6 +522,55 @@ async function commandeTransmettreCatalogues(socket, commande, cb) {
   }
 }
 
+async function genererCertificatNavigateurWS(socket, params) {
+  debug("Generer certificat navigateur, params: %O", params)
+  // const session = socket.handshake.session
+  //
+  // const nomUsager = session.nomUsager,
+  //       userId = session.userId
+  // const modeProtege = socket.modeProtege
+
+  const csr = params.csr,
+        nomUsager = params.nomUsager,
+        userId = params.userId
+
+  const opts = {}
+  // if(params.activationTierce) {
+  //   opts.activationTierce = true
+  // }
+
+  // const paramsCreationCertificat = {estProprietaire, modeProtege, nomUsager, csr}
+  // debug("Parametres creation certificat navigateur\n%O", paramsCreationCertificat)
+
+  // if(modeProtege) {
+    // debug("Handshake du socket sous genererCertificatNavigateurWS : %O", socket.handshake)
+    // const session = socket.handshake.session
+    const comptesUsagers = socket.comptesUsagers
+    //
+    // // Valider l'existence du compte et verifier si on a un compte special (e.g. proprietaire)
+    // const compteUsager = await comptesUsagers.chargerCompte(nomUsager)
+    // if(!compteUsager) {
+    //   throw new Error("Compte usager inconnu : " + nomUsager)
+    // }
+    //
+    // debug("Information compte usager pour signature certificat : %O", compteUsager)
+    // debug("Usager : nomUsager=%s, userId=%s", nomUsager, userId)
+    // opts.estProprietaire = compteUsager.est_proprietaire?true:false
+
+    const reponse = await comptesUsagers.signerCertificatNavigateur(csr, nomUsager, userId, opts)
+    debug("Reponse signature certificat:\n%O", reponse)
+
+    // const maitreClesDao = socket.handshake.maitreClesDao
+    // const reponse = await maitreClesDao.signerCertificatNavigateur(csr, nomUsager, estProprietaire)
+    // debug("Reponse signature certificat:\n%O", reponse)
+
+    return reponse
+  // } else {
+  //   throw new Error("Erreur, le socket n'est pas en mode protege")
+  // }
+
+}
+
 async function executerRequete(domaineAction, socket, params, cb) {
   const amqpdao = socket.amqpdao
   try {
@@ -563,6 +616,10 @@ function getDocumentParFuuid(socket, params, cb) {
 
 function requeteListeUsagers(socket, params, cb) {
   executerRequete('MaitreDesComptes.getListeUsagers', socket, params, cb)
+}
+
+function requeteUsager(socket, params, cb) {
+  executerRequete('MaitreDesComptes.chargerUsager', socket, params, cb)
 }
 
 module.exports = {configurerEvenements}
