@@ -94,7 +94,7 @@ export async function preparerWorkersAvecCles(nomUsager, chiffrageWorker, connex
     console.debug("Certificat : %O, Cles privees : %O", certInfo.fullchain, clesPrivees)
 
     const paramsCert = {
-      certificatPem: certInfo.fullchain,
+      certificatPem: certInfo.fullchain.join('\n'),
       clePriveeSign: clesPrivees.signer,
       clePriveeDecrypt: clesPrivees.dechiffrer,
       DEBUG: true

@@ -30,7 +30,7 @@ export NODE_ENV=development
 
 # Parametre module logging debug
 # export DEBUG=millegrilles:*
-export DEBUG=millegrilles:coupdoeil:coupdoeilSocketApp
+export DEBUG=millegrilles:coupdoeil:coupdoeilSocketApp,millegrilles:common:server4
 export DEV=1
 # export IDMG=JPtGcNcFSkfSdw49YsDpQHKxqTHMitpbPZW17a2JC54T
 
