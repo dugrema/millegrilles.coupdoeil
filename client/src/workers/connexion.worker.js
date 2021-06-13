@@ -131,6 +131,13 @@ function genererCertificatNavigateur(params) {
 function resetWebauthn(userId) {
   return connexionClient.emitBlocking('maitrecomptes/resetWebauthn', {userId})
 }
+function majDelegations(params) {
+  return connexionClient.emitBlocking(
+    'maitrecomptes/majDelegations',
+    params,
+    {domaine: 'MaitreDesComptes.majUsagerDelegations'}
+  )
+}
 
 comlinkExpose({
   ...connexionClient,
@@ -149,4 +156,5 @@ comlinkExpose({
   uploadCollectionsPubliques, commandeTransmettreCatalogues,
 
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
+  majDelegations,
 })

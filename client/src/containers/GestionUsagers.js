@@ -60,6 +60,7 @@ function UsagerRow(props) {
 
 function AfficherUsager(props) {
   const [usager, setUsager] = useState('')
+  const [err, setErr] = useState('')
 
   useEffect(_=>{
     chargerUsager(props.workers.connexion, {userId: props.userId}, setUsager)
@@ -73,8 +74,15 @@ function AfficherUsager(props) {
     <>
       <h2>Usager</h2>
 
+      <Alert variant="danger" show={err?true:false}>
+        <Alert.Heading>Erreur</Alert.Heading>
+        {err}
+      </Alert>
+
       <InformationUsager usager={usager}
-                         workers={props.workers} />
+                         workers={props.workers}
+                         setUsager={setUsager}
+                         setErr={setErr} />
 
       <AfficherActivationsUsager usager={usager}
                                  workers={props.workers} />
@@ -88,11 +96,88 @@ function AfficherUsager(props) {
 }
 
 function InformationUsager(props) {
+
+  const [delegationGlobale, setDelegationGlobale] = useState('')
+  const [comptePrive, setComptePrive] = useState('')
+
+  const changementPresent = delegationGlobale!=='' || comptePrive!==''
+
+  const toggleComptePrive = event => {
+    var valeur = (comptePrive!=='')?comptePrive:props.usager.compte_prive
+    setComptePrive(!valeur)
+  }
+
+  const changerChamp = event => {
+    const {name, value} = event.currentTarget
+    console.debug("Set %s = %s", name, value)
+    switch(name) {
+      case 'delegationGlobale': setDelegationGlobale(value); break
+      default:
+    }
+  }
+
+  const sauvegarderChangements = async event => {
+    if(!changementPresent) return
+    const transaction = {
+      userId: props.usager.userId
+    }
+    if(delegationGlobale !== '') {
+      transaction.delegation_globale = delegationGlobale==='aucune'?null:delegationGlobale
+    }
+    if(comptePrive !== '') {
+      transaction.compte_prive = comptePrive
+    }
+    try {
+      const docResultat = await props.workers.connexion.majDelegations(transaction)
+      if(!docResultat.err) {
+        props.setUsager(docResultat)
+      } else {
+        props.setErr(docResultat.err)
+      }
+    } catch(err) {
+      props.setErr(''+err)
+    }
+  }
+
   return (
     <>
       <Row>
         <Col lg={3}>Nom usager</Col>
         <Col>{props.usager.nomUsager}</Col>
+      </Row>
+      <Row>
+        <Col lg={3}>
+          <Form.Label for="switch_compte_prive">Acces prive complet</Form.Label>
+        </Col>
+        <Col>
+          <Form.Check type="switch"
+                      checked={(comptePrive!=='')?comptePrive:props.usager.compte_prive}
+                      onChange={toggleComptePrive}
+                      id="switch_compte_prive" />
+        </Col>
+      </Row>
+      <Row>
+        <Col lg={3}>
+          Delegation globale
+        </Col>
+        <Col>
+          {['proprietaire', 'delegue', 'aucune'].map(item=>
+            <Form.Check type="radio"
+                        name="delegationGlobale"
+                        checked={((delegationGlobale!=='')?delegationGlobale:props.usager.delegation_globale) === item}
+                        onChange={changerChamp}
+                        label={item}
+                        value={item}
+                        id={"radio_delegation_globale_" + item} />
+          )}
+        </Col>
+      </Row>
+
+      <Row>
+        <Col lg={3}></Col>
+        <Col>
+          <Button disabled={!changementPresent} onClick={sauvegarderChangements}>Sauvegarder</Button>
+        </Col>
       </Row>
     </>
   )

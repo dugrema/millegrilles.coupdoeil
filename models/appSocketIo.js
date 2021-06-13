@@ -90,6 +90,9 @@ function configurerEvenements(socket) {
       {eventName: 'genererCertificatNavigateur', callback: async (params, cb) => {
         cb(await genererCertificatNavigateurWS(socket, params))
       }},
+      {eventName: 'maitrecomptes/majDelegations', callback: (commande, cb) => {
+        majDelegations(socket, commande, cb)
+      }},
     ]
   }
 
@@ -549,6 +552,25 @@ async function resetWebauthn(socket, params) {
   debug("Reponse reset webauthn %s:\n%O", userId, reponse)
 
   return reponse
+}
+
+async function majDelegations(socket, transaction, cb) {
+  debug("majDelegations %O", transaction)
+  const amqpdao = socket.amqpdao
+
+  const domaineAction = transaction['en-tete'].domaine
+  if ( domaineAction !== 'MaitreDesComptes.majUsagerDelegations' ) {
+    return cb({err: "Mauvais type d'action : " + domaineAction})
+  }
+
+  try {
+    const reponse = await amqpdao.transmettreEnveloppeTransaction(transaction)
+    debug("majDelegations: Reponse \n%O", reponse)
+    cb(reponse)
+  } catch(err) {
+    console.error("majDelegations: Erreur %O", err)
+    cb({err: ''+err})
+  }
 }
 
 async function executerRequete(domaineAction, socket, params, cb) {
