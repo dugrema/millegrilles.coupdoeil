@@ -99,6 +99,7 @@ function InformationUsager(props) {
 
   const [delegationGlobale, setDelegationGlobale] = useState('')
   const [comptePrive, setComptePrive] = useState('')
+  const [succes, setSucces] = useState(false)
 
   const changementPresent = delegationGlobale!=='' || comptePrive!==''
 
@@ -117,6 +118,7 @@ function InformationUsager(props) {
   }
 
   const sauvegarderChangements = async event => {
+    setSucces(false)
     if(!changementPresent) return
     const transaction = {
       userId: props.usager.userId
@@ -131,6 +133,8 @@ function InformationUsager(props) {
       const docResultat = await props.workers.connexion.majDelegations(transaction)
       if(!docResultat.err) {
         props.setUsager(docResultat)
+        setSucces(true)
+        setTimeout(_=>{setSucces(false)}, 3000)
       } else {
         props.setErr(docResultat.err)
       }
@@ -172,6 +176,10 @@ function InformationUsager(props) {
           )}
         </Col>
       </Row>
+
+      <Alert variant="success" show={succes?true:false}>
+        Changement complete.
+      </Alert>
 
       <Row>
         <Col lg={3}></Col>
