@@ -4,20 +4,20 @@ const debug = require('debug')('millegrilles:coupdoeil:coupdoeilSocketApp')
 function configurerEvenements(socket) {
   const configurationEvenements = {
     listenersPrives: [
+      {eventName: 'coupdoeil/getCertificatsMaitredescles', callback: cb => {getCertificatsMaitredescles(socket, cb)}},
+    ],
+    listenersProteges: [
       {eventName: 'coupdoeil/requeteListeNoeuds', callback: (params, cb) => {requeteListeNoeuds(socket, params, cb)}},
       {eventName: 'coupdoeil/requeteListeDomaines', callback: cb => {requeteListeDomaines(socket, cb)}},
       {eventName: 'coupdoeil/requeteCatalogueDomaines', callback: cb => {requeteCatalogueDomaines(socket, cb)}},
       {eventName: 'coupdoeil/requeteCatalogueApplications', callback: cb => {requeteCatalogueApplications(socket, cb)}},
       {eventName: 'coupdoeil/requeteInfoApplications', callback: (params, cb) => {requeteInfoApplications(socket, params, cb)}},
-      {eventName: 'coupdoeil/getCertificatsMaitredescles', callback: cb => {getCertificatsMaitredescles(socket, cb)}},
       {eventName: 'coupdoeil/getUploadsEnCours', callback: cb => {getUploadsEnCours(socket, cb)}},
       {eventName: 'coupdoeil/getDocumentParFuuid', callback: (params, cb) => {getDocumentParFuuid(socket, params, cb)}},
-
       {eventName: 'maitrecomptes/requeteListeUsagers', callback: (params, cb) => {requeteListeUsagers(socket, params, cb)}},
       {eventName: 'maitrecomptes/requeteUsager', callback: (params, cb) => {requeteUsager(socket, params, cb)}},
       {eventName: 'maitrecomptes/resetWebauthn', callback: (params, cb) => {resetWebauthn(socket, params, cb)}},
-    ],
-    listenersProteges: [
+
       {eventName: 'coupdoeil/ajouterCatalogueApplication', callback: (transaction, cb) => {
         ajouterCatalogueApplication(socket, transaction, cb)
       }},

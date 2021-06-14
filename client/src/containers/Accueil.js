@@ -1,28 +1,36 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react'
 import { Row, Col, Button, Form } from 'react-bootstrap';
 
 // import manifest from '../manifest.build.js';  // App version, build date
 // import { Trans, Translation } from 'react-i18next';
 import { ListeNoeuds, ListeDomaines } from '../components/ListeTopologie';
 
-export class Accueil extends React.Component {
+export function Accueil(props) {
 
-  render() {
-    return (
-      <div>
-        <h1>Coup D'Oeil</h1>
+  const [pret, setPret] = useState(false)
 
-        <ListeNoeuds rootProps={this.props.rootProps}>
-          <AfficherSommaireNoeuds rootProps={this.props.rootProps} />
-        </ListeNoeuds>
+  const modeProtege = props.rootProps.modeProtege
 
-        <ListeDomaines rootProps={this.props.rootProps}>
-          <AfficherSommaireDomaines rootProps={this.props.rootProps} />
-        </ListeDomaines>
+  useEffect(_=>{
+    if(!pret && modeProtege) setPret(true)
+  }, [modeProtege])
 
-      </div>
-    )
-  }
+  if(!pret) return <p>Chargement en cours</p>
+
+  return (
+    <div>
+      <h1>Coup D'Oeil</h1>
+
+      <ListeNoeuds rootProps={props.rootProps}>
+        <AfficherSommaireNoeuds rootProps={props.rootProps} />
+      </ListeNoeuds>
+
+      <ListeDomaines rootProps={props.rootProps}>
+        <AfficherSommaireDomaines rootProps={props.rootProps} />
+      </ListeDomaines>
+
+    </div>
+  )
 
 }
 
