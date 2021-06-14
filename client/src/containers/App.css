@@ -78,6 +78,10 @@ div.table div.table-header {
   font-weight: bold;
 }
 
+.table-header {
+  font-weight: bold;
+}
+
 @media print {
 
   .w3-top {

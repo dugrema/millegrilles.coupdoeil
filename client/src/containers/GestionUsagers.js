@@ -37,6 +37,15 @@ function AfficherListeUsagers(props) {
   return (
     <>
       <h3>Usagers</h3>
+
+      <Row className="table-header">
+        <Col xs={12} sm={6} lg={3}>
+          Usager
+        </Col>
+        <Col xs={12} sm={6} lg={3}>
+          Securite
+        </Col>
+      </Row>
       {listeUsagers.map(usager=>{
         return <UsagerRow key={usager.userId}
                           usager={usager}
@@ -47,12 +56,26 @@ function AfficherListeUsagers(props) {
 }
 
 function UsagerRow(props) {
+
+  const delegationGlobale = props.usager.delegation_globale,
+        comptePrive = props.usager.compte_prive || false
+
+  var securite = '1.public'
+  if(delegationGlobale) {
+    securite = `3.protege (${delegationGlobale})`
+  } else if(comptePrive) {
+    securite = '2.prive'
+  }
+
   return (
     <Row>
-      <Col>
+      <Col xs={12} sm={6} lg={3}>
         <Button variant="link" onClick={props.selectUser}>
           {props.usager.nomUsager}
         </Button>
+      </Col>
+      <Col xs={12} sm={6} lg={3}>
+        {securite}
       </Col>
     </Row>
   )
