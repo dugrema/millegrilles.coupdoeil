@@ -10,6 +10,7 @@ const amqpdao = require('../models/amqpdao')
 // const {initialiser: initialiserServer} = require('@dugrema/millegrilles.common/lib/server3')
 const server4 = require('@dugrema/millegrilles.common/lib/server4')
 const {initialiser: initialiserCoupdoeil} = require('../routes/coupdoeil')
+const { extraireExtensionsMillegrille } = require('@dugrema/millegrilles.common/lib/forgecommon')
 // const { GrosFichiersDao } = require('../models/grosFichiersDao')
 
 async function init() {
@@ -17,7 +18,7 @@ async function init() {
   // Initialiser server et routes
   const app = express()
   const {server, socketIo, amqpdao: amqpdaoInst} = await server4(
-    app, socketApp.configurerEvenements, {pathApp: '/coupdoeil'})
+    app, socketApp.configurerEvenements, {pathApp: '/coupdoeil', verifierAutorisation})
 
   // const grosFichiersDao = new GrosFichiersDao(amqpdaoInst)
   // socketIo.use((socket, next)=>{
@@ -37,6 +38,29 @@ async function init() {
 
   routeCoupdoeil.use(initialiserCoupdoeil(amqpdaoInst))
 
+}
+
+function verifierAutorisation(socket, securite, certificatForge) {
+  debug("Verifier autorisation cert %O", certificatForge)
+  if(securite === '3.protege') {
+    const extensions = extraireExtensionsMillegrille(certificatForge)
+    debug("www.verifierAutorisation extensions %O", extensions)
+
+    // Deleguation globale donne tous les acces
+    if(['proprietaire', 'delegue'].includes(extensions.delegationGlobale)) {
+      debug("Usager proprietaire, acces 3.protege OK")
+      return true
+    }
+
+    // Delegation au domaine coupdoeil
+    if(extensions.delegationsDomaines.includes('coupdoeil')) {
+      debug("Usager delegue domaine coupdoeil, acces 3.protege OK")
+      return true
+    }
+
+    debug("Usager acces 3.protege refuse")
+  }
+  return false
 }
 
 init()
