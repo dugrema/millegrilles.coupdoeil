@@ -5,13 +5,10 @@ import openSocket from 'socket.io-client'
 import {proxy as comlinkProxy, wrap as comlinkWrap, releaseProxy} from 'comlink'
 import {splitPEMCerts} from '@dugrema/millegrilles.common/lib/forgecommon'
 
-// /* eslint-disable import/no-webpack-loader-syntax */
-// import WebWorker from 'worker-loader!@dugrema/millegrilles.common/lib/browser/chiffrage.worker'
 import {setupWorkers, cleanupWorkers, preparerWorkersAvecCles} from './workers/workers.load'
 
 import { Trans } from 'react-i18next'
 
-// import {ConnexionWebsocket} from '../containers/Authentification'
 import {getCertificats, getClesPrivees} from './components/pkiHelper'
 import {ApplicationCoupdoeil} from './containers/App'
 
@@ -70,8 +67,12 @@ export default class AppTopLevel extends React.Component {
   async preparerWorkersAvecCles() {
     console.debug("Preparation workers avec cle %O", this.state)
     const {nomUsager, chiffrageWorker, connexionWorker} = this.state
-    await preparerWorkersAvecCles(nomUsager, chiffrageWorker, connexionWorker)
-    console.debug("preparerWorkersAvecCles pret")
+    if(nomUsager) {
+      await preparerWorkersAvecCles(nomUsager, chiffrageWorker, connexionWorker)
+      console.debug("preparerWorkersAvecCles pret")
+    } else {
+      console.warn("Nom d'usager manquant")
+    }
   }
 
   setEtatProtege = comlinkProxy(reponse => {
