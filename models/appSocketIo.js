@@ -533,7 +533,7 @@ async function genererCertificatNavigateurWS(socket, params) {
         nomUsager = params.nomUsager,
         userId = params.userId
   const comptesUsagers = socket.comptesUsagers
-  const opts = {}
+  const opts = {activationTierce: true}
 
   const reponse = await comptesUsagers.signerCertificatNavigateur(csr, nomUsager, userId, opts)
   debug("Reponse signature certificat:\n%O", reponse)
