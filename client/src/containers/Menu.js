@@ -54,21 +54,21 @@ export class MenuItems extends React.Component {
 
   render() {
 
-    var domaines = '', noeuds = ''
-    if(this.props.websocketApp) {
-      const rootProps = {...this.props.rootProps, websocketApp: this.props.websocketApp}
-      domaines = (
-        <ListeDomaines rootProps={rootProps}>
-          <DropdownDomaines/>
-        </ListeDomaines>
-      )
-
-      noeuds = (
-        <ListeNoeuds rootProps={rootProps}>
-          <DropdownNoeuds/>
-        </ListeNoeuds>
-      )
-    }
+    // var domaines = '', noeuds = ''
+    // if(this.props.websocketApp && this.props.rootProps.modeProtege) {
+    //   const rootProps = {...this.props.rootProps, websocketApp: this.props.websocketApp}
+    //   domaines = (
+    //     <ListeDomaines rootProps={rootProps}>
+    //       <DropdownDomaines/>
+    //     </ListeDomaines>
+    //   )
+    //
+    //   noeuds = (
+    //     <ListeNoeuds rootProps={rootProps}>
+    //       <DropdownNoeuds/>
+    //     </ListeNoeuds>
+    //   )
+    // }
 
     console.debug("Menu props : %O", this.props)
 
@@ -80,10 +80,6 @@ export class MenuItems extends React.Component {
             <Trans>menu.Accueil</Trans>
           </Nav.Link>
         </Nav.Item>
-
-        {noeuds}
-
-        {domaines}
 
         <Nav.Item>
           <Nav.Link eventKey='GestionUsagers'>
