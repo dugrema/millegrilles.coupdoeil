@@ -335,7 +335,7 @@ function CollerCSR(props) {
 
   const _activerCsr = async event => {
     try {
-      await activerCsr(props.workers.connexion, csr, nomUsager, userId)
+      await activerCsr(props.workers.connexion, props.workers.chiffrage, csr, nomUsager, userId)
 
       // Activation completee
       props.retour()
@@ -383,11 +383,19 @@ function CollerCSR(props) {
   )
 }
 
-async function activerCsr(connexionWorker, csr, nomUsager, userId) {
+async function activerCsr(connexionWorker, chiffrageWorker, csr, nomUsager, userId) {
   // console.debug("Activer CSR %O", csr)
 
+  // Generer une "permission" avec le certificat local (delegation proprietaire)
+  let permission = {
+    date: Math.floor(new Date().getTime()/1000), // Date epoch en secondes
+    userId,
+    activationTierce: true,  // Permet a l'usager d'acceder au compte sans token
+  }
+  permission = await chiffrageWorker.formatterMessage(permission, 'signatureCsr')
+
   // Generer certificat - l'usager va pouvoir y acceder a son prochain login
-  const cert = await connexionWorker.genererCertificatNavigateur({csr, nomUsager, userId})
+  const cert = await connexionWorker.genererCertificatNavigateur({permission, csr, nomUsager, userId})
 
   // console.debug("Certificat genere : %O", cert)
 }
