@@ -20,6 +20,7 @@ export WEB_KEY=$MG_MQ_KEYFILE
 MQ_HOST=`hostname`
 export MG_MQ_URL=amqps://$MQ_HOST:5673
 export PORT=3003
+export MG_REDIS_HOST=$MQ_HOST
 
 export MG_HTTPPROXY_SECURE=false
 export MG_CONSIGNATION_HTTP=https://$HOST:3021
