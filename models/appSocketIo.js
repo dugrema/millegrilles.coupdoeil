@@ -51,8 +51,8 @@ function configurerEvenements(socket) {
       {eventName: 'coupdoeil/installerDomaine', callback: (params, cb) => {
         installerDomaine(socket, params, cb)
       }},
-      {eventName: 'coupdoeil/lancerBackupSnapshot', callback: (params, cb) => {
-        lancerBackupSnapshot(socket, params, cb)
+      {eventName: 'coupdoeil/lancerBackupSnapshot', callback: params => {
+        lancerBackupSnapshot(socket, params)
       }},
       {eventName: 'coupdoeil/genererCertificatNoeud', callback: (params, cb) => {
         genererCertificatNoeud(socket, params, cb)
@@ -314,7 +314,7 @@ async function installerDomaine(socket, commande, cb) {
   }
 }
 
-async function lancerBackupSnapshot(socket, commande, cb) {
+async function lancerBackupSnapshot(socket, commande) {
   debug("Lancer backup snapshot : %O", commande)
   const amqpdao = socket.amqpdao
   const domaineAction = 'global.declencherBackupSnapshot'
@@ -322,8 +322,7 @@ async function lancerBackupSnapshot(socket, commande, cb) {
     // Commande nowait - c'est un broadcast (global), il faut capturer les
     // evenements de demarrage individuels (evenement.backup.backupTransactions)
     // pour savoir quels domaines ont repondu
-    const reponse = await amqpdao.transmettreCommande(domaineAction, commande, {nowait: true})
-    cb(reponse)
+    amqpdao.transmettreCommande(domaineAction, commande, {nowait: true})
   } catch(err) {
     console.error("lancerBackupSnapshot: Erreur %O", err)
     cb({err: ''+err})

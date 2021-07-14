@@ -2,6 +2,7 @@ import React from 'react';
 import { Row, Col, Button, Nav, Alert, Form } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 import {proxy as comlinkProxy} from 'comlink'
+import {v1 as uuidv1} from 'uuid'
 
 import { DateTimeAfficher } from '../components/ReactFormatters'
 import { chargerStatsTransactionsDomaines } from '../components/UtilDomaines'
@@ -124,9 +125,14 @@ class BackupOperation extends React.Component {
 
   lancerBackup = async event => {
     console.debug("Lancer backup snapshot")
-    this.setState({afficherDomaines: true, etatBackupDomaine: {}, etatBackupApplication: {}})
+    this.setState({
+      afficherDomaines: true,
+      etatBackupDomaine: {},
+      etatBackupApplication: {},
+    })
     try {
-      const reponse = await this.props.wsa.lancerBackupSnapshot({})
+      const uuid_rapport = ''+uuidv1()
+      const reponse = await this.props.wsa.lancerBackupSnapshot({uuid_rapport})
       console.debug("Reponse backup snaphshot : %O", reponse)
     } catch(err) {
       console.error("Erreut lancement backup : %O", err)
