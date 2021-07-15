@@ -46,6 +46,9 @@ function getCatalogueApplications() {
 function requeteInfoApplications(params) {
   return connexionClient.emitBlocking('coupdoeil/requeteInfoApplications', params)
 }
+function requeteRapportBackup(params) {
+  return connexionClient.emitBlocking('coupdoeil/requeteRapportBackup', params)
+}
 function requeteConfigurationApplication(params) {
   return connexionClient.emitBlocking('coupdoeil/requeteConfigurationApplication', params)
 }
@@ -183,6 +186,23 @@ function retirerCallbackEvenementsApplications(noeudId) {
   connexionClient.socketOff('evenement.servicemonitor.erreurDemarrageApplication')
 }
 
+async function enregistrerCallbackEvenementsBackup(cb) {
+  connexionClient.socketOn('evenement.backup.backupTransaction', cb)
+  connexionClient.socketOn('evenement.backup.backupApplication', cb)
+  connexionClient.socketOn('evenement.backup.restaurationTransactions', cb)
+  const resultat = await connexionClient.emitBlocking('coupdoeil/ecouterEvenementsBackup', {}, {})
+  if(!resultat) {
+    throw new Error("Erreur enregistrerCallbackEvenementsNoeuds")
+  }
+}
+
+function retirerCallbackEvenementsBackup() {
+  connexionClient.emit('coupdoeil/retirerEvenementsBackup', {}, {})
+  connexionClient.socketOff('evenement.backup.backupTransaction')
+  connexionClient.socketOff('evenement.backup.backupApplication')
+  connexionClient.socketOff('evenement.backup.restaurationTransactions')
+}
+
 comlinkExpose({
   ...connexionClient,
   connecter,  // Override de connexionClient.connecter
@@ -200,9 +220,10 @@ comlinkExpose({
   uploadCollectionsPubliques, commandeTransmettreCatalogues,
 
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
-  majDelegations,
+  majDelegations, requeteRapportBackup,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,
   enregistrerCallbackEvenementsApplications, retirerCallbackEvenementsApplications,
+  enregistrerCallbackEvenementsBackup, retirerCallbackEvenementsBackup,
 })

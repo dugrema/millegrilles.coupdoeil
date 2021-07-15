@@ -12,6 +12,7 @@ function configurerEvenements(socket) {
       {eventName: 'coupdoeil/requeteCatalogueDomaines', callback: cb => {requeteCatalogueDomaines(socket, cb)}},
       {eventName: 'coupdoeil/requeteCatalogueApplications', callback: cb => {requeteCatalogueApplications(socket, cb)}},
       {eventName: 'coupdoeil/requeteInfoApplications', callback: (params, cb) => {requeteInfoApplications(socket, params, cb)}},
+      {eventName: 'coupdoeil/requeteRapportBackup', callback: (params, cb) => {requeteRapportBackup(socket, params, cb)}},
       {eventName: 'coupdoeil/getUploadsEnCours', callback: cb => {getUploadsEnCours(socket, cb)}},
       {eventName: 'coupdoeil/getDocumentParFuuid', callback: (params, cb) => {getDocumentParFuuid(socket, params, cb)}},
       {eventName: 'maitrecomptes/requeteListeUsagers', callback: (params, cb) => {requeteListeUsagers(socket, params, cb)}},
@@ -114,6 +115,13 @@ function configurerEvenements(socket) {
       }},
       {eventName: 'coupdoeil/retirerEvenementsApplications', callback: (params, cb) => {
         retirerEvenementsApplications(socket, params, cb)
+      }},
+
+      {eventName: 'coupdoeil/ecouterEvenementsBackup', callback: (params, cb) => {
+        ecouterEvenementsBackup(socket, params, cb)
+      }},
+      {eventName: 'coupdoeil/retirerEvenementsBackup', callback: (params, cb) => {
+        retirerEvenementsBackup(socket, params, cb)
       }},
 
     ]
@@ -627,6 +635,10 @@ function requeteInfoApplications(socket, params, cb) {
   executerRequete('CatalogueApplications.infoApplication', socket, params, cb)
 }
 
+function requeteRapportBackup(socket, params, cb) {
+  executerRequete('Backup.dernierRapport', socket, params, cb)
+}
+
 function getCertificatsMaitredescles(socket, cb) {
   executerRequete('MaitreDesCles.certMaitreDesCles', socket, {}, cb)
 }
@@ -702,6 +714,30 @@ function retirerEvenementsApplications(socket, params, cb) {
   ]
   socket.unsubscribe({routingKeys})
   debug("retirerEvenementsApplications sur %O", params)
+  if(cb) cb(true)
+}
+
+function ecouterEvenementsBackup(socket, params, cb) {
+  const opts = {
+    routingKeys: [
+      'evenement.backup.backupTransaction',
+      'evenement.backup.backupApplication',
+      'evenement.backup.restaurationTransactions',
+    ],
+    exchange: ['3.protege'],
+  }
+  debug("ecouterEvenementsBackup Params : %O", params)
+  socket.subscribe(opts, cb)
+}
+
+function retirerEvenementsBackup(socket, params, cb) {
+  const routingKeys = [
+    '3.protege.evenement.backup.backupTransaction',
+    '3.protege.evenement.backup.backupApplication',
+    '3.protege.evenement.backup.restaurationTransactions',
+  ]
+  socket.unsubscribe({routingKeys})
+  debug("retirerEvenementsBackup sur %O", params)
   if(cb) cb(true)
 }
 

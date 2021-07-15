@@ -7,16 +7,16 @@ import {v1 as uuidv1} from 'uuid'
 import { DateTimeAfficher } from '../components/ReactFormatters'
 import { chargerStatsTransactionsDomaines } from '../components/UtilDomaines'
 
-const subscriptionsBackup = [
-  'evenement.backup.backupTransaction',
-  'evenement.backup.backupApplication',
-]
-const subscriptionsRestauration = [
-  'evenement.backup.restaurationTransactions',
-]
-const subscriptionsFichiers = [
-  'evenement.backup.restaurationFichiers',
-]
+// const subscriptionsBackup = [
+//   'evenement.backup.backupTransaction',
+//   'evenement.backup.backupApplication',
+// ]
+// const subscriptionsRestauration = [
+//   'evenement.backup.restaurationTransactions',
+// ]
+// const subscriptionsFichiers = [
+//   'evenement.backup.restaurationFichiers',
+// ]
 
 export function Backup(props) {
 
@@ -25,6 +25,7 @@ export function Backup(props) {
   const [operation, setOperation] = useState('')
   const [domaines, setDomaines] = useState('')
   const [noeuds, setNoeuds] = useState('')
+  const [rapport, setRapport] = useState('')
 
   const connexion = props.workers.connexion
 
@@ -46,6 +47,22 @@ export function Backup(props) {
           console.debug("Noeuds charges %O", noeuds)
           setNoeuds(noeuds)
         }).catch(err=>{console.error("Erreur chargement noeuds %O", err)})
+
+      connexion.requeteRapportBackup({})
+        .then(infoRapport=>{
+          console.debug("Rapport dernier backup %O", infoRapport)
+          setRapport(infoRapport.rapport)
+        }).catch(err=>{console.error("Erreur chargement rapport backup %O", err)})
+
+      let cbMessage = msg => {console.debug("Recu message : %O", msg)}
+      cbMessage = comlinkProxy(cbMessage)
+      connexion.enregistrerCallbackEvenementsBackup(cbMessage)
+        .catch(err=>{console.error("Erreur enregistrement evenements backup", err)})
+
+      // Cleanup
+      return ()=>{
+        connexion.retirerCallbackEvenementsBackup()
+      }
     }
   }, [connexion, setDomaines, setNoeuds])
 
@@ -74,7 +91,8 @@ export function Backup(props) {
                  workers={props.workers}
                  modeProtege={props.rootProps.modeProtege}
                  domaines={domaines}
-                 noeuds={noeuds} />
+                 noeuds={noeuds}
+                 rapport={rapport} />
 }
 
 function Sommaire(props) {
@@ -93,12 +111,30 @@ function Sommaire(props) {
         </Nav.Item>
       </Nav>
 
+      <h2>Dernier backup</h2>
+      <DernierBackup rapport={props.rapport} />
+
       <h2>Domaines</h2>
-      <AfficherDomaines domaines={props.domaines} />
+      <AfficherDomaines domaines={props.domaines}
+                        rapport={props.rapport} />
 
       <h2>Applications</h2>
       <AfficherApplications noeuds={props.noeuds} />
     </>
+  )
+}
+
+function DernierBackup(props) {
+
+  return (
+    <Row>
+      <Col xs={3}>
+        Date du plus recent backup
+      </Col>
+      <Col>
+        <DateTimeAfficher date={props.rapport.heure} />
+      </Col>
+    </Row>
   )
 }
 
@@ -115,10 +151,40 @@ function AfficherDomaines(props) {
     return nomA.localeCompare(nomB)
   })
 
+  const rapport = props.rapport
+  if(rapport) {
+    // Associer information du rapport par domaine
+    domaines.forEach(item=>{
+      const nom = item.domaine
+      item.rapport = rapport[nom]
+      const infoRapport = rapport[nom] || {}
+      const {horaire_resultat, quotidien_resultat, annuel_resultat} = infoRapport
+      if(horaire_resultat) {
+        item.err = horaire_resultat.erreur || item.err
+      }
+      if(quotidien_resultat) {
+        item.err = quotidien_resultat.erreur || item.err
+      }
+      if(annuel_resultat) {
+        item.err = annuel_resultat.erreur || item.err
+      }
+    })
+  }
+
+  // console.debug("!!! Rapport prep  : %O", domaines)
+
   return domaines.map((item, idx)=>{
+
+    let status = 'N/D'
+    if(item.err) status = 'X'
+    else if(item.rapport) status = 'O'
+
     return (
       <Row key={idx}>
         <Col>{item.domaine}</Col>
+        <Col>
+          {status}
+        </Col>
       </Row>
     )
   })
@@ -163,11 +229,6 @@ function AfficherApplications(props) {
 
 function BackupOperation(props) {
 
-  // state = {
-  //   etatBackupDomaine: {},
-  //   etatBackupApplication: {},
-  //   afficherDomaines: false,
-  // }
   const [etatBackupDomaine, setEtatBackupDomaine] = useState({})
   const [etatBackupApplication, setEtatBackupApplication] = useState({})
   const [afficherDomaines, setAfficherDomaines] = useState(false)
@@ -175,10 +236,10 @@ function BackupOperation(props) {
   const connexion = props.workers.connexion
 
   useEffect(()=>{
-    console.debug("Enregistrer routing keys : %O", subscriptionsBackup)
+    // console.debug("Enregistrer routing keys : %O", subscriptionsBackup)
     // this.props.wsa.subscribe(subscriptionsBackup, this.traiterMessageEvenement, {exchange: ['3.protege']})
     return ()=>{
-      console.debug("Retirer routing keys : %O", subscriptionsBackup)
+      // console.debug("Retirer routing keys : %O", subscriptionsBackup)
       //this.props.wsa.unsubscribe(subscriptionsBackup, this.traiterMessageEvenement, {exchange: ['3.protege']})
     }
   }, [])
@@ -225,27 +286,27 @@ function BackupOperation(props) {
   }, [connexion, setAfficherDomaines, setEtatBackupDomaine, setEtatBackupApplication])
 
   var backupDomaines = ''
-  if(etatBackupDomaine) {
-    backupDomaines = (
-      <>
-        <hr/>
-        <Alert show={afficherDomaines}
-               variant="info"
-               onClose={_=>{setAfficherDomaines(false)}}
-               dismissible>
-
-          <h2>Backup</h2>
-
-          <h3>Domaines</h3>
-          <AfficherDomainesBackup domaines={etatBackupDomaine}/>
-
-          <h3>Applications</h3>
-          <AfficherDomainesBackup domaines={etatBackupApplication}/>
-
-        </Alert>
-      </>
-    )
-  }
+  // if(etatBackupDomaine) {
+  //   backupDomaines = (
+  //     <>
+  //       <hr/>
+  //       <Alert show={afficherDomaines}
+  //              variant="info"
+  //              onClose={_=>{setAfficherDomaines(false)}}
+  //              dismissible>
+  //
+  //         <h2>Backup</h2>
+  //
+  //         <h3>Domaines</h3>
+  //         <AfficherDomainesBackup domaines={etatBackupDomaine}/>
+  //
+  //         <h3>Applications</h3>
+  //         <AfficherDomainesBackup domaines={etatBackupApplication}/>
+  //
+  //       </Alert>
+  //     </>
+  //   )
+  // }
 
   return (
     <>
@@ -258,7 +319,13 @@ function BackupOperation(props) {
         </Col>
       </Row>
 
-      {backupDomaines}
+      <h2>Domaines</h2>
+      <AfficherDomaines domaines={props.domaines}
+                        rapport={props.rapport} />
+
+      <h2>Applications</h2>
+      <AfficherApplications noeuds={props.noeuds} />
+
     </>
   )
 
@@ -362,15 +429,15 @@ class RestaurerOperation extends React.Component {
   }
 
   componentDidMount() {
-    console.debug("Enregistrer routing keys : %O", subscriptionsRestauration)
-    this.props.wsa.subscribe(subscriptionsRestauration, this.traiterMessageEvenement, {exchange: ['3.protege']})
-    this.props.wsa.subscribe(subscriptionsFichiers, this.traiterMessageEvenementFichiers, {exchange: ['3.protege']})
+    // console.debug("Enregistrer routing keys : %O", subscriptionsRestauration)
+    // this.props.wsa.subscribe(subscriptionsRestauration, this.traiterMessageEvenement, {exchange: ['3.protege']})
+    // this.props.wsa.subscribe(subscriptionsFichiers, this.traiterMessageEvenementFichiers, {exchange: ['3.protege']})
   }
 
   componentWillUnmount() {
-    console.debug("Retirer routing keys : %O", subscriptionsRestauration)
-    this.props.wsa.unsubscribe(subscriptionsRestauration, this.traiterMessageEvenement, {exchange: ['3.protege']})
-    this.props.wsa.unsubscribe(subscriptionsFichiers, this.traiterMessageEvenementFichiers, {exchange: ['3.protege']})
+    // console.debug("Retirer routing keys : %O", subscriptionsRestauration)
+    // this.props.wsa.unsubscribe(subscriptionsRestauration, this.traiterMessageEvenement, {exchange: ['3.protege']})
+    // this.props.wsa.unsubscribe(subscriptionsFichiers, this.traiterMessageEvenementFichiers, {exchange: ['3.protege']})
   }
 
   changerChamp = event => {
