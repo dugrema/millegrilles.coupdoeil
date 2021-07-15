@@ -25,8 +25,8 @@ export function SommaireNoeud(props) {
   const noeud_id = props.rootProps.paramsPage.noeudid
 
   return (
-    <ListeNoeuds noeud_id={noeud_id} rootProps={props.rootProps}>
-      <AffichageNoeud noeud_id={noeud_id} rootProps={props.rootProps}/>
+    <ListeNoeuds noeud_id={noeud_id} rootProps={props.rootProps} workers={props.workers}>
+      <AffichageNoeud noeud_id={noeud_id} rootProps={props.rootProps} workers={props.workers}/>
     </ListeNoeuds>
   )
 
@@ -42,19 +42,21 @@ class AffichageNoeud extends React.Component {
   }
 
   componentDidMount() {
-    const wsa = this.props.rootProps.websocketApp
+    const wsa = this.props.workers.connexion
     // console.debug("Noeud : %O", this.props.noeud)
 
-    const routingNoeud = traiterMessageEvenementApplications.map(item=>{return item.replace('__noeudId__', this.props.noeud_id)})
-    subscriptionsEvenementsApplication.forEach(item=>{routingNoeud.push(item)})
-    // console.debug("Enregistrer routing keys : %O", routingNoeud)
+    // const routingNoeud = traiterMessageEvenementApplications.map(item=>{return item.replace('__noeudId__', this.props.noeud_id)})
+    // subscriptionsEvenementsApplication.forEach(item=>{routingNoeud.push(item)})
+    // // console.debug("Enregistrer routing keys : %O", routingNoeud)
+    //
+    // const securite = this.getNoeud().securite
+    // wsa.subscribe(routingNoeud, this.traiterMessageEvenementApplication, {exchange: [securite]})
 
-    const securite = this.getNoeud().securite
-    wsa.subscribe(routingNoeud, this.traiterMessageEvenementApplication, {exchange: [securite]})
+    wsa.enregistrerCallbackEvenementsApplications(this.props.noeud_id, this.traiterMessageEvenementApplication)
   }
 
   componentWillUnmount() {
-    const wsa = this.props.rootProps.websocketApp
+    const wsa = this.props.workers.connexion
     const securite = this.getNoeud().securite
 
     const routingNoeud = traiterMessageEvenementApplications.map(item=>{return item.replace('__noeudId__', this.props.noeud_id)})
@@ -70,7 +72,7 @@ class AffichageNoeud extends React.Component {
   backupApplication = async event => {
     // console.debug("Lancer backup application %O ", event)
     const nomApplication = event.currentTarget.value
-    const wsa = this.props.rootProps.websocketApp
+    const wsa = this.props.workers.connexion
     this.setState({evenementApplication: {...this.state.evenementApplication, [nomApplication]: 'debut'}})
     try {
       const reponse = await backupApplication(wsa, this.props.noeud_id, nomApplication)
@@ -97,7 +99,7 @@ class AffichageNoeud extends React.Component {
   restaurerApplication = async event => {
     const nomApplication = event.currentTarget.value
     console.debug("Restaurer application %s", nomApplication)
-    const wsa = this.props.rootProps.websocketApp
+    const wsa = this.props.workers.connexion
     this.setState({evenementApplication: {...this.state.evenementApplication, [nomApplication]: 'debut'}})
     try {
       const reponse = await restaurerApplication(wsa, this.props.noeud_id, nomApplication)
@@ -122,7 +124,7 @@ class AffichageNoeud extends React.Component {
   }
 
   traiterMessageEvenementApplication = comlinkProxy(event => {
-    // console.debug("Evenement application : %O", event)
+    console.debug("Evenement application : %O", event)
     var {nom_application, evenement} = event.message
     var routingAction = event.routingKey.split('.').pop()
     evenement = evenement || routingAction
@@ -374,7 +376,7 @@ class ApplicationsNoeud extends React.Component {
 
   componentDidMount() {
     // Charger catalogue d'applications disponibles
-    const wsa = this.props.rootProps.websocketApp
+    const wsa = this.props.workers.connexion
     chargerCatalogueApplications(wsa, etat=>{this.setState(etat)})
 
     const noeudId = this.props.noeud.noeud_id
@@ -387,7 +389,7 @@ class ApplicationsNoeud extends React.Component {
   }
 
   componentWillUnmount() {
-    const wsa = this.props.rootProps.websocketApp
+    const wsa = this.props.workers.connexion
 
     const noeudId = this.props.noeud.noeud_id
     const routingNoeud = traiterMessageEvenementApplications.map(item=>{return item.replace('__noeudId__', noeudId)})
@@ -397,7 +399,7 @@ class ApplicationsNoeud extends React.Component {
   }
 
   configurerApplication = async event => {
-    const wsa = this.props.rootProps.websocketApp
+    const wsa = this.props.workers.connexion
     const noeudId = this.props.noeud.noeud_id
     const securite = this.props.noeud.securite
 
@@ -432,7 +434,7 @@ class ApplicationsNoeud extends React.Component {
     const securite = this.props.noeud.securite
 
     // console.debug("Desinstaller application %s", value)
-    desinstallerApplication(this.props.rootProps.websocketApp, noeudId, value, securite)
+    desinstallerApplication(this.props.workers.connexion, noeudId, value, securite)
   }
 
   setApplicationInstaller = event => {
@@ -441,7 +443,7 @@ class ApplicationsNoeud extends React.Component {
   }
 
   installerApplication = event => {
-    const wsa = this.props.rootProps.websocketApp
+    const wsa = this.props.workers.connexion
     const app = this.state.applicationSelectionnee
     const noeud = this.props.noeud
 
@@ -475,7 +477,7 @@ class ApplicationsNoeud extends React.Component {
     try {
       const configuration = JSON.parse(configurationStr)
 
-      const wsa = this.props.rootProps.websocketApp
+      const wsa = this.props.workers.connexion
       const nomApplication = this.state.nomApplicationConfigurer
       const noeudId = this.props.noeud.noeud_id
       const securite = this.props.noeud.securite
@@ -499,7 +501,7 @@ class ApplicationsNoeud extends React.Component {
     const noeudId = this.props.noeud.noeud_id
     const securite = this.props.noeud.securite
 
-    const wsa = this.props.rootProps.websocketApp
+    const wsa = this.props.workers.connexion
 
     // console.debug("Demarrer application %s sur noeud %s", nomApplication, noeudId)
     const reponse = await wsa.demarrerApplication({

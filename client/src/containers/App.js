@@ -22,6 +22,9 @@ export function ApplicationCoupdoeil(props) {
   const [idmg, setIdmg] = useState('')
   const [page, setPage] = useState('Accueil')
 
+  // Params de pages
+  const [paramsPage, setParamsPage] = useState('')
+
   // componentDidMount() {
   //
   //   // const wsa = this.props.rootProps.connexionWorker
@@ -53,10 +56,15 @@ export function ApplicationCoupdoeil(props) {
       var target = eventPage.currentTarget
       pageResultat = target.value
       var dataset = target.dataset
+
+      let pNoeudid = ''
       if(dataset) {
-        console.warn("FIX ME : params page dataset : %O", dataset)
         // paramsPage = {...dataset}
+        setParamsPage({...dataset})
+      } else {
+        setParamsPage('')
       }
+
     } else {
       pageResultat = eventPage
     }
@@ -76,6 +84,7 @@ export function ApplicationCoupdoeil(props) {
   const rootProps = {
     ...props, ...props.rootProps,
     serveurInfo, idmg, page,
+    paramsPage,
     changerPage,
   }
 

@@ -107,7 +107,16 @@ function configurerEvenements(socket) {
       }},
       {eventName: 'coupdoeil/retirerEvenementsPresenceNoeuds', callback: (params, cb) => {
         retirerEvenementsPresenceNoeuds(socket, params, cb)
-      }},    ]
+      }},
+
+      {eventName: 'coupdoeil/ecouterEvenementsApplications', callback: (params, cb) => {
+        ecouterEvenementsApplications(socket, params, cb)
+      }},
+      {eventName: 'coupdoeil/retirerEvenementsApplications', callback: (params, cb) => {
+        retirerEvenementsApplications(socket, params, cb)
+      }},
+
+    ]
   }
 
   return configurationEvenements
@@ -667,6 +676,32 @@ function retirerEvenementsPresenceNoeuds(socket, params, cb) {
   const routingKeys = [`3.protege.evenement.presence.monitor`]
   socket.unsubscribe({routingKeys})
   debug("retirerEvenementsPresenceNoeuds sur %O", params)
+  if(cb) cb(true)
+}
+
+function ecouterEvenementsApplications(socket, params, cb) {
+  const noeudId = params.noeudId
+  const opts = {
+    routingKeys: [
+      `evenement.servicemonitor.${noeudId}.applicationDemarree`,
+      `evenement.servicemonitor.${noeudId}.applicationArretee`,
+      `evenement.servicemonitor.${noeudId}.erreurDemarrageApplication`,
+    ],
+    exchange: ['3.protege'],
+  }
+  debug("ecouterEvenementsApplications Params : %O", params)
+  socket.subscribe(opts, cb)
+}
+
+function retirerEvenementsApplications(socket, params, cb) {
+  const noeudId = params.noeudId
+  const routingKeys = [
+    `3.protege.evenement.servicemonitor.${noeudId}.applicationDemarree`,
+    `3.protege.evenement.servicemonitor.${noeudId}.applicationArretee`,
+    `3.protege.evenement.servicemonitor.${noeudId}.erreurDemarrageApplication`,
+  ]
+  socket.unsubscribe({routingKeys})
+  debug("retirerEvenementsApplications sur %O", params)
   if(cb) cb(true)
 }
 

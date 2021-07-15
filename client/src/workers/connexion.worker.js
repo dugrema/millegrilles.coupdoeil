@@ -163,7 +163,24 @@ async function enregistrerCallbackEvenementsNoeuds(cb) {
 
 function retirerCallbackEvenementsNoeuds() {
   connexionClient.socketOff('evenement.presence.monitor')
-  connexionClient.emitBlocking('coupdoeil/retirerEvenementsPresenceNoeuds', {}, {})
+  connexionClient.emit('coupdoeil/retirerEvenementsPresenceNoeuds', {}, {})
+}
+
+async function enregistrerCallbackEvenementsApplications(noeudId, cb) {
+  connexionClient.socketOn('evenement.servicemonitor.applicationDemarree', cb)
+  connexionClient.socketOn('evenement.servicemonitor.applicationArretee', cb)
+  connexionClient.socketOn('evenement.servicemonitor.erreurDemarrageApplication', cb)
+  const resultat = await connexionClient.emitBlocking('coupdoeil/ecouterEvenementsApplications', {noeudId}, {})
+  if(!resultat) {
+    throw new Error("Erreur enregistrerCallbackEvenementsNoeuds")
+  }
+}
+
+function retirerCallbackEvenementsApplications(noeudId) {
+  connexionClient.emit('coupdoeil/retirerEvenementsPresenceNoeuds', {noeudId}, {})
+  connexionClient.socketOff('evenement.servicemonitor.applicationDemarree')
+  connexionClient.socketOff('evenement.servicemonitor.applicationArretee')
+  connexionClient.socketOff('evenement.servicemonitor.erreurDemarrageApplication')
 }
 
 comlinkExpose({
@@ -187,4 +204,5 @@ comlinkExpose({
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,
+  enregistrerCallbackEvenementsApplications, retirerCallbackEvenementsApplications,
 })
