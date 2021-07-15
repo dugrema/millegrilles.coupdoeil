@@ -187,7 +187,7 @@ function retirerCallbackEvenementsApplications(noeudId) {
 }
 
 async function enregistrerCallbackEvenementsBackup(cb) {
-  connexionClient.socketOn('evenement.backup.backupTransaction', cb)
+  connexionClient.socketOn('evenement.Backup.backupMaj', cb)
   connexionClient.socketOn('evenement.backup.backupApplication', cb)
   connexionClient.socketOn('evenement.backup.restaurationTransactions', cb)
   const resultat = await connexionClient.emitBlocking('coupdoeil/ecouterEvenementsBackup', {}, {})
@@ -198,7 +198,7 @@ async function enregistrerCallbackEvenementsBackup(cb) {
 
 function retirerCallbackEvenementsBackup() {
   connexionClient.emit('coupdoeil/retirerEvenementsBackup', {}, {})
-  connexionClient.socketOff('evenement.backup.backupTransaction')
+  connexionClient.socketOff('evenement.Backup.backupMaj')
   connexionClient.socketOff('evenement.backup.backupApplication')
   connexionClient.socketOff('evenement.backup.restaurationTransactions')
 }

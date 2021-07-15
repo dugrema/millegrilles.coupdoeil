@@ -720,7 +720,7 @@ function retirerEvenementsApplications(socket, params, cb) {
 function ecouterEvenementsBackup(socket, params, cb) {
   const opts = {
     routingKeys: [
-      'evenement.backup.backupTransaction',
+      'evenement.Backup.backupMaj',
       'evenement.backup.backupApplication',
       'evenement.backup.restaurationTransactions',
     ],
@@ -732,7 +732,7 @@ function ecouterEvenementsBackup(socket, params, cb) {
 
 function retirerEvenementsBackup(socket, params, cb) {
   const routingKeys = [
-    '3.protege.evenement.backup.backupTransaction',
+    '3.protege.evenement.Backup.backupMaj',
     '3.protege.evenement.backup.backupApplication',
     '3.protege.evenement.backup.restaurationTransactions',
   ]
