@@ -2,7 +2,7 @@ import React from 'react'
 import { Nav, Navbar, NavLink, NavItem, Dropdown } from 'react-bootstrap';
 
 import { Trans } from 'react-i18next';
-import { ListeNoeuds, ListeDomaines } from '../components/ListeTopologie';
+// import { ListeNoeuds, ListeDomaines } from '../components/ListeTopologie';
 
 export function Menu(props) {
 

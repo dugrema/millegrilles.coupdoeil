@@ -29,41 +29,43 @@ export class ListeNoeuds extends React.Component {
   }
 
   componentDidMount() {
-    const websocketApp = this.props.rootProps.websocketApp
+    const websocketApp = this.props.workers.connexion
 
-    websocketApp.subscribe(subscriptionsMonitor, this.processMessageNoeud, {DEBUG: false, exchange: ['2.prive', '3.protege']})
+    // websocketApp.subscribe(subscriptionsMonitor, this.processMessageNoeud, {DEBUG: false, exchange: ['2.prive', '3.protege']})
+    websocketApp.enregistrerCallbackEvenementsNoeuds(this.processMessageNoeud)
 
-    const noeud_id = this.props.noeud_id
-    if(noeud_id) {
-      var mappingSubscriptionsApplications = subscriptionsApplications.map(item=>{return item.replace('__noeudId__', this.props.noeud_id)})
-      websocketApp.subscribe(mappingSubscriptionsApplications, this.processMessageApplication, {exchange: ['2.prive', '3.protege']})
-
-      var mappingSubscriptionsDocker = subscriptionsDocker.map(item=>{return item.replace('__noeudId__', this.props.noeud_id)})
-      // console.debug("Mapping subscriptions docker : %O", mappingSubscriptionsDocker)
-      websocketApp.subscribe(mappingSubscriptionsDocker, this.processMessageDocker, {DEBUG: false, exchange: ['2.prive', '3.protege']})
-    }
+    // const noeud_id = this.props.noeud_id
+    // if(noeud_id) {
+    //   var mappingSubscriptionsApplications = subscriptionsApplications.map(item=>{return item.replace('__noeudId__', this.props.noeud_id)})
+    //   websocketApp.subscribe(mappingSubscriptionsApplications, this.processMessageApplication, {exchange: ['2.prive', '3.protege']})
+    //
+    //   var mappingSubscriptionsDocker = subscriptionsDocker.map(item=>{return item.replace('__noeudId__', this.props.noeud_id)})
+    //   // console.debug("Mapping subscriptions docker : %O", mappingSubscriptionsDocker)
+    //   websocketApp.subscribe(mappingSubscriptionsDocker, this.processMessageDocker, {DEBUG: false, exchange: ['2.prive', '3.protege']})
+    // }
 
     chargerListeNoeuds(websocketApp, this.props.noeud_id).then(noeuds=>this.setState({noeuds}))
   }
 
   componentWillUnmount() {
-    const websocketApp = this.props.rootProps.websocketApp
-    this.listenersSocket.forEach(listener=>{websocketApp.unsubscribe([], listener)})
+    const websocketApp = this.props.workers.connexion
+    // this.listenersSocket.forEach(listener=>{websocketApp.unsubscribe([], listener)})
 
-    websocketApp.unsubscribe(subscriptionsMonitor, this.processMessageNoeud, {exchange: ['2.prive', '3.protege']})
+    // websocketApp.unsubscribe(subscriptionsMonitor, this.processMessageNoeud, {exchange: ['2.prive', '3.protege']})
+    websocketApp.retirerCallbackEvenementsNoeuds()
 
-    const noeud_id = this.props.noeud_id
-    if(noeud_id) {
-      var mappingSubscriptionsApplications = subscriptionsApplications.map(item=>{return item.replace('__noeudId__', this.props.noeud_id)})
-      websocketApp.unsubscribe(mappingSubscriptionsApplications, this.processMessageApplication, {exchange: ['2.prive', '3.protege']})
-
-      var mappingSubscriptionsDocker = subscriptionsDocker.map(item=>{return item.replace('__noeudId__', this.props.noeud_id)})
-      websocketApp.unsubscribe(mappingSubscriptionsDocker, this.processMessageDocker, {exchange: ['2.prive', '3.protege']})
-    }
+    // const noeud_id = this.props.noeud_id
+    // if(noeud_id) {
+    //   var mappingSubscriptionsApplications = subscriptionsApplications.map(item=>{return item.replace('__noeudId__', this.props.noeud_id)})
+    //   websocketApp.unsubscribe(mappingSubscriptionsApplications, this.processMessageApplication, {exchange: ['2.prive', '3.protege']})
+    //
+    //   var mappingSubscriptionsDocker = subscriptionsDocker.map(item=>{return item.replace('__noeudId__', this.props.noeud_id)})
+    //   websocketApp.unsubscribe(mappingSubscriptionsDocker, this.processMessageDocker, {exchange: ['2.prive', '3.protege']})
+    // }
   }
 
   processMessageNoeud = comlinkProxy(event => {
-    // console.debug("Message noeud : %o", event)
+    console.debug("Message noeud : %o", event)
     const noeud_id = this.props.noeud_id
     if( ! noeud_id || noeud_id === event.message.noeud_id) {
       const noeuds = majNoeuds(this.state, '3.protege', event.message)
@@ -72,7 +74,7 @@ export class ListeNoeuds extends React.Component {
   })
 
   processMessageApplication = comlinkProxy(message => {
-    // console.debug("Message application : %O", message)
+    console.debug("Message application : %O", message)
     if(this.props.noeud_id) {
       var noeud = this.state.noeuds.filter(item=>item.noeud_id===this.props.noeud_id)[0]
     }
@@ -85,9 +87,9 @@ export class ListeNoeuds extends React.Component {
     if(this.props.noeud_id) {
       var noeudCopy = {...this.state.noeuds.filter(item=>item.noeud_id===this.props.noeud_id)[0]}
       if(domaineAction === 'docker/container') {
-        // console.debug("Message docker container : %O", message)
+        console.debug("Message docker container : %O", message)
       } else if(domaineAction === 'docker/service') {
-        // console.debug("Message docker service : %O", message)
+        console.debug("Message docker service : %O", message)
         if(message.Action === 'remove') {
           // Supprimer le service
           // console.debug("Supprimer service, info noeud : %O", noeudCopy)
@@ -147,10 +149,12 @@ export class ListeDomaines extends React.Component {
   }
 
   componentDidMount() {
-    const websocketApp = this.props.rootProps.websocketApp
+    const websocketApp = this.props.workers.connexion
 
-    websocketApp.subscribe(
-      subscriptionsDomaine, this.processMessagePrive, {exchange: ['2.prive', '3.protege']})
+    websocketApp.enregistrerCallbackEvenementsPresenceDomaine(this.processMessagePrive)
+
+    // websocketApp.subscribe(
+    //   subscriptionsDomaine, this.processMessagePrive, {exchange: ['2.prive', '3.protege']})
 
     chargerListeDomaines(websocketApp).then(domaines=>{
       console.debug("Domaines charges : %O", domaines)
@@ -159,10 +163,11 @@ export class ListeDomaines extends React.Component {
   }
 
   componentWillUnmount() {
-    const websocketApp = this.props.rootProps.websocketApp
+    const websocketApp = this.props.workers.connexion
+    websocketApp.retirerCallbackEvenementsPresenceDomaine()
 
-    websocketApp.unsubscribe(
-      subscriptionsDomaine, this.processMessagePrive, {exchange: ['2.prive', '3.protege']})
+    // websocketApp.unsubscribe(
+    //   subscriptionsDomaine, this.processMessagePrive, {exchange: ['2.prive', '3.protege']})
   }
 
   processMessagePrive = comlinkProxy(message => {

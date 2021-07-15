@@ -108,6 +108,16 @@ export default class AppTopLevel extends React.Component {
       console.debug("toggleProtege")
       try {
         const resultat = await this.state.connexionWorker.upgradeProteger()
+
+        // Promise.all([
+        //   this.state.connexionWorker.enregistrerCallbackTopologie(),
+        // ]).then(listeners=>{
+        //     console.debug("Listeners proteges prets")
+        //   })
+        //   .catch(err=>{
+        //     console.error("Erreur reconnexion listeners proteges : %O", err)
+        //   })
+
       } catch(err) {
         console.error("Erreur upgrade protege %O", err)
       }

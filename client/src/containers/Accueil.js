@@ -21,12 +21,12 @@ export function Accueil(props) {
     <div>
       <h1>Coup D'Oeil</h1>
 
-      <ListeNoeuds rootProps={props.rootProps}>
-        <AfficherSommaireNoeuds rootProps={props.rootProps} />
+      <ListeNoeuds rootProps={props.rootProps} workers={props.workers}>
+        <AfficherSommaireNoeuds rootProps={props.rootProps} workers={props.workers}/>
       </ListeNoeuds>
 
-      <ListeDomaines rootProps={props.rootProps}>
-        <AfficherSommaireDomaines rootProps={props.rootProps} />
+      <ListeDomaines rootProps={props.rootProps} workers={props.workers}>
+        <AfficherSommaireDomaines rootProps={props.rootProps}  workers={props.workers} />
       </ListeDomaines>
 
     </div>
@@ -95,7 +95,7 @@ class AfficherSommaireDomaines extends React.Component {
   }
 
   componentDidMount() {
-    const wsa = this.props.rootProps.websocketApp
+    const wsa = this.props.workers.connexion
     chargerListeDomaines(wsa, valeurs=>{this.setState(valeurs)})
   }
 

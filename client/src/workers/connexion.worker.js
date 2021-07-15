@@ -139,6 +139,33 @@ function majDelegations(params) {
   )
 }
 
+// Listeners
+async function enregistrerCallbackEvenementsPresenceDomaine(cb) {
+  connexionClient.socketOn('evenement.presence.domaine', cb)
+  const resultat = await connexionClient.emitBlocking('coupdoeil/ecouterEvenementsPresenceDomaines', {}, {})
+  if(!resultat) {
+    throw new Error("Erreur enregistrerCallbackTopologie")
+  }
+}
+
+function retirerCallbackEvenementsPresenceDomaine() {
+  connexionClient.socketOff('evenement.presence.domaine')
+  connexionClient.emitBlocking('coupdoeil/retirerEvenementsPresenceDomaines', {}, {})
+}
+
+async function enregistrerCallbackEvenementsNoeuds(cb) {
+  connexionClient.socketOn('evenement.presence.monitor', cb)
+  const resultat = await connexionClient.emitBlocking('coupdoeil/ecouterEvenementsPresenceNoeuds', {}, {})
+  if(!resultat) {
+    throw new Error("Erreur enregistrerCallbackEvenementsNoeuds")
+  }
+}
+
+function retirerCallbackEvenementsNoeuds() {
+  connexionClient.socketOff('evenement.presence.monitor')
+  connexionClient.emitBlocking('coupdoeil/retirerEvenementsPresenceNoeuds', {}, {})
+}
+
 comlinkExpose({
   ...connexionClient,
   connecter,  // Override de connexionClient.connecter
@@ -157,4 +184,7 @@ comlinkExpose({
 
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
   majDelegations,
+
+  enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
+  enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,
 })

@@ -93,7 +93,21 @@ function configurerEvenements(socket) {
       {eventName: 'maitrecomptes/majDelegations', callback: (commande, cb) => {
         majDelegations(socket, commande, cb)
       }},
-    ]
+
+      // Listeners evenements
+      {eventName: 'coupdoeil/ecouterEvenementsPresenceDomaines', callback: (params, cb) => {
+        ecouterEvenementsPresenceDomaines(socket, params, cb)
+      }},
+      {eventName: 'coupdoeil/retirerEvenementsPresenceDomaines', callback: (params, cb) => {
+        retirerEvenementsPresenceDomaines(socket, params, cb)
+      }},
+
+      {eventName: 'coupdoeil/ecouterEvenementsPresenceNoeuds', callback: (params, cb) => {
+        ecouterEvenementsPresenceNoeuds(socket, params, cb)
+      }},
+      {eventName: 'coupdoeil/retirerEvenementsPresenceNoeuds', callback: (params, cb) => {
+        retirerEvenementsPresenceNoeuds(socket, params, cb)
+      }},    ]
   }
 
   return configurationEvenements
@@ -622,6 +636,38 @@ function requeteListeUsagers(socket, params, cb) {
 
 function requeteUsager(socket, params, cb) {
   executerRequete('MaitreDesComptes.chargerUsager', socket, params, cb)
+}
+
+function ecouterEvenementsPresenceDomaines(socket, params, cb) {
+  const opts = {
+    routingKeys: [`evenement.presence.domaine`],
+    exchange: ['3.protege'],
+  }
+  debug("ecouterEvenementsPresenceDomaines Params : %O", params)
+  socket.subscribe(opts, cb)
+}
+
+function retirerEvenementsPresenceDomaines(socket, params, cb) {
+  const routingKeys = [`3.protege.evenement.presence.domaine`]
+  socket.unsubscribe({routingKeys})
+  debug("retirerEvenementsPresenceDomaines sur %O", params)
+  if(cb) cb(true)
+}
+
+function ecouterEvenementsPresenceNoeuds(socket, params, cb) {
+  const opts = {
+    routingKeys: [`evenement.presence.monitor`],
+    exchange: ['3.protege'],
+  }
+  debug("ecouterEvenementsPresenceNoeuds Params : %O", params)
+  socket.subscribe(opts, cb)
+}
+
+function retirerEvenementsPresenceNoeuds(socket, params, cb) {
+  const routingKeys = [`3.protege.evenement.presence.monitor`]
+  socket.unsubscribe({routingKeys})
+  debug("retirerEvenementsPresenceNoeuds sur %O", params)
+  if(cb) cb(true)
 }
 
 module.exports = {configurerEvenements}
