@@ -156,121 +156,12 @@ export default class AppTopLevel extends React.Component {
     let page;
     if(!this.state.nomUsager || !this.state.connexionWorker) {
       // Connecter avec Socket.IO
-      page = <p>Chargement en cours</p>
+      return <p>Chargement en cours</p>
     } else {
       // 3. Afficher application
-      page = <ApplicationCoupdoeil setSousMenuApplication={this.setSousMenuApplication}
-                                   workers={workers}
+      return <ApplicationCoupdoeil workers={workers}
                                    rootProps={rootProps} />
     }
-
-    return <LayoutCoudpoeil
-              changerPage={this.changerPage}
-              page={page}
-              rootProps={rootProps}
-              sousMenuApplication={this.state.sousMenuApplication}
-              appProps={this.props} />
   }
 
-}
-
-export class LayoutCoudpoeil extends React.Component {
-
-  render() {
-    // Application independante (probablement pour DEV)
-    return (
-      <div className="flex-wrapper">
-        <div>
-          <Entete changerPage={this.props.changerPage}
-                  sousMenuApplication={this.props.sousMenuApplication}
-                  rootProps={this.props.rootProps} />
-          <Contenu page={this.props.page}/>
-        </div>
-        <Footer rootProps={this.props.rootProps}/>
-      </div>
-    )
-  }
-}
-
-function Entete(props) {
-  return (
-    <Container>
-      <Menu changerPage={props.changerPage} sousMenuApplication={props.sousMenuApplication} rootProps={props.rootProps}/>
-      <h1>Coup D'Oeil</h1>
-    </Container>
-  )
-}
-
-function Contenu(props) {
-  return (
-    <Container>
-      {props.page}
-    </Container>
-  )
-}
-
-function Footer(props) {
-
-  const idmg = props.rootProps.idmg
-  var qrCode = 'QR'
-
-  return (
-    <Container fluid className="footer bg-info">
-      <Row>
-        <Col sm={2} className="footer-left"></Col>
-        <Col sm={8} className="footer-center">
-          <div className="millegrille-footer">
-            <div>IDMG : {idmg}</div>
-            <div>
-              <Trans>application.coupdoeilAdvert</Trans>{' '}
-              <span title={props.rootProps.manifest.date}>
-                <Trans values={{version: props.rootProps.manifest.version}}>application.coupdoeilVersion</Trans>
-              </span>
-            </div>
-          </div>
-        </Col>
-        <Col sm={2} className="footer-right">{qrCode}</Col>
-      </Row>
-    </Container>
-  )
-}
-
-function Menu(props) {
-
-  let boutonProtege
-  if(props.rootProps.modeProtege) {
-    boutonProtege = <i className="fa fa-lg fa-lock protege"/>
-  } else {
-    boutonProtege = <i className="fa fa-lg fa-unlock"/>
-  }
-
-  var menuItems = props.sousMenuApplication
-
-  var renderCleMillegrille = ''
-
-  const clearCleMillegrille = _=>{props.rootProps.webWorker.clearCleMillegrilleSubtle()}
-  if(props.rootProps.cleMillegrilleChargee) {
-    renderCleMillegrille = (
-      <Nav className="justify-content-end">
-        <Nav.Link onClick={clearCleMillegrille}><i className="fa fa-key"/></Nav.Link>
-      </Nav>
-    )
-  }
-
-  return (
-    <Navbar collapseOnSelect expand="md" bg="info" variant="dark" fixed="top">
-      <Navbar.Brand href='/'><i className="fa fa-home"/></Navbar.Brand>
-      <Navbar.Toggle aria-controls="responsive-navbar-menu" />
-      <Navbar.Collapse id="responsive-navbar-menu">
-        {menuItems}
-        {renderCleMillegrille}
-        <Nav className="justify-content-end">
-          <Nav.Link onClick={props.rootProps.toggleProtege}>{boutonProtege}</Nav.Link>
-        </Nav>
-        <Nav className="justify-content-end">
-          <Nav.Link onClick={props.rootProps.changerLanguage}><Trans>menu.changerLangue</Trans></Nav.Link>
-        </Nav>
-      </Navbar.Collapse>
-    </Navbar>
-  )
 }
