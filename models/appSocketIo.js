@@ -602,8 +602,8 @@ async function executerRequete(domaineAction, socket, params, cb) {
     const reponse = await amqpdao.transmettreRequete(domaineAction, params, {decoder: true})
     cb(reponse)
   } catch(err) {
-    debug("Erreur executerRequete\n%O", err)
-    cb({err: 'Erreur: ' + err})
+    debug("Erreur executerRequete %s\n%O", domaineAction, err)
+    if(cb) cb({err: 'Erreur: ' + err})
   }
 }
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import { Row, Col, Button, Nav, Alert, Form } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 import {proxy as comlinkProxy} from 'comlink'
@@ -18,16 +18,38 @@ const subscriptionsFichiers = [
   'evenement.backup.restaurationFichiers',
 ]
 
-export class Backup extends React.Component {
+export function Backup(props) {
 
-  refreshInterval = null  // Objet interval pour rafraichissement de l'ecran
+  // refreshInterval = null  // Objet interval pour rafraichissement de l'ecran
 
-  state = {
-    operation: SommaireBackup,
-    domaines: '',
-  }
+  const [operation, setOperation] = useState('')
+  const [domaines, setDomaines] = useState('')
+  const [noeuds, setNoeuds] = useState('')
 
-  changerOperation = event => {
+  const connexion = props.workers.connexion
+
+  // state = {
+  //   // operation: SommaireBackup,
+  //   domaines: '',
+  // }
+
+  useEffect(()=>{
+    if(connexion && setDomaines && setNoeuds) {
+      connexion.requeteListeDomaines()
+        .then(domaines=>{
+          console.debug("Domaines charges : %O", domaines)
+          setDomaines(domaines)
+        }).catch(err=>{console.error("Erreur chargement domaines %O", err)})
+
+      connexion.requeteListeNoeuds({all_info: true})
+        .then(noeuds=>{
+          console.debug("Noeuds charges %O", noeuds)
+          setNoeuds(noeuds)
+        }).catch(err=>{console.error("Erreur chargement noeuds %O", err)})
+    }
+  }, [connexion, setDomaines, setNoeuds])
+
+  const changerOperation = useCallback(event => {
     console.debug("Changer operation : %O", event)
     var value = 'SommaireBackup'
     if(event.currentTarget) {
@@ -36,37 +58,32 @@ export class Backup extends React.Component {
       value = event
     }
 
-    var page = SommaireBackup
-    if(value === 'Backup')  page = BackupOperation
-    else if(value === 'Restaurer') page = RestaurerOperation
+    setOperation(value)
 
-    this.setState({operation: page})
+  }, [setOperation])
+
+  let Action
+  switch(operation) {
+    case 'Backup': Action = BackupOperation; break
+    case 'Restaurer': Action = RestaurerOperation; break
+    default:
+      Action = Sommaire
   }
 
-  componentDidMount() {
-
-  }
-
-  render() {
-
-    const wsa = this.props.rootProps.websocketApp
-
-    const Action = this.state.operation
-    var page = <Action changerOperation={this.changerOperation}
-                       wsa={wsa}
-                       modeProtege={this.props.rootProps.modeProtege}/>
-
-    return page
-  }
-
+  return <Action changerOperation={changerOperation}
+                 workers={props.workers}
+                 modeProtege={props.rootProps.modeProtege}
+                 domaines={domaines}
+                 noeuds={noeuds} />
 }
 
-function SommaireBackup(props) {
+function Sommaire(props) {
 
   return (
     <>
       <h1>Backup et restauration</h1>
 
+      <h2>Choisir une operation</h2>
       <Nav onSelect={props.changerOperation}>
         <Nav.Item>
           <Nav.Link eventKey='Backup'>Backup</Nav.Link>
@@ -75,110 +92,176 @@ function SommaireBackup(props) {
           <Nav.Link eventKey='Restaurer'>Restaurer</Nav.Link>
         </Nav.Item>
       </Nav>
+
+      <h2>Domaines</h2>
+      <AfficherDomaines domaines={props.domaines} />
+
+      <h2>Applications</h2>
+      <AfficherApplications noeuds={props.noeuds} />
     </>
   )
 }
 
-class BackupOperation extends React.Component {
+function AfficherDomaines(props) {
+  if(!props.domaines) return (
+    <p>Aucuns domaines</p>
+  )
 
-  state = {
-    etatBackupDomaine: {},
-    etatBackupApplication: {},
-    afficherDomaines: false,
-  }
+  const domaines = [...props.domaines]
+  domaines.sort((a,b)=>{
+    const nomA = a.domaine || '',
+          nomB = b.domaine || ''
 
-  componentDidMount() {
-    console.debug("Enregistrer routing keys : %O", subscriptionsBackup)
-    this.props.wsa.subscribe(subscriptionsBackup, this.traiterMessageEvenement, {exchange: ['3.protege']})
-  }
-
-  componentWillUnmount() {
-    console.debug("Retirer routing keys : %O", subscriptionsBackup)
-    this.props.wsa.unsubscribe(subscriptionsBackup, this.traiterMessageEvenement, {exchange: ['3.protege']})
-  }
-
-  traiterMessageEvenement = comlinkProxy(event => {
-    console.debug("Message evenement backup %O", event)
-    const message = event.message
-    const {domaine, nom_application: application} = message
-
-    if(domaine) {
-      var etatDomaine = this.state.etatBackupDomaine[domaine]
-      if(!etatDomaine) etatDomaine = {}
-      else etatDomaine = {...etatDomaine}  // Clone
-      etatDomaine = majEtatBackupDomaine(etatDomaine, message)
-      this.setState(
-        {etatBackupDomaine: {...this.state.etatBackupDomaine, [domaine]: etatDomaine}},
-        _=>{console.debug("State : %O", this.state)}
-      )
-    } else if(application) {
-      var etatApplication = this.state.etatBackupApplication[application]
-      if(!etatApplication) etatApplication = {}
-      else etatApplication = {...etatApplication}  // Clone
-      etatApplication = majEtatBackupDomaine(etatApplication, message)
-      this.setState(
-        {etatBackupApplication: {...this.state.etatBackupApplication, [application]: etatApplication}},
-        _=>{console.debug("State : %O", this.state)}
-      )
-    }
+    return nomA.localeCompare(nomB)
   })
 
-  lancerBackup = async event => {
-    console.debug("Lancer backup snapshot")
-    this.setState({
-      afficherDomaines: true,
-      etatBackupDomaine: {},
-      etatBackupApplication: {},
+  return domaines.map((item, idx)=>{
+    return (
+      <Row key={idx}>
+        <Col>{item.domaine}</Col>
+      </Row>
+    )
+  })
+}
+
+function AfficherApplications(props) {
+  if(!props.noeuds) return (
+    <p>Aucunes applications</p>
+  )
+
+  const applications = []
+  props.noeuds.forEach(item=>{
+    const apps = item.applications || {}
+    Object.keys(apps).forEach(nomApp=>{
+      const app = item.applications[nomApp]
+      applications.push({nom: nomApp, app, noeud: item})
     })
+  })
+
+  applications.sort((a,b)=>{
+    const nomA = a.nom,
+          nomB = b.nom,
+          noeudIdA = a.noeud.noeudId,
+          noeudIdB = b.noeud.noeudId
+
+    let resultat = nomA.localeCompare(nomB)
+    if(resultat !== 0) return resultat
+
+    return noeudIdA.localeCompare(noeudIdB)  // S'assurer tri stable
+  })
+
+  return applications.map((item, idx)=>{
+    const nom = item.nom
+    return (
+      <Row key={idx}>
+        <Col>{nom}</Col>
+      </Row>
+    )
+  })
+}
+
+
+function BackupOperation(props) {
+
+  // state = {
+  //   etatBackupDomaine: {},
+  //   etatBackupApplication: {},
+  //   afficherDomaines: false,
+  // }
+  const [etatBackupDomaine, setEtatBackupDomaine] = useState({})
+  const [etatBackupApplication, setEtatBackupApplication] = useState({})
+  const [afficherDomaines, setAfficherDomaines] = useState(false)
+
+  const connexion = props.workers.connexion
+
+  useEffect(()=>{
+    console.debug("Enregistrer routing keys : %O", subscriptionsBackup)
+    // this.props.wsa.subscribe(subscriptionsBackup, this.traiterMessageEvenement, {exchange: ['3.protege']})
+    return ()=>{
+      console.debug("Retirer routing keys : %O", subscriptionsBackup)
+      //this.props.wsa.unsubscribe(subscriptionsBackup, this.traiterMessageEvenement, {exchange: ['3.protege']})
+    }
+  }, [])
+
+  // const traiterMessageEvenement = comlinkProxy(event => {
+  //   console.debug("Message evenement backup %O", event)
+  //   const message = event.message
+  //   const {domaine, nom_application: application} = message
+  //
+  //   if(domaine) {
+  //     var etatDomaine = this.state.etatBackupDomaine[domaine]
+  //     if(!etatDomaine) etatDomaine = {}
+  //     else etatDomaine = {...etatDomaine}  // Clone
+  //     etatDomaine = majEtatBackupDomaine(etatDomaine, message)
+  //     this.setState(
+  //       {etatBackupDomaine: {...this.state.etatBackupDomaine, [domaine]: etatDomaine}},
+  //       _=>{console.debug("State : %O", this.state)}
+  //     )
+  //   } else if(application) {
+  //     var etatApplication = this.state.etatBackupApplication[application]
+  //     if(!etatApplication) etatApplication = {}
+  //     else etatApplication = {...etatApplication}  // Clone
+  //     etatApplication = majEtatBackupDomaine(etatApplication, message)
+  //     this.setState(
+  //       {etatBackupApplication: {...this.state.etatBackupApplication, [application]: etatApplication}},
+  //       _=>{console.debug("State : %O", this.state)}
+  //     )
+  //   }
+  // })
+
+  const lancerBackup = useCallback(async event => {
+    console.debug("Lancer backup snapshot")
+    setAfficherDomaines(true)
+    setEtatBackupDomaine({})
+    setEtatBackupApplication({})
+
     try {
       const uuid_rapport = ''+uuidv1()
-      const reponse = await this.props.wsa.lancerBackupSnapshot({uuid_rapport})
+      const reponse = await connexion.lancerBackupSnapshot({uuid_rapport})
       console.debug("Reponse backup snaphshot : %O", reponse)
     } catch(err) {
       console.error("Erreut lancement backup : %O", err)
     }
-  }
+  }, [connexion, setAfficherDomaines, setEtatBackupDomaine, setEtatBackupApplication])
 
-  render() {
-
-    var backupDomaines = ''
-    if(this.state.etatBackupDomaine) {
-      backupDomaines = (
-        <>
-          <hr/>
-          <Alert show={this.state.afficherDomaines}
-                 variant="info"
-                 onClose={_=>{this.setState({afficherDomaines: false})}}
-                 dismissible>
-
-            <h2>Backup</h2>
-
-            <h3>Domaines</h3>
-            <AfficherDomainesBackup domaines={this.state.etatBackupDomaine}/>
-
-            <h3>Applications</h3>
-            <AfficherDomainesBackup domaines={this.state.etatBackupApplication}/>
-
-          </Alert>
-        </>
-      )
-    }
-
-    return (
+  var backupDomaines = ''
+  if(etatBackupDomaine) {
+    backupDomaines = (
       <>
-        <h1>Backup</h1>
+        <hr/>
+        <Alert show={afficherDomaines}
+               variant="info"
+               onClose={_=>{setAfficherDomaines(false)}}
+               dismissible>
 
-        <Row>
-          <Col>
-            <Button onClick={this.lancerBackup} disabled={!this.props.modeProtege}>Backup</Button>
-            <Button onClick={this.props.changerOperation} variant="secondary">Retour</Button>
-          </Col>
-        </Row>
+          <h2>Backup</h2>
 
-        {backupDomaines}
+          <h3>Domaines</h3>
+          <AfficherDomainesBackup domaines={etatBackupDomaine}/>
+
+          <h3>Applications</h3>
+          <AfficherDomainesBackup domaines={etatBackupApplication}/>
+
+        </Alert>
       </>
     )
   }
+
+  return (
+    <>
+      <h1>Backup</h1>
+
+      <Row>
+        <Col>
+          <Button onClick={lancerBackup} disabled={!props.modeProtege}>Backup</Button>
+          <Button onClick={props.changerOperation} variant="secondary">Retour</Button>
+        </Col>
+      </Row>
+
+      {backupDomaines}
+    </>
+  )
+
 }
 
 function majEtatBackupDomaine(dict, message) {
