@@ -78,7 +78,7 @@ async function connecterReact(connexionWorker, app) {
 
   connexionWorker.socketOn('disconnect', app.deconnexionSocketIo)
   connexionWorker.socketOn('modeProtege', app.setEtatProtege)
-  connexionWorker.socketOn('reconnect', app.reconnectSocketIo)
+  connexionWorker.socketOn('connect', app.reconnectSocketIo)
 }
 
 export async function preparerWorkersAvecCles(nomUsager, chiffrageWorker, connexionWorker) {
