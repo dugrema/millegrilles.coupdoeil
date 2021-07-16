@@ -779,7 +779,9 @@ function traiterMessageDomaine(domaine, domaines, evenement, message, setDomaine
     if(item.domaine === domaine) {
       console.debug("Maj domaine %O", item)
       // const rapport = {...item.rapport, etat: evenement}
-      return {...item, etat, pctProgres}
+      const info = message.info || {}
+      const err = info.err
+      return {...item, etat, pctProgres, err}
     }
     return item
   })
