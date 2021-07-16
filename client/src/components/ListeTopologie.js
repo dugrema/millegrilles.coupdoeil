@@ -1,29 +1,7 @@
 import React, {useState, useEffect, useCallback} from 'react'
 import {proxy as comlinkProxy} from 'comlink'
 
-// const subscriptionsMonitor = [
-//   'evenement.presence.monitor',
-// ]
-//
-// const subscriptionsDomaine = [
-//   'evenement.presence.domaine',
-// ]
-//
-// const subscriptionsDocker = [
-//   'evenement.servicemonitor.__noeudId__.docker/container',
-//   'evenement.servicemonitor.__noeudId__.docker/service',
-// ]
-//
-// const subscriptionsApplications = [
-//   'evenement.servicemonitor.__noeudId__.applicationDemarree',
-//   'evenement.servicemonitor.__noeudId__.applicationArretee',
-// ]
-
-// Fonctions globales utilisees dans fonctions wrappes par comlinkProxy
-// let _processMessageNoeuds = null,
-//     _processMessageApplication = null,
-//     _processMessageDocker = null,
-//     _processMessageDomaine = null
+// Contexte global utilise pour fonctions wrappees par comlinkProxy
 const noeudsContexte = {},
       domainesContexte = {}
 
@@ -162,146 +140,6 @@ export function ListeDomaines(props) {
 
 }
 
-// export class ListeNoeuds extends React.Component {
-//
-//   listenersSocket = []
-//
-//   state = {
-//     noeuds: '',
-//     subscriptionsMonitor,
-//   }
-//
-//   componentDidMount() {
-//     const websocketApp = this.props.workers.connexion
-//     websocketApp.enregistrerCallbackEvenementsNoeuds(this.processMessageNoeud)
-//     chargerListeNoeuds(websocketApp, this.props.noeud_id).then(noeuds=>this.setState({noeuds}))
-//   }
-//
-//   componentWillUnmount() {
-//     const websocketApp = this.props.workers.connexion
-//     websocketApp.retirerCallbackEvenementsNoeuds()
-//   }
-//
-//   processMessageNoeud = comlinkProxy(event => {
-//     console.debug("Message noeud : %o", event)
-//     const noeud_id = this.props.noeud_id
-//     if( ! noeud_id || noeud_id === event.message.noeud_id) {
-//       const noeuds = majNoeuds(this.state, '3.protege', event.message)
-//       this.setState({noeuds})
-//     }
-//   })
-//
-//   processMessageApplication = comlinkProxy(message => {
-//     console.debug("Message application : %O", message)
-//     if(this.props.noeud_id) {
-//       var noeud = this.state.noeuds.filter(item=>item.noeud_id===this.props.noeud_id)[0]
-//     }
-//   })
-//
-//   processMessageDocker = comlinkProxy(event => {
-//     const message = event.message
-//     const domaineAction = event.routingKey.split('.').pop()
-//
-//     if(this.props.noeud_id) {
-//       var noeudCopy = {...this.state.noeuds.filter(item=>item.noeud_id===this.props.noeud_id)[0]}
-//       if(domaineAction === 'docker/container') {
-//         console.debug("Message docker container : %O", message)
-//       } else if(domaineAction === 'docker/service') {
-//         console.debug("Message docker service : %O", message)
-//         if(message.Action === 'remove') {
-//           // Supprimer le service
-//           // console.debug("Supprimer service, info noeud : %O", noeudCopy)
-//           var nomApplication = message.Actor.Attributes.name
-//           var servicesRestants = {...noeudCopy.services}
-//           // console.debug("Services avant suppression : %O", servicesRestants)
-//           delete servicesRestants[nomApplication]
-//           noeudCopy.services = servicesRestants
-//           // console.debug("Copie noeud apres suppression : %O", noeudCopy)
-//         } else if(message.Action === 'create') {
-//           // console.debug("Creer service, info noeud : %O", noeudCopy)
-//           var nomApplication = message.Actor.Attributes.name
-//         }
-//       } else {
-//         // console.debug("Message docker type non gere : %O", message)
-//       }
-//
-//       // Creer copie de la liste de noeuds
-//       var listeCopie = this.state.noeuds.map(item=>{
-//         if(item.noeud_id === this.props.noeud_id) {
-//           return noeudCopy
-//         }
-//         return item
-//       })
-//       this.setState({noeuds: listeCopie})
-//     }
-//   })
-//
-//   render() {
-//     // console.warn("Render liste topologie : %O", this)
-//
-//     if(this.state.noeuds) {
-//       const children = this.props.children
-//       return React.Children.map(children, (child, i) => {
-//         const clone = React.cloneElement(child, {noeuds: this.state.noeuds})
-//         return clone
-//       })
-//     } else {
-//       return ''
-//     }
-//   }
-//
-// }
-
-// export class ListeDomaines extends React.Component {
-//
-//   listenersSocket = []
-//
-//   state = {
-//     domaines: []
-//   }
-//
-//   componentDidMount() {
-//     const websocketApp = this.props.workers.connexion
-//
-//     websocketApp.enregistrerCallbackEvenementsPresenceDomaine(this.processMessagePrive)
-//
-//     // websocketApp.subscribe(
-//     //   subscriptionsDomaine, this.processMessagePrive, {exchange: ['2.prive', '3.protege']})
-//
-//     chargerListeDomaines(websocketApp).then(domaines=>{
-//       console.debug("Domaines charges : %O", domaines)
-//       this.setState({domaines})
-//     })
-//   }
-//
-//   componentWillUnmount() {
-//     const websocketApp = this.props.workers.connexion
-//     websocketApp.retirerCallbackEvenementsPresenceDomaine()
-//
-//     // websocketApp.unsubscribe(
-//     //   subscriptionsDomaine, this.processMessagePrive, {exchange: ['2.prive', '3.protege']})
-//   }
-//
-//   processMessagePrive = comlinkProxy(message => {
-//     // console.debug("Message recu : %O", message)
-//     const domaines = majDomaines(this.state, message.exchange, message.message)
-//     this.setState({domaines})
-//   })
-//   // processMessageProtege = comlinkProxy(message => {
-//   //   const domaines = majDomaines(this.state, '3.protege', message.message)
-//   //   this.setState({domaines})
-//   // })
-//
-//   render() {
-//     const children = this.props.children
-//     return React.Children.map(children, (child, i) => {
-//       const clone = React.cloneElement(child, {domaines: this.state.domaines})
-//       return clone
-//     })
-//   }
-//
-// }
-
 // Charge la liste courante des noeuds
 async function chargerListeNoeuds(websocketApp, noeud_id) {
   // console.debug("Charger liste noeuds")
@@ -316,8 +154,6 @@ async function chargerListeNoeuds(websocketApp, noeud_id) {
 
   if(!reponseNoeuds) reponseNoeuds = []
 
-  // console.debug("Liste noeuds\n%O", reponseNoeuds)
-  // const epochCourant = new Date().getTime() / 1000
   var noeuds = reponseNoeuds.map(noeud=>{
     const derniereModification = noeud['_mg-derniere-modification']
     const infoNoeud = mapperNoeud(noeud, derniereModification)
@@ -443,10 +279,6 @@ function majDomaines(domaines, niveauSecurite, message) {
   const noeud_id = message.noeud_id
   const estampille = message['en-tete'].estampille
 
-  // const estampille = message['en-tete'].estampille
-  // const valeursMaj = {
-  //   descriptif: message.domaine
-  // }
   const valeursMaj = mapperDomaine(message, estampille)
 
   var domainesCourants = [...domaines]
