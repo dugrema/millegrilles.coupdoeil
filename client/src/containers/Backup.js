@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useCallback} from 'react';
-import { Row, Col, Button, Nav, Alert, Form } from 'react-bootstrap';
+import { Row, Col, Button, Nav, Alert, Form, ProgressBar } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 import {proxy as comlinkProxy} from 'comlink'
 import {v1 as uuidv1} from 'uuid'
@@ -7,20 +7,11 @@ import {v1 as uuidv1} from 'uuid'
 import { DateTimeAfficher } from '../components/ReactFormatters'
 import { chargerStatsTransactionsDomaines } from '../components/UtilDomaines'
 
-// const subscriptionsBackup = [
-//   'evenement.backup.backupTransaction',
-//   'evenement.backup.backupApplication',
-// ]
-// const subscriptionsRestauration = [
-//   'evenement.backup.restaurationTransactions',
-// ]
-// const subscriptionsFichiers = [
-//   'evenement.backup.restaurationFichiers',
-// ]
+// Contexte global utilise pour fonctions avec comlinkProxy
+const contexteGlobal = {},
+      contexteBackup = {}
 
 export function Backup(props) {
-
-  // refreshInterval = null  // Objet interval pour rafraichissement de l'ecran
 
   const [operation, setOperation] = useState('')
   const [domaines, setDomaines] = useState('')
@@ -29,10 +20,16 @@ export function Backup(props) {
 
   const connexion = props.workers.connexion
 
-  // state = {
-  //   // operation: SommaireBackup,
-  //   domaines: '',
-  // }
+  // Entretien contexte pour callbacks comlink proxy
+  useEffect(()=>{
+    contexteGlobal.domaines = domaines
+    contexteGlobal.noeuds = noeuds
+    contexteGlobal.rapport = rapport
+  }, [domaines, noeuds, rapport])
+
+  const cbMessage = useCallback(comlinkProxy(msg=>{
+    traiterMessage(connexion, contexteGlobal, {setDomaines, setNoeuds, setRapport}, msg)
+  }), [connexion, setDomaines, setNoeuds, setRapport])
 
   useEffect(()=>{
     if(connexion && setDomaines && setNoeuds) {
@@ -54,8 +51,6 @@ export function Backup(props) {
           setRapport(infoRapport.rapport)
         }).catch(err=>{console.error("Erreur chargement rapport backup %O", err)})
 
-      let cbMessage = msg => {console.debug("Recu message : %O", msg)}
-      cbMessage = comlinkProxy(cbMessage)
       connexion.enregistrerCallbackEvenementsBackup(cbMessage)
         .catch(err=>{console.error("Erreur enregistrement evenements backup", err)})
 
@@ -64,7 +59,7 @@ export function Backup(props) {
         connexion.retirerCallbackEvenementsBackup()
       }
     }
-  }, [connexion, setDomaines, setNoeuds])
+  }, [connexion, cbMessage, setDomaines, setNoeuds])
 
   const changerOperation = useCallback(event => {
     console.debug("Changer operation : %O", event)
@@ -92,6 +87,8 @@ export function Backup(props) {
                  modeProtege={props.rootProps.modeProtege}
                  domaines={domaines}
                  noeuds={noeuds}
+                 setDomaines={setDomaines}
+                 setNoeuds={setNoeuds}
                  rapport={rapport} />
 }
 
@@ -171,21 +168,40 @@ function AfficherDomaines(props) {
     })
   }
 
-  // console.debug("!!! Rapport prep  : %O", domaines)
+  console.debug("!!! Rapport prep  : %O", domaines)
 
   return domaines.map((item, idx)=>{
 
     let status = 'N/D'
-    if(item.err) status = 'X'
-    else if(item.rapport) status = 'O'
+    if(item.err) status = (
+      <i className="fa fa-times echec"/>
+    )
+    else if(item.etat) status = <span><i className="fa fa-spinner fa-spin fa-fw"/> {item.etat}</span>
+    else if(item.rapport) status = <i className="fa fa-check succes"/>
+
+    let pctProgres = ''
+    if(item.pctProgres) {
+      let variant = 'primary'
+      if(item.err) variant = 'danger'
+      pctProgres = <ProgressBar variant={variant} now={item.pctProgres} />
+    }
 
     return (
-      <Row key={idx}>
-        <Col>{item.domaine}</Col>
-        <Col>
-          {status}
-        </Col>
-      </Row>
+      <>
+        <Row key={idx}>
+          <Col xs={6} md={2}>{item.domaine}</Col>
+          <Col xs={6} md={3}>
+            {status}
+          </Col>
+          <Col xs={12} md={7}>
+            {item.err?
+              item.err
+              :
+              pctProgres
+            }
+          </Col>
+        </Row>
+      </>
     )
   })
 }
@@ -229,20 +245,22 @@ function AfficherApplications(props) {
 
 function BackupOperation(props) {
 
-  const [etatBackupDomaine, setEtatBackupDomaine] = useState({})
-  const [etatBackupApplication, setEtatBackupApplication] = useState({})
-  const [afficherDomaines, setAfficherDomaines] = useState(false)
+  // const [etatBackupDomaine, setEtatBackupDomaine] = useState({})
+  // const [etatBackupApplication, setEtatBackupApplication] = useState({})
+  // const [afficherDomaines, setAfficherDomaines] = useState(false)
 
-  const connexion = props.workers.connexion
+  const connexion = props.workers.connexion,
+        domaines = props.domaines,
+        setDomaines = props.setDomaines
 
-  useEffect(()=>{
-    // console.debug("Enregistrer routing keys : %O", subscriptionsBackup)
-    // this.props.wsa.subscribe(subscriptionsBackup, this.traiterMessageEvenement, {exchange: ['3.protege']})
-    return ()=>{
-      // console.debug("Retirer routing keys : %O", subscriptionsBackup)
-      //this.props.wsa.unsubscribe(subscriptionsBackup, this.traiterMessageEvenement, {exchange: ['3.protege']})
-    }
-  }, [])
+  // useEffect(()=>{
+  //   // console.debug("Enregistrer routing keys : %O", subscriptionsBackup)
+  //   // this.props.wsa.subscribe(subscriptionsBackup, this.traiterMessageEvenement, {exchange: ['3.protege']})
+  //   return ()=>{
+  //     // console.debug("Retirer routing keys : %O", subscriptionsBackup)
+  //     //this.props.wsa.unsubscribe(subscriptionsBackup, this.traiterMessageEvenement, {exchange: ['3.protege']})
+  //   }
+  // }, [])
 
   // const traiterMessageEvenement = comlinkProxy(event => {
   //   console.debug("Message evenement backup %O", event)
@@ -271,19 +289,25 @@ function BackupOperation(props) {
   // })
 
   const lancerBackup = useCallback(async event => {
-    console.debug("Lancer backup snapshot")
-    setAfficherDomaines(true)
-    setEtatBackupDomaine({})
-    setEtatBackupApplication({})
+    console.debug("Lancer backup snapshot, domaines : %O", domaines)
+    // setAfficherDomaines(true)
+    // setEtatBackupDomaine({})
+    // setEtatBackupApplication({})
 
     try {
+      // Reset rapport en memoire
+      const domainesMaj = domaines.map(item=>{
+        return {...item, err: '', pctProgres: 0, status: '', rapport: ''}
+      })
+      setDomaines(domainesMaj)
+
       const uuid_rapport = ''+uuidv1()
       const reponse = await connexion.lancerBackupSnapshot({uuid_rapport})
       console.debug("Reponse backup snaphshot : %O", reponse)
     } catch(err) {
       console.error("Erreut lancement backup : %O", err)
     }
-  }, [connexion, setAfficherDomaines, setEtatBackupDomaine, setEtatBackupApplication])
+  }, [connexion, domaines, setDomaines])
 
   var backupDomaines = ''
   // if(etatBackupDomaine) {
@@ -347,75 +371,75 @@ function majEtatBackupDomaine(dict, message) {
   return dict
 }
 
-function AfficherDomainesBackup(props) {
-
-  const domaines = props.domaines
-
-  const listeDomaines = Object.keys(domaines)
-  listeDomaines.sort((a,b)=>{return a.localeCompare(b)})
-
-  const renderDomaines = listeDomaines.map(nomDomaine=>{
-    const infoDomaine = domaines[nomDomaine]
-
-    var err = ''
-    if(infoDomaine.err) {
-      err = (
-        <Row key={nomDomaine+'_err'}>
-          <Col md={5}></Col>
-          <Col md={7}>{infoDomaine.err}</Col>
-        </Row>
-      )
-    }
-
-    return (
-      <>
-        <Row key={nomDomaine}>
-          <Col md={1}></Col>
-          <Col md={4}>{nomDomaine}</Col>
-          <Col md={7}><AfficherEtatBackupDomaine etat={infoDomaine}/></Col>
-        </Row>
-        {err}
-      </>
-    )
-  })
-
-  return renderDomaines
-}
-
-function AfficherEtatBackupDomaine(props) {
-  const etat = props.etat
-  var infoEtat = <span>Pret</span>
-
-  if(etat) {
-    var icone = '', message = ''
-    if(etat.actif) icone = <i className="fa fa-spinner fa-spin fa-fw"/>
-    else if(etat.complete) icone = <i className="fa fa-check"/>
-    else if(etat.echec) icone = <i className="fa fa-times"/>
-
-    if(etat.echec || etat.err) {
-      message = <span>Erreur de traitement</span>
-    } else if(etat.complete) {
-      message = <span>Traitement complete</span>
-    } else if(['backupHoraireDebut', 'backupSnapshotDebut', 'backupApplicationDebut'].includes(etat.action)) {
-      message = <span>Debut backup des transactions</span>
-    } else if(['backupHoraireCataloguePret', 'backupSnapshotCataloguePret', 'backupApplicationCataloguePret'].includes(etat.action)) {
-      message = <span>Catalogue pret</span>
-    } else if(['backupHoraireUploadConfirme', 'backupSnapshotUploadConfirme', 'backupApplicationUploadConfirme'].includes(etat.action)) {
-      message = <span>Upload backup complete</span>
-    } else if(['backupHoraireTermine', 'backupSnapshotTermine', 'backupApplicationTermine'].includes(etat.action)) {
-      message = <span>Backup termine</span>
-    }
-
-    infoEtat = (
-      <>
-        {icone}
-        {message}
-      </>
-    )
-  }
-
-  return infoEtat
-}
+// function AfficherDomainesBackup(props) {
+//
+//   const domaines = props.domaines
+//
+//   const listeDomaines = Object.keys(domaines)
+//   listeDomaines.sort((a,b)=>{return a.localeCompare(b)})
+//
+//   const renderDomaines = listeDomaines.map(nomDomaine=>{
+//     const infoDomaine = domaines[nomDomaine]
+//
+//     var err = ''
+//     if(infoDomaine.err) {
+//       err = (
+//         <Row key={nomDomaine+'_err'}>
+//           <Col md={5}></Col>
+//           <Col md={7}>{infoDomaine.err}</Col>
+//         </Row>
+//       )
+//     }
+//
+//     return (
+//       <>
+//         <Row key={nomDomaine}>
+//           <Col md={1}></Col>
+//           <Col md={4}>{nomDomaine}</Col>
+//           <Col md={7}><AfficherEtatBackupDomaine etat={infoDomaine}/></Col>
+//         </Row>
+//         {err}
+//       </>
+//     )
+//   })
+//
+//   return renderDomaines
+// }
+//
+// function AfficherEtatBackupDomaine(props) {
+//   const etat = props.etat
+//   var infoEtat = <span>Pret</span>
+//
+//   if(etat) {
+//     var icone = '', message = ''
+//     if(etat.actif) icone = <i className="fa fa-spinner fa-spin fa-fw"/>
+//     else if(etat.complete) icone = <i className="fa fa-check"/>
+//     else if(etat.echec) icone = <i className="fa fa-times"/>
+//
+//     if(etat.echec || etat.err) {
+//       message = <span>Erreur de traitement</span>
+//     } else if(etat.complete) {
+//       message = <span>Traitement complete</span>
+//     } else if(['backupHoraireDebut', 'backupSnapshotDebut', 'backupApplicationDebut'].includes(etat.action)) {
+//       message = <span>Debut backup des transactions</span>
+//     } else if(['backupHoraireCataloguePret', 'backupSnapshotCataloguePret', 'backupApplicationCataloguePret'].includes(etat.action)) {
+//       message = <span>Catalogue pret</span>
+//     } else if(['backupHoraireUploadConfirme', 'backupSnapshotUploadConfirme', 'backupApplicationUploadConfirme'].includes(etat.action)) {
+//       message = <span>Upload backup complete</span>
+//     } else if(['backupHoraireTermine', 'backupSnapshotTermine', 'backupApplicationTermine'].includes(etat.action)) {
+//       message = <span>Backup termine</span>
+//     }
+//
+//     infoEtat = (
+//       <>
+//         {icone}
+//         {message}
+//       </>
+//     )
+//   }
+//
+//   return infoEtat
+// }
 
 class RestaurerOperation extends React.Component {
 
@@ -729,4 +753,47 @@ function ParamsAvances(props) {
       </Form.Group>
     </Alert>
   )
+}
+
+function traiterMessage(connexion, contexte, setters, msg) {
+  const message = msg.message || {},
+        domaine = message.domaine,
+        evenement = message.evenement,
+        nomApplication = message.nom_application
+
+  if(nomApplication) {
+    traiterMessageApplication(nomApplication, contexte.noeuds, evenement, message, setters.setNoeuds)
+  } else if(domaine) {
+    traiterMessageDomaine(domaine, contexte.domaines, evenement, message, setters.setDomaines)
+  }
+
+}
+
+function traiterMessageDomaine(domaine, domaines, evenement, message, setDomaines) {
+  console.debug("Recu message %s %s %O", domaine, evenement, message)
+
+  let pctProgres = 0,
+      etat = evenement
+  switch(evenement) {
+    case 'backupHoraireDebut': pctProgres = 1; etat = 'Debut'; break
+    case 'backupHoraireTermine': pctProgres = 75; etat = 'En cours'; break
+    case 'backupAnnuelTermine': pctProgres = 100; etat = ''; break
+    case 'backupTermine': pctProgres = 100; etat = ''; break
+    default:
+      pctProgres = ''
+  }
+
+  const domainesMaj = domaines.map(item=>{
+    if(item.domaine === domaine) {
+      console.debug("Maj domaine %O", item)
+      // const rapport = {...item.rapport, etat: evenement}
+      return {...item, etat, pctProgres}
+    }
+    return item
+  })
+  setDomaines(domainesMaj)
+}
+
+function traiterMessageApplication(nomApplication, noeuds, evenement, message, setNoeuds) {
+  console.debug("Recu message %s %s %O", nomApplication, evenement, message)
 }

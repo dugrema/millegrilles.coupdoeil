@@ -92,3 +92,11 @@ div.table div.table-header {
     display: none;
   }
 }
+
+.succes {
+  color: green;
+}
+
+.echec {
+  color: red;
+}
