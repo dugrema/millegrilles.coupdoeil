@@ -177,7 +177,7 @@ function AfficherDomaines(props) {
       <i className="fa fa-times echec"/>
     )
     else if(item.etat) status = <span><i className="fa fa-spinner fa-spin fa-fw"/> {item.etat}</span>
-    else if(item.rapport) status = <i className="fa fa-check succes"/>
+    else if(item.rapport || item.pctProgres === 100) status = <i className="fa fa-check succes"/>
 
     let pctProgres = ''
     if(item.pctProgres) {
@@ -245,54 +245,15 @@ function AfficherApplications(props) {
 
 function BackupOperation(props) {
 
-  // const [etatBackupDomaine, setEtatBackupDomaine] = useState({})
-  // const [etatBackupApplication, setEtatBackupApplication] = useState({})
-  // const [afficherDomaines, setAfficherDomaines] = useState(false)
-
   const connexion = props.workers.connexion,
         domaines = props.domaines,
         setDomaines = props.setDomaines
 
-  // useEffect(()=>{
-  //   // console.debug("Enregistrer routing keys : %O", subscriptionsBackup)
-  //   // this.props.wsa.subscribe(subscriptionsBackup, this.traiterMessageEvenement, {exchange: ['3.protege']})
-  //   return ()=>{
-  //     // console.debug("Retirer routing keys : %O", subscriptionsBackup)
-  //     //this.props.wsa.unsubscribe(subscriptionsBackup, this.traiterMessageEvenement, {exchange: ['3.protege']})
-  //   }
-  // }, [])
-
-  // const traiterMessageEvenement = comlinkProxy(event => {
-  //   console.debug("Message evenement backup %O", event)
-  //   const message = event.message
-  //   const {domaine, nom_application: application} = message
-  //
-  //   if(domaine) {
-  //     var etatDomaine = this.state.etatBackupDomaine[domaine]
-  //     if(!etatDomaine) etatDomaine = {}
-  //     else etatDomaine = {...etatDomaine}  // Clone
-  //     etatDomaine = majEtatBackupDomaine(etatDomaine, message)
-  //     this.setState(
-  //       {etatBackupDomaine: {...this.state.etatBackupDomaine, [domaine]: etatDomaine}},
-  //       _=>{console.debug("State : %O", this.state)}
-  //     )
-  //   } else if(application) {
-  //     var etatApplication = this.state.etatBackupApplication[application]
-  //     if(!etatApplication) etatApplication = {}
-  //     else etatApplication = {...etatApplication}  // Clone
-  //     etatApplication = majEtatBackupDomaine(etatApplication, message)
-  //     this.setState(
-  //       {etatBackupApplication: {...this.state.etatBackupApplication, [application]: etatApplication}},
-  //       _=>{console.debug("State : %O", this.state)}
-  //     )
-  //   }
-  // })
+  const [urlServeur, setUrlServeur] = useState('')
+  const [domaineSelectionne, setDomaineSelectionne] = useState('')
 
   const lancerBackup = useCallback(async event => {
     console.debug("Lancer backup snapshot, domaines : %O", domaines)
-    // setAfficherDomaines(true)
-    // setEtatBackupDomaine({})
-    // setEtatBackupApplication({})
 
     try {
       // Reset rapport en memoire
@@ -302,39 +263,42 @@ function BackupOperation(props) {
       setDomaines(domainesMaj)
 
       const uuid_rapport = ''+uuidv1()
-      const reponse = await connexion.lancerBackupSnapshot({uuid_rapport})
+      const reponse = await connexion.lancerBackupSnapshot({uuid_rapport, urlServeur, domaine: domaineSelectionne})
       console.debug("Reponse backup snaphshot : %O", reponse)
     } catch(err) {
       console.error("Erreut lancement backup : %O", err)
     }
-  }, [connexion, domaines, setDomaines])
+  }, [connexion, urlServeur, domaines, domaineSelectionne, setDomaines])
 
-  var backupDomaines = ''
-  // if(etatBackupDomaine) {
-  //   backupDomaines = (
-  //     <>
-  //       <hr/>
-  //       <Alert show={afficherDomaines}
-  //              variant="info"
-  //              onClose={_=>{setAfficherDomaines(false)}}
-  //              dismissible>
-  //
-  //         <h2>Backup</h2>
-  //
-  //         <h3>Domaines</h3>
-  //         <AfficherDomainesBackup domaines={etatBackupDomaine}/>
-  //
-  //         <h3>Applications</h3>
-  //         <AfficherDomainesBackup domaines={etatBackupApplication}/>
-  //
-  //       </Alert>
-  //     </>
-  //   )
-  // }
+  const resetBackup = useCallback(()=>{
+    console.debug("Reset backup %O", domaineSelectionne)
+    connexion.resetBackup({domaine: domaineSelectionne})
+  }, [connexion, domaineSelectionne])
 
   return (
     <>
       <h1>Backup</h1>
+
+      <Form.Group as={Row}>
+        <Form.Label column xs={12} md={3}>URL serveur backup</Form.Label>
+        <Col xs={12} md={9}>
+          <Form.Control type="url"
+                        value={urlServeur}
+                        onChange={event=>{setUrlServeur(event.currentTarget.value)}}
+                        placeholder="Ex: https://fichiers:443" />
+        </Col>
+      </Form.Group>
+      <Form.Group as={Row}>
+        <Form.Label column xs={12} md={3}>Domaine</Form.Label>
+        <Col xs={12} md={9}>
+          <Form.Control as="select"
+                        value={domaineSelectionne}
+                        onChange={event=>{setDomaineSelectionne(event.currentTarget.value)}}>
+            <option value=''>Tous les domaines</option>
+            <OptionsDomaines domaines={domaines} />
+          </Form.Control>
+        </Col>
+      </Form.Group>
 
       <Row>
         <Col>
@@ -350,8 +314,35 @@ function BackupOperation(props) {
       <h2>Applications</h2>
       <AfficherApplications noeuds={props.noeuds} />
 
+      <h2>Reset</h2>
+
+      <Row>
+        <Col>
+          Reset backup du domaine : {domaineSelectionne?domaineSelectionne:'Tous les domaines'}
+        </Col>
+      </Row>
+
+      <Row>
+        <Col>
+          <Button variant="danger" onClick={resetBackup}>!!! RESET !!!</Button>
+        </Col>
+      </Row>
+
     </>
   )
+
+}
+
+function OptionsDomaines(props) {
+  if(!props.domaines) return ''
+
+  return props.domaines.map((item, idx)=>{
+    return (
+      <option key={item.domaine} value={item.domaine}>
+        {item.domaine}
+      </option>
+    )
+  })
 
 }
 
@@ -777,6 +768,7 @@ function traiterMessageDomaine(domaine, domaines, evenement, message, setDomaine
   switch(evenement) {
     case 'backupHoraireDebut': pctProgres = 1; etat = 'Debut'; break
     case 'backupHoraireTermine': pctProgres = 75; etat = 'En cours'; break
+    case 'backupQuotidienTermine': pctProgres = 100; etat = ''; break
     case 'backupAnnuelTermine': pctProgres = 100; etat = ''; break
     case 'backupTermine': pctProgres = 100; etat = ''; break
     default:

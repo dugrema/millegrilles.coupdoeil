@@ -55,6 +55,9 @@ function configurerEvenements(socket) {
       {eventName: 'coupdoeil/lancerBackupSnapshot', callback: params => {
         lancerBackupSnapshot(socket, params)
       }},
+      {eventName: 'coupdoeil/resetBackup', callback: params => {
+        resetBackup(socket, params)
+      }},
       {eventName: 'coupdoeil/genererCertificatNoeud', callback: (params, cb) => {
         genererCertificatNoeud(socket, params, cb)
       }},
@@ -348,15 +351,39 @@ async function installerDomaine(socket, commande, cb) {
 async function lancerBackupSnapshot(socket, commande) {
   debug("Lancer backup snapshot : %O", commande)
   const amqpdao = socket.amqpdao
-  const domaineAction = 'global.declencherBackupSnapshot'
+  let domaineAction = 'global.declencherBackupSnapshot'
+  if(commande.domaine) {
+    domaineAction = commande.domaine + '.declencherBackupSnapshot'
+  }
   try {
     // Commande nowait - c'est un broadcast (global), il faut capturer les
     // evenements de demarrage individuels (evenement.backup.backupTransactions)
     // pour savoir quels domaines ont repondu
-    amqpdao.transmettreCommande(domaineAction, commande, {nowait: true})
+    amqpdao.transmettreCommande(domaineAction, commande, {nowait: true, })
   } catch(err) {
     console.error("lancerBackupSnapshot: Erreur %O", err)
     cb({err: ''+err})
+  }
+}
+
+async function resetBackup(socket, commande) {
+  debug("Reset backup : %O", commande)
+  const amqpdao = socket.amqpdao
+
+  const domaineAction = commande['en-tete'].domaine,
+        action = domaineAction.split('.').pop()
+
+  if(action !== 'resetBackup') {
+    debug("ERREUR Action refusee resetBackup sur mauvais domaine : %O", commande)
+    return
+  }
+  try {
+    // Commande nowait - c'est un broadcast (global), il faut capturer les
+    // evenements de demarrage individuels (evenement.backup.backupTransactions)
+    // pour savoir quels domaines ont repondu
+    amqpdao.transmettreEnveloppeCommande(commande, domaineAction, {nowait: true})
+  } catch(err) {
+    console.error("resetBackup: Erreur %O", err)
   }
 }
 

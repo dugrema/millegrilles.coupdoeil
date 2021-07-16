@@ -98,6 +98,14 @@ function installerDomaine(params) {
 function lancerBackupSnapshot(params) {
   return connexionClient.emit('coupdoeil/lancerBackupSnapshot', params)
 }
+function resetBackup(params) {
+  let domaine = 'global.resetBackup'
+  if(params.domaine) {
+    domaine = params.domaine + '.resetBackup'
+  }
+  console.debug("Reset backup domaine = %s : %O", domaine, params)
+  connexionClient.emit('coupdoeil/resetBackup', params, {domaine})
+}
 function genererCertificatNoeud(commande) {
   return connexionClient.emitBlocking('coupdoeil/genererCertificatNoeud', commande)
 }
@@ -220,7 +228,7 @@ comlinkExpose({
   uploadCollectionsPubliques, commandeTransmettreCatalogues,
 
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
-  majDelegations, requeteRapportBackup,
+  majDelegations, requeteRapportBackup, resetBackup,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,
