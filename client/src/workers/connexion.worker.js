@@ -90,7 +90,7 @@ function soumettreConfigurationApplication(configuration) {
   return connexionClient.emit('coupdoeil/ajouterCatalogueApplication', configuration)
 }
 function installerApplication(params) {
-  return connexionClient.emit('coupdoeil/installerApplication', params)
+  return connexionClient.emitBlocking('coupdoeil/installerApplication', params)
 }
 function installerDomaine(params) {
   return connexionClient.emit('coupdoeil/installerDomaine', params)
