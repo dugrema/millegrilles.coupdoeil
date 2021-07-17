@@ -60,12 +60,13 @@ export class DomaineMaitredescles extends React.Component {
 
         {sectionRechiffrer}
 
-        <RechiffrerCles wsa={this.props.rootProps.websocketApp}
+        <RechiffrerCles wsa={this.props.workers.connexion}
                         modeProtege={this.props.rootProps.modeProtege}
                         idmg={this.props.rootProps.idmg}
                         nombreClesNonDechiffrables={this.state.nombreClesNonDechiffrables}
                         updateEtatRechiffrage={this.updateEtatRechiffrage}
-                        webWorker={this.props.rootProps.chiffrageWorker} />
+                        webWorker={this.props.rootProps.chiffrageWorker}
+                        workers={this.props.workers} />
       </>
     )
   }
