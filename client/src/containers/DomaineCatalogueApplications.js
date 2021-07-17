@@ -13,7 +13,7 @@ export class ParametresCataloguesApplications extends React.Component {
   }
 
   refresh = _ => {
-    const wsa = this.props.rootProps.websocketApp
+    const wsa = this.props.workers.connexion
     chargerCatalogueApplications(wsa, state=>{this.setState(state)})
   }
 
@@ -22,7 +22,7 @@ export class ParametresCataloguesApplications extends React.Component {
       <>
         <h1>Catalogues d'applications</h1>
 
-        <FormulaireAjout wsa={this.props.rootProps.websocketApp}
+        <FormulaireAjout wsa={this.props.workers.connexion}
                          modeProtege={this.props.rootProps.modeProtege}
                          refresh={this.refresh}
                          rootProps={this.props.rootProps} />
