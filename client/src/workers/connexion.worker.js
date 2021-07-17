@@ -181,6 +181,8 @@ async function enregistrerCallbackEvenementsApplications(noeudId, cb) {
   connexionClient.socketOn('evenement.servicemonitor.applicationDemarree', cb)
   connexionClient.socketOn('evenement.servicemonitor.applicationArretee', cb)
   connexionClient.socketOn('evenement.servicemonitor.erreurDemarrageApplication', cb)
+  connexionClient.socketOn('evenement.backup.backupApplication', cb)
+  connexionClient.socketOn('evenement.backup.restaurationApplication', cb)
   const resultat = await connexionClient.emitBlocking('coupdoeil/ecouterEvenementsApplications', {noeudId}, {})
   if(!resultat) {
     throw new Error("Erreur enregistrerCallbackEvenementsNoeuds")
@@ -192,6 +194,8 @@ function retirerCallbackEvenementsApplications(noeudId) {
   connexionClient.socketOff('evenement.servicemonitor.applicationDemarree')
   connexionClient.socketOff('evenement.servicemonitor.applicationArretee')
   connexionClient.socketOff('evenement.servicemonitor.erreurDemarrageApplication')
+  connexionClient.socketOff('evenement.backup.backupApplication')
+  connexionClient.socketOff('evenement.backup.restaurationApplication')
 }
 
 async function enregistrerCallbackEvenementsBackup(cb) {

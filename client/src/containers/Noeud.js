@@ -42,7 +42,7 @@ class AffichageNoeud extends React.Component {
   }
 
   componentDidMount() {
-    const wsa = this.props.workers.connexion
+    const connexion = this.props.workers.connexion
     // console.debug("Noeud : %O", this.props.noeud)
 
     // const routingNoeud = traiterMessageEvenementApplications.map(item=>{return item.replace('__noeudId__', this.props.noeud_id)})
@@ -52,17 +52,19 @@ class AffichageNoeud extends React.Component {
     // const securite = this.getNoeud().securite
     // wsa.subscribe(routingNoeud, this.traiterMessageEvenementApplication, {exchange: [securite]})
 
-    wsa.enregistrerCallbackEvenementsApplications(this.props.noeud_id, this.traiterMessageEvenementApplication)
+    // connexion.enregistrerCallbackEvenementsApplications(this.props.noeud_id, this.traiterMessageEvenementApplication)
+    connexion.enregistrerCallbackEvenementsApplications(this.props.noeud_id, this.traiterMessageEvenementApplication)
   }
 
   componentWillUnmount() {
-    const wsa = this.props.workers.connexion
-    const securite = this.getNoeud().securite
+    const connexion = this.props.workers.connexion
+    // const securite = this.getNoeud().securite
+    //
+    // const routingNoeud = traiterMessageEvenementApplications.map(item=>{return item.replace('__noeudId__', this.props.noeud_id)})
+    // subscriptionsEvenementsApplication.forEach(item=>{routingNoeud.push(item)})
 
-    const routingNoeud = traiterMessageEvenementApplications.map(item=>{return item.replace('__noeudId__', this.props.noeud_id)})
-    subscriptionsEvenementsApplication.forEach(item=>{routingNoeud.push(item)})
-
-    wsa.unsubscribe(routingNoeud, this.traiterMessageEvenementApplication, {exchange: [securite]})
+    // wsa.unsubscribe(routingNoeud, this.traiterMessageEvenementApplication, {exchange: [securite]})
+    connexion.retirerCallbackEvenementsApplications(this.props.noeud_id)
   }
 
   setSection = section => {
@@ -452,7 +454,7 @@ class ApplicationsNoeud extends React.Component {
   }
 
   traiterMessageEvenementApplications = comlinkProxy(event => {
-    // console.debug("Evenement monitor %O", event)
+    console.debug("Evenement monitor %O", event)
     var action = event.routingKey.split('.').pop()
     // console.debug("Action : %s", action)
 

@@ -725,6 +725,8 @@ function ecouterEvenementsApplications(socket, params, cb) {
       `evenement.servicemonitor.${noeudId}.applicationDemarree`,
       `evenement.servicemonitor.${noeudId}.applicationArretee`,
       `evenement.servicemonitor.${noeudId}.erreurDemarrageApplication`,
+      'evenement.backup.backupApplication',
+      'evenement.backup.restaurationApplication',
     ],
     exchange: ['3.protege'],
   }
@@ -738,6 +740,8 @@ function retirerEvenementsApplications(socket, params, cb) {
     `3.protege.evenement.servicemonitor.${noeudId}.applicationDemarree`,
     `3.protege.evenement.servicemonitor.${noeudId}.applicationArretee`,
     `3.protege.evenement.servicemonitor.${noeudId}.erreurDemarrageApplication`,
+    '3.protege.evenement.backup.backupApplication',
+    '3.protege.evenement.backup.restaurationApplication',
   ]
   socket.unsubscribe({routingKeys})
   debug("retirerEvenementsApplications sur %O", params)
