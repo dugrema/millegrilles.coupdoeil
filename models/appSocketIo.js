@@ -97,6 +97,9 @@ function configurerEvenements(socket) {
       {eventName: 'maitrecomptes/majDelegations', callback: (commande, cb) => {
         majDelegations(socket, commande, cb)
       }},
+      {eventName: 'coupdoeil/regenererDomaine', callback: (params, cb) => {
+        regenererDomaine(socket, params, cb)
+      }},
 
       // Listeners evenements
       {eventName: 'coupdoeil/ecouterEvenementsPresenceDomaines', callback: (params, cb) => {
@@ -264,16 +267,20 @@ async function restaurationChargerCles(socket, commande, cb) {
 }
 
 async function restaurationDomaines(socket, commande, cb) {
-  debug("Restaurer transactions de tous les domaines")
+  debug("Restaurer transactions %O", commande)
   const amqpdao = socket.amqpdao
-  const domaineAction = 'commande.global.restaurerTransactions'
+
+  const domaineAction = commande['en-tete'].domaine,
+        action = domaineAction.split('.').pop()
+
+  if(action !== 'restaurerTransactions') {
+    debug("ERREUR Action refusee resetBackup sur mauvais domaine : %O", commande)
+    return
+  }
   try {
-    let params = {exchange: '3.protege'}
-    const reponse = await amqpdao.transmettreCommande(domaineAction, commande)
-    cb(reponse)
+    amqpdao.transmettreEnveloppeCommande(commande, domaineAction, {nowait: true})
   } catch(err) {
-    console.error("restaurationDomaines: Erreur %O", err)
-    cb({err: ''+err})
+    console.error("resetBackup: Erreur %O", err)
   }
 }
 
@@ -625,6 +632,25 @@ async function majDelegations(socket, transaction, cb) {
     const reponse = await amqpdao.transmettreEnveloppeTransaction(transaction)
     debug("majDelegations: Reponse \n%O", reponse)
     cb(reponse)
+  } catch(err) {
+    console.error("majDelegations: Erreur %O", err)
+    cb({err: ''+err})
+  }
+}
+
+async function regenererDomaine(socket, transaction, cb) {
+  debug("regenererDomaine %O", transaction)
+  const amqpdao = socket.amqpdao
+
+  const domaineAction = transaction['en-tete'].domaine
+  const action = domaineAction.split('.').pop()
+  if ( action !== 'regenerer' ) {
+    return cb({err: "Mauvais type d'action : " + domaineAction})
+  }
+
+  try {
+    amqpdao.transmettreEnveloppeCommande(transaction, domaineAction, {nowait: true, noformat: true})
+    cb({ok: true})
   } catch(err) {
     console.error("majDelegations: Erreur %O", err)
     cb({err: ''+err})

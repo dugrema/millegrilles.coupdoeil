@@ -72,7 +72,12 @@ function restaurationChargerCles(params) {
   return connexionClient.emitBlocking('coupdoeil/restaurationChargerCles', params)
 }
 function restaurationDomaines(params) {
-  return connexionClient.emitBlocking('coupdoeil/restaurationDomaines', params)
+  let domaine = 'global.restaurerTransactions'
+  if(params.domaine) {
+    domaine = params.domaine + '.restaurerTransactions'
+  }
+  console.debug("Reset backup domaine = %s : %O", domaine, params)
+  return connexionClient.emitBlocking('coupdoeil/restaurationDomaines', params, {domaine})
 }
 function restaurationGrosfichiers(params) {
   return connexionClient.emitBlocking('coupdoeil/restaurationGrosfichiers', params)
@@ -104,7 +109,7 @@ function resetBackup(params) {
     domaine = params.domaine + '.resetBackup'
   }
   console.debug("Reset backup domaine = %s : %O", domaine, params)
-  connexionClient.emit('coupdoeil/resetBackup', params, {domaine})
+  return connexionClient.emitBlocking('coupdoeil/resetBackup', params, {domaine})
 }
 function genererCertificatNoeud(commande) {
   return connexionClient.emitBlocking('coupdoeil/genererCertificatNoeud', commande)
@@ -148,6 +153,9 @@ function majDelegations(params) {
     params,
     {domaine: 'MaitreDesComptes.majUsagerDelegations'}
   )
+}
+function regenererDomaine(domaine) {
+  return connexionClient.emitBlocking('coupdoeil/regenererDomaine', {}, {domaine})
 }
 
 // Listeners
@@ -231,6 +239,7 @@ comlinkExpose({
   configurerConsignationWeb, soumettreTransactionMaitredescles, clearFichierPublie,
   uploadCollectionsPubliques, commandeTransmettreCatalogues,
 
+  regenererDomaine,
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
   majDelegations, requeteRapportBackup, resetBackup,
 
