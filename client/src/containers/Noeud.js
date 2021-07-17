@@ -39,6 +39,7 @@ class AffichageNoeud extends React.Component {
     erreur: '',
     pageConfiguration: '',
     section: 'Information',
+    serveurUrl: '',
   }
 
   componentDidMount() {
@@ -71,13 +72,20 @@ class AffichageNoeud extends React.Component {
     this.setState({section})
   }
 
+  setServeurUrl = event => {
+    this.setState({serveurUrl: event.currentTarget.value})
+  }
+
   backupApplication = async event => {
     // console.debug("Lancer backup application %O ", event)
     const nomApplication = event.currentTarget.value
     const wsa = this.props.workers.connexion
     this.setState({evenementApplication: {...this.state.evenementApplication, [nomApplication]: 'debut'}})
     try {
-      const reponse = await backupApplication(wsa, this.props.noeud_id, nomApplication)
+      const opts = {}
+      if(this.state.serveurUrl) opts.serveur_url = this.state.serveurUrl
+
+      const reponse = await backupApplication(wsa, this.props.noeud_id, nomApplication, opts)
       var etatTemp = '', err=''
       if(reponse.ok) {
         etatTemp = 'en cours'
@@ -104,7 +112,7 @@ class AffichageNoeud extends React.Component {
     const wsa = this.props.workers.connexion
     this.setState({evenementApplication: {...this.state.evenementApplication, [nomApplication]: 'debut'}})
     try {
-      const reponse = await restaurerApplication(wsa, this.props.noeud_id, nomApplication)
+      const reponse = await restaurerApplication(wsa, this.props.noeud_id, nomApplication, {serveur_url: this.state.serveurUrl})
       var etatTemp = '', err=''
       if(reponse.ok) {
         etatTemp = 'en cours'
@@ -214,9 +222,11 @@ class AffichageNoeud extends React.Component {
         <PageCourante noeudInfo={noeudInfo}
                       noeud={noeudInfo}
                       evenementApplication={this.state.evenementApplication}
+                      serveurUrl={this.state.serveurUrl}
                       backupApplication={this.backupApplication}
                       restaurer={this.restaurerApplication}
                       setPageConfiguration={this.setPageConfiguration}
+                      setServeurUrl={this.setServeurUrl}
                       setErreur={this.setErreur}
                       {...this.props} />
 
@@ -640,21 +650,32 @@ class ApplicationsNoeud extends React.Component {
       <div>
         <h2>Applications</h2>
 
-        <h3>Installer une application</h3>
-        <Row>
-          <Col md={10}>
-            <Form.Group controlId="installer_application">
-              <Form.Control as="select" onChange={this.setApplicationInstaller}>
-                <option>Choisir une application</option>
-                {catalogueApps}
-              </Form.Control>
-            </Form.Group>
+        <h3>Parametres</h3>
+
+        <Form.Group controlId="installer_application" as={Row}>
+          <Form.Label column md={3}>Installer une application</Form.Label>
+          <Col md={7}>
+            <Form.Control as="select" onChange={this.setApplicationInstaller}>
+              <option>Choisir une application</option>
+              {catalogueApps}
+            </Form.Control>
           </Col>
-          <Col>
+          <Col md={2}>
             <Button onClick={this.installerApplication}
                     disabled={!noeud.actif || !this.props.rootProps.modeProtege}>Installer</Button>
           </Col>
-        </Row>
+        </Form.Group>
+
+        <Form.Group controlId="serveur_backup" as={Row}>
+          <Form.Label column md={3}>Serveur de backup</Form.Label>
+          <Col md={7}>
+            <Form.Control onChange={this.props.setServeurUrl}
+                          value={this.props.serveurUrl}
+                          placeholder="E.g. https://fichiers:443" />
+          </Col>
+          <Col md={2}>
+          </Col>
+        </Form.Group>
 
         <h3>Applications deployees</h3>
         {apps}
@@ -830,14 +851,16 @@ function AfficherDomainesNoeud(props) {
   )
 }
 
-async function restaurerApplication(wsa, noeudId, nomApplication) {
+async function restaurerApplication(wsa, noeudId, nomApplication, opts) {
+  opts = opts || {}
   console.debug("Restaurer application %s sur noeud %s", nomApplication, noeudId)
-  const params = {noeudId, nom_application: nomApplication}
+  const params = {noeudId, nom_application: nomApplication, ...opts}
   return wsa.restaurerApplication(params)
 }
 
-async function backupApplication(wsa, noeudId, nomApplication) {
+async function backupApplication(wsa, noeudId, nomApplication, opts) {
+  opts = opts || {}
   console.debug("Backup application %s sur noeud %s", nomApplication, noeudId)
-  const params = {noeudId, nom_application: nomApplication}
+  const params = {noeudId, nom_application: nomApplication, ...opts}
   return wsa.backupApplication(params)
 }
