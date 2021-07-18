@@ -48,7 +48,7 @@ export function Backup(props) {
       connexion.requeteRapportBackup({})
         .then(infoRapport=>{
           console.debug("Rapport dernier backup %O", infoRapport)
-          setRapport(infoRapport.rapport)
+          setRapport(infoRapport.rapport || '')
         }).catch(err=>{console.error("Erreur chargement rapport backup %O", err)})
 
       connexion.enregistrerCallbackEvenementsBackup(cbMessage)
