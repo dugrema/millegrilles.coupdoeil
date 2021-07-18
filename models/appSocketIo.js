@@ -779,7 +779,7 @@ function ecouterEvenementsBackup(socket, params, cb) {
     routingKeys: [
       'evenement.Backup.backupMaj',
       'evenement.backup.backupApplication',
-      'evenement.backup.restaurationTransactions',
+      'evenement.Backup.restaurationMaj',
     ],
     exchange: ['3.protege'],
   }
@@ -791,7 +791,7 @@ function retirerEvenementsBackup(socket, params, cb) {
   const routingKeys = [
     '3.protege.evenement.Backup.backupMaj',
     '3.protege.evenement.backup.backupApplication',
-    '3.protege.evenement.backup.restaurationTransactions',
+    '3.protege.evenement.Backup.restaurationMaj',
   ]
   socket.unsubscribe({routingKeys})
   debug("retirerEvenementsBackup sur %O", params)

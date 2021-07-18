@@ -859,6 +859,12 @@ function traiterMessageDomaine(domaine, domaines, evenement, message, setDomaine
     case 'backupQuotidienTermine': pctProgres = 100; etat = ''; break
     case 'backupAnnuelTermine': pctProgres = 100; etat = ''; break
     case 'backupTermine': pctProgres = 100; etat = ''; break
+
+    case 'debut_restauration': pctProgres = 1; etat = 'Debut'; break
+    case 'fin_restauration': pctProgres = 50; etat = 'Transactions recues'; break
+    case 'fin_regeneration': pctProgres = 100; etat = ''; break
+    case 'restauration_annulee': pctProgres = 0; etat = ''; break
+
     default:
       pctProgres = ''
   }
@@ -868,7 +874,7 @@ function traiterMessageDomaine(domaine, domaines, evenement, message, setDomaine
       console.debug("Maj domaine %O", item)
       // const rapport = {...item.rapport, etat: evenement}
       const info = message.info || {}
-      const err = info.err
+      const err = info.err || message.err
       return {...item, etat, pctProgres, err}
     }
     return item

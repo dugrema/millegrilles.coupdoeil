@@ -76,7 +76,7 @@ function restaurationDomaines(params) {
   if(params.domaine) {
     domaine = params.domaine + '.restaurerTransactions'
   }
-  console.debug("Reset backup domaine = %s : %O", domaine, params)
+  console.debug("Demarrer restaurationDomaines domaine = %s : %O", domaine, params)
   return connexionClient.emitBlocking('coupdoeil/restaurationDomaines', params, {domaine})
 }
 function restaurationGrosfichiers(params) {
@@ -209,7 +209,7 @@ function retirerCallbackEvenementsApplications(noeudId) {
 async function enregistrerCallbackEvenementsBackup(cb) {
   connexionClient.socketOn('evenement.Backup.backupMaj', cb)
   connexionClient.socketOn('evenement.backup.backupApplication', cb)
-  connexionClient.socketOn('evenement.backup.restaurationTransactions', cb)
+  connexionClient.socketOn('evenement.Backup.restaurationMaj', cb)
   const resultat = await connexionClient.emitBlocking('coupdoeil/ecouterEvenementsBackup', {}, {})
   if(!resultat) {
     throw new Error("Erreur enregistrerCallbackEvenementsNoeuds")
@@ -220,7 +220,7 @@ function retirerCallbackEvenementsBackup() {
   connexionClient.emit('coupdoeil/retirerEvenementsBackup', {}, {})
   connexionClient.socketOff('evenement.Backup.backupMaj')
   connexionClient.socketOff('evenement.backup.backupApplication')
-  connexionClient.socketOff('evenement.backup.restaurationTransactions')
+  connexionClient.socketOff('evenement.Backup.restaurationMaj')
 }
 
 comlinkExpose({
