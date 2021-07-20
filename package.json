@@ -1,6 +1,6 @@
 {
   "name": "millegrilles.coupdoeil",
-  "version": "1.44.0",
+  "version": "1.45.0",
   "main": "index.js",
   "private": true,
   "repository": {
@@ -13,7 +13,7 @@
     "test": "node ./bin/test"
   },
   "dependencies": {
-    "@dugrema/millegrilles.common": "https://github.com/dugrema/millegrilles.common.nodejs.git#1.44",
+    "@dugrema/millegrilles.common": "https://github.com/dugrema/millegrilles.common.nodejs.git#1.45",
     "debug": "~4.3.2",
     "express": "~4.17.1",
     "express-session": "^1.17.2",

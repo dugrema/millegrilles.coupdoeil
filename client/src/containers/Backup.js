@@ -223,8 +223,8 @@ function AfficherApplications(props) {
   applications.sort((a,b)=>{
     const nomA = a.nom,
           nomB = b.nom,
-          noeudIdA = a.noeud.noeudId,
-          noeudIdB = b.noeud.noeudId
+          noeudIdA = a.noeud.noeud_id,
+          noeudIdB = b.noeud.noeud_id
 
     let resultat = nomA.localeCompare(nomB)
     if(resultat !== 0) return resultat
