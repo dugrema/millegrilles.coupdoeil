@@ -278,7 +278,8 @@ async function restaurationDomaines(socket, commande, cb) {
     return
   }
   try {
-    amqpdao.transmettreEnveloppeCommande(commande, domaineAction, {nowait: true})
+    const reponse = await amqpdao.transmettreEnveloppeCommande(commande, domaineAction, {nowait: true})
+    if(cb) cb(reponse)
   } catch(err) {
     console.error("resetBackup: Erreur %O", err)
   }
