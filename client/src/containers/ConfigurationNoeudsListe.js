@@ -136,7 +136,7 @@ class ConfigurationNoeudUrl extends React.Component {
 
     try {
       if(csr && securite) {
-        const wsa = this.props.rootProps.websocketApp
+        const wsa = this.props.rootProps.workers.connexion
         await prendrePossession(wsa, csr, securite, this.state.url)
       } else {
         this.setState({err: "Il manque le csr ou le niveau de securite"})
