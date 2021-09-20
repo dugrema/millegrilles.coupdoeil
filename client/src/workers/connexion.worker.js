@@ -34,7 +34,8 @@ function requeteUsager(params) {
   return connexionClient.emitBlocking('maitrecomptes/requeteUsager', params)
 }
 function requeteCatalogueDomaines() {
-  return connexionClient.emitBlocking('coupdoeil/requeteCatalogueDomaines')
+  throw new Error("deprecated")
+  // return connexionClient.emitBlocking('coupdoeil/requeteCatalogueDomaines')
 }
 function requeteClesNonDechiffrables(tailleBatch, listeHachageIgnorer) {
   return connexionClient.emitBlocking('coupdoeil/requeteClesNonDechiffrables', {

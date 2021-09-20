@@ -32,7 +32,7 @@ export NODE_ENV=development
 # Parametre module logging debug
 # export DEBUG=millegrilles:*
 export DEBUG=millegrilles:coupdoeil:coupdoeilSocketApp,millegrilles:common:server4,millegrilles:common:authentification,\
-millegrilles:coupdoeil:www,millegrilles:common:routingKeyManager
+millegrilles:coupdoeil:www,millegrilles:common:routingKeyManager,millegrilles:common:amqpdao
 export DEV=1
 # export IDMG=JPtGcNcFSkfSdw49YsDpQHKxqTHMitpbPZW17a2JC54T
 

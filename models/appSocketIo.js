@@ -9,7 +9,7 @@ function configurerEvenements(socket) {
     listenersProteges: [
       {eventName: 'coupdoeil/requeteListeNoeuds', callback: (params, cb) => {requeteListeNoeuds(socket, params, cb)}},
       {eventName: 'coupdoeil/requeteListeDomaines', callback: cb => {requeteListeDomaines(socket, cb)}},
-      {eventName: 'coupdoeil/requeteCatalogueDomaines', callback: cb => {requeteCatalogueDomaines(socket, cb)}},
+      // {eventName: 'coupdoeil/requeteCatalogueDomaines', callback: cb => {requeteCatalogueDomaines(socket, cb)}},
       {eventName: 'coupdoeil/requeteCatalogueApplications', callback: cb => {requeteCatalogueApplications(socket, cb)}},
       {eventName: 'coupdoeil/requeteInfoApplications', callback: (params, cb) => {requeteInfoApplications(socket, params, cb)}},
       {eventName: 'coupdoeil/requeteRapportBackup', callback: (params, cb) => {requeteRapportBackup(socket, params, cb)}},
@@ -669,6 +669,17 @@ async function executerRequete(domaineAction, socket, params, cb) {
   }
 }
 
+async function executerRequeteAction(domaine, action, socket, params, cb) {
+  const amqpdao = socket.amqpdao
+  try {
+    const reponse = await amqpdao.transmettreRequete(domaine, params, {action, decoder: true})
+    cb(reponse)
+  } catch(err) {
+    debug("Erreur executerRequete %s.\n%O", domaine, action, err)
+    if(cb) cb({err: 'Erreur: ' + err})
+  }
+}
+
 function requeteListeNoeuds(socket, params, cb) {
   executerRequete('Topologie.listeNoeuds', socket, params, cb)
 }
@@ -677,16 +688,12 @@ function requeteListeDomaines(socket, cb) {
   executerRequete('Topologie.listeDomaines', socket, {}, cb)
 }
 
-function requeteCatalogueDomaines(socket, cb) {
-  executerRequete('CatalogueApplications.listeDomaines', socket, {}, cb)
-}
-
 function requeteCatalogueApplications(socket, cb) {
-  executerRequete('CatalogueApplications.listeApplications', socket, {}, cb)
+  executerRequeteAction('CoreCatalogues', 'listeApplications', socket, {}, cb)
 }
 
 function requeteInfoApplications(socket, params, cb) {
-  executerRequete('CatalogueApplications.infoApplication', socket, params, cb)
+  executerRequeteAction('CoreCatalogues', 'infoApplication', socket, params, cb)
 }
 
 function requeteRapportBackup(socket, params, cb) {

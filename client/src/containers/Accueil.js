@@ -94,10 +94,10 @@ class AfficherSommaireDomaines extends React.Component {
     domainesDynamiques: [],
   }
 
-  componentDidMount() {
-    const wsa = this.props.workers.connexion
-    chargerListeDomaines(wsa, valeurs=>{this.setState(valeurs)})
-  }
+  // componentDidMount() {
+  //   const wsa = this.props.workers.connexion
+  //   chargerListeDomaines(wsa, valeurs=>{this.setState(valeurs)})
+  // }
 
   setInstallerDomaine = event => {
     const {value} = event.currentTarget
@@ -180,14 +180,15 @@ function SommaireDomaine(props) {
 }
 
 async function chargerListeDomaines(wsa, setState) {
-  // console.debug("Charger liste domaines")
-  var domaines = await wsa.requeteCatalogueDomaines()
-  // console.debug("Domaines dynamiques disponibles :\n%O", domaines)
-
-  if(!domaines) domaines = []
-
-  domaines = domaines.sort((a,b)=>{return a.nom.localeCompare(b.nom)})
-  setState({domainesDynamiques: domaines})
+  throw new Error("deprecated")
+  // // console.debug("Charger liste domaines")
+  // var domaines = await wsa.requeteCatalogueDomaines()
+  // // console.debug("Domaines dynamiques disponibles :\n%O", domaines)
+  //
+  // if(!domaines) domaines = []
+  //
+  // domaines = domaines.sort((a,b)=>{return a.nom.localeCompare(b.nom)})
+  // setState({domainesDynamiques: domaines})
 }
 
 async function installerDomaine(wsa, domaine, params) {

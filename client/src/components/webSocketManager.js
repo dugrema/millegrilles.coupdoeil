@@ -15,7 +15,8 @@ export class WebSocketCoupdoeil extends WebSocketClient {
   }
   async requeteCatalogueDomaines() {
     // const domaineAction = 'CatalogueApplications.listeDomaines'
-    return emitBlocking(this.socket, 'coupdoeil/requeteCatalogueDomaines')
+    throw new Error("deprecated")
+    // return emitBlocking(this.socket, 'coupdoeil/requeteCatalogueDomaines')
   }
   async requeteClesNonDechiffrables(tailleBatch, listeHachageIgnorer) {
     return emitBlocking(this.socket, 'coupdoeil/requeteClesNonDechiffrables', {
