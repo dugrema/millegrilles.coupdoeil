@@ -149,7 +149,7 @@ function traiterTransaction(rabbitMQ, message, cb) {
   }).catch(err =>{
     console.error("Erreur transmission transaction");
     console.error(err);
-    cb({'err': err.toString()});
+    if(cb) cb({'err': err.toString()});
   })
 }
 
@@ -167,7 +167,7 @@ async function ajouterCatalogueApplication(socket, transaction, cb) {
     }
   } catch(err) {
     console.error("ajouterCatalogueApplication %O", err)
-    cb({err: ''+err})
+    if(cb) cb({err: ''+err})
   }
 
 }
@@ -496,24 +496,24 @@ async function regenererPreviews(socket, params, cb) {
   }
 }
 
-async function configurerConsignationWeb(socket, params, cb) {
-  debug("Configurer consignation web %O", params)
-  const amqpdao = socket.amqpdao
-  const domaineAction = params['en-tete'].domaine
-
-  if(domaineAction !== 'Topologie.configurerConsignationWeb') {
-    return cb({err: "Mauvais type d'action : " + domaineAction})
-  }
-
-  try {
-    const reponse = await amqpdao.transmettreEnveloppeTransaction(params)
-    debug("configurerConsignationWeb: Reponse \n%O", reponse)
-    cb(reponse)
-  } catch(err) {
-    console.error("configurerConsignationWeb: Erreur %O", err)
-    cb({err: ''+err})
-  }
-}
+// async function configurerConsignationWeb(socket, params, cb) {
+//   debug("Configurer consignation web %O", params)
+//   const amqpdao = socket.amqpdao
+//   const domaineAction = params['en-tete'].domaine
+//
+//   if(domaineAction !== 'Topologie.configurerConsignationWeb') {
+//     return cb({err: "Mauvais type d'action : " + domaineAction})
+//   }
+//
+//   try {
+//     const reponse = await amqpdao.transmettreEnveloppeTransaction(params)
+//     debug("configurerConsignationWeb: Reponse \n%O", reponse)
+//     cb(reponse)
+//   } catch(err) {
+//     console.error("configurerConsignationWeb: Erreur %O", err)
+//     cb({err: ''+err})
+//   }
+// }
 
 async function soumettreTransactionMaitredescles(socket, params, cb) {
   debug("Soumettre transaction maitredescles %O", params)
@@ -681,11 +681,11 @@ async function executerRequeteAction(domaine, action, socket, params, cb) {
 }
 
 function requeteListeNoeuds(socket, params, cb) {
-  executerRequete('Topologie.listeNoeuds', socket, params, cb)
+  executerRequeteAction('CoreTopologie', 'listeNoeuds', socket, params, cb)
 }
 
 function requeteListeDomaines(socket, cb) {
-  executerRequete('Topologie.listeDomaines', socket, {}, cb)
+  executerRequeteAction('CoreTopologie', 'listeDomaines', socket, {}, cb)
 }
 
 function requeteCatalogueApplications(socket, cb) {
