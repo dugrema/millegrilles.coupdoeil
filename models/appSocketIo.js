@@ -624,8 +624,9 @@ async function majDelegations(socket, transaction, cb) {
   debug("majDelegations %O", transaction)
   const amqpdao = socket.amqpdao
 
-  const domaineAction = transaction['en-tete'].domaine
-  if ( domaineAction !== 'MaitreDesComptes.majUsagerDelegations' ) {
+  const domaine = transaction['en-tete'].domaine
+  const action = transaction['en-tete'].action
+  if ( domaine !== 'CoreMaitreDesComptes' || action !== 'majUsagerDelegations') {
     return cb({err: "Mauvais type d'action : " + domaineAction})
   }
 
@@ -713,11 +714,11 @@ function getDocumentParFuuid(socket, params, cb) {
 }
 
 function requeteListeUsagers(socket, params, cb) {
-  executerRequete('MaitreDesComptes.getListeUsagers', socket, params, cb)
+  executerRequeteAction('CoreMaitreDesComptes', 'getListeUsagers', socket, params, cb)
 }
 
 function requeteUsager(socket, params, cb) {
-  executerRequete('MaitreDesComptes.chargerUsager', socket, params, cb)
+  executerRequeteAction('CoreMaitreDesComptes', 'chargerUsager', socket, params, cb)
 }
 
 function ecouterEvenementsPresenceDomaines(socket, params, cb) {
