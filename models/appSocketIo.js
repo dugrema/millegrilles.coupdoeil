@@ -627,11 +627,11 @@ async function majDelegations(socket, transaction, cb) {
   const domaine = transaction['en-tete'].domaine
   const action = transaction['en-tete'].action
   if ( domaine !== 'CoreMaitreDesComptes' || action !== 'majUsagerDelegations') {
-    return cb({err: "Mauvais type d'action : " + domaineAction})
+    return cb({err: "Mauvais type d'action : " + domaine + "/" + action})
   }
 
   try {
-    const reponse = await amqpdao.transmettreEnveloppeTransaction(transaction)
+    const reponse = await amqpdao.transmettreEnveloppeCommande(transaction, domaine, {action})
     debug("majDelegations: Reponse \n%O", reponse)
     cb(reponse)
   } catch(err) {

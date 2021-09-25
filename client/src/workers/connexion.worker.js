@@ -152,7 +152,7 @@ function majDelegations(params) {
   return connexionClient.emitBlocking(
     'maitrecomptes/majDelegations',
     params,
-    {domaine: 'MaitreDesComptes.majUsagerDelegations'}
+    {domaine: 'CoreMaitreDesComptes', action: 'majUsagerDelegations', attacherCertificat: true}
   )
 }
 function regenererDomaine(domaine) {
