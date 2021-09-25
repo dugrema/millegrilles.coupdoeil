@@ -392,7 +392,7 @@ async function activerCsr(connexionWorker, chiffrageWorker, csr, nomUsager, user
     userId,
     activationTierce: true,  // Permet a l'usager d'acceder au compte sans token
   }
-  permission = await chiffrageWorker.formatterMessage(permission, 'signatureCsr')
+  permission = await chiffrageWorker.formatterMessage(permission, 'CoreMaitreDesComptes', {action: 'signatureCsr', attacherCertificat: true})
 
   // Generer certificat - l'usager va pouvoir y acceder a son prochain login
   const cert = await connexionWorker.genererCertificatNavigateur({permission, csr, nomUsager, userId})

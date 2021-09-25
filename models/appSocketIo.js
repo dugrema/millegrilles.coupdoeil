@@ -607,17 +607,31 @@ async function genererCertificatNavigateurWS(socket, params) {
   return reponse
 }
 
-async function resetWebauthn(socket, params) {
-  debug("resetWebauthn params: %O", params)
+async function resetWebauthn(socket, commande, cb) {
+  debug("resetWebauthn commande: %O", commande)
 
-  const userId = params.userId
-  const comptesUsagers = socket.comptesUsagers
-  const opts = {}
+  // const userId = params.userId
+  // const comptesUsagers = socket.comptesUsagers
+  // const opts = {}
+  // const reponse = await comptesUsagers.resetWebauthn(userId)
+  // debug("Reponse reset webauthn %s:\n%O", userId, reponse)
 
-  const reponse = await comptesUsagers.resetWebauthn(userId)
-  debug("Reponse reset webauthn %s:\n%O", userId, reponse)
+  const domaine = commande['en-tete'].domaine
+  const action = commande['en-tete'].action
+  if ( domaine !== 'CoreMaitreDesComptes' || action !== 'supprimerCles') {
+    return cb({err: "Mauvais type d'action : " + domaine + "/" + action})
+  }
 
-  return reponse
+  try {
+    const amqpdao = socket.amqpdao
+    const reponse = await amqpdao.transmettreEnveloppeCommande(commande, domaine, {action})
+    debug("resetWebauthn: Reponse \n%O", reponse)
+    cb(reponse)
+  } catch(err) {
+    console.error("resetWebauthn: Erreur %O", err)
+    cb({err: ''+err})
+  }
+
 }
 
 async function majDelegations(socket, transaction, cb) {

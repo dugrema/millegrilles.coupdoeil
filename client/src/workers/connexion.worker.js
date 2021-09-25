@@ -146,7 +146,11 @@ function genererCertificatNavigateur(params) {
   return connexionClient.emitBlocking('genererCertificatNavigateur', params)
 }
 function resetWebauthn(userId) {
-  return connexionClient.emitBlocking('maitrecomptes/resetWebauthn', {userId})
+  return connexionClient.emitBlocking(
+    'maitrecomptes/resetWebauthn',
+    {userId},
+    {domaine: 'CoreMaitreDesComptes', action: 'supprimerCles', attacherCertificat: true}
+  )
 }
 function majDelegations(params) {
   return connexionClient.emitBlocking(
