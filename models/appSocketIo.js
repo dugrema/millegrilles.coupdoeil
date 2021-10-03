@@ -173,10 +173,10 @@ async function ajouterCatalogueApplication(socket, transaction, cb) {
 }
 
 async function requeteClesNonDechiffrables(socket, params, cb) {
-  const domaineAction = 'MaitreDesCles.clesNonDechiffrables'
+  const domaine = 'MaitreDesCles', action = 'clesNonDechiffrables'
   try {
     const amqpdao = socket.amqpdao
-    const reponse = await amqpdao.transmettreRequete(domaineAction, {...params})
+    const reponse = await amqpdao.transmettreRequete(domaine, {...params}, {action})
     return cb(reponse)
   } catch(err) {
     return cb({err})
@@ -184,10 +184,10 @@ async function requeteClesNonDechiffrables(socket, params, cb) {
 }
 
 async function requeteCompterClesNonDechiffrables(socket, params, cb) {
-  const domaineAction = 'MaitreDesCles.compterClesNonDechiffrables'
+  const domaine = 'MaitreDesCles', action = 'compterClesNonDechiffrables'
   try {
     const amqpdao = socket.amqpdao
-    const reponse = await amqpdao.transmettreRequete(domaineAction, params)
+    const reponse = await amqpdao.transmettreRequete(domaine, params, {action})
     return cb(reponse)
   } catch(err) {
     return cb({err})
@@ -195,14 +195,17 @@ async function requeteCompterClesNonDechiffrables(socket, params, cb) {
 }
 
 async function commandeCleRechiffree(socket, commande, cb) {
-  debug("Commande cle rechiffree : %O", commande)
+  // debug("Commande cle rechiffree : %O", commande)
+  debug("Commande pour cle rechiffree %s", commande.hachage_bytes)
   const amqpdao = socket.amqpdao
-  const reponses = []
+  const reponses = {}
   try {
-    const domaineAction = 'commande.MaitreDesCles.sauvegarderCle'
-    await amqpdao.transmettreCommande(domaineAction, commande, {noformat: true})
+    const domaine = 'MaitreDesCles', action = 'sauvegarderCle'
+    const partition = commande['en-tete'].partition
+    await amqpdao.transmettreCommande(domaine, commande, {action, partition, noformat: true})
     return cb(reponses)
   } catch(err) {
+    console.error("Erreur commandeCleRechiffree : %O", err)
     return cb({err})
   }
 }

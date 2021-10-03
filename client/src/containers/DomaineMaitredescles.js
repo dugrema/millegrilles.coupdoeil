@@ -13,7 +13,7 @@ import { sauvegarderPrivateKeyToPEM, extraireExtensionsMillegrille } from '@dugr
 
 // const cryptageAsymetrique = new CryptageAsymetrique()
 
-const BATCH_NOMBRE_FETCH = 15       // Nombre cles downloadees a la fois
+const BATCH_NOMBRE_FETCH = 2       // Nombre cles downloadees a la fois
 
 export class DomaineMaitredescles extends React.Component {
 
@@ -63,6 +63,7 @@ export class DomaineMaitredescles extends React.Component {
         <RechiffrerCles wsa={this.props.workers.connexion}
                         modeProtege={this.props.rootProps.modeProtege}
                         idmg={this.props.rootProps.idmg}
+                        cleMillegrilleChargee={this.props.rootProps.cleMillegrilleChargee}
                         nombreClesNonDechiffrables={this.state.nombreClesNonDechiffrables}
                         updateEtatRechiffrage={this.updateEtatRechiffrage}
                         webWorker={this.props.rootProps.chiffrageWorker}
@@ -118,20 +119,16 @@ function InformationClesNonChiffrees(props) {
 
 class RechiffrerCles extends React.Component {
 
-  // props
-  //
-
   state = {
     nombreClesNonDechiffrables: '',
+    pageRechiffrage: 0, // Numero de page/batch de rechiffrage
+    clesCompletees: 0,
 
     clesNonDechiffrables: '',
-    // infoCertificatRechiffrage: '',
     certificatRechiffrageForge: '',
 
     //  Cle: sha512_b64:... = {promise, retransmissions, confirmations, err}
     dictParHachage: {},
-
-    clesCompletees: 0,
 
     confirmation: '',
     err: '',
@@ -153,43 +150,67 @@ class RechiffrerCles extends React.Component {
     } catch(err) {
       console.error("Erreur verification cles non dechiffrables : %O", err)
     }
+
+    let certMaitredescles = await wsa.getCertificatsMaitredescles()
+    console.debug("Cert maitre des cles : %O", certMaitredescles)
+    let certificatRechiffrage = certMaitredescles.certificat
+
+    // Valider le certificat recu
+    const webWorker = this.props.webWorker
+    const certificatRechiffrageForge = await validerCertificatRechiffrage(
+      webWorker, this.props.idmg, certificatRechiffrage)
+    console.debug("Info certificat rechiffrage : %O", certificatRechiffrageForge)
+    const fingerprintMaitrecles = await hacherCertificat(certificatRechiffrageForge)
+    this.setState({
+      certMaitredescles,
+      certificatRechiffragePem: certificatRechiffrage,
+      certificatRechiffrageForge,
+      fingerprintMaitrecles
+    })
   }
 
   clearErr = _ => {
     this.setState({err: ''})
   }
 
-  chargerBatchCles = async _ => {
+  chargerBatchCles = async (pageRechiffrage) => {
+    if(!pageRechiffrage) pageRechiffrage = 0
     const wsa = this.props.wsa
     try {
-      var listeHachageIgnorer = Object.keys(this.state.dictParHachage).filter(item=>{
-        const infoHachage = this.state.dictParHachage[item]
-        // Ignorer toutes les cles en cours de traitement
-        return infoHachage.promise || infoHachage.resultat || infoHachage.err
-      })
+      // var listeHachageIgnorer = Object.keys(this.state.dictParHachage).filter(item=>{
+      //   const infoHachage = this.state.dictParHachage[item]
+      //   // Ignorer toutes les cles en cours de traitement
+      //   return infoHachage.promise || infoHachage.resultat || infoHachage.err
+      // })
 
-      const reponseClesNonDechiffrables = await wsa.requeteClesNonDechiffrables(BATCH_NOMBRE_FETCH, listeHachageIgnorer)
+      // const pageRechiffrage = this.state.pageRechiffrage
+      const reponseClesNonDechiffrables = await wsa.requeteClesNonDechiffrables(BATCH_NOMBRE_FETCH, pageRechiffrage)
       console.debug("Reponse cles non dechiffrables : %O", reponseClesNonDechiffrables)
+      // this.setState({pageRechiffrage: pageRechiffrage+1})
 
-      if(reponseClesNonDechiffrables.error) {
-        console.error("Erreur rechiffrage cles : %s", reponseClesNonDechiffrables.message)
-        this.setState({err: reponseClesNonDechiffrables.message})
+      if(reponseClesNonDechiffrables.ok === false) {
+        console.error("Erreur rechiffrage cles : %s", reponseClesNonDechiffrables.err)
+        this.setState({err: reponseClesNonDechiffrables.err})
         return
       }
 
-      // Valider le certificat recu
-      const webWorker = this.props.webWorker
-      const certificatRechiffrageForge = await validerCertificatRechiffrage(
-        webWorker, this.props.idmg, reponseClesNonDechiffrables.certificat_rechiffrage)
-      console.debug("Info certificat rechiffrage : %O", certificatRechiffrageForge)
-      const fingerprintMaitrecles = await hacherCertificat(certificatRechiffrageForge)
+      // let certMaitredescles = await wsa.getCertificatsMaitredescles()
+      // console.debug("Cert maitre des cles : %O", certMaitredescles)
+      // let certificatRechiffrage = certMaitredescles.certificat
+      //
+      // // Valider le certificat recu
+      // const webWorker = this.props.webWorker
+      // const certificatRechiffrageForge = await validerCertificatRechiffrage(
+      //   webWorker, this.props.idmg, certificatRechiffrage)
+      // console.debug("Info certificat rechiffrage : %O", certificatRechiffrageForge)
+      // const fingerprintMaitrecles = await hacherCertificat(certificatRechiffrageForge)
 
       await new Promise(resolve=>{
         this.setState({
           clesNonDechiffrables: reponseClesNonDechiffrables,
-          certificatRechiffrageForge,
-          certificatRechiffragePem: reponseClesNonDechiffrables.certificat_rechiffrage,
-          fingerprintMaitrecles,
+          // certificatRechiffrageForge,
+          // certificatRechiffragePem: certificatRechiffrage,
+          // fingerprintMaitrecles,
         }, _=>{
           console.debug("chargerBatchCles State : %O", this.state)
           resolve()
@@ -204,64 +225,30 @@ class RechiffrerCles extends React.Component {
   demarrerRechiffrage = async event => {
     console.debug("Demarrer rechiffrage des cles pour idmg %s", this.props.idmg)
 
-    // Mettre une limite sur la boucle pour eviter loop infini
-    const limiteBoucle = this.state.nombreClesNonDechiffrables
-    var idxBoucle = 0
+    // Nombre de pages a parcourir
+    const nbPages = Math.ceil(this.state.nombreClesNonDechiffrables / BATCH_NOMBRE_FETCH)
 
-    const webWorker = this.props.webWorker
+    const webWorker = this.props.webWorker,
+          fingerprintMaitrecles = this.state.fingerprintMaitrecles
 
-    console.debug("Rechiffrage, props : %O, state: %O", this.props, this.state)
+    console.debug("Rechiffrage %d batch de %d, props : %O, state: %O", nbPages, BATCH_NOMBRE_FETCH, this.props, this.state)
 
     try {
-      await this.rechiffrer()
-      console.debug("Demarrage premiere batch rechiffrer completee")
+      const clesRechiffrees = await rechiffrerCles(
+        webWorker, this.state.clesNonDechiffrables.cles, this.state.certificatRechiffragePem)
+      console.debug("Cles rechiffrees : %O", clesRechiffrees)
 
-      var promises = [Promise.resolve()]  // Initial seed
+      for(let page=0; page < nbPages; page++) {
+        console.debug("Rechiffrage page %d", page)
+        if(page > 0) await this.chargerBatchCles(page) // Skip premiere batch, deja chargee
+        let clesRechiffrees = await this.rechiffrer()
+        console.debug("Cles rechiffrees : %O", clesRechiffrees)
 
-      var derniereBatchDownloadee = false
-      while(promises.length > 0 && limiteBoucle > idxBoucle) {
-        idxBoucle++  // Protection de boucle infini
-
-        const resultatPromise = await Promise.any(promises)  // Effectuer traitement des qu'une promise est completee
-        console.debug("Resultat d'une promise settled : %O", resultatPromise)
-
-        // Traiter la promise
-        if(resultatPromise && resultatPromise.hachage_bytes) {
-          const hachage = resultatPromise.hachage_bytes
-          const infoHachage = {...this.state.dictParHachage[hachage]}
-
-          // Supprimer resultat
-          delete infoHachage.resultat
-          infoHachage.complete = true
-
-          // Conserver information pour s'assurer que la cle ne revient pas dans
-          // la prochaine batch
-          this.setState({
-            dictParHachage: {...this.state.dictParHachage, [hachage]: infoHachage},
-          })
+        for(let infoCle in this.state.clesNonDechiffrables) {
+          let hachage_bytes = infoCle.hachage_bytes
+          let cleSecreteChiffree = clesRechiffrees[hachage_bytes]
+          await traiterCle(webWorker, fingerprintMaitrecles, infoCle, cleSecreteChiffree)
         }
-
-        // Regenerer la liste des promises
-        var promises = Object.values(this.state.dictParHachage)
-          .filter(item=>(item.promise))
-          .map(item=>item.promise)
-        console.debug("Il reste %d promises a traiter", promises.length)
-
-        // Demander une nouvelle batch
-        if(promises.length < BATCH_NOMBRE_FETCH && ! this.state.derniereBatchDownloadee) {
-          console.debug("Demander nouvelle batch cles a rechifrer")
-          await this.chargerBatchCles()
-          await this.rechiffrer()
-        }
-
-      }
-
-      // console.debug("Info promises: %O", await Promise.allSettled(promises))
-
-      const dictParHachage = {}
-      for(const hachage in this.state.dictParHachage) {
-        const infoHachage = this.state.dictParHachage[hachage]
-        console.debug("Information resultat %s = %O", hachage, infoHachage)
       }
 
     } catch(err) {
@@ -273,7 +260,6 @@ class RechiffrerCles extends React.Component {
   }
 
   rechiffrer = async _ => {
-    // var clesARechiffrer = [...this.state.clesNonDechiffrables.cles]
     const {wsa, webWorker} = this.props
 
     const clesRechiffrees = await rechiffrerCles(
@@ -289,17 +275,6 @@ class RechiffrerCles extends React.Component {
       return accumulateur
     }, {})
     console.debug("Information cles par hachages : %O", clesParHachage)
-
-    // const clePriveeSubtle = this.props.clePriveeSubtle
-    // const certificatRechiffrageForge = this.state.certificatRechiffrageForge
-    // const fingerprintMaitrecles = this.state.fingerprintSha256Base64
-    // const webWorker = this.props.webWorker
-
-    // // Importer cle publique en format subtle
-    // console.debug("State - importer cle publique PEM de cert: %O\nState: %O", certificatRechiffrageForge, this.state)
-    // if( ! certificatRechiffrageForge ) throw new Error("Cle maitre des cles non chargee")
-    // var publicKey = certificatRechiffrageForge.publicKey
-    // publicKey = forgePki.publicKeyToPem(publicKey)
 
     const hachages = Object.keys(clesRechiffrees)
     console.debug("Cles rechiffrees : %O", hachages)
@@ -430,7 +405,7 @@ class RechiffrerCles extends React.Component {
         <div>
 
           <Button onClick={this.demarrerRechiffrage}
-                  disabled={!this.props.modeProtege || this.state.confirmation}>Rechiffrer</Button>
+                  disabled={!this.props.modeProtege || this.state.confirmation || !this.props.cleMillegrilleChargee}>Rechiffrer</Button>
         </div>
       </>
     )
@@ -440,7 +415,7 @@ class RechiffrerCles extends React.Component {
 
 async function validerCertificatRechiffrage(webWorker, idmg, certificatRechiffragePEM) {
   console.debug("Verifier certificat : %O", certificatRechiffragePEM)
-  //const certificatRechiffrage = verifierChaineCertificats(certificatRechiffragePEM)
+
   await webWorker.verifierCertificat(certificatRechiffragePEM)
   const certificatForge = forgePki.certificateFromPem(certificatRechiffragePEM)
   const extensions = extraireExtensionsMillegrille(certificatForge)
@@ -457,55 +432,26 @@ async function validerCertificatRechiffrage(webWorker, idmg, certificatRechiffra
   return certificatForge
 }
 
-// async function rechiffrerCles(wsa, signateurTransaction, clePriveeSubtle,
-//     fingerprintBase64Maitrecles, clePubliquePem, batchCles,
-//     setNbClesCompletees) {
-//   console.debug("Rechiffrer cles %O", batchCles)
-//
-//   const promises = batchCles.cles.map(infoCle => {
-//     return traiterCle(signateurTransaction, clePriveeSubtle, fingerprintBase64Maitrecles, clePubliquePem, infoCle)
-//   })
-//
-//   var resultatPromises = await Promise.allSettled(promises)
-//   const commandes = resultatPromises.filter(item=>item.status==='fulfilled').map(item=>item.value)
-//   console.debug("Commandes cles rechiffrees : %O", commandes)
-//
-//   const errors = resultatPromises.filter(item=>item.status!=='fulfilled').forEach(item=>{
-//     console.error("Erreur rechiffrage cle : %O", item.reason)
-//   })
-//
-//   return wsa.soumettreBatchClesRechiffrees(commandes)
-// }
-
 async function traiterCle(webWorker, fingerprintMaitrecles, infoCle, cleSecreteChiffree) {
-  console.debug("Preparer transaction rechiffrer cle : %O", infoCle)
-  // const cleChiffreeOrigine = infoCle.cle
+  console.debug("Preparer transaction rechiffrer cle partition %s : %O rechiffree = ", fingerprintMaitrecles, infoCle, cleSecreteChiffree)
 
-  // Rechiffrer cle
-  // const cleSecrete = await cryptageAsymetrique.decrypterCleSecrete(cleChiffreeOrigine, clePriveeSubtle.clePriveeDecrypt)
-  // const cleSecrete = await webWorker.dechiffrerCleSecreteSubtle(clePriveeSubtle, cleChiffreeOrigine, {DEBUG: true})
-  // const cleSecreteChiffree = await webWorker.chiffrerCleSecreteSubtle(clePubliqueSubtle, cleSecrete, {DEBUG: true})
   const cleSecreteMb = String.fromCharCode.apply(null, multibase.encode('base64', cleSecreteChiffree))
-
-  // console.debug("Cle secrete dechiffree = %O", cleSecrete)
-  // const cleSecreteHex = base64ToHexstring(cleSecrete)
-  // var cleRechiffree = await cryptageAsymetrique.crypterCleSecrete(clePubliquePem, cleSecreteHex)
-  // cleRechiffree = bufferToBase64(cleRechiffree)
 
   var commande = {
     'cles': {[fingerprintMaitrecles]: cleSecreteMb},
   }
 
   // Copier les champs presents
-  const champs = ['domaine', 'iv', 'tag', 'format', 'hachage_bytes', 'identificateurs_document']
+  const champs = ['domaine', 'partition', 'iv', 'tag', 'format', 'hachage_bytes', 'identificateurs_document']
   champs.forEach(item=>{
     const valeur = infoCle[item]
     if(valeur) commande[item] = valeur
   })
 
   // Signer transaction
-  const domaineAction = 'MaitreDesCles.sauvegarderCle'
-  commande = await webWorker.formatterMessage(commande, domaineAction)
+  const domaine = 'MaitreDesCles'
+  const action = 'sauvegarderCle'
+  commande = await webWorker.formatterMessage(commande, domaine, {action, partition: fingerprintMaitrecles})
   console.debug("Commande cle rechiffree : %O", commande)
 
   return commande
@@ -513,7 +459,6 @@ async function traiterCle(webWorker, fingerprintMaitrecles, infoCle, cleSecreteC
 
 async function transformerClePriveeForgeVersSubtle(webWorker, clePriveeForge) {
   const clePEM = sauvegarderPrivateKeyToPEM(clePriveeForge)
-  // const cle = await cryptageAsymetrique.preparerClePrivee(clePEM)
   const cle = await webWorker.importerClePriveeSubtle(clePEM)
   return cle
 }
@@ -525,8 +470,6 @@ function rechiffrerCles(webWorker, cles, pemRechiffrage) {
     secretsChiffres[item.hachage_bytes] = buffer
     return secretsChiffres
   }, {})
-
-  // console.debug("rechiffrerCles: Preparation secrets : %O", secretsChiffres)
 
   return webWorker.rechiffrerAvecCleMillegrille(
     secretsChiffres, pemRechiffrage, {DEBUG: false})

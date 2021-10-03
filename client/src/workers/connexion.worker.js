@@ -37,9 +37,9 @@ function requeteCatalogueDomaines() {
   throw new Error("deprecated")
   // return connexionClient.emitBlocking('coupdoeil/requeteCatalogueDomaines')
 }
-function requeteClesNonDechiffrables(tailleBatch, listeHachageIgnorer) {
+function requeteClesNonDechiffrables(tailleBatch, pageBatch) {
   return connexionClient.emitBlocking('coupdoeil/requeteClesNonDechiffrables', {
-    taille: tailleBatch, hachage_ignorer: listeHachageIgnorer})
+    limite: tailleBatch, page: pageBatch})
 }
 function getCatalogueApplications() {
   return connexionClient.emitBlocking('coupdoeil/requeteCatalogueApplications')
