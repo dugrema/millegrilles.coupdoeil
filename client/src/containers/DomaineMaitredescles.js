@@ -13,7 +13,7 @@ import { sauvegarderPrivateKeyToPEM, extraireExtensionsMillegrille } from '@dugr
 
 // const cryptageAsymetrique = new CryptageAsymetrique()
 
-const BATCH_NOMBRE_FETCH = 2       // Nombre cles downloadees a la fois
+const BATCH_NOMBRE_FETCH = 100       // Nombre cles downloadees a la fois
 
 export class DomaineMaitredescles extends React.Component {
 
