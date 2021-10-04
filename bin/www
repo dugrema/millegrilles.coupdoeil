@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const debug = require('debug')('millegrilles:coupdoeil:www')
+const debugAutorisation = require('debug')('millegrilles:coupdoeil:www:autorisation')
 const express = require('express')
 const session = require('express-session')
 const MemoryStore = require('memorystore')(session)
@@ -41,24 +42,24 @@ async function init() {
 }
 
 function verifierAutorisation(socket, securite, certificatForge) {
-  debug("Verifier autorisation cert %O", certificatForge)
+  debugAutorisation("Verifier autorisation cert %O", certificatForge)
   if(securite === '3.protege') {
     const extensions = extraireExtensionsMillegrille(certificatForge)
-    debug("www.verifierAutorisation extensions %O", extensions)
+    debugAutorisation("www.verifierAutorisation extensions %O", extensions)
 
     // Deleguation globale donne tous les acces
     if(['proprietaire', 'delegue'].includes(extensions.delegationGlobale)) {
-      debug("Usager proprietaire, acces 3.protege OK")
+      debugAutorisation("Usager proprietaire, acces 3.protege OK")
       return true
     }
 
     // Delegation au domaine coupdoeil
     if(extensions.delegationsDomaines.includes('coupdoeil')) {
-      debug("Usager delegue domaine coupdoeil, acces 3.protege OK")
+      debugAutorisation("Usager delegue domaine coupdoeil, acces 3.protege OK")
       return true
     }
 
-    debug("Usager acces 3.protege refuse")
+    debugAutorisation("Usager acces 3.protege refuse")
   }
   return false
 }
