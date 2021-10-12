@@ -163,6 +163,15 @@ function regenererDomaine(domaine) {
   return connexionClient.emitBlocking('coupdoeil/regenererDomaine', {}, {domaine})
 }
 
+function majMonitor(params) {
+  console.debug("MAJ Monitor")
+  return connexionClient.emitBlocking(
+    'coretopologie/majMonitor',
+    params,
+    {domaine: 'CoreTopologie', action: 'monitor', attacherCertificat: true}
+  )
+}
+
 // Listeners
 async function enregistrerCallbackEvenementsPresenceDomaine(cb) {
   connexionClient.socketOn('evenement.presence.domaine', cb)
@@ -246,7 +255,7 @@ comlinkExpose({
 
   regenererDomaine,
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
-  majDelegations, requeteRapportBackup, resetBackup,
+  majDelegations, requeteRapportBackup, resetBackup, majMonitor,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,

@@ -19,7 +19,7 @@ export class CommandeHttp extends React.Component {
   }
 
   componentDidMount() {
-    // console.debug("Configuration MQ noeud, props : %O", this.props)
+    console.debug("Configuration MQ noeud, props : %O", this.props)
 
     const noeudInfo = this.props.noeudInfo || ''
     var urlNoeud = noeudInfo.domaine || noeudInfo.ip_detectee
@@ -127,6 +127,22 @@ export class CommandeHttp extends React.Component {
     this.setState({[name]: value})
   }
 
+  conserverDomaineNoeud = async event => {
+    const noeud = this.props.noeud
+    const transaction = {
+      noeud_id: noeud.noeud_id,
+      domaine: this.state.urlNoeud,
+    }
+    console.debug("conserverDomaineNoeud %O", transaction)
+
+    try {
+      const connexion = this.props.workers.connexion
+      console.debug("Workers %O, connexion %O", this.props.workers, connexion)
+      const resultat = await connexion.majMonitor(transaction)
+      console.debug("Resultat conserver domaine : %O", resultat)
+    } catch(e) {console.error("conserverDomaineNoeud Erreur majMonitor : %O", e)}
+  }
+
   setErreur = erreur => {this.setState({erreur})}
   setConfirmation = confirmation => {this.setConfirmation({confirmation})}
   cacherErreur = event => {this.setState({erreur: ''})}
@@ -163,7 +179,8 @@ export class CommandeHttp extends React.Component {
                        value={this.state.urlNoeud}
                        onChange={this.changerTextfield} />
           <InputGroup.Append>
-            <Button variant="outline-secondary" onClick={this.verifierAccesNoeud}>Verifier</Button>
+          <Button variant="outline-secondary" onClick={this.conserverDomaineNoeud}>Conserver</Button>
+            <Button variant="secondary" onClick={this.verifierAccesNoeud}>Verifier</Button>
           </InputGroup.Append>
         </InputGroup>
 
