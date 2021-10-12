@@ -73,7 +73,7 @@ export class CommandeHttp extends React.Component {
 
     try {
       if(csr && securite) {
-        const wsa = this.props.rootProps.websocketApp
+        const wsa = this.props.rootProps.connexionWorker
         await prendrePossession(wsa, csr, securite, this.state.urlNoeud)
       } else {
         this.setState({erreur: "Il manque le csr ou le niveau de securite"})
@@ -94,8 +94,11 @@ export class CommandeHttp extends React.Component {
       const reponse = await axios.get(url)
       console.debug("Response noeud : %O, proppys: %O", reponse, this.props)
 
-      const idmg = reponse.data.idmg
-      if(idmg === this.props.rootProps.idmg) {
+      const idmg = reponse.data.idmg,
+            certIdmg = this.props.rootProps.rootProps.idmg
+      console.debug("Comparaison idmg : Reponse %s, cert %s", idmg, certIdmg)
+
+      if(idmg === certIdmg) {
         var certificat = null, expirationCertificat = null
         try {
           certificat = forgePki.certificateFromPem(reponse.data.certificat)
