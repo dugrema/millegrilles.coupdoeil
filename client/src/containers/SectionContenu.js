@@ -2,7 +2,6 @@ import React, {Suspense} from 'react'
 
 import {Backup} from './Backup'
 import {PageConfigurationNoeudsListe as ConfigurationNoeuds} from './ConfigurationNoeudsListe'
-import {InterfacePrincipale as Principale} from './Principale.js'
 import {Parametres} from './Parametres.js'
 import {Hebergement} from './Hebergement'
 import {Pki} from './Pki.js'
@@ -18,7 +17,6 @@ const GestionUsagers = React.lazy(_=>import('./GestionUsagers'))
 
 const domainesConnus = {
   Accueil,
-  Principale,
   Backup,
   ConfigurationNoeuds,
   Parametres,

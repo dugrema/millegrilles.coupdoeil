@@ -209,7 +209,6 @@ class AffichageNoeud extends React.Component {
           </Nav.Item>
           <NavDropdown title="Configuration" id="nav-dropdown">
             <NavDropdown.Item eventKey="CommandeHttp">Commande HTTP</NavDropdown.Item>
-            <NavDropdown.Item eventKey="Consignation">Consignation</NavDropdown.Item>
           </NavDropdown>
           <Nav.Item>
             <Nav.Link eventKey="Applications">Applications</Nav.Link>

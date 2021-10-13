@@ -3,30 +3,30 @@ import { Nav, Navbar, NavLink, NavItem, Dropdown } from 'react-bootstrap';
 
 import { Trans } from 'react-i18next';
 // import { ListeNoeuds, ListeDomaines } from '../components/ListeTopologie';
-
-export function Menu(props) {
-
-  let boutonProtege
-  if(props.rootProps.modeProtege) {
-    boutonProtege = <i className="fa fa-lg fa-lock protege"/>
-  } else {
-    boutonProtege = <i className="fa fa-lg fa-unlock"/>
-  }
-
-  return (
-    <Navbar collapseOnSelect expand="md" bg="info" variant="dark" fixed="top">
-      <Navbar.Brand href='/'><i className="fa fa-home"/></Navbar.Brand>
-      <Navbar.Toggle aria-controls="responsive-navbar-menu" />
-      <Navbar.Collapse id="responsive-navbar-menu">
-        <MenuItems changerPage={props.changerPage} rootProps={props.rootProps}/>
-        <Nav className="justify-content-end">
-          <Nav.Link onClick={props.rootProps.toggleProtege}>{boutonProtege}</Nav.Link>
-          <Nav.Link onClick={props.rootProps.changerLanguage}><Trans>menu.changerLangue</Trans></Nav.Link>
-        </Nav>
-      </Navbar.Collapse>
-    </Navbar>
-  )
-}
+//
+// export function Menu(props) {
+//
+//   let boutonProtege
+//   if(props.rootProps.modeProtege) {
+//     boutonProtege = <i className="fa fa-lg fa-lock protege"/>
+//   } else {
+//     boutonProtege = <i className="fa fa-lg fa-unlock"/>
+//   }
+//
+//   return (
+//     <Navbar collapseOnSelect expand="md" bg="info" variant="dark" fixed="top">
+//       <Navbar.Brand href='/'><i className="fa fa-home"/></Navbar.Brand>
+//       <Navbar.Toggle aria-controls="responsive-navbar-menu" />
+//       <Navbar.Collapse id="responsive-navbar-menu">
+//         <MenuItems changerPage={props.changerPage} rootProps={props.rootProps}/>
+//         <Nav className="justify-content-end">
+//           <Nav.Link onClick={props.rootProps.toggleProtege}>{boutonProtege}</Nav.Link>
+//           <Nav.Link onClick={props.rootProps.changerLanguage}><Trans>menu.changerLangue</Trans></Nav.Link>
+//         </Nav>
+//       </Navbar.Collapse>
+//     </Navbar>
+//   )
+// }
 
 export class MenuItems extends React.Component {
 
@@ -76,14 +76,14 @@ export class MenuItems extends React.Component {
       <Nav className="mr-auto" activeKey={this.props.section} onSelect={this.changerPage}>
 
         <Nav.Item>
-          <Nav.Link eventKey='Accueil'>
-            <Trans>menu.Accueil</Trans>
+          <Nav.Link eventKey='GestionUsagers'>
+            <Trans>menu.GestionUsagers</Trans>
           </Nav.Link>
         </Nav.Item>
 
         <Nav.Item>
-          <Nav.Link eventKey='GestionUsagers'>
-            <Trans>menu.GestionUsagers</Trans>
+          <Nav.Link href="/millegrille">
+            <Trans>menu.portail</Trans>
           </Nav.Link>
         </Nav.Item>
 

@@ -185,8 +185,8 @@ function Menu(props) {
   }
 
   return (
-    <Navbar collapseOnSelect expand="md" bg="info" variant="dark" fixed="top">
-      <Navbar.Brand href='/'><i className="fa fa-home"/></Navbar.Brand>
+    <Navbar collapseOnSelect expand="md" bg="info" variant="dark" fixed="top" className="header-menu">
+      <Navbar.Brand onClick={_=>{props.changerPage('Accueil')}}><i className="fa fa-home"/></Navbar.Brand>
       <Navbar.Toggle aria-controls="responsive-navbar-menu" />
       <Navbar.Collapse id="responsive-navbar-menu">
 
@@ -198,12 +198,13 @@ function Menu(props) {
 
         {renderCleMillegrille}
 
-        <Nav className="justify-content-end">
+        <Nav>
           <Nav.Link onClick={props.rootProps.toggleProtege}>{boutonProtege}</Nav.Link>
         </Nav>
-        <Nav className="justify-content-end">
+        <Nav>
           <Nav.Link onClick={props.rootProps.changerLanguage}><Trans>menu.changerLangue</Trans></Nav.Link>
         </Nav>
+
       </Navbar.Collapse>
     </Navbar>
   )

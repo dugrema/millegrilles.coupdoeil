@@ -12,6 +12,7 @@ import { Trans } from 'react-i18next'
 import {getCertificats, getClesPrivees} from './components/pkiHelper'
 import {ApplicationCoupdoeil} from './containers/App'
 
+import '@dugrema/millegrilles.common/css/millegrilles.css'
 import './containers/App.css'
 import './containers/Layout.css'
 
