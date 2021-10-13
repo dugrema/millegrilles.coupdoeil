@@ -141,8 +141,7 @@ function LayoutCoudpoeil(props) {
 
 function Footer(props) {
 
-  const idmg = props.rootProps.idmg
-  var qrCode = 'QR'
+  const idmg = props.rootProps.rootProps.idmg
 
   return (
     <Container fluid className="footer bg-info">
@@ -159,7 +158,7 @@ function Footer(props) {
             </div>
           </div>
         </Col>
-        <Col sm={2} className="footer-right">{qrCode}</Col>
+        <Col sm={2} className="footer-right"></Col>
       </Row>
     </Container>
   )
