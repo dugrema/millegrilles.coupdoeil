@@ -102,6 +102,9 @@ class ConfigurationNoeudUrl extends React.Component {
     csr: '',
     infoNoeud: '',
 
+    hostMq: '',
+    portMq: '5673',
+
     err: '',
   }
 
@@ -114,15 +117,20 @@ class ConfigurationNoeudUrl extends React.Component {
     const url = this.state.url
 
     const pathInfoMonitor = 'https://' + url + '/installation/api/infoMonitor'
-    const reponseInfoMonitor = await axios.get(pathInfoMonitor)
-    this.setState({infoNoeud: reponseInfoMonitor.data})
-    console.debug("Reponse info monitor : %O", reponseInfoMonitor)
+    try {
+      const reponseInfoMonitor = await axios.get(pathInfoMonitor)
+      this.setState({infoNoeud: reponseInfoMonitor.data})
+      console.debug("Reponse info monitor : %O", reponseInfoMonitor)
 
-    if( ! this.state.infoNoeud.certificat ) {
-      const pathCsr = 'https://' + url + '/installation/api/csr'
-      const reponseCsr = await axios.get(pathCsr)
-      this.setState({csr: reponseCsr.data})
-      console.debug("Reponse CSR : %O", reponseCsr)
+      if( ! this.state.infoNoeud.certificat ) {
+        const pathCsr = 'https://' + url + '/installation/api/csr'
+        const reponseCsr = await axios.get(pathCsr)
+        this.setState({csr: reponseCsr.data})
+        console.debug("Reponse CSR : %O", reponseCsr)
+      }
+    } catch(e) {
+      console.error("Erreur de connexion : %O", e)
+      this.setState({err: 'Erreur : ' + e})
     }
   }
 
@@ -137,7 +145,7 @@ class ConfigurationNoeudUrl extends React.Component {
     try {
       if(csr && securite) {
         const wsa = this.props.rootProps.workers.connexion
-        await prendrePossession(wsa, csr, securite, this.state.url)
+        await prendrePossession(wsa, csr, securite, this.state.url, this.state.hostMq, this.state.portMq)
       } else {
         this.setState({err: "Il manque le csr ou le niveau de securite"})
       }
@@ -145,6 +153,12 @@ class ConfigurationNoeudUrl extends React.Component {
       console.error("Erreur prendrePossession : %O", err)
       this.setState({err: ''+err})
     }
+  }
+
+  componentDidMount() {
+    const urlLocal = window.location.host
+    console.debug("Url local : %O", urlLocal)
+    this.setState({hostMq: urlLocal})
   }
 
   render() {
@@ -195,6 +209,41 @@ class ConfigurationNoeudUrl extends React.Component {
 
           </Col>
         </Row>
+
+        <label htmlFor="hostmq">Configuration de la connexion MQ</label>
+        <Row>
+          <Col md={8}>
+            <InputGroup>
+              <InputGroup.Prepend>
+                <InputGroup.Text id="hostmq">
+                  Host
+                </InputGroup.Text>
+              </InputGroup.Prepend>
+              <FormControl id="hostmq"
+                           aria-describedby="hostmq"
+                           name="host"
+                           value={this.state.hostMq}
+                           onChange={this.changerChamp} />
+            </InputGroup>
+          </Col>
+
+          <Col md={4}>
+            <InputGroup>
+              <InputGroup.Prepend>
+                <InputGroup.Text id="portmq">
+                  Port
+                </InputGroup.Text>
+              </InputGroup.Prepend>
+              <FormControl id="portmq"
+                           aria-describedby="portmq"
+                           name="port"
+                           value={this.state.portMq}
+                           onChange={this.changerChamp} />
+            </InputGroup>
+          </Col>
+        </Row>
+
+        <br/>
 
         <Row>
           <Col>
@@ -253,9 +302,9 @@ function InformationNoeud(props) {
   )
 }
 
-export async function prendrePossession(wsa, csr, securite, url) {
+export async function prendrePossession(wsa, csr, securite, url, hostMq, portMq) {
 
-  console.debug("Demander la creation d'un nouveau certificat %s pour %s", securite, url)
+  console.debug("Demander la creation d'un nouveau certificat %s pour %s (MQ %s:%s)", securite, url, hostMq, portMq)
 
   const commande = {csr, securite}
 
@@ -267,6 +316,8 @@ export async function prendrePossession(wsa, csr, securite, url) {
       certificatPem: resultatCertificat.certificatPem,
       chainePem: resultatCertificat.chaine,
       securite,
+      host: hostMq,
+      port: portMq,
     }
 
     console.debug("Transmettre parametres installation noeud : %O", paramsInstallation)
