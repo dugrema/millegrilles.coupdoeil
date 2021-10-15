@@ -39,7 +39,7 @@ class AffichageNoeud extends React.Component {
     erreur: '',
     pageConfiguration: '',
     section: 'Information',
-    serveurUrl: '',
+    serveurUrl: 'https://fichiers:443',
   }
 
   componentDidMount() {
