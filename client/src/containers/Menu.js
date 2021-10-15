@@ -82,7 +82,7 @@ export class MenuItems extends React.Component {
         </Nav.Item>
 
         <Nav.Item>
-          <Nav.Link href="/millegrille">
+          <Nav.Link href="/millegrilles">
             <Trans>menu.portail</Trans>
           </Nav.Link>
         </Nav.Item>
