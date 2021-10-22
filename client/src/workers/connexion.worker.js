@@ -102,7 +102,12 @@ function installerDomaine(params) {
   return connexionClient.emit('coupdoeil/installerDomaine', params)
 }
 function lancerBackupSnapshot(params) {
-  return connexionClient.emit('coupdoeil/lancerBackupSnapshot', params)
+  const domaine = params.domaine || 'global', action = 'declencherBackupHoraire'
+  return connexionClient.emit(
+    'coupdoeil/lancerBackupSnapshot',
+    params,
+    {domaine, action, ajouterCertificat: true}
+  )
 }
 function resetBackup(params) {
   let domaine = 'global.resetBackup'

@@ -1,6 +1,6 @@
 import React, {Suspense} from 'react'
 
-import {Backup} from './Backup'
+import {Backup as CoreBackup} from './Backup'
 import {PageConfigurationNoeudsListe as ConfigurationNoeuds} from './ConfigurationNoeudsListe'
 import {Parametres} from './Parametres.js'
 import {Hebergement} from './Hebergement'
@@ -17,7 +17,7 @@ const GestionUsagers = React.lazy(_=>import('./GestionUsagers'))
 
 const domainesConnus = {
   Accueil,
-  Backup,
+  CoreBackup,
   ConfigurationNoeuds,
   Parametres,
   Hebergement,

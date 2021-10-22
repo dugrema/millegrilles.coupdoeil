@@ -361,17 +361,15 @@ async function installerDomaine(socket, commande, cb) {
 }
 
 async function lancerBackupSnapshot(socket, commande) {
-  debug("Lancer backup snapshot : %O", commande)
+  debug("Lancer backup horaire/snapshot : %O", commande)
   const amqpdao = socket.amqpdao
-  let domaineAction = 'global.declencherBackupSnapshot'
-  if(commande.domaine) {
-    domaineAction = commande.domaine + '.declencherBackupSnapshot'
+  const domaine = commande.domaine || 'global', action = 'declencherBackupHoraire'
+  const entete = commande['en-tete']
+  if(domaine !== entete.domaine || action !== entete.action) {
+    throw new Error("Mauvais domaine/action pour lancerBackupSnapshot : %s/%s", domaine, action)
   }
   try {
-    // Commande nowait - c'est un broadcast (global), il faut capturer les
-    // evenements de demarrage individuels (evenement.backup.backupTransactions)
-    // pour savoir quels domaines ont repondu
-    amqpdao.transmettreCommande(domaineAction, commande, {nowait: true, })
+    amqpdao.transmettreEnveloppeCommande(commande, domaine, {action, nowait: true})
   } catch(err) {
     console.error("lancerBackupSnapshot: Erreur %O", err)
     cb({err: ''+err})

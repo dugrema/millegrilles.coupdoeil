@@ -14,42 +14,12 @@ import './App.css'
 
 export function ApplicationCoupdoeil(props) {
 
-  // state = {
-  //   serveurInfo: null,          // Provient de /coupdoeil/info.json
-  //   idmg: null,                 // IDMG actif
-  //   hebergement: false,
-  //
-  //   page: 'Accueil',
-  // }
   const [serveurInfo, setServeurInfo] = useState('')
   const [idmg, setIdmg] = useState('')
   const [page, setPage] = useState('Accueil')
 
   // Params de pages
   const [paramsPage, setParamsPage] = useState('')
-
-  // componentDidMount() {
-  //
-  //   // const wsa = this.props.rootProps.connexionWorker
-  //   // wsa.isFormatteurReady()
-  //   //   .then( async _ =>{
-  //   //     console.debug("Fortteur ready sur connexion")
-  //   //     this.setState({websocketApp: wsa})
-  //   //   })
-  //
-  //   // this.props.setSousMenuApplication(
-  //   //   <MenuItems
-  //   //     changerPage={this.changerPage}
-  //   //     rootProps={this.props.rootProps}
-  //   //     websocketApp={wsa}
-  //   //     />
-  //   // )
-  //
-  // }
-
-  // setInfoServeur = (info) => {
-  //   this.setState(info)
-  // }
 
   const changerPage = eventPage => {
     // Verifier si event ou page
@@ -74,12 +44,8 @@ export function ApplicationCoupdoeil(props) {
 
     if(pageResultat === page) {
       // Reset de la page
-      // console.debug("Reset page : %s", page)
-      // this.setState({page: '', paramsPage}, ()=>{setPage(pageResultat)})
       setPage(pageResultat)
     } else {
-      // console.debug("Page : %s", page)
-      // this.setState({page, paramsPage})
       setPage(pageResultat)
     }
   }
