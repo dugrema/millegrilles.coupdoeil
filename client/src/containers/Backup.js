@@ -484,15 +484,16 @@ function traiterMessageDomaine(domaine, domaines, evenement, message, setDomaine
       etat = evenement
   switch(evenement) {
     case 'backupHoraireDebut': pctProgres = 1; etat = 'Debut'; break
-    case 'backupHoraireTermine': pctProgres = 75; etat = 'En cours'; break
-    case 'backupQuotidienTermine': pctProgres = 100; etat = ''; break
-    case 'backupAnnuelTermine': pctProgres = 100; etat = ''; break
-    case 'backupTermine': pctProgres = 100; etat = ''; break
+    case 'backupHoraireTermine': pctProgres = 100; etat = ''; break
+    case 'backupHoraireErreur': pctProgres = 0; etat = 'Erreur'; break
+
+    case 'debutRegeneration': pctProgres = 1; etat = 'Debut'; break
+    case 'regenerationTerminee': pctProgres = 100; etat = ''; break
+    case 'erreurRegeneration': pctProgres = 0; etat = 'Erreur'; break
 
     case 'debut_restauration': pctProgres = 1; etat = 'Debut'; break
-    case 'fin_restauration': pctProgres = 50; etat = 'Transactions recues'; break
-    case 'fin_regeneration': pctProgres = 100; etat = ''; break
-    case 'restauration_annulee': pctProgres = 0; etat = ''; break
+    case 'restaurationTerminee': pctProgres = 100; etat = ''; break
+    case 'erreurRestauration': pctProgres = 0; etat = 'Erreur'; break
 
     default:
       pctProgres = ''

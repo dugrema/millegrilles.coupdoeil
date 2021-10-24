@@ -226,9 +226,10 @@ function retirerCallbackEvenementsApplications(noeudId) {
 }
 
 async function enregistrerCallbackEvenementsBackup(cb) {
-  connexionClient.socketOn('evenement.Backup.backupMaj', cb)
+  connexionClient.socketOn('evenement.backup.backupMaj', cb)
   connexionClient.socketOn('evenement.backup.backupApplication', cb)
-  connexionClient.socketOn('evenement.Backup.restaurationMaj', cb)
+  connexionClient.socketOn('evenement.backup.restaurationMaj', cb)
+  connexionClient.socketOn('evenement.backup.regenerationMaj', cb)
   const resultat = await connexionClient.emitBlocking('coupdoeil/ecouterEvenementsBackup', {}, {})
   if(!resultat) {
     throw new Error("Erreur enregistrerCallbackEvenementsNoeuds")
@@ -237,9 +238,10 @@ async function enregistrerCallbackEvenementsBackup(cb) {
 
 function retirerCallbackEvenementsBackup() {
   connexionClient.emit('coupdoeil/retirerEvenementsBackup', {}, {})
-  connexionClient.socketOff('evenement.Backup.backupMaj')
+  connexionClient.socketOff('evenement.backup.backupMaj')
   connexionClient.socketOff('evenement.backup.backupApplication')
-  connexionClient.socketOff('evenement.Backup.restaurationMaj')
+  connexionClient.socketOff('evenement.backup.restaurationMaj')
+  connexionClient.socketOff('evenement.backup.regenerationMaj')
 }
 
 comlinkExpose({
