@@ -485,6 +485,7 @@ function traiterMessageDomaine(domaine, domaines, evenement, message, setDomaine
   switch(evenement) {
     case 'backupHoraireDebut': pctProgres = 1; etat = 'Debut'; break
     case 'backupHoraireTermine': pctProgres = 100; etat = ''; break
+    case 'backupQuotidienTermine': pctProgres = 100; etat = ''; break
     case 'backupHoraireErreur': pctProgres = 0; etat = 'Erreur'; break
 
     case 'debutRegeneration': pctProgres = 1; etat = 'Debut'; break
