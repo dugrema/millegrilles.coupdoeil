@@ -196,11 +196,9 @@ class ConfigurationNoeudUrl extends React.Component {
 
             <label htmlFor="basic-url">URL pour se connecter au noeud</label>
             <InputGroup className="mb-3">
-              <InputGroup.Prepend>
-                <InputGroup.Text id="url-noeud-text">
-                  https://
-                </InputGroup.Text>
-              </InputGroup.Prepend>
+              <InputGroup.Text id="url-noeud-text">
+                https://
+              </InputGroup.Text>
               <FormControl id="url-noeud" aria-describedby="url-noeud-text"
                            name="url" value={this.state.url}
                            onChange={this.changerChamp}
@@ -214,11 +212,9 @@ class ConfigurationNoeudUrl extends React.Component {
         <Row>
           <Col md={8}>
             <InputGroup>
-              <InputGroup.Prepend>
-                <InputGroup.Text id="hostmq">
-                  Host
-                </InputGroup.Text>
-              </InputGroup.Prepend>
+              <InputGroup.Text id="hostmq">
+                Host
+              </InputGroup.Text>
               <FormControl id="hostmq"
                            aria-describedby="hostmq"
                            name="host"
@@ -229,11 +225,9 @@ class ConfigurationNoeudUrl extends React.Component {
 
           <Col md={4}>
             <InputGroup>
-              <InputGroup.Prepend>
-                <InputGroup.Text id="portmq">
-                  Port
-                </InputGroup.Text>
-              </InputGroup.Prepend>
+              <InputGroup.Text id="portmq">
+                Port
+              </InputGroup.Text>
               <FormControl id="portmq"
                            aria-describedby="portmq"
                            name="port"

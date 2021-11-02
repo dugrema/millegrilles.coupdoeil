@@ -365,11 +365,9 @@ export class PageBackupCles extends React.Component {
                 onChange={this.changerMotDePasse}
                 value={this.state.motDePasse}
               />
-              <InputGroup.Append>
-                <Button variant="secondary" className="bouton" onClick={this.genererMotDePasse}>
-                    <Trans>backup.cles.boutonGenerer</Trans>
-                </Button>
-              </InputGroup.Append>
+              <Button variant="secondary" className="bouton" onClick={this.genererMotDePasse}>
+                  <Trans>backup.cles.boutonGenerer</Trans>
+              </Button>
             </InputGroup>
           </Form>
 
@@ -572,9 +570,7 @@ export class PageOperationsBackup extends React.Component {
             <Row>
               <Col xl={6}>
                 <InputGroup>
-                  <InputGroup.Prepend>
-                    <InputGroup.Text id="formMotDePasse"><Trans>backup.lancer.champMotDePasse</Trans></InputGroup.Text>
-                  </InputGroup.Prepend>
+                  <InputGroup.Text id="formMotDePasse"><Trans>backup.lancer.champMotDePasse</Trans></InputGroup.Text>
                   <FormControl
                     placeholder="Mot de passe"
                     aria-label="Mot de passe"
