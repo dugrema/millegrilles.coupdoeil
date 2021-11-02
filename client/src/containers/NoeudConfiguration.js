@@ -168,20 +168,16 @@ export class CommandeHttp extends React.Component {
 
         <label htmlFor="hostmq">URL de connexion au noeud (https)</label>
         <InputGroup>
-          <InputGroup.Prepend>
-            <InputGroup.Text id="urlNoeud">
-              https://
-            </InputGroup.Text>
-          </InputGroup.Prepend>
+          <InputGroup.Text id="urlNoeud">
+            https://
+          </InputGroup.Text>
           <FormControl id="urlNoeud"
                        aria-describedby="urlNoeud"
                        name="urlNoeud"
                        value={this.state.urlNoeud}
                        onChange={this.changerTextfield} />
-          <InputGroup.Append>
           <Button variant="outline-secondary" onClick={this.conserverDomaineNoeud}>Conserver</Button>
-            <Button variant="secondary" onClick={this.verifierAccesNoeud}>Verifier</Button>
-          </InputGroup.Append>
+          <Button variant="secondary" onClick={this.verifierAccesNoeud}>Verifier</Button>
         </InputGroup>
 
         <AfficherInfoConfiguration noeudInfo={this.state.noeudInfo || ''}
@@ -262,11 +258,9 @@ class ConfigurerMQ extends React.Component {
         <Row>
           <Col md={8}>
             <InputGroup>
-              <InputGroup.Prepend>
-                <InputGroup.Text id="hostmq">
-                  Host
-                </InputGroup.Text>
-              </InputGroup.Prepend>
+              <InputGroup.Text id="hostmq">
+                Host
+              </InputGroup.Text>
               <FormControl id="hostmq"
                            aria-describedby="hostmq"
                            name="host"
@@ -277,11 +271,9 @@ class ConfigurerMQ extends React.Component {
 
           <Col md={4}>
             <InputGroup>
-              <InputGroup.Prepend>
-                <InputGroup.Text id="portmq">
-                  Port
-                </InputGroup.Text>
-              </InputGroup.Prepend>
+              <InputGroup.Text id="portmq">
+                Port
+              </InputGroup.Text>
               <FormControl id="portmq"
                            aria-describedby="portmq"
                            name="port"
@@ -448,11 +440,9 @@ function AfficherFormInternet(props) {
         <div>
           <label htmlFor="cloudns-subid">Configuration ClouDNS</label>
           <InputGroup>
-            <InputGroup.Prepend>
-              <InputGroup.Text id="cloudns-subid">
-                SubID (numero)
-              </InputGroup.Text>
-            </InputGroup.Prepend>
+            <InputGroup.Text id="cloudns-subid">
+              SubID (numero)
+            </InputGroup.Text>
             <FormControl id="cloudns-subid"
                          aria-describedby="cloudns-subid"
                          name="cloudnsSubid"
@@ -460,11 +450,9 @@ function AfficherFormInternet(props) {
                          onChange={props.changerTextfield} />
           </InputGroup>
           <InputGroup>
-            <InputGroup.Prepend>
-              <InputGroup.Text id="cloudns-password">
-                Mot de passe
-              </InputGroup.Text>
-            </InputGroup.Prepend>
+            <InputGroup.Text id="cloudns-password">
+              Mot de passe
+            </InputGroup.Text>
             <FormControl id="cloudns-password"
                          aria-describedby="cloudns-password"
                          type="password"
@@ -474,11 +462,9 @@ function AfficherFormInternet(props) {
           </InputGroup>
 
           <InputGroup>
-            <InputGroup.Prepend>
-              <InputGroup.Text id="dns-sleep">
-                DNS sleep
-              </InputGroup.Text>
-            </InputGroup.Prepend>
+            <InputGroup.Text id="dns-sleep">
+              DNS sleep
+            </InputGroup.Text>
             <FormControl id="dns-sleep"
                          aria-describedby="dns-sleep"
                          name="dnssleep"
@@ -536,11 +522,9 @@ function AfficherFormInternet(props) {
       <Form>
         <label htmlFor="noeud-url">URL d'acces au noeud {flagDomaineInvalide}</label>
         <InputGroup className="mb-3">
-          <InputGroup.Prepend>
-            <InputGroup.Text id="noeud-addon3">
-              https://
-            </InputGroup.Text>
-          </InputGroup.Prepend>
+          <InputGroup.Text id="noeud-addon3">
+            https://
+          </InputGroup.Text>
           <FormControl id="noeud-url" aria-describedby="noeud-addon3" value={props.domaine} onChange={props.changerDomaine}/>
         </InputGroup>
 
