@@ -401,19 +401,16 @@ async function genererCertificatNoeud(socket, commande, cb) {
   debug("Generer nouveau certificat de noeud : %O", commande)
 
   const amqpdao = socket.amqpdao
-  const domaineAction = 'servicemonitor.signerNoeud'
+  const domaine = 'CorePki'  //, action = 'signerCsr'
 
   try {
-    // Commande nowait - c'est un broadcast (global), il faut capturer les
-    // evenements de demarrage individuels (evenement.backup.backupTransactions)
-    // pour savoir quels domaines ont repondu
-    const reponse = await amqpdao.transmettreCommande(domaineAction, commande, {attacherCertificat: true})
+    // const reponse = await amqpdao.transmettreCommande(domaine, commande, {action, attacherCertificat: true})
+    const reponse = await amqpdao.transmettreEnveloppeCommande(commande)
     debug("genererCertificatNoeud: Reponse demande certificat\n%O", reponse)
 
-    const certificatPem = reponse.cert
-    const chaine = reponse.fullchain
+    const certificat = reponse.certificat
 
-    cb({certificatPem, chaine})
+    cb({certificat})
   } catch(err) {
     console.error("genererCertificatNoeud: Erreur %O", err)
     cb({err: ''+err})

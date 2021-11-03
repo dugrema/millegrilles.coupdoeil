@@ -300,16 +300,22 @@ export async function prendrePossession(wsa, csr, securite, url, hostMq, portMq)
 
   console.debug("Demander la creation d'un nouveau certificat %s pour %s (MQ %s:%s)", securite, url, hostMq, portMq)
 
-  const commande = {csr, securite}
+  let role = 'public'
+  if(securite === '1.public') role = 'public'
+  else if(securite === '2.prive') role = 'prive'
+  else if(securite === '3.protege') role = 'protege'
+
+  const commande = {csr, securite, role}
 
   const resultatCertificat = await wsa.genererCertificatNoeud(commande)
 
   if(resultatCertificat) {
+    console.debug("prendrePossession Reception info certificat : %O", resultatCertificat)
 
     const paramsInstallation = {
-      certificatPem: resultatCertificat.certificatPem,
-      chainePem: resultatCertificat.chaine,
+      certificat: resultatCertificat.certificat,
       securite,
+      role,
       host: hostMq,
       port: portMq,
     }

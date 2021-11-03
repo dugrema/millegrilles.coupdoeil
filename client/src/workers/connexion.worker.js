@@ -118,7 +118,11 @@ function resetBackup(params) {
   return connexionClient.emitBlocking('coupdoeil/resetBackup', params, {domaine})
 }
 function genererCertificatNoeud(commande) {
-  return connexionClient.emitBlocking('coupdoeil/genererCertificatNoeud', commande)
+  return connexionClient.emitBlocking(
+    'coupdoeil/genererCertificatNoeud',
+    commande,
+    {domaine: 'CorePki', action: 'signerCsr', attacherCertificat: true}
+  )
 }
 function desinstallerApplication(commande) {
   return connexionClient.emitBlocking('coupdoeil/desinstallerApplication', commande)
