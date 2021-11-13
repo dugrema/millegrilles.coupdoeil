@@ -3,7 +3,10 @@ import {Row, Col, Button, Alert, Form, Container, Modal} from 'react-bootstrap'
 import {pki as forgePki} from 'node-forge'
 import { detecterAppareilsDisponibles } from '@dugrema/millegrilles.common/lib/detecterAppareils'
 
-import QrReader from 'react-qr-reader'
+// import QrReader from 'react-qr-reader'
+
+// const QrCodeScanner = React.lazy(()=>import('./QrCodeScanner'))
+import {QrCodeScanner, parseCsrQr} from './QrCodeScanner'
 
 export default function GestionUsagers(props) {
 
@@ -223,7 +226,8 @@ function AfficherActivationsUsager(props) {
   useEffect(_=>{
     // Detecter si camera est disponible pour scanner code QR
     detecterAppareilsDisponibles().then(appareils=>{
-      if(appareils && appareils.videoinput) setCameraDisponible(true)
+      // if(appareils && appareils.videoinput) setCameraDisponible(true)
+      setCameraDisponible(true)
     }).catch(err=>{console.warn("Erreur detection camera", err)})
   }, [])
 
@@ -252,7 +256,7 @@ function AfficherActivationsUsager(props) {
       <Row>
         <Col>
           <Button onClick={useCallback(_=>{setShowCsr(true)}, [])}>Coller CSR</Button>
-          <Button onClick={useCallback(_=>{setShowQrScanner(true)}, [])}
+          <Button onClick={useCallback(_=>{setShowQrScanner(true)}, [setShowQrScanner])}
                   disabled={!cameraDisponible}>
             Scan QR
           </Button>
@@ -335,7 +339,7 @@ function CollerCSR(props) {
 
   const _activerCsr = async event => {
     try {
-      await activerCsr(props.workers.connexion, props.workers.chiffrage, csr, nomUsager, userId)
+      await activerCsr(props.workers.connexion, csr, nomUsager, userId)
 
       // Activation completee
       props.retour()
@@ -383,21 +387,21 @@ function CollerCSR(props) {
   )
 }
 
-async function activerCsr(connexionWorker, chiffrageWorker, csr, nomUsager, userId) {
-  // console.debug("Activer CSR %O", csr)
+async function activerCsr(connexionWorker, csr, nomUsager, userId) {
+  console.debug("Activer CSR usager %s (%s) %O", nomUsager, userId, csr)
 
   // Generer une "permission" avec le certificat local (delegation proprietaire)
-  let permission = {
-    date: Math.floor(new Date().getTime()/1000), // Date epoch en secondes
-    userId,
-    activationTierce: true,  // Permet a l'usager d'acceder au compte sans token
-  }
-  permission = await chiffrageWorker.formatterMessage(permission, 'CoreMaitreDesComptes', {action: 'signatureCsr', attacherCertificat: true})
+  // let permission = {
+  //   date: Math.floor(new Date().getTime()/1000), // Date epoch en secondes
+  //   userId,
+  //   activationTierce: true,  // Permet a l'usager d'acceder au compte sans token
+  // }
+  // permission = await chiffrageWorker.formatterMessage(permission, 'CoreMaitreDesComptes', {action: 'signatureCsr', attacherCertificat: true})
 
   // Generer certificat - l'usager va pouvoir y acceder a son prochain login
-  const cert = await connexionWorker.genererCertificatNavigateur({permission, csr, nomUsager, userId})
+  const cert = await connexionWorker.genererCertificatNavigateur({csr, nomUsager, userId, activationTierce: true})
 
-  // console.debug("Certificat genere : %O", cert)
+  console.debug("Certificat genere : %O", cert)
 }
 
 function QRCodeReader(props) {
@@ -437,13 +441,12 @@ function QRCodeReader(props) {
   const handleScan = useCallback(scan=>{
     if(scan) {
       try {
-        const dataB64 = btoa(scan)
-        const pem = `-----BEGIN CERTIFICATE REQUEST-----\n${dataB64}\n-----END CERTIFICATE REQUEST-----`
-
+        const pem = parseCsrQr(scan)
         traiterCsr(pem, nomUsager)
 
         setScanActif(false)
         setInfo(''+pem)
+        setErr('')
         setCsr(pem)
         return
       } catch(err) {
@@ -478,12 +481,7 @@ function QRCodeReader(props) {
 
         {scanActif?
           <>
-            <QrReader
-              delay={300}
-              onError={handleError}
-              onScan={handleScan}
-              style={{ width: '75%', 'text-align': 'center' }}
-              />
+            <QrCodeScanner handleError={handleError} handleScan={handleScan} show={scanActif}/>
             <Row>
               <Col>
                 <Button onClick={annuler}>Annuler</Button>

@@ -91,8 +91,8 @@ function configurerEvenements(socket) {
       {eventName: 'coupdoeil/commandeTransmettreCatalogues', callback: (commande, cb) => {
         commandeTransmettreCatalogues(socket, commande, cb)
       }},
-      {eventName: 'genererCertificatNavigateur', callback: async (params, cb) => {
-        cb(await genererCertificatNavigateurWS(socket, params))
+      {eventName: 'genererCertificatNavigateur', callback: (commande, cb) => {
+        genererCertificatNavigateurWS(socket, commande, cb)
       }},
       {eventName: 'maitrecomptes/majDelegations', callback: (commande, cb) => {
         majDelegations(socket, commande, cb)
@@ -590,20 +590,23 @@ async function commandeTransmettreCatalogues(socket, commande, cb) {
   }
 }
 
-async function genererCertificatNavigateurWS(socket, params) {
-  debug("Generer certificat navigateur, params: %O", params)
+async function genererCertificatNavigateurWS(socket, commande, cb) {
+  debug("Generer certificat navigateur, params: %O", commande)
+  const amqpdao = socket.amqpdao
 
-  const csr = params.csr,
-        nomUsager = params.nomUsager,
-        userId = params.userId,
-        permission = params.permission
-  const comptesUsagers = socket.comptesUsagers
-  const opts = {activationTierce: true, permission}
+  const {domaine, action} = commande['en-tete'] 
+  if ( domaine !== 'CoreMaitreDesComptes' || action != 'signerCompteUsager' ) {
+    return cb({err: "Mauvais type d'action : %s.%s", domaine, action})
+  }
 
-  const reponse = await comptesUsagers.signerCertificatNavigateur(csr, nomUsager, userId, opts)
-  debug("Reponse signature certificat:\n%O", reponse)
-
-  return reponse
+  try {
+    const reponse = await amqpdao.transmettreEnveloppeCommande(commande, domaine, {action})
+    debug("genererCertificatNavigateurWS: Reponse \n%O", reponse)
+    cb(reponse)
+  } catch(err) {
+    console.error("genererCertificatNavigateurWS: Erreur %O", err)
+    cb({err: ''+err})
+  }
 }
 
 async function resetWebauthn(socket, commande, cb) {

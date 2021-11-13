@@ -152,7 +152,11 @@ function commandeTransmettreCatalogues(commande) {
   return connexionClient.emitBlocking('coupdoeil/commandeTransmettreCatalogues', commande)
 }
 function genererCertificatNavigateur(params) {
-  return connexionClient.emitBlocking('genererCertificatNavigateur', params)
+  return connexionClient.emitBlocking(
+    'genererCertificatNavigateur', 
+    params,
+    {domaine: 'CoreMaitreDesComptes', action: 'signerCompteUsager', attacherCertificat: true}
+  )
 }
 function resetWebauthn(userId) {
   return connexionClient.emitBlocking(
