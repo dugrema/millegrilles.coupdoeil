@@ -1,5 +1,5 @@
 import {wrap as comlinkWrap, proxy as comlinkProxy, releaseProxy} from 'comlink'
-import {getCertificats, getClesPrivees} from '@dugrema/millegrilles.common/lib/browser/dbUsager'
+import {getUsager, getClesPrivees} from '@dugrema/millegrilles.common/lib/browser/dbUsager'
 import {splitPEMCerts} from '@dugrema/millegrilles.common/lib/forgecommon'
 
 /* eslint-disable-next-line */
@@ -83,29 +83,29 @@ async function connecterReact(connexionWorker, app) {
 
 export async function preparerWorkersAvecCles(nomUsager, chiffrageWorker, connexionWorker) {
   // Initialiser certificat de MilleGrille et cles si presentes
-  const certInfo = await getCertificats(nomUsager)
-  if(certInfo && certInfo.fullchain) {
-    const fullchain = certInfo.fullchain
-    const clesPrivees = await getClesPrivees(nomUsager)
+  const usager = await getUsager(nomUsager)
+  console.debug("preparerWorkersAvecCles usager %O", usager)
+  if(usager && usager.certificat) {
+    const fullchain = usager.certificat
+    // const clesPrivees = await getClesPrivees(nomUsager)
 
     // Initialiser le CertificateStore
-    console.debug("chiffrageWorker.initialiserCertificateStore")
     await chiffrageWorker.initialiserCertificateStore([...fullchain].pop(), {isPEM: true, DEBUG: false})
-    console.debug("Certificat : %O, Cles privees : %O", certInfo.fullchain, clesPrivees)
+    console.debug("preparerWorkersAvecCleschiffrageWorker.initialiserCertificateStore complete")
 
     const paramsCert = {
-      certificatPem: certInfo.fullchain.join('\n'),
-      clePriveeSign: clesPrivees.signer,
-      clePriveeDecrypt: clesPrivees.dechiffrer,
+      certificatPem: usager.certificat.join('\n'),
+      clePriveeSign: usager.signer,
+      clePriveeDecrypt: usager.dechiffrer,
       DEBUG: true
     }
 
     // Initialiser web worker
     await chiffrageWorker.initialiserFormatteurMessage(paramsCert)
-    console.debug("chiffrageWorker certs/cles initialises")
+    console.debug("preparerWorkersAvecCles chiffrageWorker certs/cles initialises")
 
     await connexionWorker.initialiserFormatteurMessage(paramsCert)
-    console.debug("connexionWorker certs/cles initialises")
+    console.debug("preparerWorkersAvecCles connexionWorker certs/cles initialises")
 
   } else {
     throw new Error("Pas de cert")

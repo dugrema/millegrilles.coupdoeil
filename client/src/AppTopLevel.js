@@ -16,7 +16,7 @@ import '@dugrema/millegrilles.common/css/millegrilles.css'
 import './containers/App.css'
 import './containers/Layout.css'
 
-import manifest from './manifest.build.js'
+// import manifest from './manifest.build.js'
 // const manifest = {
 //   date: "DUMMY",
 //   version: "DUMMY",
@@ -42,9 +42,9 @@ export default class AppTopLevel extends React.Component {
     setupWorkers(this).then( async _ =>{
       console.debug("Workers charges, info session : %O, proppys : %O", this.state, this.props)
 
-      this.setState({
-        signateurTransaction: {preparerTransaction: this.state.chiffrageWorker.formatterMessage}, // Legacy
-      })
+      // this.setState({
+      //   signateurTransaction: {preparerTransaction: this.state.chiffrageWorker.formatterMessage}, // Legacy
+      // })
 
       await this.preparerWorkersAvecCles()
       this.toggleProtege()  // Tenter upgrade protege automatiquement
@@ -144,7 +144,8 @@ export default class AppTopLevel extends React.Component {
   render() {
 
     const rootProps = {
-      ...this.state, manifest,
+      ...this.state, 
+      // manifest,
       toggleProtege: this.toggleProtege,
       // setCleMillegrille: this.setCleMillegrille,
     }

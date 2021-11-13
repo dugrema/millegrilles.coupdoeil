@@ -116,12 +116,7 @@ function Footer(props) {
         <Col sm={8} className="footer-center">
           <div className="millegrille-footer">
             <div>IDMG : {idmg}</div>
-            <div>
-              <Trans>application.coupdoeilAdvert</Trans>{' '}
-              <span title={props.rootProps.manifest.date}>
-                <Trans values={{version: props.rootProps.manifest.version}}>application.coupdoeilVersion</Trans>
-              </span>
-            </div>
+            <div>MilleGrilles</div>
           </div>
         </Col>
         <Col sm={2} className="footer-right"></Col>
