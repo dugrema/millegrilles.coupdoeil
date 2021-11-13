@@ -115,7 +115,7 @@ function Footer(props) {
         <Col sm={2} className="footer-left"></Col>
         <Col sm={8} className="footer-center">
           <div className="millegrille-footer">
-            <div>IDMG : {idmg}</div>
+            <div>{idmg}</div>
             <div>MilleGrilles</div>
           </div>
         </Col>
