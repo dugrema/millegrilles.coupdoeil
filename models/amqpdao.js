@@ -1,19 +1,20 @@
 const debug = require('debug')('millegrilles:coupdoeil:amqpdao')
-const fs = require('fs')
-const {MilleGrillesPKI, MilleGrillesAmqpDAO} = require('@dugrema/millegrilles.common')
+const fs = require('fs/promises')
+// const {MilleGrillesPKI, MilleGrillesAmqpDAO} = require('@dugrema/millegrilles.common')
+const {MilleGrillesPKI, MilleGrillesAmqpDAO} = require('@dugrema/millegrilles.nodejs')
 
 async function init() {
 
   // Preparer certificats
-  const certPem = fs.readFileSync(process.env.MG_MQ_CERTFILE).toString('utf-8')
-  const keyPem = fs.readFileSync(process.env.MG_MQ_KEYFILE).toString('utf-8')
-  const certMillegrillePem = fs.readFileSync(process.env.MG_MQ_CAFILE).toString('utf-8')
+  const certPem = await fs.readFile(process.env.MG_MQ_CERTFILE)
+  const keyPem = await fs.readFile(process.env.MG_MQ_KEYFILE)
+  const certMillegrillePem = await fs.readFile(process.env.MG_MQ_CAFILE)
 
   // Charger certificats, PKI
   const certPems = {
-    millegrille: certMillegrillePem,
-    cert: certPem,
-    key: keyPem,
+    millegrille: certMillegrillePem.toString('utf-8'),
+    cert: certPem.toString('utf-8'),
+    key: keyPem.toString('utf-8'),
   }
 
   // Charger PKI
