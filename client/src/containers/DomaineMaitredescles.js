@@ -4,9 +4,10 @@ import { pki as forgePki } from '@dugrema/node-forge'
 import multibase from 'multibase'
 
 import { ChargementClePrivee } from './ChargementCle'
-import { hacherCertificat } from '@dugrema/millegrilles.common/lib/hachage'
+// import { hacherCertificat } from '@dugrema/millegrilles.common/lib/hachage'
+import { hacherCertificat, forgecommon } from '@dugrema/millegrilles.utiljs'
 
-import { sauvegarderPrivateKeyToPEM, extraireExtensionsMillegrille } from '@dugrema/millegrilles.common/lib/forgecommon'
+const { sauvegarderPrivateKeyToPEM, extraireExtensionsMillegrille } = forgecommon
 
 const BATCH_NOMBRE_FETCH = 100       // Nombre cles downloadees a la fois
 

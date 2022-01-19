@@ -1,5 +1,5 @@
 import {wrap as comlinkWrap, proxy as comlinkProxy, releaseProxy} from 'comlink'
-import { getUsager } from '@dugrema/millegrilles.common/lib/browser/dbUsager'
+import { getUsager } from '@dugrema/millegrilles.reactjs'
 
 //TODO
 /* eslint-disable-next-line */

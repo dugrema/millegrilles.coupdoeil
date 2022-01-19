@@ -3,10 +3,11 @@ import {Row, Col, Form, Button, ProgressBar} from 'react-bootstrap'
 import Dropzone from 'react-dropzone'
 //import QrReader from 'react-qr-reader'
 
-import {chargerClePrivee} from '@dugrema/millegrilles.common/lib/forgecommon'
-import {detecterAppareilsDisponibles} from '@dugrema/millegrilles.common/lib/detecterAppareils'
+import { forgecommon } from '@dugrema/millegrilles.utiljs'
+import { detecterAppareilsDisponibles } from '@dugrema/millegrilles.reactjs'
 
 // import { signerChallengeCertificat } from '../components/pkiHelper'
+const {chargerClePrivee} = forgecommon
 
 const QrCodeScanner = React.lazy(()=>import('./QrCodeScanner'))
 

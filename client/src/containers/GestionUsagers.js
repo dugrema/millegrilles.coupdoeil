@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useCallback} from 'react'
 import {Row, Col, Button, Alert, Form, Modal} from 'react-bootstrap'
 import {pki as forgePki} from '@dugrema/node-forge'
-import { detecterAppareilsDisponibles } from '@dugrema/millegrilles.common/lib/detecterAppareils'
+import { detecterAppareilsDisponibles } from '@dugrema/millegrilles.reactjs'
 
 // import QrReader from 'react-qr-reader'
 

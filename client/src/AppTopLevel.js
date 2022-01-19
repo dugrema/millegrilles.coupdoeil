@@ -4,7 +4,7 @@ import {proxy as comlinkProxy, releaseProxy} from 'comlink'
 import {setupWorkers, preparerWorkersAvecCles} from './workers/workers.load'
 import {ApplicationCoupdoeil} from './containers/App'
 
-import '@dugrema/millegrilles.common/css/millegrilles.css'
+// import '@dugrema/millegrilles.common/css/millegrilles.css'
 import './containers/App.css'
 import './containers/Layout.css'
 
