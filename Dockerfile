@@ -1,4 +1,4 @@
-FROM docker.maceroc.com/millegrilles_webappbase:1.45.1
+FROM docker.maceroc.com/millegrilles_webappbase:2022.0.0
 
 ENV MG_CONSIGNATION_HTTP=https://fichiers \
     APP_FOLDER=/usr/src/app \
@@ -12,7 +12,8 @@ EXPOSE 80 443
 # WORKDIR $APP_FOLDER
 
 COPY . $APP_FOLDER/
-RUN rm -rf $APP_FOLDER/node_modules/@dugrema/millegrilles.common && \
+RUN rm -rf $APP_FOLDER/node_modules/@dugrema/millegrilles.utiljs && \
+    rm -rf $APP_FOLDER/node_modules/@dugrema/millegrilles.nodejs && \
     npm install --production && \
     rm -rf /root/.npm
 
