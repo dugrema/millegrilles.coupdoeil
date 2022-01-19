@@ -1,17 +1,12 @@
 import React from 'react'
-import { Row, Col, Form, InputGroup, Button, FormControl, Alert, ProgressBar } from 'react-bootstrap'
-import Dropzone from 'react-dropzone'
-import { pki as forgePki } from 'node-forge'
+import { Row, Col, Button, Alert, ProgressBar } from 'react-bootstrap'
+import { pki as forgePki } from '@dugrema/node-forge'
 import multibase from 'multibase'
 
 import { ChargementClePrivee } from './ChargementCle'
 import { hacherCertificat } from '@dugrema/millegrilles.common/lib/hachage'
-// import {verifierChaineCertificats} from '../components/traitementPki'
 
 import { sauvegarderPrivateKeyToPEM, extraireExtensionsMillegrille } from '@dugrema/millegrilles.common/lib/forgecommon'
-// import { CryptageAsymetrique, base64ToHexstring, bufferToBase64 } from '@dugrema/millegrilles.common/lib/cryptoSubtle'
-
-// const cryptageAsymetrique = new CryptageAsymetrique()
 
 const BATCH_NOMBRE_FETCH = 100       // Nombre cles downloadees a la fois
 

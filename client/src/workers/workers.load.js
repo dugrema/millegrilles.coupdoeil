@@ -1,9 +1,10 @@
 import {wrap as comlinkWrap, proxy as comlinkProxy, releaseProxy} from 'comlink'
-import {getUsager, getClesPrivees} from '@dugrema/millegrilles.common/lib/browser/dbUsager'
-import {splitPEMCerts} from '@dugrema/millegrilles.common/lib/forgecommon'
+import { getUsager } from '@dugrema/millegrilles.common/lib/browser/dbUsager'
 
+//TODO
 /* eslint-disable-next-line */
-import ChiffrageWorker from '@dugrema/millegrilles.common/lib/browser/chiffrage.worker'
+// import ChiffrageWorker from '@dugrema/millegrilles.common/lib/browser/chiffrage.worker'
+
 import ConnexionWorker from './connexion.worker'
 
 export async function setupWorkers(app) {
@@ -48,11 +49,13 @@ export function cleanupWorkers(app) {
 }
 
 async function initialiserWorkerChiffrage(callbackCleMillegrille) {
-  const workerInstance = new ChiffrageWorker()
-  const chiffrageWorker = await comlinkWrap(workerInstance)
+  // const workerInstance = new ChiffrageWorker()
+  // const chiffrageWorker = await comlinkWrap(workerInstance)
 
-  const cbCleMillegrille = comlinkProxy(callbackCleMillegrille)
-  chiffrageWorker.initialiserCallbackCleMillegrille(cbCleMillegrille)
+  // const cbCleMillegrille = comlinkProxy(callbackCleMillegrille)
+  // chiffrageWorker.initialiserCallbackCleMillegrille(cbCleMillegrille)
+
+  const workerInstance = '', chiffrageWorker = ''  // TODO
 
   return { workerInstance, chiffrageWorker }
 }
@@ -86,12 +89,13 @@ export async function preparerWorkersAvecCles(nomUsager, chiffrageWorker, connex
   const usager = await getUsager(nomUsager)
   console.debug("preparerWorkersAvecCles usager %O", usager)
   if(usager && usager.certificat) {
-    const fullchain = usager.certificat
+    const clePriveePem = usager.clePriveePem
     // const clesPrivees = await getClesPrivees(nomUsager)
 
     // Initialiser le CertificateStore
-    await chiffrageWorker.initialiserCertificateStore([...fullchain].pop(), {isPEM: true, DEBUG: false})
-    console.debug("preparerWorkersAvecCleschiffrageWorker.initialiserCertificateStore complete")
+    //await chiffrageWorker.initialiserCertificateStore([...fullchain].pop(), {isPEM: true, DEBUG: false})
+    // console.debug("preparerWorkersAvecCleschiffrageWorker.initialiserCertificateStore complete")
+    console.warn("preparerWorkersAvecCleschiffrageWorker.initialiserCertificateStore TODO")
 
     const paramsCert = {
       certificatPem: usager.certificat.join('\n'),
@@ -101,10 +105,16 @@ export async function preparerWorkersAvecCles(nomUsager, chiffrageWorker, connex
     }
 
     // Initialiser web worker
-    await chiffrageWorker.initialiserFormatteurMessage(paramsCert)
-    console.debug("preparerWorkersAvecCles chiffrageWorker certs/cles initialises")
+    //await chiffrageWorker.initialiserFormatteurMessage(paramsCert)
+    //console.debug("preparerWorkersAvecCles chiffrageWorker certs/cles initialises")
 
-    await connexionWorker.initialiserFormatteurMessage(paramsCert)
+    await connexionWorker.initialiserFormatteurMessage(
+      usager.certificat,
+      clePriveePem,
+      {
+        DEBUG: true
+      }
+    )
     console.debug("preparerWorkersAvecCles connexionWorker certs/cles initialises")
 
   } else {

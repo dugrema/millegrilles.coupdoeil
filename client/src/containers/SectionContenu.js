@@ -3,7 +3,6 @@ import React, {Suspense} from 'react'
 import {Backup as CoreBackup} from './Backup'
 import {PageConfigurationNoeudsListe as ConfigurationNoeuds} from './ConfigurationNoeudsListe'
 import {Parametres} from './Parametres.js'
-import {Hebergement} from './Hebergement'
 import {Pki} from './Pki.js'
 import {Accueil} from './Accueil.js'
 import {SommaireNoeud} from './Noeud'
@@ -20,7 +19,6 @@ const domainesConnus = {
   CoreBackup,
   ConfigurationNoeuds,
   Parametres,
-  Hebergement,
   CorePki: Pki,
   SommaireNoeud,
   SommaireDomaine,

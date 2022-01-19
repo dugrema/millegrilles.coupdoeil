@@ -1,17 +1,13 @@
 import React from 'react';
 import { Row, Col, Button, Form } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
-import forge from 'node-forge';
+import forge from '@dugrema/node-forge';
 
 import Checkbox from "../components/Checkbox";
 import { DateTimeFormatter } from '../components/ReactFormatters';
 import { Feuille } from '../components/Feuilles';
 
-// import {dateformatter} from '../formatters'
 import './Pki.css';
-
-// const domaine = 'millegrilles.domaines.Pki';
-// const libelle_signerNoeud = 'signer.noeud';
 
 export class SignerNoeud extends React.Component {
 

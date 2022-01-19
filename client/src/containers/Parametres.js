@@ -1,8 +1,5 @@
 import React from 'react';
-// import { Form, Container, Row, Col } from 'react-bootstrap';
-// import { Trans } from 'react-i18next';
 import { Feuille } from '../components/Feuilles';
-import { ParametresErreurs } from './ParametresErreurs'
 import './Parametres.css';
 
 class ActionsInterdites extends React.Component {

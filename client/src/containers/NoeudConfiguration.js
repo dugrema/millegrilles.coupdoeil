@@ -4,8 +4,7 @@ import path from 'path'
 import axios from 'axios'
 
 import {MilleGrillesCryptoHelper} from '@dugrema/millegrilles.common/lib/cryptoSubtle'
-//import { chargerCertificatPEM } from '@dugrema/millegrilles.common/lib/forgecommon'
-import { pki as forgePki } from 'node-forge'
+import { pki as forgePki } from '@dugrema/node-forge'
 import { prendrePossession } from './ConfigurationNoeudsListe'
 
 export class CommandeHttp extends React.Component {

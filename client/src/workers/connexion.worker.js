@@ -1,6 +1,8 @@
 import {expose as comlinkExpose} from 'comlink'
 
-import connexionClient from '@dugrema/millegrilles.common/lib/connexionClient'
+// import connexionClient from '@dugrema/millegrilles.common/lib/connexionClient'
+import * as connexionClient from '@dugrema/millegrilles.reactjs/src/connexionClient'
+import '@dugrema/millegrilles.reactjs'  // Init hachage optimise (WASM)
 
 const URL_SOCKET = '/coupdoeil/socket.io'
 

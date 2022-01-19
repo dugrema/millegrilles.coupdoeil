@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button, Row, Col, Form } from 'react-bootstrap'
-import forge from 'node-forge'
+import forge from '@dugrema/node-forge'
 
 
 const serviceMillegrilleUuid            = '1a000000-7ef7-42d6-8967-bc01dd822388'

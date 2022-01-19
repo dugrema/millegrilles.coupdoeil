@@ -1,15 +1,7 @@
 import React from 'react'
-import { Container, Row, Col, Nav, Navbar } from 'react-bootstrap'
-import openSocket from 'socket.io-client'
+import {proxy as comlinkProxy, releaseProxy} from 'comlink'
 
-import {proxy as comlinkProxy, wrap as comlinkWrap, releaseProxy} from 'comlink'
-import {splitPEMCerts} from '@dugrema/millegrilles.common/lib/forgecommon'
-
-import {setupWorkers, cleanupWorkers, preparerWorkersAvecCles} from './workers/workers.load'
-
-import { Trans } from 'react-i18next'
-
-import {getCertificats, getClesPrivees} from './components/pkiHelper'
+import {setupWorkers, preparerWorkersAvecCles} from './workers/workers.load'
 import {ApplicationCoupdoeil} from './containers/App'
 
 import '@dugrema/millegrilles.common/css/millegrilles.css'

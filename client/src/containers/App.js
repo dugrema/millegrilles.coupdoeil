@@ -2,13 +2,9 @@ import React, {useState} from 'react'
 import { Container, Row, Col, Nav, Navbar } from 'react-bootstrap'
 import { Trans } from 'react-i18next'
 
-import { WebSocketCoupdoeil as WebSocketManager } from '../components/webSocketManager'
 import { VerificationInfoServeur } from './Authentification'
 import { SectionContenu } from './SectionContenu'
 import { MenuItems } from './Menu'
-
-// import {getCertificats, getClesPrivees} from '../components/pkiHelper'
-import {splitPEMCerts} from '@dugrema/millegrilles.common/lib/forgecommon'
 
 import './App.css'
 

@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useCallback} from 'react'
-import {Row, Col, Button, Alert, Form, Container, Modal} from 'react-bootstrap'
-import {pki as forgePki} from 'node-forge'
+import {Row, Col, Button, Alert, Form, Modal} from 'react-bootstrap'
+import {pki as forgePki} from '@dugrema/node-forge'
 import { detecterAppareilsDisponibles } from '@dugrema/millegrilles.common/lib/detecterAppareils'
 
 // import QrReader from 'react-qr-reader'
