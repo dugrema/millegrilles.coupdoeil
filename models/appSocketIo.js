@@ -156,15 +156,15 @@ function traiterTransaction(rabbitMQ, message, cb) {
 
 async function ajouterCatalogueApplication(socket, transaction, cb) {
   // Ajout d'un catalogue d'application avec transaction preformattee
-  console.debug("Recu ajouterCatalogueApplication : %O", transaction)
+  console.debug("Recu ajouterCatalogueApplication : %O, callback : %O", transaction, cb)
   try {
     if(transaction['en-tete'].domaine === 'CatalogueApplications.catalogueApplication') {
       const amqpdao = socket.amqpdao
       const reponse = await amqpdao.transmettreEnveloppeTransaction(transaction)
-      return cb(reponse)
+      if(cb) cb(reponse)
     } else {
       // Par defaut
-      cb({err: 'Mauvais domaine pour ajouterCatalogueApplication : ' + transaction.domaine})
+      if(cb) cb({err: 'Mauvais domaine pour ajouterCatalogueApplication : ' + transaction.domaine})
     }
   } catch(err) {
     console.error("ajouterCatalogueApplication %O", err)
