@@ -5,8 +5,9 @@ import multibase from 'multibase'
 
 import { ChargementClePrivee } from './ChargementCle'
 // import { hacherCertificat } from '@dugrema/millegrilles.common/lib/hachage'
-import { hacherCertificat, forgecommon } from '@dugrema/millegrilles.utiljs'
+import { hachage, forgecommon } from '@dugrema/millegrilles.reactjs'
 
+const { hacherCertificat } = hachage
 const { sauvegarderPrivateKeyToPEM, extraireExtensionsMillegrille } = forgecommon
 
 const BATCH_NOMBRE_FETCH = 100       // Nombre cles downloadees a la fois

@@ -3,8 +3,7 @@ import {Row, Col, Form, Button, ProgressBar} from 'react-bootstrap'
 import Dropzone from 'react-dropzone'
 //import QrReader from 'react-qr-reader'
 
-import { forgecommon } from '@dugrema/millegrilles.utiljs'
-import { detecterAppareilsDisponibles } from '@dugrema/millegrilles.reactjs'
+import { forgecommon, detecterAppareilsDisponibles } from '@dugrema/millegrilles.reactjs'
 
 // import { signerChallengeCertificat } from '../components/pkiHelper'
 const {chargerClePrivee} = forgecommon
