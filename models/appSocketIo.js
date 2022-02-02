@@ -91,6 +91,9 @@ function configurerEvenements(socket) {
       {eventName: 'coupdoeil/commandeTransmettreCatalogues', callback: (commande, cb) => {
         commandeTransmettreCatalogues(socket, commande, cb)
       }},
+      {eventName: 'coupdoeil/commandeSoumettreCatalogueApplication', callback: (commande, cb) => {
+        commandeSoumettreCatalogueApplication(socket, commande, cb)
+      }},
       {eventName: 'genererCertificatNavigateur', callback: (commande, cb) => {
         genererCertificatNavigateurWS(socket, commande, cb)
       }},
@@ -575,13 +578,38 @@ async function commandeTransmettreCatalogues(socket, commande, cb) {
   debug("Commande retransmettre collections %O", commande)
   const amqpdao = socket.amqpdao
 
-  const domaineAction = commande['en-tete'].domaine
-  if ( domaineAction !== 'servicemonitor.transmettreCatalogues' ) {
+  const {domaine, action} = commande['en-tete']
+  if ( domaine !== 'servicemonitor' ) {
+    return cb({err: "Mauvais type d'action : " + domaineAction})
+  }
+  if ( action !== 'transmettreCatalogues' ) {
     return cb({err: "Mauvais type d'action : " + domaineAction})
   }
 
   try {
-    const reponse = await amqpdao.transmettreCommande(domaineAction, commande)
+    const reponse = await amqpdao.transmettreCommande(domaine, commande, {action, noformat: true})
+    debug("commandeTransmettreCatalogues: Reponse \n%O", reponse)
+    cb(reponse)
+  } catch(err) {
+    console.error("commandeTransmettreCatalogues: Erreur %O", err)
+    cb({err: ''+err})
+  }
+}
+
+async function commandeSoumettreCatalogueApplication(socket, commande, cb) {
+  debug("Commande retransmettre collections %O", commande)
+  const amqpdao = socket.amqpdao
+
+  const {domaine, action} = commande['en-tete']
+  if ( domaine !== 'CoreCatalogues' ) {
+    return cb({err: "Mauvais type d'action : " + domaineAction})
+  }
+  if ( action !== 'catalogueApplication' ) {
+    return cb({err: "Mauvais type d'action : " + domaineAction})
+  }
+
+  try {
+    const reponse = await amqpdao.transmettreCommande(domaine, commande, {action, noformat: true})
     debug("commandeTransmettreCatalogues: Reponse \n%O", reponse)
     cb(reponse)
   } catch(err) {

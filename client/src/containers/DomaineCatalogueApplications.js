@@ -123,8 +123,8 @@ class FormulaireAjout extends React.Component {
       const transaction = JSON.parse(this.state.json)
       console.debug("Soumettre configuration : %O", transaction)
 
-      const wsa = this.props.wsa
-      const reponse = await wsa.soumettreConfigurationApplication(transaction)
+      const connexionWorker = this.props.rootProps.workers.connexion
+      const reponse = await connexionWorker.commandeSoumettreCatalogueApplication({catalogue: transaction})
       console.debug("Reponse : %O", reponse)
 
       this.setState({erreur: '', confirmation: true}, _=>{
@@ -139,16 +139,8 @@ class FormulaireAjout extends React.Component {
   rechargerCatalogues = async event => {
     try {
       this.setState({erreur: '', confirmation: ''})
-      //const commande = {}
-      const domaineAction = 'servicemonitor.transmettreCatalogues'
-      //const signateurTransaction = this.props.rootProps.signateurTransaction
-      // await signateurTransaction.preparerTransaction(commande, domaineAction)
-      const chiffrageWorker = this.props.rootProps.chiffrageWorker
-      const commande = await chiffrageWorker.formatterMessage({}, domaineAction)
-      console.debug("Demande de recharge des catalogues : %O", commande)
-
-      const wsa = this.props.wsa
-      const reponse = await wsa.commandeTransmettreCatalogues(commande)
+      const connexionWorker = this.props.rootProps.workers.connexion
+      const reponse = await connexionWorker.commandeTransmettreCatalogues()
       console.debug("Reponse : %O", reponse)
 
       this.setState({erreur: '', confirmation: true}, _=>{

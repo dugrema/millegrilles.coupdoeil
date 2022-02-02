@@ -150,8 +150,19 @@ function clearFichierPublie(commande) {
 function uploadCollectionsPubliques(commande) {
   return connexionClient.emitBlocking('coupdoeil/uploadCollectionsPubliques', commande)
 }
-function commandeTransmettreCatalogues(commande) {
-  return connexionClient.emitBlocking('coupdoeil/commandeTransmettreCatalogues', commande)
+function commandeTransmettreCatalogues() {
+  return connexionClient.emitBlocking(
+    'coupdoeil/commandeTransmettreCatalogues', 
+    {},
+    {domaine: 'servicemonitor', action: 'transmettreCatalogues', attacherCertificat: true}
+  )
+}
+function commandeSoumettreCatalogueApplication(commande) {
+  return connexionClient.emitBlocking(
+    'coupdoeil/commandeSoumettreCatalogueApplication', 
+    commande,
+    {domaine: 'CoreCatalogues', action: 'catalogueApplication', attacherCertificat: true}
+  )
 }
 function genererCertificatNavigateur(params) {
   return connexionClient.emitBlocking(
@@ -268,7 +279,7 @@ comlinkExpose({
   lancerBackupSnapshot, genererCertificatNoeud, desinstallerApplication,
   configurerApplication, demarrerApplication, regenererPreviews,
   configurerConsignationWeb, soumettreTransactionMaitredescles, clearFichierPublie,
-  uploadCollectionsPubliques, commandeTransmettreCatalogues,
+  uploadCollectionsPubliques, commandeTransmettreCatalogues, commandeSoumettreCatalogueApplication,
 
   regenererDomaine,
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
