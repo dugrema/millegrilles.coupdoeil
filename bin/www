@@ -10,7 +10,7 @@ const socketApp = require('../models/appSocketIo')
 const amqpdao = require('../models/amqpdao')
 // const {initialiser: initialiserServer} = require('@dugrema/millegrilles.common/lib/server3')
 // const server4 = require('@dugrema/millegrilles.common/lib/server4')
-const { server5 } = require('@dugrema/millegrilles.nodejs')
+const server6 = require('@dugrema/millegrilles.nodejs/src/server6')
 const {initialiser: initialiserCoupdoeil} = require('../routes/coupdoeil')
 // const { extraireExtensionsMillegrille } = require('@dugrema/millegrilles.common/lib/forgecommon')
 const { extraireExtensionsMillegrille } = require('@dugrema/millegrilles.utiljs/src/forgecommon')
@@ -22,26 +22,11 @@ async function init() {
 
   // Initialiser server et routes
   const app = express()
-  // const {server, socketIo, amqpdao: amqpdaoInst} = await server4(
-  //   app, socketApp.configurerEvenements, {pathApp: '/coupdoeil', verifierAutorisation})
-  const {server, socketIo, amqpdao: amqpdaoInst} = await server5(
+  const {server, socketIo, amqpdao: amqpdaoInst} = await server6(
     app, socketApp.configurerEvenements, {pathApp: '/coupdoeil', verifierAutorisation})
   
-  // const grosFichiersDao = new GrosFichiersDao(amqpdaoInst)
-  // socketIo.use((socket, next)=>{
-  //   socket.grosFichiersDao = grosFichiersDao
-  //   next()
-  // })
-
   const routeCoupdoeil = express.Router()
   app.use('/coupdoeil', routeCoupdoeil)
-
-  // // Inserer les routes apres l'initialisation, permet d'avoir le middleware
-  // // attache avant (app.use comme le logging morgan, injection amqpdao, etc.)
-  // routeGrosfichiers.use((req, res, next)=>{
-  //   req.grosFichiersDao = grosFichiersDao
-  //   next()
-  // })
 
   routeCoupdoeil.use(initialiserCoupdoeil(amqpdaoInst))
 
