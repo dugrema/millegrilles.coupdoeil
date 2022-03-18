@@ -178,7 +178,7 @@ function uploadCollectionsPubliques(commande) {
 }
 function commandeTransmettreCatalogues() {
   return connexionClient.emitBlocking(
-    'coupdoeil/commandeTransmettreCatalogues', 
+    'coupdoeil/transmettreCatalogues', 
     {},
     {domaine: 'monitor', action: 'transmettreCatalogues', attacherCertificat: true}
   )

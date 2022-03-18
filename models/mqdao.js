@@ -79,9 +79,9 @@ function supprimerApplication(socket, commande) {
     return transmettreCommande(socket, commande, 'supprimerApplication')
 }  
 
-function requeteConfigurationApplication(socket, commande) {
-    debug("Requete configuration application application %O", commande)
-    return transmettreCommande(socket, commande, 'requeteConfigurationApplication')
+function requeteConfigurationApplication(socket, requete) {
+    debug("Requete configuration application application %O", requete)
+    return transmettrerequete(socket, requete, 'requeteConfigurationApplication')
 }
 
 function ajouterCatalogueApplication(socket, commande) {
@@ -92,6 +92,16 @@ function ajouterCatalogueApplication(socket, commande) {
 function configurerApplication(socket, commande) {
     debug("Configurer application %O", commande)
     return transmettreCommande(socket, commande, 'configurerApplication')
+}
+
+function transmettreCatalogues(socket, commande) {
+    debug("Transmettre catalogue %O", commande)
+    return transmettreCommande(socket, commande, 'transmettreCatalogues')
+}
+
+function majMonitor(socket, commande) {
+    debug("Maj monitor %O", commande)
+    return transmettreCommande(socket, commande, 'monitor', {domaine: CONST_DOMAINE_TOPOLOGIE})
 }
 
 // function majContact(socket, params) {
@@ -158,9 +168,11 @@ function verifierMessage(message, domaine, action) {
 
 module.exports = {
     challenge, getClesChiffrage,
+    transmettreCatalogues,
     installerApplication, demarrerApplication, supprimerApplication,
     ajouterCatalogueApplication, requeteConfigurationApplication, configurerApplication, 
 
+    majMonitor,
     
     // ecouterMajFichiers, ecouterMajCollections, ecouterTranscodageProgres, 
     // retirerTranscodageProgres, 

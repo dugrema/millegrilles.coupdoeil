@@ -14,7 +14,11 @@ function configurerEvenements(socket) {
       {eventName: 'coupdoeil/requeteConfigurationApplication', callback: (params, cb) => { traiter(socket, mqdao.requeteConfigurationApplication, {params, cb}) }},
       {eventName: 'coupdoeil/ajouterCatalogueApplication', callback: (params, cb) => { traiter(socket, mqdao.ajouterCatalogueApplication, {params, cb}) }},
       {eventName: 'coupdoeil/configurerApplication', callback: (params, cb) => { traiter(socket, mqdao.configurerApplication, {params, cb}) }},
+      {eventName: 'coupdoeil/transmettreCatalogues', callback: (params, cb) => { traiter(socket, mqdao.transmettreCatalogues, {params, cb}) }},
 
+      {eventName: 'coretopologie/majMonitor', callback: (params, cb) => { traiter(socket, mqdao.majMonitor, {params, cb}) }},
+
+      
       {eventName: 'coupdoeil/requeteListeNoeuds', callback: (params, cb) => {requeteListeNoeuds(socket, params, cb)}},
       {eventName: 'coupdoeil/requeteListeDomaines', callback: cb => {requeteListeDomaines(socket, cb)}},
       // {eventName: 'coupdoeil/requeteCatalogueDomaines', callback: cb => {requeteCatalogueDomaines(socket, cb)}},
@@ -78,9 +82,6 @@ function configurerEvenements(socket) {
       {eventName: 'coupdoeil/uploadCollectionsPubliques', callback: (commande, cb) => {
         uploadCollectionsPubliques(socket, commande, cb)
       }},
-      {eventName: 'coupdoeil/commandeTransmettreCatalogues', callback: (commande, cb) => {
-        commandeTransmettreCatalogues(socket, commande, cb)
-      }},
       {eventName: 'coupdoeil/commandeSoumettreCatalogueApplication', callback: (commande, cb) => {
         commandeSoumettreCatalogueApplication(socket, commande, cb)
       }},
@@ -122,7 +123,6 @@ function configurerEvenements(socket) {
       {eventName: 'coupdoeil/retirerEvenementsBackup', callback: (params, cb) => {
         retirerEvenementsBackup(socket, params, cb)
       }},
-      {eventName: 'coretopologie/majMonitor', callback: (params, cb) => { majMonitor(socket, params, cb) }},
 
     ]
   }
@@ -571,27 +571,27 @@ async function uploadCollectionsPubliques(socket, commande, cb) {
   }
 }
 
-async function commandeTransmettreCatalogues(socket, commande, cb) {
-  debug("Commande retransmettre collections %O", commande)
-  const amqpdao = socket.amqpdao
+// async function commandeTransmettreCatalogues(socket, commande, cb) {
+//   debug("Commande retransmettre collections %O", commande)
+//   const amqpdao = socket.amqpdao
 
-  const {domaine, action} = commande['en-tete']
-  if ( domaine !== 'servicemonitor' ) {
-    return cb({err: "Mauvais type d'action : " + domaineAction})
-  }
-  if ( action !== 'transmettreCatalogues' ) {
-    return cb({err: "Mauvais type d'action : " + domaineAction})
-  }
+//   const {domaine, action} = commande['en-tete']
+//   if ( domaine !== 'servicemonitor' ) {
+//     return cb({err: "Mauvais type d'action : " + domaineAction})
+//   }
+//   if ( action !== 'transmettreCatalogues' ) {
+//     return cb({err: "Mauvais type d'action : " + domaineAction})
+//   }
 
-  try {
-    const reponse = await amqpdao.transmettreCommande(domaine, commande, {action, noformat: true})
-    debug("commandeTransmettreCatalogues: Reponse \n%O", reponse)
-    cb(reponse)
-  } catch(err) {
-    console.error("commandeTransmettreCatalogues: Erreur %O", err)
-    cb({err: ''+err})
-  }
-}
+//   try {
+//     const reponse = await amqpdao.transmettreCommande(domaine, commande, {action, noformat: true})
+//     debug("commandeTransmettreCatalogues: Reponse \n%O", reponse)
+//     cb(reponse)
+//   } catch(err) {
+//     console.error("commandeTransmettreCatalogues: Erreur %O", err)
+//     cb({err: ''+err})
+//   }
+// }
 
 async function commandeSoumettreCatalogueApplication(socket, commande, cb) {
   debug("Commande retransmettre collections %O", commande)
