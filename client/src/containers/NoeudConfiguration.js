@@ -46,11 +46,11 @@ export class CommandeHttp extends React.Component {
       console.debug("URL verification noeud : %O", url)
 
       // const signateurTransaction = this.props.rootProps.signateurTransaction
-      // const commande = await signateurTransaction.preparerTransaction(commande, 'servicemonitor.genererCsr')
+      // const commande = await signateurTransaction.preparerTransaction(commande, 'monitor.genererCsr')
 
-      const domaineAction = 'servicemonitor.genererCsr'
+      const domaineAction = 'monitor'
       // await signateurTransaction.preparerTransaction(transaction, domaineTransaction)
-      const commande = await this.props.rootProps.chiffrageWorker.formatterMessage({}, domaineAction, {attacherCertificat: true})
+      const commande = await this.props.rootProps.chiffrageWorker.formatterMessage({}, domaineAction, {action: 'genererCsr', attacherCertificat: true})
 
       const reponse = await axios({
         method: 'post',
@@ -478,7 +478,7 @@ function AfficherFormInternet(props) {
     configurationAvancee = (
       <div>
         <Form.Check id="certificat-test">
-          <Form.Check.Input type='checkbox' name="modeTest" value='true' onChange={props.setCheckbox} value={props.modeTest}/>
+          <Form.Check.Input type='checkbox' name="modeTest" value="true" checked={props.modeTest} onChange={props.setCheckbox} />
           <Form.Check.Label>Certificat de test</Form.Check.Label>
         </Form.Check>
 
@@ -528,7 +528,7 @@ function AfficherFormInternet(props) {
         </InputGroup>
 
         <Form.Check id="configuration-avancee">
-          <Form.Check.Input type='checkbox' name="configurationAvancee" value='true' onChange={props.setCheckbox} value={props.configurationAvancee}/>
+          <Form.Check.Input type='checkbox' name="configurationAvancee" value="true" checked={props.configurationAvancee} onChange={props.setCheckbox} />
           <Form.Check.Label>Configuration avancee</Form.Check.Label>
         </Form.Check>
 

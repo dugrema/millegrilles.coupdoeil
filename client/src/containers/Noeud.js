@@ -15,9 +15,9 @@ const subscriptionsEvenementsApplication = [
   'evenement.backup.backupApplication',
 ]
 const traiterMessageEvenementApplications = [
-  'evenement.servicemonitor.__noeudId__.applicationDemarree',
-  'evenement.servicemonitor.__noeudId__.applicationArretee',
-  'evenement.servicemonitor.__noeudId__.erreurDemarrageApplication',
+  'evenement.monitor.__noeudId__.applicationDemarree',
+  'evenement.monitor.__noeudId__.applicationArretee',
+  'evenement.monitor.__noeudId__.erreurDemarrageApplication',
 ]
 
 export function SommaireNoeud(props) {
@@ -714,11 +714,11 @@ function ModalConfigurationApplication(props) {
 }
 
 async function desinstallerApplication(wsa, noeudId, nomApplication, securite) {
-  // const domaineAction = ['servicemonitor', noeudId ,'supprimerApplication'].join('.')
+  // const domaineAction = ['monitor', noeudId ,'supprimerApplication'].join('.')
   const params = { noeudId, 'nom_application': nomApplication, exchange: securite }
-  // console.debug("desinstallerApplication: Transmettre commande %O", params)
+  console.debug("desinstallerApplication: Transmettre commande %O", params)
   //wsa.transmettreCommande(domaineAction, params)
-  const reponse = await wsa.desinstallerApplication(params)
+  const reponse = await wsa.supprimerApplication(params)
   if(reponse.err) {
     console.error("Erreur desinstaller application : %O", reponse.err)
   } else {

@@ -1,5 +1,6 @@
 var fs = require('fs');
-const debug = require('debug')('millegrilles:coupdoeil:coupdoeilSocketApp')
+const debug = require('debug')('millegrilles:coupdoeil:mqdao')
+const mqdao = require('./mqdao.js')
 
 function configurerEvenements(socket) {
   const configurationEvenements = {
@@ -7,6 +8,13 @@ function configurerEvenements(socket) {
       {eventName: 'coupdoeil/getCertificatsMaitredescles', callback: cb => {getCertificatsMaitredescles(socket, cb)}},
     ],
     listenersProteges: [
+      {eventName: 'coupdoeil/installerApplication', callback: (params, cb) => traiter(socket, mqdao.installerApplication, {params, cb}) },
+      {eventName: 'coupdoeil/demarrerApplication', callback: (params, cb) => { traiter(socket, mqdao.demarrerApplication, {params, cb}) }},
+      {eventName: 'coupdoeil/supprimerApplication', callback: (params, cb) => { traiter(socket, mqdao.supprimerApplication, {params, cb}) }},
+      {eventName: 'coupdoeil/requeteConfigurationApplication', callback: (params, cb) => { traiter(socket, mqdao.requeteConfigurationApplication, {params, cb}) }},
+      {eventName: 'coupdoeil/ajouterCatalogueApplication', callback: (params, cb) => { traiter(socket, mqdao.ajouterCatalogueApplication, {params, cb}) }},
+      {eventName: 'coupdoeil/configurerApplication', callback: (params, cb) => { traiter(socket, mqdao.configurerApplication, {params, cb}) }},
+
       {eventName: 'coupdoeil/requeteListeNoeuds', callback: (params, cb) => {requeteListeNoeuds(socket, params, cb)}},
       {eventName: 'coupdoeil/requeteListeDomaines', callback: cb => {requeteListeDomaines(socket, cb)}},
       // {eventName: 'coupdoeil/requeteCatalogueDomaines', callback: cb => {requeteCatalogueDomaines(socket, cb)}},
@@ -19,9 +27,6 @@ function configurerEvenements(socket) {
       {eventName: 'maitrecomptes/requeteUsager', callback: (params, cb) => {requeteUsager(socket, params, cb)}},
       {eventName: 'maitrecomptes/resetWebauthn', callback: (params, cb) => {resetWebauthn(socket, params, cb)}},
 
-      {eventName: 'coupdoeil/ajouterCatalogueApplication', callback: (transaction, cb) => {
-        ajouterCatalogueApplication(socket, transaction, cb)
-      }},
       {eventName: 'coupdoeil/requeteClesNonDechiffrables', callback: (params, cb) => {
         requeteClesNonDechiffrables(socket, params, cb)
       }},
@@ -46,9 +51,6 @@ function configurerEvenements(socket) {
       {eventName: 'coupdoeil/restaurerApplication', callback: (params, cb) => {
         restaurerApplication(socket, params, cb)
       }},
-      {eventName: 'coupdoeil/installerApplication', callback: (params, cb) => {
-        installerApplication(socket, params, cb)
-      }},
       {eventName: 'coupdoeil/installerDomaine', callback: (params, cb) => {
         installerDomaine(socket, params, cb)
       }},
@@ -60,18 +62,6 @@ function configurerEvenements(socket) {
       }},
       {eventName: 'coupdoeil/genererCertificatNoeud', callback: (params, cb) => {
         genererCertificatNoeud(socket, params, cb)
-      }},
-      {eventName: 'coupdoeil/desinstallerApplication', callback: (params, cb) => {
-        desinstallerApplication(socket, params, cb)
-      }},
-      {eventName: 'coupdoeil/requeteConfigurationApplication', callback: (params, cb) => {
-        requeteConfigurationApplication(socket, params, cb)
-      }},
-      {eventName: 'coupdoeil/configurerApplication', callback: (params, cb) => {
-        configurerApplication(socket, params, cb)
-      }},
-      {eventName: 'coupdoeil/demarrerApplication', callback: (params, cb) => {
-        demarrerApplication(socket, params, cb)
       }},
       {eventName: 'coupdoeil/regenererPreviews', callback: (params, cb) => {
         regenererPreviews(socket, params, cb)
@@ -140,22 +130,29 @@ function configurerEvenements(socket) {
   return configurationEvenements
 }
 
-function traiterTransaction(rabbitMQ, message, cb) {
-  // console.log("Message");
-  // console.log(message);
-  let routingKey = message.routingKey;
-  let transaction = message.transaction;
-  let opts = message.opts;
-  rabbitMQ.transmettreTransactionFormattee(
-    transaction, routingKey, opts
-  ).then(messageReponse=>{
-    cb(messageReponse);
-  }).catch(err =>{
-    console.error("Erreur transmission transaction");
-    console.error(err);
-    if(cb) cb({'err': err.toString()});
-  })
+async function traiter(socket, methode, {params, cb}) {
+  debug("!!! Message recu a traiter : %O", params)
+  const reponse = await methode(socket, params)
+  if(cb) cb(reponse)
 }
+
+
+// function traiterTransaction(rabbitMQ, message, cb) {
+//   // console.log("Message");
+//   // console.log(message);
+//   let routingKey = message.routingKey;
+//   let transaction = message.transaction;
+//   let opts = message.opts;
+//   rabbitMQ.transmettreTransactionFormattee(
+//     transaction, routingKey, opts
+//   ).then(messageReponse=>{
+//     cb(messageReponse);
+//   }).catch(err =>{
+//     console.error("Erreur transmission transaction");
+//     console.error(err);
+//     if(cb) cb({'err': err.toString()});
+//   })
+// }
 
 async function ajouterCatalogueApplication(socket, transaction, cb) {
   // Ajout d'un catalogue d'application avec transaction preformattee
@@ -336,19 +333,19 @@ async function restaurerApplication(socket, commande, cb) {
   }
 }
 
-async function installerApplication(socket, commande, cb) {
-  debug("Installer application : %O", commande)
-  const amqpdao = socket.amqpdao
-  const domaineAction = ['servicemonitor', commande.noeudId ,'installerApplication'].join('.')
-  try {
-    let params = {exchange: commande.exchange}
-    const reponse = await amqpdao.transmettreCommande(domaineAction, commande, params)
-    cb(reponse)
-  } catch(err) {
-    console.error("installerApplication: Erreur %O", err)
-    cb({err: ''+err})
-  }
-}
+// async function installerApplication(socket, commande, cb) {
+//   debug("Installer application : %O", commande)
+//   const amqpdao = socket.amqpdao
+//   const domaineAction = 'monitor'
+//   try {
+//     let params = {action: 'installerApplication', partition: commande.noeudId, exchange: commande.exchange}
+//     const reponse = await amqpdao.transmettreCommande(domaineAction, commande, params)
+//     cb(reponse)
+//   } catch(err) {
+//     console.error("installerApplication: Erreur %O", err)
+//     cb({err: ''+err})
+//   }
+// }
 
 async function installerDomaine(socket, commande, cb) {
   debug("Installer domaine : %O", commande)
@@ -420,69 +417,69 @@ async function genererCertificatNoeud(socket, commande, cb) {
   }
 }
 
-async function desinstallerApplication(socket, commande, cb) {
-  debug("Desinstaller application %O", commande)
+// async function desinstallerApplication(socket, commande, cb) {
+//   debug("Desinstaller application %O", commande)
 
-  const amqpdao = socket.amqpdao
-  const domaineAction = ['servicemonitor', commande.noeudId ,'supprimerApplication'].join('.')
+//   const amqpdao = socket.amqpdao
+//   const domaineAction = ['servicemonitor', commande.noeudId ,'supprimerApplication'].join('.')
 
-  try {
-    // Commande nowait - c'est un broadcast (global), il faut capturer les
-    // evenements de demarrage individuels (evenement.backup.backupTransactions)
-    // pour savoir quels domaines ont repondu
-    const reponse = await amqpdao.transmettreCommande(domaineAction, commande, {exchange: commande.exchange})
-    debug("desinstallerApplication: Reponse \n%O", reponse)
-    cb(reponse)
-  } catch(err) {
-    console.error("desinstallerApplication: Erreur %O", err)
-    cb({err: ''+err})
-  }
-}
+//   try {
+//     // Commande nowait - c'est un broadcast (global), il faut capturer les
+//     // evenements de demarrage individuels (evenement.backup.backupTransactions)
+//     // pour savoir quels domaines ont repondu
+//     const reponse = await amqpdao.transmettreCommande(domaineAction, commande, {exchange: commande.exchange})
+//     debug("desinstallerApplication: Reponse \n%O", reponse)
+//     cb(reponse)
+//   } catch(err) {
+//     console.error("desinstallerApplication: Erreur %O", err)
+//     cb({err: ''+err})
+//   }
+// }
 
-async function requeteConfigurationApplication(socket, params, cb) {
-  debug("Requete configuration %O", params)
-  const amqpdao = socket.amqpdao
-  const domaineAction = ['servicemonitor', params.noeud_id ,'requeteConfigurationApplication'].join('.')
-  try {
-    // Commande nowait - c'est un broadcast (global), il faut capturer les
-    // evenements de demarrage individuels (evenement.backup.backupTransactions)
-    // pour savoir quels domaines ont repondu
-    const reponse = await amqpdao.transmettreCommande(domaineAction, params, {exchange: params.exchange})
-    debug("requeteConfigurationApplication: Reponse \n%O", reponse)
-    cb(reponse)
-  } catch(err) {
-    console.error("requeteConfigurationApplication: Erreur %O", err)
-    cb({err: ''+err})
-  }
-}
+// async function requeteConfigurationApplication(socket, params, cb) {
+//   debug("Requete configuration %O", params)
+//   const amqpdao = socket.amqpdao
+//   const domaineAction = ['servicemonitor', params.noeud_id ,'requeteConfigurationApplication'].join('.')
+//   try {
+//     // Commande nowait - c'est un broadcast (global), il faut capturer les
+//     // evenements de demarrage individuels (evenement.backup.backupTransactions)
+//     // pour savoir quels domaines ont repondu
+//     const reponse = await amqpdao.transmettreCommande(domaineAction, params, {exchange: params.exchange})
+//     debug("requeteConfigurationApplication: Reponse \n%O", reponse)
+//     cb(reponse)
+//   } catch(err) {
+//     console.error("requeteConfigurationApplication: Erreur %O", err)
+//     cb({err: ''+err})
+//   }
+// }
 
-async function configurerApplication(socket, params, cb) {
-  debug("Configurer application %s sur noeud %s", params.nom_application, params.noeud_id)
-  const amqpdao = socket.amqpdao
-  const domaineAction = ['servicemonitor', params.noeud_id ,'configurerApplication'].join('.')
-  try {
-    const reponse = await amqpdao.transmettreCommande(domaineAction, params, {exchange: params.exchange})
-    debug("configurerApplication: Reponse \n%O", reponse)
-    cb(reponse)
-  } catch(err) {
-    console.error("configurerApplication: Erreur %O", err)
-    cb({err: ''+err})
-  }
-}
+// async function configurerApplication(socket, params, cb) {
+//   debug("Configurer application %s sur noeud %s", params.nom_application, params.noeud_id)
+//   const amqpdao = socket.amqpdao
+//   const domaineAction = ['servicemonitor', params.noeud_id ,'configurerApplication'].join('.')
+//   try {
+//     const reponse = await amqpdao.transmettreCommande(domaineAction, params, {exchange: params.exchange})
+//     debug("configurerApplication: Reponse \n%O", reponse)
+//     cb(reponse)
+//   } catch(err) {
+//     console.error("configurerApplication: Erreur %O", err)
+//     cb({err: ''+err})
+//   }
+// }
 
-async function demarrerApplication(socket, params, cb) {
-  debug("Demarrer application %O", params)
-  const amqpdao = socket.amqpdao
-  const domaineAction = ['servicemonitor', params.noeud_id ,'demarrerApplication'].join('.')
-  try {
-    const reponse = await amqpdao.transmettreCommande(domaineAction, params, {exchange: params.exchange})
-    debug("demarrerApplication: Reponse \n%O", reponse)
-    cb(reponse)
-  } catch(err) {
-    console.error("demarrerApplication: Erreur %O", err)
-    cb({err: ''+err})
-  }
-}
+// async function demarrerApplication(socket, params, cb) {
+//   debug("Demarrer application %O", params)
+//   const amqpdao = socket.amqpdao
+//   const domaineAction = ['servicemonitor', params.noeud_id ,'demarrerApplication'].join('.')
+//   try {
+//     const reponse = await amqpdao.transmettreCommande(domaineAction, params, {exchange: params.exchange})
+//     debug("demarrerApplication: Reponse \n%O", reponse)
+//     cb(reponse)
+//   } catch(err) {
+//     console.error("demarrerApplication: Erreur %O", err)
+//     cb({err: ''+err})
+//   }
+// }
 
 async function regenererPreviews(socket, params, cb) {
   debug("Regenerer previews %O", params)

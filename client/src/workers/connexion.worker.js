@@ -53,7 +53,11 @@ function requeteRapportBackup(params) {
   return connexionClient.emitBlocking('coupdoeil/requeteRapportBackup', params)
 }
 function requeteConfigurationApplication(params) {
-  return connexionClient.emitBlocking('coupdoeil/requeteConfigurationApplication', params)
+  return connexionClient.emitBlocking(
+    'coupdoeil/requeteConfigurationApplication', 
+    params, 
+    {domaine: 'monitor', action: 'requeteConfigurationApplication', partition: params.noeud_id, exchange: params.exchange, ajouterCertificat: true}
+  )
 }
 function requeteCompterClesNonDechiffrables() {
   return connexionClient.emitBlocking('coupdoeil/requeteCompterClesNonDechiffrables', {})
@@ -95,10 +99,27 @@ function soumettreCleRechiffree(commandes) {
   return connexionClient.emitBlocking('coupdoeil/transactionCleRechiffree', commandes)
 }
 function soumettreConfigurationApplication(configuration) {
-  return connexionClient.emit('coupdoeil/ajouterCatalogueApplication', configuration)
+  // return connexionClient.emit('coupdoeil/ajouterCatalogueApplication', configuration)
+  return connexionClient.emitBlocking(
+    'coupdoeil/ajouterCatalogueApplication', 
+    configuration, 
+    {domaine: 'monitor', action: 'ajouterCatalogueApplication', partition: configuration.noeud_id, exchange: configuration.exchange, ajouterCertificat: true}
+  )
 }
 function installerApplication(params) {
-  return connexionClient.emitBlocking('coupdoeil/installerApplication', params)
+  return connexionClient.emitBlocking(
+    'coupdoeil/installerApplication', 
+    params, 
+    {domaine: 'monitor', action: 'installerApplication', partition: params.noeudId, exchange: params.exchange, ajouterCertificat: true}
+  )
+}
+function supprimerApplication(commande) {
+  console.debug("supprimer application %O", commande)
+  return connexionClient.emitBlocking(
+    'coupdoeil/supprimerApplication', 
+    commande, 
+    {domaine: 'monitor', action: 'supprimerApplication', partition: commande.noeudId, exchange: commande.exchange, ajouterCertificat: true}
+  )
 }
 function installerDomaine(params) {
   return connexionClient.emit('coupdoeil/installerDomaine', params)
@@ -126,14 +147,19 @@ function genererCertificatNoeud(commande) {
     {domaine: 'CorePki', action: 'signerCsr', attacherCertificat: true}
   )
 }
-function desinstallerApplication(commande) {
-  return connexionClient.emitBlocking('coupdoeil/desinstallerApplication', commande)
-}
 function configurerApplication(commande) {
-  return connexionClient.emitBlocking('coupdoeil/configurerApplication', commande)
+  return connexionClient.emitBlocking(
+    'coupdoeil/configurerApplication', 
+    commande, 
+    {domaine: 'monitor', action: 'configurerApplication', partition: commande.noeud_id, exchange: commande.exchange, ajouterCertificat: true}
+  )
 }
 function demarrerApplication(commande) {
-  return connexionClient.emitBlocking('coupdoeil/demarrerApplication', commande)
+  return connexionClient.emitBlocking(
+    'coupdoeil/demarrerApplication', 
+    commande, 
+    {domaine: 'monitor', action: 'demarrerApplication', partition: commande.noeud_id, exchange: commande.exchange, ajouterCertificat: true}
+  )
 }
 function regenererPreviews() {
   return connexionClient.emitBlocking('coupdoeil/regenererPreviews', {})
@@ -154,7 +180,7 @@ function commandeTransmettreCatalogues() {
   return connexionClient.emitBlocking(
     'coupdoeil/commandeTransmettreCatalogues', 
     {},
-    {domaine: 'servicemonitor', action: 'transmettreCatalogues', attacherCertificat: true}
+    {domaine: 'monitor', action: 'transmettreCatalogues', attacherCertificat: true}
   )
 }
 function commandeSoumettreCatalogueApplication(commande) {
@@ -200,11 +226,12 @@ function majMonitor(params) {
 
 // Listeners
 async function enregistrerCallbackEvenementsPresenceDomaine(cb) {
-  connexionClient.socketOn('evenement.presence.domaine', cb)
-  const resultat = await connexionClient.emitBlocking('coupdoeil/ecouterEvenementsPresenceDomaines', {}, {})
-  if(!resultat) {
-    throw new Error("Erreur enregistrerCallbackTopologie")
-  }
+  console.warn("!!! TODO FIX ME")
+  // connexionClient.socketOn('evenement.monitor.domaine', cb)
+  // const resultat = await connexionClient.emitBlocking('coupdoeil/ecouterEvenementsPresenceDomaines', {}, {})
+  // if(!resultat) {
+  //   throw new Error("Erreur enregistrerCallbackTopologie")
+  // }
 }
 
 function retirerCallbackEvenementsPresenceDomaine() {
@@ -213,7 +240,7 @@ function retirerCallbackEvenementsPresenceDomaine() {
 }
 
 async function enregistrerCallbackEvenementsNoeuds(cb) {
-  connexionClient.socketOn('evenement.presence.monitor', cb)
+  connexionClient.socketOn('evenement.monitor.presence', cb)
   const resultat = await connexionClient.emitBlocking('coupdoeil/ecouterEvenementsPresenceNoeuds', {}, {})
   if(!resultat) {
     throw new Error("Erreur enregistrerCallbackEvenementsNoeuds")
@@ -221,14 +248,14 @@ async function enregistrerCallbackEvenementsNoeuds(cb) {
 }
 
 function retirerCallbackEvenementsNoeuds() {
-  connexionClient.socketOff('evenement.presence.monitor')
+  connexionClient.socketOff('evenement.monitor.presence')
   connexionClient.emit('coupdoeil/retirerEvenementsPresenceNoeuds', {}, {})
 }
 
 async function enregistrerCallbackEvenementsApplications(noeudId, cb) {
-  connexionClient.socketOn('evenement.servicemonitor.applicationDemarree', cb)
-  connexionClient.socketOn('evenement.servicemonitor.applicationArretee', cb)
-  connexionClient.socketOn('evenement.servicemonitor.erreurDemarrageApplication', cb)
+  connexionClient.socketOn('evenement.monitor.applicationDemarree', cb)
+  connexionClient.socketOn('evenement.monitor.applicationArretee', cb)
+  connexionClient.socketOn('evenement.monitor.erreurDemarrageApplication', cb)
   connexionClient.socketOn('evenement.backup.backupApplication', cb)
   connexionClient.socketOn('evenement.backup.restaurationApplication', cb)
   const resultat = await connexionClient.emitBlocking('coupdoeil/ecouterEvenementsApplications', {noeudId}, {})
@@ -239,9 +266,9 @@ async function enregistrerCallbackEvenementsApplications(noeudId, cb) {
 
 function retirerCallbackEvenementsApplications(noeudId) {
   connexionClient.emit('coupdoeil/retirerEvenementsPresenceNoeuds', {noeudId}, {})
-  connexionClient.socketOff('evenement.servicemonitor.applicationDemarree')
-  connexionClient.socketOff('evenement.servicemonitor.applicationArretee')
-  connexionClient.socketOff('evenement.servicemonitor.erreurDemarrageApplication')
+  connexionClient.socketOff('evenement.monitor.applicationDemarree')
+  connexionClient.socketOff('evenement.monitor.applicationArretee')
+  connexionClient.socketOff('evenement.monitor.erreurDemarrageApplication')
   connexionClient.socketOff('evenement.backup.backupApplication')
   connexionClient.socketOff('evenement.backup.restaurationApplication')
 }
@@ -276,7 +303,7 @@ comlinkExpose({
   restaurationChargerCles, restaurationDomaines, restaurationGrosfichiers,
   backupApplication, restaurerApplication, soumettreCleRechiffree,
   soumettreConfigurationApplication, installerApplication, installerDomaine,
-  lancerBackupSnapshot, genererCertificatNoeud, desinstallerApplication,
+  lancerBackupSnapshot, genererCertificatNoeud, supprimerApplication,
   configurerApplication, demarrerApplication, regenererPreviews,
   configurerConsignationWeb, soumettreTransactionMaitredescles, clearFichierPublie,
   uploadCollectionsPubliques, commandeTransmettreCatalogues, commandeSoumettreCatalogueApplication,

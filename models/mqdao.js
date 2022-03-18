@@ -1,0 +1,167 @@
+const debug = require('debug')('mqdao')
+
+const L2Prive = '2.prive',
+      L3Protege = '3.protege'
+
+const DOMAINE_MONITOR = 'monitor',
+      CONST_DOMAINE_GROSFICHIERS = 'GrosFichiers',
+      CONST_DOMAINE_MAITREDESCLES = 'MaitreDesCles',
+      CONST_DOMAINE_FICHIERS = 'fichiers',
+      CONST_DOMAINE_TOPOLOGIE = 'CoreTopologie'
+
+const ROUTING_KEYS_FICHIERS = [
+    //'evenement.grosfichiers.majFichier',
+]
+
+const ROUTING_KEYS_COLLECTIONS = [
+    //'evenement.grosfichiers.majCollection',
+]
+
+// const EVENEMENTS_SUPPORTES = [
+// ...ROUTING_KEYS_FICHIERS,
+// ...ROUTING_KEYS_COLLECTIONS,
+// ]
+
+let _certificatMaitreCles = null,
+    _domainesApplications = null
+
+function challenge(socket, params) {
+    // Repondre avec un message signe
+    const reponse = {
+        reponse: params.challenge,
+        message: 'Trust no one',
+        nomUsager: socket.nomUsager,
+        userId: socket.userId,
+    }
+    return socket.amqpdao.pki.formatterMessage(reponse, 'challenge', {ajouterCertificat: true})
+}
+
+async function getClesChiffrage(socket, params) {
+    let certificatMaitreCles = _certificatMaitreCles
+    if(!certificatMaitreCles) {
+        debug("Requete pour certificat maitre des cles")
+
+        try {
+            certificatMaitreCles = await socket.amqpdao.transmettreRequete(
+                CONST_DOMAINE_MAITREDESCLES, {}, 
+                {action: 'certMaitreDesCles', decoder: true}
+            )
+
+            // TTL
+            setTimeout(()=>{_certificatMaitreCles=null}, 120_000)
+        } catch(err) {
+            console.error("mqdao.transmettreRequete ERROR : %O", err)
+            return {ok: false, err: ''+err}
+        }
+    
+        // certificatMaitreCles = await transmettreRequete(socket, params, 'certMaitreDesCles', {domaine: CONST_DOMAINE_MAITREDESCLES})
+        _certificatMaitreCles = certificatMaitreCles
+    }
+    return certificatMaitreCles
+}
+
+// function getProfil(socket, params) {
+//     return transmettreRequete(socket, params, 'getProfil')
+// }
+
+function installerApplication(socket, commande) {
+    debug("Installer application : %O", commande)
+    return transmettreCommande(socket, commande, 'installerApplication')
+}
+
+function demarrerApplication(socket, commande) {
+    debug("Installer application : %O", commande)
+    return transmettreCommande(socket, commande, 'demarrerApplication')
+}
+
+function supprimerApplication(socket, commande) {
+    debug("Supprimer application %O", commande)
+    return transmettreCommande(socket, commande, 'supprimerApplication')
+}  
+
+function requeteConfigurationApplication(socket, commande) {
+    debug("Requete configuration application application %O", commande)
+    return transmettreCommande(socket, commande, 'requeteConfigurationApplication')
+}
+
+function ajouterCatalogueApplication(socket, commande) {
+    debug("Ajouter catalogue application %O", commande)
+    return transmettreCommande(socket, commande, 'ajouterCatalogueApplication')
+}
+
+function configurerApplication(socket, commande) {
+    debug("Configurer application %O", commande)
+    return transmettreCommande(socket, commande, 'configurerApplication')
+}
+
+// function majContact(socket, params) {
+//     return transmettreCommande(socket, params, 'majContact')
+// }
+
+
+// function attachmentsRequis(socket, fuuids) {
+//     return socket.amqpdao.transmettreRequete(
+//         DOMAINE_MESSAGERIE, 
+//         {fuuids}, 
+//         {action: 'attachmentRequis', exchange: L2Prive, noformat: false, decoder: true}
+//     )
+// }
+
+
+// Fonctions generiques
+
+async function transmettreRequete(socket, params, action, opts) {
+    opts = opts || {}
+    const domaine = opts.domaine || DOMAINE_MESSAGERIE
+    const exchange = opts.exchange || L2Prive
+    try {
+        verifierMessage(params, domaine, action)
+        return await socket.amqpdao.transmettreRequete(
+            domaine, 
+            params, 
+            {action, exchange, noformat: true, decoder: true}
+        )
+    } catch(err) {
+        console.error("mqdao.transmettreRequete ERROR : %O", err)
+        return {ok: false, err: ''+err}
+    }
+}
+
+async function transmettreCommande(socket, params, action, opts) {
+    opts = opts || {}
+    const domaine = opts.domaine || DOMAINE_MONITOR
+    const exchange = opts.exchange || L3Protege
+    const nowait = opts.nowait
+    const partition = opts.partition || params['en-tete'].partition
+    try {
+        verifierMessage(params, domaine, action)
+        return await socket.amqpdao.transmettreCommande(
+            domaine, 
+            params, 
+            {action, partition, exchange, noformat: true, decoder: true, nowait}
+        )
+    } catch(err) {
+        console.error("mqdao.transmettreCommande ERROR : %O", err)
+        return {ok: false, err: ''+err}
+    }
+}
+
+/* Fonction de verification pour eviter abus de l'API */
+function verifierMessage(message, domaine, action) {
+    const entete = message['en-tete'] || {},
+          domaineRecu = entete.domaine,
+          actionRecue = entete.action
+    if(domaineRecu !== domaine) throw new Error(`Mismatch domaine (${domaineRecu} !== ${domaine})"`)
+    if(actionRecue !== action) throw new Error(`Mismatch action (${actionRecue} !== ${action})"`)
+}
+
+
+module.exports = {
+    challenge, getClesChiffrage,
+    installerApplication, demarrerApplication, supprimerApplication,
+    ajouterCatalogueApplication, requeteConfigurationApplication, configurerApplication, 
+
+    
+    // ecouterMajFichiers, ecouterMajCollections, ecouterTranscodageProgres, 
+    // retirerTranscodageProgres, 
+}
