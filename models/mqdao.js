@@ -66,22 +66,22 @@ async function getClesChiffrage(socket, params) {
 
 function installerApplication(socket, commande) {
     debug("Installer application : %O", commande)
-    return transmettreCommande(socket, commande, 'installerApplication')
+    return transmettreCommande(socket, commande, 'installerApplication', {exchange: commande.exchange})
 }
 
 function demarrerApplication(socket, commande) {
     debug("Installer application : %O", commande)
-    return transmettreCommande(socket, commande, 'demarrerApplication')
+    return transmettreCommande(socket, commande, 'demarrerApplication', {exchange: commande.exchange})
 }
 
 function supprimerApplication(socket, commande) {
     debug("Supprimer application %O", commande)
-    return transmettreCommande(socket, commande, 'supprimerApplication')
+    return transmettreCommande(socket, commande, 'supprimerApplication', {exchange: commande.exchange})
 }  
 
 function requeteConfigurationApplication(socket, requete) {
     debug("Requete configuration application application %O", requete)
-    return transmettrerequete(socket, requete, 'requeteConfigurationApplication')
+    return transmettrerequete(socket, requete, 'requeteConfigurationApplication', {exchange: commande.exchange})
 }
 
 function ajouterCatalogueApplication(socket, commande) {
@@ -91,7 +91,7 @@ function ajouterCatalogueApplication(socket, commande) {
 
 function configurerApplication(socket, commande) {
     debug("Configurer application %O", commande)
-    return transmettreCommande(socket, commande, 'configurerApplication')
+    return transmettreCommande(socket, commande, 'configurerApplication', {exchange: commande.exchange})
 }
 
 function transmettreCatalogues(socket, commande) {
@@ -101,7 +101,7 @@ function transmettreCatalogues(socket, commande) {
 
 function majMonitor(socket, commande) {
     debug("Maj monitor %O", commande)
-    return transmettreCommande(socket, commande, 'monitor', {domaine: CONST_DOMAINE_TOPOLOGIE})
+    return transmettreCommande(socket, commande, 'monitor', {domaine: CONST_DOMAINE_TOPOLOGIE, exchange: commande.exchange})
 }
 
 // function majContact(socket, params) {
