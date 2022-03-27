@@ -106,12 +106,17 @@ function soumettreConfigurationApplication(configuration) {
     {domaine: 'monitor', action: 'ajouterCatalogueApplication', partition: configuration.noeud_id, exchange: configuration.exchange, ajouterCertificat: true}
   )
 }
-function installerApplication(params) {
-  return connexionClient.emitBlocking(
-    'coupdoeil/installerApplication', 
-    params, 
-    {domaine: 'monitor', action: 'installerApplication', partition: params.noeudId, exchange: params.exchange, ajouterCertificat: true}
-  )
+async function installerApplication(params) {
+  try {
+    return await connexionClient.emitBlocking(
+      'coupdoeil/installerApplication', 
+      params, 
+      {domaine: 'monitor', action: 'installerApplication', partition: params.noeudId, exchange: params.exchange, ajouterCertificat: true}
+    )
+  } catch(err) {
+    console.error("Erreur InstallerApplication %O", err)
+    return {ok: false, err: ''+err}
+  }
 }
 function supprimerApplication(commande) {
   console.debug("supprimer application %O", commande)
@@ -240,37 +245,60 @@ function retirerCallbackEvenementsPresenceDomaine() {
 }
 
 async function enregistrerCallbackEvenementsNoeuds(cb) {
-  connexionClient.socketOn('evenement.monitor.presence', cb)
+  // connexionClient.socketOn('evenement.monitor.presence', cb)
   const resultat = await connexionClient.emitBlocking('coupdoeil/ecouterEvenementsPresenceNoeuds', {}, {})
-  if(!resultat) {
-    throw new Error("Erreur enregistrerCallbackEvenementsNoeuds")
+  console.debug("Resultat enregistrerCallbackEvenementsNoeuds : %O", resultat)
+  if(resultat && resultat.ok === true) {
+    resultat.routingKeys.forEach(item=>{
+      console.debug("enregistrerCallbackEvenementsNoeuds Ajouter socketOn %s", item)
+      connexionClient.socketOn(item, cb)
+    })
+  } else {
+    const err = new Error("Erreur enregistrerCallbackEvenementsNoeuds")
+    err.reponse = resultat
+    throw err
   }
 }
 
-function retirerCallbackEvenementsNoeuds() {
+function retirerCallbackEvenementsNoeuds(cb) {
   connexionClient.socketOff('evenement.monitor.presence')
-  connexionClient.emit('coupdoeil/retirerEvenementsPresenceNoeuds', {}, {})
-}
-
-async function enregistrerCallbackEvenementsApplications(noeudId, cb) {
-  connexionClient.socketOn('evenement.monitor.applicationDemarree', cb)
-  connexionClient.socketOn('evenement.monitor.applicationArretee', cb)
-  connexionClient.socketOn('evenement.monitor.erreurDemarrageApplication', cb)
-  connexionClient.socketOn('evenement.backup.backupApplication', cb)
-  connexionClient.socketOn('evenement.backup.restaurationApplication', cb)
-  const resultat = await connexionClient.emitBlocking('coupdoeil/ecouterEvenementsApplications', {noeudId}, {})
-  if(!resultat) {
-    throw new Error("Erreur enregistrerCallbackEvenementsNoeuds")
+  const resultat = connexionClient.emit('coupdoeil/retirerEvenementsPresenceNoeuds', {}, {})
+  if(resultat && resultat.ok === true) {
+    resultat.routingKeys.forEach(item=>{
+      console.debug("enregistrerCallbackEvenementsNoeuds Ajouter socketOn %s", item)
+      connexionClient.socketOff(item, cb)
+    })
   }
 }
 
-function retirerCallbackEvenementsApplications(noeudId) {
-  connexionClient.emit('coupdoeil/retirerEvenementsPresenceNoeuds', {noeudId}, {})
-  connexionClient.socketOff('evenement.monitor.applicationDemarree')
-  connexionClient.socketOff('evenement.monitor.applicationArretee')
-  connexionClient.socketOff('evenement.monitor.erreurDemarrageApplication')
-  connexionClient.socketOff('evenement.backup.backupApplication')
-  connexionClient.socketOff('evenement.backup.restaurationApplication')
+async function enregistrerCallbackEvenementsApplications(instanceId, securite, cb) {
+  const resultat = await connexionClient.emitBlocking('coupdoeil/ecouterEvenementsApplications', {instanceId, exchange: securite}, {})
+  console.debug("Resultat enregistrerCallbackEvenementsApplications : %O", resultat)
+  if(resultat && resultat.ok === true) {
+    resultat.routingKeys.forEach(item=>{
+      console.debug("enregistrerCallbackEvenementsApplications Ajouter socketOn %s", item)
+      connexionClient.socketOn(item, cb)
+    })
+  } else {
+    const err = new Error("Erreur enregistrerCallbackEvenementsApplications")
+    err.reponse = resultat
+    throw err
+  }
+}
+
+async function retirerCallbackEvenementsApplications(instanceId, securite, cb) {
+  const resultat = await connexionClient.emitBlocking('coupdoeil/retirerEvenementsApplications', {instanceId, exchange: securite}, {})
+  console.debug("Resultat retirerCallbackEvenementsApplications : %O", resultat)
+  if(resultat && resultat.ok === true) {
+    resultat.routingKeys.forEach(item=>{
+      console.debug("retirerCallbackEvenementsApplications Ajouter socketOn %s", item)
+      connexionClient.socketOff(item, cb)
+    })
+  } else {
+    const err = new Error("Erreur retirerCallbackEvenementsApplications")
+    err.reponse = resultat
+    throw err
+  }
 }
 
 async function enregistrerCallbackEvenementsBackup(cb) {

@@ -3,7 +3,6 @@ import {Row, Col, Button, Form, InputGroup, FormControl, Alert} from 'react-boot
 import path from 'path'
 import axios from 'axios'
 
-// import {MilleGrillesCryptoHelper} from '@dugrema/millegrilles.common/lib/cryptoSubtle'
 import { pki as forgePki } from '@dugrema/node-forge'
 import { prendrePossession } from './ConfigurationNoeudsListe'
 

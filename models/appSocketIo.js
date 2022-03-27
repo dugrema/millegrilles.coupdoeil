@@ -786,66 +786,82 @@ function majMonitor(socket, params, cb) {
   executerTransaction('CoreTopologie', 'monitor', socket, params, cb)
 }
 
-function ecouterEvenementsPresenceDomaines(socket, params, cb) {
-  const opts = {
-    routingKeys: [`evenement.presence.domaine`],
-    exchange: ['3.protege'],
-  }
-  debug("ecouterEvenementsPresenceDomaines Params : %O", params)
+// Enregistrement d'evenements
+
+function ecouterEvenementsPresenceDomaines(socket, _params, cb) {
+  const opts = { routingKeys: ['evenement.monitor.domaine'], exchanges: ['3.protege'] }
+  debug("ecouterEvenementsPresenceDomaines : %O", opts)
   socket.subscribe(opts, cb)
 }
 
-function retirerEvenementsPresenceDomaines(socket, params, cb) {
-  const routingKeys = [`3.protege.evenement.presence.domaine`]
-  socket.unsubscribe({routingKeys})
-  debug("retirerEvenementsPresenceDomaines sur %O", params)
-  if(cb) cb(true)
+function retirerEvenementsPresenceDomaines(socket, _params, cb) {
+  const opts = { routingKeys: ['evenement.monitor.domaine'], exchanges: ['3.protege'] }
+  debug("retirerEvenementsPresenceDomaines sur %O", opts)
+  socket.unsubscribe(opts, cb)
 }
 
-function ecouterEvenementsPresenceNoeuds(socket, params, cb) {
+function ecouterEvenementsPresenceNoeuds(socket, _params, cb) {
   const opts = {
-    routingKeys: [`evenement.presence.monitor`],
-    exchange: ['3.protege'],
+    routingKeys: ['evenement.monitor.presence'],
+    exchanges: ['1.public', '2.prive', '3.protege'],
   }
-  debug("ecouterEvenementsPresenceNoeuds Params : %O", params)
+  debug("ecouterEvenementsPresenceNoeuds Params : %O", opts)
   socket.subscribe(opts, cb)
 }
 
-function retirerEvenementsPresenceNoeuds(socket, params, cb) {
-  const routingKeys = [`3.protege.evenement.presence.monitor`]
-  socket.unsubscribe({routingKeys})
-  debug("retirerEvenementsPresenceNoeuds sur %O", params)
-  if(cb) cb(true)
+function retirerEvenementsPresenceNoeuds(socket, _params, cb) {
+  const opts = {
+    routingKeys: ['evenement.monitor.presence'],
+    exchanges: ['1.public', '2.prive', '3.protege'],
+  }
+  debug("retirerEvenementsPresenceNoeuds sur %O", opts)
+  socket.unsubscribe(opts, cb)
 }
 
 function ecouterEvenementsApplications(socket, params, cb) {
-  const noeudId = params.noeudId
+  const instanceId = params.instanceId,
+        exchange = params.exchange
+  
+  if(!instanceId || !exchange) {
+    debug("ecouterEvenementsPresenceNoeuds ERROR instanceId/exchange manquant de params : %O", params)
+    if(cb) cb({ok: false, err: "instanceId ou exchange manquant"})
+    return
+  }
+
   const opts = {
     routingKeys: [
-      `evenement.servicemonitor.${noeudId}.applicationDemarree`,
-      `evenement.servicemonitor.${noeudId}.applicationArretee`,
-      `evenement.servicemonitor.${noeudId}.erreurDemarrageApplication`,
-      'evenement.backup.backupApplication',
-      'evenement.backup.restaurationApplication',
+      `evenement.servicemonitor.${instanceId}.applicationDemarree`,
+      `evenement.servicemonitor.${instanceId}.applicationArretee`,
+      `evenement.servicemonitor.${instanceId}.erreurDemarrageApplication`,
     ],
-    exchange: ['3.protege'],
+    exchanges: [exchange],
   }
-  debug("ecouterEvenementsApplications Params : %O", params)
+
+  debug("ecouterEvenementsApplications Params : %O", opts)
   socket.subscribe(opts, cb)
 }
 
 function retirerEvenementsApplications(socket, params, cb) {
-  const noeudId = params.noeudId
-  const routingKeys = [
-    `3.protege.evenement.servicemonitor.${noeudId}.applicationDemarree`,
-    `3.protege.evenement.servicemonitor.${noeudId}.applicationArretee`,
-    `3.protege.evenement.servicemonitor.${noeudId}.erreurDemarrageApplication`,
-    '3.protege.evenement.backup.backupApplication',
-    '3.protege.evenement.backup.restaurationApplication',
-  ]
-  socket.unsubscribe({routingKeys})
-  debug("retirerEvenementsApplications sur %O", params)
-  if(cb) cb(true)
+  const instanceId = params.instanceId,
+        exchange = params.exchange
+
+  if(!instanceId || !exchange) {
+    debug("ecouterEvenementsPresenceNoeuds ERROR instanceId/exchange manquant de params : %O", params)
+    if(cb) cb({ok: false, err: "instanceId ou exchange manquant"})
+    return
+  }
+
+  const opts = {
+    routingKeys: [
+      `evenement.servicemonitor.${instanceId}.applicationDemarree`,
+      `evenement.servicemonitor.${instanceId}.applicationArretee`,
+      `evenement.servicemonitor.${instanceId}.erreurDemarrageApplication`,
+    ],
+    exchanges: [exchange],
+  }
+
+  debug("retirerEvenementsApplications sur %O", opts)
+  socket.unsubscribe(opts, cb)
 }
 
 function ecouterEvenementsBackup(socket, params, cb) {

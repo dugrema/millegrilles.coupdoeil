@@ -68,7 +68,7 @@ input.pin {
   padding: 1em;
 }
 
-div.table {}
+/*div.table {}*/
 div.table div.table-header {
   background-color: #9eb1bb;
   font-weight: bolder;
@@ -99,4 +99,8 @@ div.table div.table-header {
 
 .echec {
   color: red;
+}
+
+PRE.stack {
+  font-size: small;
 }
