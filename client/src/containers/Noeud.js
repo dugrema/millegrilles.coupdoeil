@@ -1,15 +1,17 @@
 import React from 'react'
-import { Row, Col, Button, ButtonGroup, Form, Modal, Alert, InputGroup, FormControl, Nav, NavDropdown } from 'react-bootstrap'
-import path from 'path'
-import axios from 'axios'
+import Row from 'react-bootstrap/Row'
+import Col from 'react-bootstrap/Col'
+import Alert from 'react-bootstrap/Alert'
+import Nav from 'react-bootstrap/Nav'
+import NavDropdown from 'react-bootstrap/NavDropdown'
 import {proxy as comlinkProxy} from 'comlink'
 
 import {CommandeHttp, ConsignationNoeud} from './NoeudConfiguration'
 import ApplicationsInstance from './InstanceApplications'
 
 import { ListeNoeuds, ListeDomaines } from '../components/ListeTopologie'
-import { chargerInfoNoeud } from '../components/UtilNoeuds'
-import { DateTimeAfficher } from '../components/ReactFormatters'
+// import { DateTimeAfficher } from '../components/ReactFormatters'
+import { FormatterDate } from '@dugrema/millegrilles.reactjs'
 
 const subscriptionsEvenementsApplication = [
   'evenement.backup.restaurationApplication',
@@ -200,7 +202,7 @@ class AffichageNoeud extends React.Component {
     return (
       <div>
 
-        <h1>Noeud {nomNoeud}</h1>
+        <h1>Instance {nomNoeud}</h1>
 
         {erreur}
 
@@ -246,100 +248,94 @@ function PageDocker(props) {
   )
 }
 
-class InformationTransactionsNoeud extends React.Component {
-
-  render() {
+function InformationTransactionsNoeud(props) {
 
     // console.debug("Noeud info PROPPYS : %O", this.props.noeud)
 
-    var info = ''
-    const noeud = this.props.noeud || {}
+      var info = ''
+      const instance = props.noeud || {},
+            instanceId = instance.noeud_id
 
-    return (
+  return (
       <div>
-        <h2>Information</h2>
+          <h2>Information</h2>
 
-        <Row>
-          <Col md={3}>Noeud Id</Col>
-          <Col>{this.props.noeud_id}</Col>
-        </Row>
-        <Row>
-          <Col md={3}>Domaine</Col>
-          <Col>{noeud.domaine}</Col>
-        </Row>
-        <Row>
-          <Col md={3}>FQDN</Col>
-          <Col>{noeud.fqdn}</Col>
-        </Row>
-        <Row>
-          <Col md={3}>Ip</Col>
-          <Col>{noeud.ip_detectee}</Col>
-        </Row>
-        <Row>
-          <Col md={3}>Parent</Col>
-          <Col>{noeud.parent_noeud_id}</Col>
-        </Row>
-        <Row>
-          <Col md={3}>Securite</Col>
-          <Col>{noeud.securite}</Col>
-        </Row>
-        <Row>
-          <Col md={3}>Derniere presence</Col>
-          <Col><DateTimeAfficher date={noeud.date} /></Col>
-        </Row>
-        <Row>
-          <Col md={3}>Etat</Col>
-          <Col>{noeud.actif?'Actif':'Inactif'}</Col>
-        </Row>
+          <Row>
+            <Col md={3}>Instance Id</Col>
+            <Col>{instanceId}</Col>
+          </Row>
+          <Row>
+            <Col md={3}>Domaine</Col>
+            <Col>{instance.domaine}</Col>
+          </Row>
+          <Row>
+            <Col md={3}>FQDN</Col>
+            <Col>{instance.fqdn}</Col>
+          </Row>
+          <Row>
+            <Col md={3}>Ip</Col>
+            <Col>{instance.ip_detectee}</Col>
+          </Row>
+          <Row>
+            <Col md={3}>Securite</Col>
+            <Col>{instance.securite}</Col>
+          </Row>
+          <Row>
+            <Col md={3}>Derniere presence</Col>
+            <Col><FormatterDate value={instance.date} /></Col>
+          </Row>
+          <Row>
+            <Col md={3}>Etat</Col>
+            <Col>{instance.actif?'Actif':'Inactif'}</Col>
+          </Row>
 
       </div>
-    )
-  }
+  )
 
 }
 
-function mapperMessageNoeud(message, existant) {
-  if(!existant) existant = {}
-  const mapping = {
-    'fqdn_detecte': 'fqdn',
-    'ip_detectee': 'ip',
-    'noeud_id': 'noeud_id',
-    'parent_noeud_id': 'parent',
-    'securite': 'securite',
-    '_mg-derniere-modification': 'date',
-  }
-  for(let key in mapping) {
-    const keyMappee = mapping[key]
-    if(message[key]) {
-      existant[keyMappee] = message[key]
-    }
-  }
+// function mapperMessageNoeud(message, existant) {
+//   if(!existant) existant = {}
+//   const mapping = {
+//     'fqdn_detecte': 'fqdn',
+//     'ip_detectee': 'ip',
+//     'noeud_id': 'noeud_id',
+//     'parent_noeud_id': 'parent',
+//     'securite': 'securite',
+//     '_mg-derniere-modification': 'date',
+//   }
+//   for(let key in mapping) {
+//     const keyMappee = mapping[key]
+//     if(message[key]) {
+//       existant[keyMappee] = message[key]
+//     }
+//   }
 
-  if(message.services) {
-    const services = []
-    for(let nomService in message.services) {
-      var infoService = message.services[nomService]
-      const mapping = Object.assign({}, infoService)
-      mapping.nomService = nomService
-      services.push(mapping)
-    }
-    existant.services = services
-  }
+//   if(message.services) {
+//     const services = []
+//     for(let nomService in message.services) {
+//       var infoService = message.services[nomService]
+//       const mapping = Object.assign({}, infoService)
+//       mapping.nomService = nomService
+//       services.push(mapping)
+//     }
+//     existant.services = services
+//   }
 
-  if(message.containers) {
-    const containers = []
-    for(let nomContainer in message.containers) {
-      var infoContainer = message.containers[nomContainer]
-      const mapping = Object.assign({}, infoContainer)
-      mapping.name = nomContainer
-      mapping.nomApplication = nomContainer.split('.')[0].slice(1)
-      containers.push(mapping)
-    }
-    existant.containers = containers
-  }
+//   if(message.containers) {
+//     const containers = []
+//     for(let nomContainer in message.containers) {
+//       var infoContainer = message.containers[nomContainer]
+//       const mapping = Object.assign({}, infoContainer)
+//       mapping.name = nomContainer
+//       mapping.nomApplication = nomContainer.split('.')[0].slice(1)
+//       containers.push(mapping)
+//     }
+//     existant.containers = containers
+//   }
 
-  return existant
-}
+//   return existant
+// }
 
 // class ApplicationsNoeud extends React.Component {
 
@@ -792,32 +788,32 @@ function AfficherContainers(props) {
   )
 }
 
-function AfficherDomainesNoeud(props) {
+// function AfficherDomainesNoeud(props) {
 
-  const domaines = props.domaines
-  // console.debug("Domaines : \n%O", domaines)
+//   const domaines = props.domaines
+//   // console.debug("Domaines : \n%O", domaines)
 
-  var renderingDomaines = []
-  if(domaines) {
-    renderingDomaines = domaines.
-      filter(domaine=>{return domaine.noeud_id === props.noeud_id}).
-      map((domaine, idx)=>{
-        return(
-          <Row key={domaine.descriptif + '_' + idx}>
-            <Col md={3}>{domaine.descriptif}</Col>
-            <Col>{domaine.actif?"Actif":"Inactif"}</Col>
-          </Row>
-        )
-      })
-  }
+//   var renderingDomaines = []
+//   if(domaines) {
+//     renderingDomaines = domaines.
+//       filter(domaine=>{return domaine.noeud_id === props.noeud_id}).
+//       map((domaine, idx)=>{
+//         return(
+//           <Row key={domaine.descriptif + '_' + idx}>
+//             <Col md={3}>{domaine.descriptif}</Col>
+//             <Col>{domaine.actif?"Actif":"Inactif"}</Col>
+//           </Row>
+//         )
+//       })
+//   }
 
-  return (
-    <div>
-      <h2>Domaines deployes sur le noeud</h2>
-      {renderingDomaines}
-    </div>
-  )
-}
+//   return (
+//     <div>
+//       <h2>Domaines deployes sur le noeud</h2>
+//       {renderingDomaines}
+//     </div>
+//   )
+// }
 
 async function restaurerApplication(wsa, noeudId, nomApplication, opts) {
   opts = opts || {}
