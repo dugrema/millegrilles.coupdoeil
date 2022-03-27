@@ -24,7 +24,8 @@ function ApplicationsInstance(props) {
     const workers = props.workers,
           instance = props.noeud,
           instanceId = props.noeud_id,
-          securite = props.noeud.securite
+          securite = props.noeud.securite,
+          connexion = workers.connexion
 
     useEffect(()=>{
         console.debug("ApplicationsInstance proppies %O", props)
@@ -64,22 +65,6 @@ function ApplicationsInstance(props) {
 
             <h3>Parametres</h3>
 
-            <Form.Group controlId="installer_application" as={Row}>
-                <Form.Label column md={3}>Installer une application</Form.Label>
-                {/* <Col md={7}>
-                    <Form.Select
-                    type="text"
-                    placeholder="Choisir une application"
-                    onChange={this.setApplicationInstaller}>
-                    {catalogueApps}
-                    </Form.Select>
-                </Col>
-                <Col md={2}>
-                    <Button onClick={this.installerApplication}
-                            disabled={!noeud.actif || !this.props.rootProps.modeProtege}>Installer</Button>
-                </Col> */}
-            </Form.Group>
-
             <Form.Group controlId="serveur_backup" as={Row}>
                 <Form.Label column md={3}>Serveur de backup</Form.Label>
                 <Col md={7}>
@@ -88,6 +73,14 @@ function ApplicationsInstance(props) {
                                   placeholder="E.g. https://fichiers:443" />
                 </Col>
             </Form.Group>
+
+            <h3>Installer une nouvelle application</h3>
+
+            <InstallerApplications 
+                workers={workers} 
+                instance={instance} 
+                confirmationCb={confirmationCb}
+                erreurCb={erreurCb} />
 
             <h3>Applications installees</h3>
             
@@ -117,12 +110,72 @@ function traiterEvenement(evenement) {
     console.debug("Recu evenement : %O", evenement)
 }
 
+function InstallerApplications(props) {
+
+    const {workers, instance, confirmationCb, erreurCb} = props
+    const connexion = workers.connexion
+    const instanceId = instance.noeud_id,
+          exchange = instance.securite
+
+    const [catalogue, setCatalogue] = useState([])
+    const [applicationInstaller, setApplicationInstaller] = useState('')
+
+    const changeApplicationInstaller = useCallback(event=>{
+        const value = event.currentTarget.value
+        console.debug("Set application installer : %s", value)
+        if(value) setApplicationInstaller(value)
+    }, [setApplicationInstaller])
+
+    const installerApplicationCb = useCallback(event=>{
+        console.debug("Installer application %s", applicationInstaller)
+        installerApplication(connexion, instanceId, applicationInstaller, exchange, confirmationCb, erreurCb)
+    }, [applicationInstaller, connexion, instanceId, exchange, confirmationCb, erreurCb])
+
+    useEffect(()=>{
+        connexion.getCatalogueApplications()
+            .then(applications=>{
+                console.debug("Liste catalogues applications : %O", applications)
+                applications = applications.sort((a,b)=>{ return a.nom.localeCompare(b.nom) })
+                setCatalogue(applications)
+            })
+            .catch(err=>{
+                console.error("Erreur chargement catalogues applications : %O", err)
+                erreurCb(err, "Erreur chargement catalogues applications.")
+            })
+    }, [connexion])
+
+    return (
+        <Form.Group controlId="installer_application" as={Row}>
+            <Form.Label column md={3}>Installer une application</Form.Label>
+            <Col md={7}>
+                <Form.Select
+                    type="text"
+                    placeholder="Choisir une application"
+                    onChange={changeApplicationInstaller}>
+                    
+                    <option value="">Choisir une application</option>
+                    {catalogue.map(app=>{
+                        return <option key={app.nom} value={app.nom}>{app.nom}</option>
+                    })}
+
+                </Form.Select>
+            </Col>
+            <Col md={2}>
+                <Button variant="secondary" onClick={installerApplicationCb}
+                        disabled={!instance.actif || !connexion.estActif()}>Installer</Button>
+            </Col>
+        </Form.Group>
+    )
+}
+
 function ListeApplicationsInstallees(props) {
     const {workers, instance, confirmationCb, erreurCb, setAttente} = props
 
     const [appsConfigurees, setAppsConfigurees] = useState([])
+    const [modalApp, setModalApp] = useState('')
 
     const {noeud_id, applications_configurees, services, containers, securite} = instance || {}
+    const instanceId = noeud_id
 
     useEffect(()=>{
         const infoInstance = {noeud_id, applications_configurees, services, containers}
@@ -144,16 +197,32 @@ function ListeApplicationsInstallees(props) {
 
     }, [setAppsConfigurees, noeud_id, applications_configurees, services, containers])
     
-    return appsConfigurees.map(app=>(
-        <Row key={app.nom}>
-            <Col md={4}>{app.description}</Col>
-            <Col md={2}><EtatApplication app={app} /></Col>
-            <BoutonsActionApplication 
-                workers={workers} app={app} instanceId={noeud_id} securite={securite} 
-                setAttente={setAttente} confirmationCb={confirmationCb} erreurCb={erreurCb} />
-        </Row>
+    console.debug("ModalApp : %O", modalApp)
 
-    ))
+    return (
+        <>
+            <ModalConfigurationApplication 
+                workers={workers}
+                show={modalApp?true:false} 
+                instanceId={instanceId}
+                securite={securite}
+                app={modalApp}
+                fermer={()=>setModalApp('')} 
+                confirmationCb={confirmationCb}
+                erreurCb={erreurCb} />
+
+            {appsConfigurees.map(app=>(
+                <Row key={app.nom}>
+                    <Col md={4}>{app.description}</Col>
+                    <Col md={2}><EtatApplication app={app} /></Col>
+                    <BoutonsActionApplication 
+                        workers={workers} app={app} instanceId={noeud_id} securite={securite} 
+                        configurer={()=>setModalApp(app)}
+                        setAttente={setAttente} confirmationCb={confirmationCb} erreurCb={erreurCb} />
+                </Row>
+            ))}
+        </>
+    )
 }
 
 function EtatApplication(props) {
@@ -165,12 +234,8 @@ function EtatApplication(props) {
 
 function BoutonsActionApplication(props) {
 
-    const connexion = props.workers.connexion,
-          instanceId = props.instanceId,
-          securite = props.securite,
-          setAttente = props.setAttente,
-          confirmationCb = props.confirmationCb,
-          erreurCb = props.erreurCb
+    const {instanceId, securite, setAttente, confirmationCb, erreurCb, configurer} = props
+    const connexion = props.workers.connexion
     const app = props.app || {}
 
     const connexionActive = connexion.estActif()
@@ -190,8 +255,6 @@ function BoutonsActionApplication(props) {
         }, [connexion, instanceId, securite, setAttente]
     )
 
-    //desinstallerApplication(connexion, noeudId, nomApplication, securite)
-
     return [
         <Col key="switch" md={1}>
             <Form.Check id={"switch_app_" + app.nom} type="switch" 
@@ -209,29 +272,16 @@ function BoutonsActionApplication(props) {
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
-                    <Dropdown.Item href="#/action-1">Configurer</Dropdown.Item>
+                    <Dropdown.Item onClick={configurer}>Configurer</Dropdown.Item>
+                    {/*                     
                     <Dropdown.Item href="#/action-2">Backup</Dropdown.Item>
                     <Dropdown.Item href="#/action-3">Restaurer</Dropdown.Item>
+                     */}
                 </Dropdown.Menu>
             </Dropdown>
         </Col>
     ]
-
             
-
-    //         {/* <ButtonGroup aria-label={"Boutons de controle d'application " + app.description}>
-    //             <Button onClick={this.configurerApplication} value={app.nom}
-    //                     disabled={!boutonsActif && !boutonsInactif}
-    //                     variant="secondary">Configurer</Button>
-    //             <Button onClick={this.props.backupApplication} value={app.nom}
-    //                     disabled={!boutonsActif && !boutonsInactif}
-    //                     variant="secondary">Backup</Button>
-    //             <Button onClick={this.props.restaurer} value={app.nom}
-    //                     disabled={!boutonsActif && !boutonsInactif}
-    //                     variant="secondary">Restaurer</Button>
-    //         </ButtonGroup> */}
-    //     </>
-    // )
 }
 
 function extraireListeApplications(instance) {
@@ -342,48 +392,48 @@ class ApplicationsNoeud extends React.Component {
         }
     }
 
-    desinstallerApplication = event => {
-        const {value} = event.currentTarget
-        const noeudId = this.props.noeud.noeud_id
-        const securite = this.props.noeud.securite
+    // desinstallerApplication = event => {
+    //     const {value} = event.currentTarget
+    //     const noeudId = this.props.noeud.noeud_id
+    //     const securite = this.props.noeud.securite
 
-        // console.debug("Desinstaller application %s", value)
-        desinstallerApplication(this.props.workers.connexion, noeudId, value, securite)
-    }
+    //     // console.debug("Desinstaller application %s", value)
+    //     desinstallerApplication(this.props.workers.connexion, noeudId, value, securite)
+    // }
 
     setApplicationInstaller = event => {
         const app = event.currentTarget.value
         this.setState({applicationSelectionnee: app})
     }
 
-    installerApplication = event => {
-        const wsa = this.props.workers.connexion
-        const app = this.state.applicationSelectionnee
-        const noeud = this.props.noeud
+    // installerApplication = event => {
+    //     const wsa = this.props.workers.connexion
+    //     const app = this.state.applicationSelectionnee
+    //     const noeud = this.props.noeud
 
-        console.debug("Desinstaller application %s sur noeud %s", app, noeud.noeud_id)
-        installerApplication(wsa, noeud, app)
-    }
+    //     console.debug("Desinstaller application %s sur noeud %s", app, noeud.noeud_id)
+    //     installerApplication(wsa, noeud, app)
+    // }
 
-    traiterMessageEvenementApplications = comlinkProxy(event => {
-        console.debug("Evenement monitor %O", event)
-        var action = event.routingKey.split('.').pop()
-        // console.debug("Action : %s", action)
+    // traiterMessageEvenementApplications = comlinkProxy(event => {
+    //     console.debug("Evenement monitor %O", event)
+    //     var action = event.routingKey.split('.').pop()
+    //     // console.debug("Action : %s", action)
 
-        if(action === 'applicationDemarree') {
-        const nomApplication = event.message.nom_application
-        } else if(action === 'applicationArretee') {
-        const nomApplication = event.message.nom_application
-        } else if(action === 'erreurDemarrageApplication') {
-        const nomApplication = event.message.nom_application
-        console.error("Erreur demarrage application %s", nomApplication)
-        }
+    //     if(action === 'applicationDemarree') {
+    //     const nomApplication = event.message.nom_application
+    //     } else if(action === 'applicationArretee') {
+    //     const nomApplication = event.message.nom_application
+    //     } else if(action === 'erreurDemarrageApplication') {
+    //     const nomApplication = event.message.nom_application
+    //     console.error("Erreur demarrage application %s", nomApplication)
+    //     }
 
-    })
+    // })
 
-    changerContenuConfiguration = event => {
-        this.setState({contenuConfiguration: event.currentTarget.value})
-    }
+    // changerContenuConfiguration = event => {
+    //     this.setState({contenuConfiguration: event.currentTarget.value})
+    // }
 
     appliquerConfiguration = async event => {
         // Valider que le JSON est correct
@@ -410,19 +460,19 @@ class ApplicationsNoeud extends React.Component {
         }
     }
 
-    demarrerApplication = async event => {
-        const nomApplication = event.currentTarget.value
-        const noeudId = this.props.noeud.noeud_id
-        const securite = this.props.noeud.securite
+    // demarrerApplication = async event => {
+    //     const nomApplication = event.currentTarget.value
+    //     const noeudId = this.props.noeud.noeud_id
+    //     const securite = this.props.noeud.securite
 
-        const wsa = this.props.workers.connexion
+    //     const wsa = this.props.workers.connexion
 
-        // console.debug("Demarrer application %s sur noeud %s", nomApplication, noeudId)
-        const reponse = await wsa.demarrerApplication({
-        nom_application: nomApplication, noeud_id: noeudId, exchange: securite
-        })
-        // console.debug("Reponse demarrer application : %O", reponse)
-    }
+    //     // console.debug("Demarrer application %s sur noeud %s", nomApplication, noeudId)
+    //     const reponse = await wsa.demarrerApplication({
+    //     nom_application: nomApplication, noeud_id: noeudId, exchange: securite
+    //     })
+    //     // console.debug("Reponse demarrer application : %O", reponse)
+    // }
 
     render() {
 
@@ -591,32 +641,118 @@ class ApplicationsNoeud extends React.Component {
 
 function ModalConfigurationApplication(props) {
 
+    console.debug("ModalConfigurationApplication proppys : %O", props)
+
+    const show = props.show?true:false
+    const {workers, instanceId, securite, fermer, app, confirmationCb, erreurCb} = props
+    const {connexion} = workers
+    const { nom, description } = app
+
+    const [configurationMaj, setConfigurationMaj] = useState('')
+
+    const onChangeCb = useCallback(event=>{
+        const value = event.currentTarget.value
+        setConfigurationMaj(value)
+    }, [setConfigurationMaj])
+
+    const appliquer = useCallback(()=>{
+        configurerApplication(workers, instanceId, securite, nom, configurationMaj, confirmationCb, erreurCb)
+            .then(()=>fermer())
+            .catch(err=>console.error("Erreur configurerApplication : %O", err))
+    }, [workers, instanceId, securite, nom, configurationMaj, confirmationCb, erreurCb])
+
+    // Appliquer changement/reload
+    useEffect( () => {
+        if(!nom) return setConfigurationMaj('') // Rien a faire
+        console.debug("Charger configuration application %s", nom)
+    
+        connexion.requeteConfigurationApplication({
+            nom_application: nom, instanceId, exchange: securite
+        })
+        .then(reponse=>{
+            console.debug("Reponse configuration application : %O", reponse)
+            if(reponse.err) {
+                erreurCb(reponse.err, `Erreur chargement configuration de ${nom}`)
+                return
+            }
+            const messageConfiguration = reponse.configuration
+            console.debug("Reponse messageConfiguration : %O", messageConfiguration)
+            const configuration = Object
+                .keys(messageConfiguration)
+                .filter(key => !key.startsWith('_') && key !== 'en-tete')
+                .reduce((acc, key)=>{
+                    const value = messageConfiguration[key]
+                    acc[key] = value
+                    return acc
+                },{})
+
+            const configurationString = JSON.stringify(configuration, null, 2)
+            setConfigurationMaj(configurationString)
+        })
+        .catch(err=>{
+            console.error("Erreur chargement configuration application %s : %O", nom, err)
+            erreurCb(err, `Erreur chargement configuration application ${nom}`)
+        })
+    }, [connexion, fermer, instanceId, securite, nom, setConfigurationMaj, confirmationCb, erreurCb])
+
     return (
-      <>
-        <Modal size='lg' show={props.show} onHide={_=>{props.annuler()}}>
-          <Modal.Header closeButton>
-  
-            <Modal.Title>
-              Configurer {props.nomApplication}
-            </Modal.Title>
-          </Modal.Header>
-  
-          <Modal.Body>
-  
-            <Form.Group>
-              <Form.Control as="textarea" rows="20"
-                            value={props.configuration}
-                            onChange={props.changerConfiguration} />
-            </Form.Group>
-  
-            <Button onClick={props.annuler}>Annuler</Button>
-            <Button onClick={props.appliquer}>Appliquer</Button>
-          </Modal.Body>
-  
+        <Modal show={show} fullscreen={show} onHide={fermer}>
+
+            <Modal.Header closeButton>
+                <Modal.Title>Configurer {description}</Modal.Title>
+            </Modal.Header>
+
+            <Modal.Body>
+                <Form.Group>
+                <Form.Control 
+                    as="textarea" rows="20"
+                    value={configurationMaj}
+                    onChange={onChangeCb} />
+                </Form.Group>
+            </Modal.Body>
+
+            <Modal.Footer>
+                <Button variant="secondary" onClick={fermer}>Annuler</Button>
+                <Button onClick={appliquer}>Appliquer</Button>
+            </Modal.Footer>
+
         </Modal>
-      </>
     )
 
+}
+
+async function configurerApplication(workers, instanceId, securite, nom, configurationStr, confirmationCb, erreurCb) {
+    console.debug("Configurer application %s avec %O", nom, configurationStr)
+    let configuration = ''
+    try {
+        const configuration = JSON.parse(configurationStr)
+    } catch(err) {
+        console.error("JSON de configuration invalide : %O", err)
+        erreurCb(err, `JSON de configuration invalide`)
+        return
+    }
+
+    try {
+        const connexion = workers.connexion
+
+        const reponse = await connexion.configurerApplication({
+            nom_application: nom,
+            noeud_id: instanceId,
+            configuration,
+            exchange: securite,
+        })
+
+        console.debug("Reponse configuration %O", reponse)
+        if(reponse.err) {
+            erreurCb(reponse.err, `Erreur durant la commande de configuraiton de ${nom}`)
+        } else {
+            confirmationCb(`Configuration de ${nom} appliquee avec success.`)
+        }
+    } catch(err) {
+        console.error("JSON de configuration invalide : %O", err)
+        erreurCb(err, `JSON de configuration invalide`)
+        return
+    }
 }
 
 async function chargerCatalogueApplications(wsa, setState) {

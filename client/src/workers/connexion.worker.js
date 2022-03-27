@@ -56,7 +56,13 @@ function requeteConfigurationApplication(params) {
   return connexionClient.emitBlocking(
     'coupdoeil/requeteConfigurationApplication', 
     params, 
-    {domaine: 'monitor', action: 'requeteConfigurationApplication', partition: params.noeud_id, exchange: params.exchange, ajouterCertificat: true}
+    {
+      domaine: 'monitor', 
+      action: 'requeteConfigurationApplication', 
+      partition: params.instanceId, 
+      exchange: params.exchange, 
+      ajouterCertificat: true
+    }
   )
 }
 function requeteCompterClesNonDechiffrables() {

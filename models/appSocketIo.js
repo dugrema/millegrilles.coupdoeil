@@ -131,7 +131,6 @@ function configurerEvenements(socket) {
 }
 
 async function traiter(socket, methode, {params, cb}) {
-  debug("!!! Message recu a traiter : %O", params)
   const reponse = await methode(socket, params)
   if(cb) cb(reponse)
 }

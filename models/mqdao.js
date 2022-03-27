@@ -81,7 +81,10 @@ function supprimerApplication(socket, commande) {
 
 function requeteConfigurationApplication(socket, requete) {
     debug("Requete configuration application application %O", requete)
-    return transmettrerequete(socket, requete, 'requeteConfigurationApplication', {exchange: commande.exchange})
+    return transmettreRequete(
+        socket, requete, 'requeteConfigurationApplication', 
+        {domaine: 'monitor', exchange: requete.exchange, partition: requete.instanceId}
+    )
 }
 
 function ajouterCatalogueApplication(socket, commande) {
