@@ -248,7 +248,7 @@ function BoutonsActionApplication(props) {
             console.debug("Toggle application value: %s, checked: %O", value, checked)
             setAttente(true)
             if(checked) {
-                installerApplication(connexion, instanceId, event.currentTarget.value, securite, confirmationCb, erreurCb) 
+                demarrerApplication(connexion, instanceId, event.currentTarget.value, securite, confirmationCb, erreurCb) 
             } else {
                 desinstallerApplication(connexion, instanceId, event.currentTarget.value, securite, confirmationCb, erreurCb)
             }
@@ -745,6 +745,23 @@ async function desinstallerApplication(connexion, instanceId, nomApplication, se
     } catch(err) {
         console.error("Erreur desinstallation application %s : %O", nomApplication, err)
         erreurCb(err, `Erreur desinstallation application ${nomApplication}`)
+    }
+}
+
+async function demarrerApplication(connexion, instanceId, nomApplication, securite, confirmationCb, erreurCb) {
+    try {
+        console.debug("Demarrer application %s sur instance %s", nomApplication, instanceId)
+        const reponse = await connexion.demarrerApplication({
+            nom_application: nomApplication, noeud_id: instanceId, exchange: securite
+        })
+        if(reponse.err) {
+            erreurCb(reponse.err, `Erreur de demarrage de l'application ${nomApplication}`)
+        } else {
+            confirmationCb(`Application ${nomApplication} en cours de demarrage.`)
+        }
+    } catch (err) {
+        console.error("Erreur de demarrage de l'application %s : %O", nomApplication, err)
+        erreurCb(err, `Erreur de demarrage de l'application ${nomApplication}`)
     }
 }
 
