@@ -327,16 +327,16 @@ function extraireListeApplications(instance) {
     return applicationsParNom
 }
 
-class ApplicationsNoeud extends React.Component {
+//class ApplicationsNoeud extends React.Component {
 
-    state = {
-        catalogueApplications: [],
+    // state = {
+    //     catalogueApplications: [],
 
 
-        afficherModalConfiguration: false,
-        nomApplicationConfigurer: '',
-        contenuConfiguration: '',
-    }
+    //     afficherModalConfiguration: false,
+    //     nomApplicationConfigurer: '',
+    //     contenuConfiguration: '',
+    // }
 
     // componentDidMount() {
     //     // Charger catalogue d'applications disponibles
@@ -362,35 +362,35 @@ class ApplicationsNoeud extends React.Component {
     //     wsa.unsubscribe(routingNoeud, this.traiterMessageEvenementApplications, {exchange: [securite]})
     // }
 
-    configurerApplication = async event => {
-        const wsa = this.props.workers.connexion
-        const noeudId = this.props.noeud.noeud_id
-        const securite = this.props.noeud.securite
+    // configurerApplication = async event => {
+    //     const wsa = this.props.workers.connexion
+    //     const noeudId = this.props.noeud.noeud_id
+    //     const securite = this.props.noeud.securite
 
-        const nomApplication = event.currentTarget.value
-        console.debug("Configurer application %s", nomApplication)
+    //     const nomApplication = event.currentTarget.value
+    //     console.debug("Configurer application %s", nomApplication)
 
-        try {
-        const reponse = await wsa.requeteConfigurationApplication({
-            noeud_id: noeudId, nom_application: nomApplication, exchange: securite
-        })
-        console.debug("Reponse configuration application : %O", reponse)
-        const configuration = {}
-        for(let key in reponse.configuration) {
-            if( ! key.startsWith('_') ) {
-            configuration[key] = reponse.configuration[key]
-            }
-        }
-        const configurationString = JSON.stringify(configuration, null, 2)
-        this.setState({
-            nomApplicationConfigurer: nomApplication,
-            contenuConfiguration: configurationString,
-            afficherModalConfiguration: true
-        })
-        } catch(err) {
-        console.error("Erreur chargement configuration application %s : %O", nomApplication, err)
-        }
-    }
+    //     try {
+    //     const reponse = await wsa.requeteConfigurationApplication({
+    //         noeud_id: noeudId, nom_application: nomApplication, exchange: securite
+    //     })
+    //     console.debug("Reponse configuration application : %O", reponse)
+    //     const configuration = {}
+    //     for(let key in reponse.configuration) {
+    //         if( ! key.startsWith('_') ) {
+    //         configuration[key] = reponse.configuration[key]
+    //         }
+    //     }
+    //     const configurationString = JSON.stringify(configuration, null, 2)
+    //     this.setState({
+    //         nomApplicationConfigurer: nomApplication,
+    //         contenuConfiguration: configurationString,
+    //         afficherModalConfiguration: true
+    //     })
+    //     } catch(err) {
+    //     console.error("Erreur chargement configuration application %s : %O", nomApplication, err)
+    //     }
+    // }
 
     // desinstallerApplication = event => {
     //     const {value} = event.currentTarget
@@ -401,10 +401,10 @@ class ApplicationsNoeud extends React.Component {
     //     desinstallerApplication(this.props.workers.connexion, noeudId, value, securite)
     // }
 
-    setApplicationInstaller = event => {
-        const app = event.currentTarget.value
-        this.setState({applicationSelectionnee: app})
-    }
+    // setApplicationInstaller = event => {
+    //     const app = event.currentTarget.value
+    //     this.setState({applicationSelectionnee: app})
+    // }
 
     // installerApplication = event => {
     //     const wsa = this.props.workers.connexion
@@ -435,30 +435,30 @@ class ApplicationsNoeud extends React.Component {
     //     this.setState({contenuConfiguration: event.currentTarget.value})
     // }
 
-    appliquerConfiguration = async event => {
-        // Valider que le JSON est correct
-        const configurationStr = this.state.contenuConfiguration
-        try {
-        const configuration = JSON.parse(configurationStr)
+    // appliquerConfiguration = async event => {
+    //     // Valider que le JSON est correct
+    //     const configurationStr = this.state.contenuConfiguration
+    //     try {
+    //     const configuration = JSON.parse(configurationStr)
 
-        const wsa = this.props.workers.connexion
-        const nomApplication = this.state.nomApplicationConfigurer
-        const noeudId = this.props.noeud.noeud_id
-        const securite = this.props.noeud.securite
+    //     const wsa = this.props.workers.connexion
+    //     const nomApplication = this.state.nomApplicationConfigurer
+    //     const noeudId = this.props.noeud.noeud_id
+    //     const securite = this.props.noeud.securite
 
-        const reponse = await wsa.configurerApplication({
-            nom_application: nomApplication,
-            noeud_id: noeudId,
-            configuration,
-            exchange: securite,
-        })
-        console.debug("Reponse configuration %O", reponse)
+    //     const reponse = await wsa.configurerApplication({
+    //         nom_application: nomApplication,
+    //         noeud_id: noeudId,
+    //         configuration,
+    //         exchange: securite,
+    //     })
+    //     console.debug("Reponse configuration %O", reponse)
 
-        this.setState({afficherModalConfiguration: false})
-        } catch(err) {
-        console.error("JSON de configuration invalide : %O", err)
-        }
-    }
+    //     this.setState({afficherModalConfiguration: false})
+    //     } catch(err) {
+    //     console.error("JSON de configuration invalide : %O", err)
+    //     }
+    // }
 
     // demarrerApplication = async event => {
     //     const nomApplication = event.currentTarget.value
@@ -474,170 +474,120 @@ class ApplicationsNoeud extends React.Component {
     //     // console.debug("Reponse demarrer application : %O", reponse)
     // }
 
-    render() {
+    // render() {
 
-        const modalConfiguration = (
-        <ModalConfigurationApplication nomApplication={this.state.nomApplicationConfigurer}
-                                        show={this.state.afficherModalConfiguration}
-                                        configuration={this.state.contenuConfiguration}
-                                        changerConfiguration={this.changerContenuConfiguration}
-                                        annuler={_=>this.setState({afficherModalConfiguration: false})}
-                                        appliquer={this.appliquerConfiguration} />
-        )
+    //     const modalConfiguration = (
+    //     <ModalConfigurationApplication nomApplication={this.state.nomApplicationConfigurer}
+    //                                     show={this.state.afficherModalConfiguration}
+    //                                     configuration={this.state.contenuConfiguration}
+    //                                     changerConfiguration={this.changerContenuConfiguration}
+    //                                     annuler={_=>this.setState({afficherModalConfiguration: false})}
+    //                                     appliquer={this.appliquerConfiguration} />
+    //     )
 
-        const appConfigurees = {}
-        // if(this.props.noeud) {
-        //     if(this.props.noeud.applications_configurees) {
-        //         for(let idx in this.props.noeud.applications_configurees) {
-        //         const app = this.props.noeud.applications_configurees[idx]
-        //         // console.debug("Application configuree %O", app)
-        //         appConfigurees[app.nom] = app
-        //         }
-        //     }
-        //     if(this.props.noeud.services) {
-        //         for(let nomService in this.props.noeud.services) {
-        //         var service = this.props.noeud.services[nomService]
-        //         if(service.labels && service.labels.application) {
-        //             var infoApp = {
-        //             nom: service.labels.application,
-        //             etat: service.etat,
-        //             nomService: nomService,
-        //             service,
-        //             }
+    //     // console.debug("Applications configurees : %O", appConfigurees)
 
-        //             // Mettre a jour appConfigurees
-        //             var configApp = appConfigurees[infoApp.nom]
-        //             if(configApp) infoApp = {...configApp, ...infoApp}
-        //             appConfigurees[infoApp.nom] = infoApp
-        //         }
-        //         }
-        //     }
-        //     if(this.props.noeud.containers) {
-        //         // console.debug("Containers : %O", this.props.noeud.containers)
-        //         for(let nomContainer in this.props.noeud.containers) {
-        //         const container = this.props.noeud.containers[nomContainer]
-        //         if(container && container.labels && container.labels.application) {
-        //             // C'est un container d'application
-        //             var infoApp = {
-        //             nom: container.labels.application,
-        //             nomContainer: nomContainer,
-        //             modeContainer: container.labels.mode_container,
-        //             etat: container.etat,
-        //             running: container.running,
-        //             }
+    //     const noeud = this.props.noeud || {}
 
-        //             // Mettre a jour appConfigurees
-        //             var configApp = appConfigurees[infoApp.nom]
-        //             if(configApp) infoApp = {...configApp, ...infoApp}
-        //             appConfigurees[infoApp.nom] = infoApp
-        //         }
-        //         }
-        //     }
-        // }
+    //     // Trier liste, render
+    //     const appListe = Object.values(appConfigurees)
+    //     appListe.sort((a,b)=>{ return a.nom.localeCompare(b.nom) })
+    //     // console.debug("Apps, liste:\n%O", appListe)
 
-        // console.debug("Applications configurees : %O", appConfigurees)
+    //     // console.debug("ROOT PROPS \n%O", this.props.rootProps)
 
-        const noeud = this.props.noeud || {}
+    //     const apps = appListe.map(app=>{
+    //         var boutonsActif = noeud.actif && this.props.rootProps.modeProtege
+    //         var boutonsInactif = boutonsActif
 
-        // Trier liste, render
-        const appListe = Object.values(appConfigurees)
-        appListe.sort((a,b)=>{ return a.nom.localeCompare(b.nom) })
-        // console.debug("Apps, liste:\n%O", appListe)
+    //         var etat = <span>inactif</span>
+    //         if(app.etat === 'running') {
+    //             etat = <span>actif</span>
+    //             boutonsInactif = false
+    //         } else {
+    //             boutonsActif = false
+    //         }
 
-        // console.debug("ROOT PROPS \n%O", this.props.rootProps)
+    //         const etatApplication = this.props.evenementApplication[app.nom]
+    //         if(etatApplication) {
+    //             etat = <span>{etatApplication}</span>
+    //         }
 
-        const apps = appListe.map(app=>{
-            var boutonsActif = noeud.actif && this.props.rootProps.modeProtege
-            var boutonsInactif = boutonsActif
+    //         return (
+    //             <div key={app.nom}>
+    //             {modalConfiguration}
 
-            var etat = <span>inactif</span>
-            if(app.etat === 'running') {
-                etat = <span>actif</span>
-                boutonsInactif = false
-            } else {
-                boutonsActif = false
-            }
+    //             <Row key={app.nom}>
+    //                 <Col md={3}>{app.nom}</Col>
+    //                 <Col md={2}>{etat}</Col>
+    //                 <Col md={7}>
+    //                 <ButtonGroup aria-label={"Boutons de controle d'application " + app.nom}>
+    //                     <Button onClick={this.demarrerApplication} value={app.nom}
+    //                             disabled={!boutonsInactif}
+    //                             variant="secondary">Demarrer</Button>
+    //                     <Button onClick={this.desinstallerApplication} value={app.nom}
+    //                             disabled={!boutonsActif && !boutonsInactif}
+    //                             variant="secondary">Arreter</Button>
+    //                     <Button onClick={this.configurerApplication} value={app.nom}
+    //                             disabled={!boutonsActif && !boutonsInactif}
+    //                             variant="secondary">Configurer</Button>
+    //                     <Button onClick={this.props.backupApplication} value={app.nom}
+    //                             disabled={!boutonsActif && !boutonsInactif}
+    //                             variant="secondary">Backup</Button>
+    //                     <Button onClick={this.props.restaurer} value={app.nom}
+    //                             disabled={!boutonsActif && !boutonsInactif}
+    //                             variant="secondary">Restaurer</Button>
+    //                 </ButtonGroup>
+    //                 </Col>
+    //             </Row>
+    //             </div>
+    //         )
+    //     })
 
-            const etatApplication = this.props.evenementApplication[app.nom]
-            if(etatApplication) {
-                etat = <span>{etatApplication}</span>
-            }
+    //     const catalogueApps = this.state.catalogueApplications.map(app=>{
+    //         return (<option key={app.nom} name={app.nom}>{app.nom}</option>)
+    //     })
 
-            return (
-                <div key={app.nom}>
-                {modalConfiguration}
+    //     return (
+    //         <div>
+    //             <h2>Applications</h2>
 
-                <Row key={app.nom}>
-                    <Col md={3}>{app.nom}</Col>
-                    <Col md={2}>{etat}</Col>
-                    <Col md={7}>
-                    <ButtonGroup aria-label={"Boutons de controle d'application " + app.nom}>
-                        <Button onClick={this.demarrerApplication} value={app.nom}
-                                disabled={!boutonsInactif}
-                                variant="secondary">Demarrer</Button>
-                        <Button onClick={this.desinstallerApplication} value={app.nom}
-                                disabled={!boutonsActif && !boutonsInactif}
-                                variant="secondary">Arreter</Button>
-                        <Button onClick={this.configurerApplication} value={app.nom}
-                                disabled={!boutonsActif && !boutonsInactif}
-                                variant="secondary">Configurer</Button>
-                        <Button onClick={this.props.backupApplication} value={app.nom}
-                                disabled={!boutonsActif && !boutonsInactif}
-                                variant="secondary">Backup</Button>
-                        <Button onClick={this.props.restaurer} value={app.nom}
-                                disabled={!boutonsActif && !boutonsInactif}
-                                variant="secondary">Restaurer</Button>
-                    </ButtonGroup>
-                    </Col>
-                </Row>
-                </div>
-            )
-        })
+    //             <h3>Parametres</h3>
 
-        const catalogueApps = this.state.catalogueApplications.map(app=>{
-            return (<option key={app.nom} name={app.nom}>{app.nom}</option>)
-        })
+    //             <Form.Group controlId="installer_application" as={Row}>
+    //             <Form.Label column md={3}>Installer une application</Form.Label>
+    //             <Col md={7}>
+    //                 <Form.Select
+    //                 type="text"
+    //                 placeholder="Choisir une application"
+    //                 onChange={this.setApplicationInstaller}>
+    //                 {catalogueApps}
+    //                 </Form.Select>
+    //             </Col>
+    //             <Col md={2}>
+    //                 <Button onClick={this.installerApplication}
+    //                         disabled={!noeud.actif || !this.props.rootProps.modeProtege}>Installer</Button>
+    //             </Col>
+    //             </Form.Group>
 
-        return (
-            <div>
-                <h2>Applications</h2>
+    //             <Form.Group controlId="serveur_backup" as={Row}>
+    //             <Form.Label column md={3}>Serveur de backup</Form.Label>
+    //             <Col md={7}>
+    //                 <Form.Control onChange={this.props.setServeurUrl}
+    //                             value={this.props.serveurUrl}
+    //                             placeholder="E.g. https://fichiers:443" />
+    //             </Col>
+    //             <Col md={2}>
+    //             </Col>
+    //             </Form.Group>
 
-                <h3>Parametres</h3>
+    //             <h3>Applications deployees</h3>
+    //             {apps}
 
-                <Form.Group controlId="installer_application" as={Row}>
-                <Form.Label column md={3}>Installer une application</Form.Label>
-                <Col md={7}>
-                    <Form.Select
-                    type="text"
-                    placeholder="Choisir une application"
-                    onChange={this.setApplicationInstaller}>
-                    {catalogueApps}
-                    </Form.Select>
-                </Col>
-                <Col md={2}>
-                    <Button onClick={this.installerApplication}
-                            disabled={!noeud.actif || !this.props.rootProps.modeProtege}>Installer</Button>
-                </Col>
-                </Form.Group>
-
-                <Form.Group controlId="serveur_backup" as={Row}>
-                <Form.Label column md={3}>Serveur de backup</Form.Label>
-                <Col md={7}>
-                    <Form.Control onChange={this.props.setServeurUrl}
-                                value={this.props.serveurUrl}
-                                placeholder="E.g. https://fichiers:443" />
-                </Col>
-                <Col md={2}>
-                </Col>
-                </Form.Group>
-
-                <h3>Applications deployees</h3>
-                {apps}
-
-            </div>
-        )
-    }
-}
+    //         </div>
+    //     )
+    // }
+//}
 
 function ModalConfigurationApplication(props) {
 
@@ -723,9 +673,9 @@ function ModalConfigurationApplication(props) {
 
 async function configurerApplication(workers, instanceId, securite, nom, configurationStr, confirmationCb, erreurCb) {
     console.debug("Configurer application %s avec %O", nom, configurationStr)
-    let configuration = ''
+    // let configuration = ''
     try {
-        const configuration = JSON.parse(configurationStr)
+        var configuration = JSON.parse(configurationStr)
     } catch(err) {
         console.error("JSON de configuration invalide : %O", err)
         erreurCb(err, `JSON de configuration invalide`)
@@ -753,19 +703,6 @@ async function configurerApplication(workers, instanceId, securite, nom, configu
         erreurCb(err, `JSON de configuration invalide`)
         return
     }
-}
-
-async function chargerCatalogueApplications(wsa, setState) {
-    // const domaineAction = 'CatalogueApplications.listeApplications'
-    // var applications = await wsa.transmettreRequete(domaineAction, {})
-
-    var applications = await wsa.getCatalogueApplications()
-
-    // console.debug("Applications du catalogue :\n%O", applications)
-
-    applications = applications.sort((a,b)=>{ return a.nom.localeCompare(b.nom) })
-
-    setState({catalogueApplications: applications})
 }
 
 async function installerApplication(connexion, instanceId, nomApplication, exchange, confirmationCb, erreurCb) {
