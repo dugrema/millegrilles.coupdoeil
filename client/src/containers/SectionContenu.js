@@ -1,10 +1,15 @@
-import React, {Suspense} from 'react'
+import React from 'react'
 
+import Alert from 'react-bootstrap/Alert'
+
+import Instances from './Instances.js'
+import Domaines from './Domaines.js'
+
+import {Accueil} from './Accueil.js'
 import {Backup as CoreBackup} from './Backup'
 import {PageConfigurationNoeudsListe as ConfigurationNoeuds} from './ConfigurationNoeudsListe'
 import {Parametres} from './Parametres.js'
 import {Pki} from './Pki.js'
-import {Accueil} from './Accueil.js'
 import {SommaireNoeud} from './Noeud'
 import {SommaireDomaine} from './Domaine'
 
@@ -16,6 +21,9 @@ const GestionUsagers = React.lazy(_=>import('./GestionUsagers'))
 
 const domainesConnus = {
   Accueil,
+  Instances,
+  Domaines,
+
   CoreBackup,
   ConfigurationNoeuds,
   Parametres,
@@ -28,24 +36,20 @@ const domainesConnus = {
   GestionUsagers,
 };
 
-export function SectionContenu(props) {
+function SectionContenu(props) {
 
   const Page = domainesConnus[props.rootProps.page]
 
-  let contenu
   if(Page) {
-    contenu = <Page workers={props.workers} rootProps={props.rootProps} />
-  } else {
-    contenu = <p>Section non definie : "{props.rootProps.page}"</p>
+    return <Page workers={props.workers} rootProps={props.rootProps} />
   }
 
   return (
-    <Suspense fallback={<ChargementEnCours/>}>
-      {contenu}
-    </Suspense>
+    <Alert variant="warning">
+      <Alert.Heading>Section inconnue</Alert.Heading>
+      <p>Section non definie : "{props.rootProps.page}"</p>
+    </Alert>
   )
 }
 
-function ChargementEnCours(props) {
-  return <p>Chargement en cours</p>
-}
+export default SectionContenu

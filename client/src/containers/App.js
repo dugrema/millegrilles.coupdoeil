@@ -1,18 +1,20 @@
-import React, {useState} from 'react'
+import React, {Suspense, useState} from 'react'
 import { Container, Row, Col, Nav, Navbar } from 'react-bootstrap'
 import { Trans } from 'react-i18next'
 
 import { VerificationInfoServeur } from './Authentification'
-import { SectionContenu } from './SectionContenu'
-import { MenuItems } from './Menu'
+// import { SectionContenu } from './SectionContenu'
+import MenuItems from './Menu'
 
+import stylesCommuns from '@dugrema/millegrilles.reactjs/dist/index.css'
 import './App.css'
+
+const SectionContenu = React.lazy(()=>import('./SectionContenu'))
 
 export function ApplicationCoupdoeil(props) {
 
   const [serveurInfo, setServeurInfo] = useState('')
-  const [idmg, setIdmg] = useState('')
-  const [page, setPage] = useState('Accueil')
+  const [page, setPage] = useState('Instances')
 
   // Params de pages
   const [paramsPage, setParamsPage] = useState('')
@@ -48,7 +50,7 @@ export function ApplicationCoupdoeil(props) {
 
   const rootProps = {
     ...props, ...props.rootProps,
-    serveurInfo, idmg, page,
+    serveurInfo, page,
     paramsPage,
     changerPage,
   }
@@ -62,7 +64,12 @@ export function ApplicationCoupdoeil(props) {
     pageRendered = <p>Attente de connexion</p>
   } else {
     // 3. Afficher application
-    pageRendered = <SectionContenu workers={props.workers} rootProps={rootProps} />
+    pageRendered = (
+      <SectionContenu 
+        workers={props.workers} 
+        etatConnexion={rootProps.modeProtege} 
+        rootProps={rootProps} />
+    )
   }
 
   return <LayoutCoudpoeil changerPage={changerPage}
@@ -70,7 +77,9 @@ export function ApplicationCoupdoeil(props) {
                           rootProps={rootProps}
                           workers={props.workers}>
           <Container>
-            {pageRendered}
+            <Suspense fallback={<ChargementEnCours/>}>
+              {pageRendered}
+            </Suspense>
           </Container>
         </LayoutCoudpoeil>
 
@@ -81,7 +90,8 @@ function Entete(props) {
     <Container>
       <Menu changerPage={props.changerPage}
             rootProps={props.rootProps}
-            workers={props.workers}/>
+            workers={props.workers}
+            etatConnexion={props.rootProps.modeProtege} />
       <h1>Coup D'Oeil</h1>
     </Container>
   )
@@ -123,6 +133,8 @@ function Footer(props) {
 
 function Menu(props) {
 
+  const workers = props.workers
+
   let boutonProtege
   if(props.rootProps.modeProtege) {
     boutonProtege = <i className="fa fa-lg fa-lock protege"/>
@@ -132,7 +144,7 @@ function Menu(props) {
 
   var renderCleMillegrille = ''
 
-  const clearCleMillegrille = _=>{props.workers.chiffrage.clearCleMillegrilleSubtle()}
+  const clearCleMillegrille = _=>{workers.chiffrage.clearCleMillegrilleSubtle()}
   if(props.rootProps.cleMillegrilleChargee) {
     renderCleMillegrille = (
       <Nav className="justify-content-end">
@@ -151,18 +163,17 @@ function Menu(props) {
           changerPage={props.changerPage}
           rootProps={props.rootProps}
           websocketApp={props.workers.connexion}
+          workers={workers}
+          etatConnexion={props.rootProps.modeProtege}
           />
 
         {renderCleMillegrille}
 
-        <Nav>
-          <Nav.Link onClick={props.rootProps.toggleProtege}>{boutonProtege}</Nav.Link>
-        </Nav>
-        <Nav>
-          <Nav.Link onClick={props.rootProps.changerLanguage}><Trans>menu.changerLangue</Trans></Nav.Link>
-        </Nav>
-
       </Navbar.Collapse>
     </Navbar>
   )
+}
+
+function ChargementEnCours(props) {
+  return <p>Chargement en cours</p>
 }

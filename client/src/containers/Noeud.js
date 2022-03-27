@@ -42,62 +42,62 @@ class AffichageNoeud extends React.Component {
     this.setState({serveurUrl: event.currentTarget.value})
   }
 
-  backupApplication = async event => {
-    // console.debug("Lancer backup application %O ", event)
-    const nomApplication = event.currentTarget.value
-    const wsa = this.props.workers.connexion
-    this.setState({evenementApplication: {...this.state.evenementApplication, [nomApplication]: 'debut'}})
-    try {
-      const opts = {}
-      if(this.state.serveurUrl) opts.serveur_url = this.state.serveurUrl
+  // backupApplication = async event => {
+  //   // console.debug("Lancer backup application %O ", event)
+  //   const nomApplication = event.currentTarget.value
+  //   const wsa = this.props.workers.connexion
+  //   this.setState({evenementApplication: {...this.state.evenementApplication, [nomApplication]: 'debut'}})
+  //   try {
+  //     const opts = {}
+  //     if(this.state.serveurUrl) opts.serveur_url = this.state.serveurUrl
 
-      const reponse = await backupApplication(wsa, this.props.noeud_id, nomApplication, opts)
-      var etatTemp = '', err=''
-      if(reponse.ok) {
-        etatTemp = 'en cours'
-      } else {
-        console.error("Erreur : %O", reponse.err)
-        etatTemp = 'erreur'
-        err = '' + reponse.err
-      }
-    } catch(errwsa) {
-      const errMsg = errwsa.err || errwsa
-      console.error("Erreur backupApplication : %O", errwsa)
-      etatTemp = 'erreur'
-      err = 'Erreur backup ' + nomApplication + ' : ' + errMsg
-    }
-    this.setState({
-      evenementApplication: {...this.state.evenementApplication, [nomApplication]: etatTemp},
-      erreur: err
-    })
-  }
+  //     const reponse = await backupApplication(wsa, this.props.noeud_id, nomApplication, opts)
+  //     var etatTemp = '', err=''
+  //     if(reponse.ok) {
+  //       etatTemp = 'en cours'
+  //     } else {
+  //       console.error("Erreur : %O", reponse.err)
+  //       etatTemp = 'erreur'
+  //       err = '' + reponse.err
+  //     }
+  //   } catch(errwsa) {
+  //     const errMsg = errwsa.err || errwsa
+  //     console.error("Erreur backupApplication : %O", errwsa)
+  //     etatTemp = 'erreur'
+  //     err = 'Erreur backup ' + nomApplication + ' : ' + errMsg
+  //   }
+  //   this.setState({
+  //     evenementApplication: {...this.state.evenementApplication, [nomApplication]: etatTemp},
+  //     erreur: err
+  //   })
+  // }
 
-  restaurerApplication = async event => {
-    const nomApplication = event.currentTarget.value
-    console.debug("Restaurer application %s", nomApplication)
-    const wsa = this.props.workers.connexion
-    this.setState({evenementApplication: {...this.state.evenementApplication, [nomApplication]: 'debut'}})
-    try {
-      const reponse = await restaurerApplication(wsa, this.props.noeud_id, nomApplication, {serveur_url: this.state.serveurUrl})
-      var etatTemp = '', err=''
-      if(reponse.ok) {
-        etatTemp = 'en cours'
-      } else {
-        console.error("Erreur : %O", reponse.err)
-        etatTemp = 'erreur'
-        err = '' + reponse.err
-      }
-    } catch(errwsa) {
-      const errMsg = errwsa.err || errwsa
-      console.error("Erreur restaurerApplication : %O", errwsa)
-      etatTemp = 'erreur'
-      err = 'Erreur restauration ' + nomApplication + ' : ' + errMsg
-    }
-    this.setState({
-      evenementApplication: {...this.state.evenementApplication, [nomApplication]: etatTemp},
-      erreur: err
-    })
-  }
+  // restaurerApplication = async event => {
+  //   const nomApplication = event.currentTarget.value
+  //   console.debug("Restaurer application %s", nomApplication)
+  //   const wsa = this.props.workers.connexion
+  //   this.setState({evenementApplication: {...this.state.evenementApplication, [nomApplication]: 'debut'}})
+  //   try {
+  //     const reponse = await restaurerApplication(wsa, this.props.noeud_id, nomApplication, {serveur_url: this.state.serveurUrl})
+  //     var etatTemp = '', err=''
+  //     if(reponse.ok) {
+  //       etatTemp = 'en cours'
+  //     } else {
+  //       console.error("Erreur : %O", reponse.err)
+  //       etatTemp = 'erreur'
+  //       err = '' + reponse.err
+  //     }
+  //   } catch(errwsa) {
+  //     const errMsg = errwsa.err || errwsa
+  //     console.error("Erreur restaurerApplication : %O", errwsa)
+  //     etatTemp = 'erreur'
+  //     err = 'Erreur restauration ' + nomApplication + ' : ' + errMsg
+  //   }
+  //   this.setState({
+  //     evenementApplication: {...this.state.evenementApplication, [nomApplication]: etatTemp},
+  //     erreur: err
+  //   })
+  // }
 
   traiterMessageEvenementApplication = comlinkProxy(event => {
     console.debug("Evenement application : %O", event)
@@ -180,8 +180,6 @@ class AffichageNoeud extends React.Component {
                       noeud={noeudInfo}
                       evenementApplication={this.state.evenementApplication}
                       serveurUrl={this.state.serveurUrl}
-                      backupApplication={this.backupApplication}
-                      restaurer={this.restaurerApplication}
                       setPageConfiguration={this.setPageConfiguration}
                       setServeurUrl={this.setServeurUrl}
                       setErreur={this.setErreur}
