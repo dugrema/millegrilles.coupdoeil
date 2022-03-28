@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useState, useEffect, useCallback} from 'react'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Alert from 'react-bootstrap/Alert'
@@ -24,179 +24,98 @@ export function SommaireNoeud(props) {
 
 }
 
-class AffichageNoeud extends React.Component {
+function AffichageNoeud(props) {
 
-  state = {
-    evenementApplication: {},
-    erreur: '',
-    pageConfiguration: '',
-    section: 'Information',
-    serveurUrl: 'https://fichiers:443',
-  }
+  console.debug("AffichageNoeud proppies", props)
 
-  setSection = section => {
-    this.setState({section})
-  }
+  const { workers, etatConnexion, instance } = props
+  const instanceId = instance.noeud_id
+  
+  const [erreur, setErreur] = useState('')
+  const [pageConfiguration, setPageConfiguration] = useState('')
+  const [section, setSection] = useState('Information')
+  const [serveurUrl, setServeurUrl] = useState('https://fichiers:443')
+  // const [traiterMessageEvenementApplication, setTraiterMessageEvenementApplication] = useState('')
 
-  setServeurUrl = event => {
-    this.setState({serveurUrl: event.currentTarget.value})
-  }
+  // const setServeurUrlCb = useCallback(event => {
+  //   setServeurUrl(event.currentTarget.value)
+  // }, [setServeurUrl])
 
-  // backupApplication = async event => {
-  //   // console.debug("Lancer backup application %O ", event)
-  //   const nomApplication = event.currentTarget.value
-  //   const wsa = this.props.workers.connexion
-  //   this.setState({evenementApplication: {...this.state.evenementApplication, [nomApplication]: 'debut'}})
-  //   try {
-  //     const opts = {}
-  //     if(this.state.serveurUrl) opts.serveur_url = this.state.serveurUrl
+  const fermerErreur = useCallback(()=>setErreur(''), [setErreur])
 
-  //     const reponse = await backupApplication(wsa, this.props.noeud_id, nomApplication, opts)
-  //     var etatTemp = '', err=''
-  //     if(reponse.ok) {
-  //       etatTemp = 'en cours'
-  //     } else {
-  //       console.error("Erreur : %O", reponse.err)
-  //       etatTemp = 'erreur'
-  //       err = '' + reponse.err
-  //     }
-  //   } catch(errwsa) {
-  //     const errMsg = errwsa.err || errwsa
-  //     console.error("Erreur backupApplication : %O", errwsa)
-  //     etatTemp = 'erreur'
-  //     err = 'Erreur backup ' + nomApplication + ' : ' + errMsg
-  //   }
-  //   this.setState({
-  //     evenementApplication: {...this.state.evenementApplication, [nomApplication]: etatTemp},
-  //     erreur: err
+  // useEffect(()=>{
+  //   const traiterMessageEvenementApplication = comlinkProxy(event => {
+  //     console.debug("Evenement application : %O", event)
+  //     var {nom_application, evenement} = event.message
+  //     var routingAction = event.routingKey.split('.').pop()
+  //     evenement = evenement || routingAction
+  //     this.setState(
+  //       {evenementApplication: {...this.state.evenementApplication, [nom_application]: evenement}}
+  //     )
   //   })
-  // }
+  //   setTraiterMessageEvenementApplication(traiterMessageEvenementApplication) 
+  // }, [])
 
-  // restaurerApplication = async event => {
-  //   const nomApplication = event.currentTarget.value
-  //   console.debug("Restaurer application %s", nomApplication)
-  //   const wsa = this.props.workers.connexion
-  //   this.setState({evenementApplication: {...this.state.evenementApplication, [nomApplication]: 'debut'}})
-  //   try {
-  //     const reponse = await restaurerApplication(wsa, this.props.noeud_id, nomApplication, {serveur_url: this.state.serveurUrl})
-  //     var etatTemp = '', err=''
-  //     if(reponse.ok) {
-  //       etatTemp = 'en cours'
-  //     } else {
-  //       console.error("Erreur : %O", reponse.err)
-  //       etatTemp = 'erreur'
-  //       err = '' + reponse.err
-  //     }
-  //   } catch(errwsa) {
-  //     const errMsg = errwsa.err || errwsa
-  //     console.error("Erreur restaurerApplication : %O", errwsa)
-  //     etatTemp = 'erreur'
-  //     err = 'Erreur restauration ' + nomApplication + ' : ' + errMsg
-  //   }
-  //   this.setState({
-  //     evenementApplication: {...this.state.evenementApplication, [nomApplication]: etatTemp},
-  //     erreur: err
-  //   })
-  // }
-
-  traiterMessageEvenementApplication = comlinkProxy(event => {
-    console.debug("Evenement application : %O", event)
-    var {nom_application, evenement} = event.message
-    var routingAction = event.routingKey.split('.').pop()
-    evenement = evenement || routingAction
-    this.setState(
-      {evenementApplication: {...this.state.evenementApplication, [nom_application]: evenement}}
-    )
-  })
-
-  getNoeud = _ => {
-    const noeuds = this.props.noeuds.filter(item=>{
-      return item.noeud_id === this.props.noeud_id
-    })
-    var noeudInfo = null
-    if(noeuds.length > 0) {
-      return noeuds[0]
-    }
-    return null
+  var PageCourante = InformationTransactionsNoeud
+  if(section === 'CommandeHttp') {
+    PageCourante = CommandeHttp
+  } else if(section === 'Consignation') {
+    PageCourante = ConsignationNoeud
+  } else if(section === 'Applications') {
+    PageCourante = ApplicationsInstance
+  } else if(section === 'Docker') {
+    PageCourante = PageDocker
   }
 
-  setErreur = erreur => {
-    this.setState({erreur})
-  }
-  fermerErreur = _ => {
-    this.setState({erreur: ''})
-  }
+  const nomNoeud = instance.domaine || instance.fqdn || instanceId
 
-  render() {
+  return (
+    <div>
 
-    const noeudInfo = this.getNoeud()
-
-    var erreur = ''
-    if(this.state.erreur) {
-      erreur = (
-        <Alert variant="danger" onClose={this.fermerErreur} dismissible>
+      <Alert show={erreur?true:false} variant="danger" onClose={fermerErreur} dismissible>
           <Alert.Heading>Erreur</Alert.Heading>
-          <p>{this.state.erreur}</p>
-        </Alert>
-      )
-    }
+          <p>{erreur}</p>
+      </Alert>
 
-    var PageCourante = InformationTransactionsNoeud
-    if(this.state.section === 'CommandeHttp') {
-      PageCourante = CommandeHttp
-    } else if(this.state.section === 'Consignation') {
-      PageCourante = ConsignationNoeud
-    } else if(this.state.section === 'Applications') {
-      PageCourante = ApplicationsInstance
-    } else if(this.state.section === 'Docker') {
-      PageCourante = PageDocker
-    }
+      <h1>Instance {nomNoeud}</h1>
 
-    var nomNoeud = noeudInfo.domaine || noeudInfo.fqdn || this.props.noeud_id
+      {erreur}
 
-    return (
-      <div>
+      <Nav variant="tabs" defaultActiveKey="Information" onSelect={setSection}>
+        <Nav.Item>
+          <Nav.Link eventKey="Information">Information</Nav.Link>
+        </Nav.Item>
+        <NavDropdown title="Configuration" id="nav-dropdown">
+          <NavDropdown.Item eventKey="CommandeHttp">Commande HTTP</NavDropdown.Item>
+        </NavDropdown>
+        <Nav.Item>
+          <Nav.Link eventKey="Applications">Applications</Nav.Link>
+        </Nav.Item>
+        <Nav.Item>
+          <Nav.Link eventKey="Docker">Docker</Nav.Link>
+        </Nav.Item>
+      </Nav>
 
-        <h1>Instance {nomNoeud}</h1>
+      <PageCourante instance={instance}
+                    serveurUrl={serveurUrl}
+                    setPageConfiguration={setPageConfiguration}
+                    setErreur={setErreur}
+                    etatConnexion={etatConnexion}
+                    workers={workers} />
 
-        {erreur}
-
-        <Nav variant="tabs" defaultActiveKey="Information" onSelect={this.setSection}>
-          <Nav.Item>
-            <Nav.Link eventKey="Information">Information</Nav.Link>
-          </Nav.Item>
-          <NavDropdown title="Configuration" id="nav-dropdown">
-            <NavDropdown.Item eventKey="CommandeHttp">Commande HTTP</NavDropdown.Item>
-          </NavDropdown>
-          <Nav.Item>
-            <Nav.Link eventKey="Applications">Applications</Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="Docker">Docker</Nav.Link>
-          </Nav.Item>
-        </Nav>
-
-        <PageCourante noeudInfo={noeudInfo}
-                      noeud={noeudInfo}
-                      evenementApplication={this.state.evenementApplication}
-                      serveurUrl={this.state.serveurUrl}
-                      setPageConfiguration={this.setPageConfiguration}
-                      setServeurUrl={this.setServeurUrl}
-                      setErreur={this.setErreur}
-                      {...this.props} />
-
-      </div>
-    )
-  }
+    </div>
+  )
 
 }
+
+export default AffichageNoeud
 
 function PageDocker(props) {
   return (
     <>
       <h2>Docker</h2>
-      <AfficherServices noeud={props.noeudInfo} />
-      <AfficherContainers noeud={props.noeudInfo} />
+      <AfficherServices instance={props.instance} />
+      <AfficherContainers instance={props.instance} />
     </>
   )
 }
@@ -206,7 +125,7 @@ function InformationTransactionsNoeud(props) {
     // console.debug("Noeud info PROPPYS : %O", this.props.noeud)
 
       var info = ''
-      const instance = props.noeud || {},
+      const instance = props.instance || {},
             instanceId = instance.noeud_id
 
   return (
@@ -251,9 +170,9 @@ function AfficherServices(props) {
 
   const renderingServices = []
 
-  if(props.noeud && props.noeud.services) {
+  if(props.instance && props.instance.services) {
     // console.debug("Noeud : %O", props.noeud)
-    const services = props.noeud.services
+    const services = props.instance.services
     for(let key in services) {
       const service = services[key]
 
@@ -282,9 +201,9 @@ function AfficherServices(props) {
 function AfficherContainers(props) {
   const renderingContainers = []
 
-  if(props.noeud && props.noeud.containers) {
+  if(props.instance && props.instance.containers) {
     // console.debug("Noeud : %O", props.noeud)
-    const containers = props.noeud.containers
+    const containers = props.instance.containers
     for(let key in containers) {
       const container = containers[key]
 
@@ -312,16 +231,16 @@ function AfficherContainers(props) {
   )
 }
 
-async function restaurerApplication(wsa, noeudId, nomApplication, opts) {
-  opts = opts || {}
-  console.debug("Restaurer application %s sur noeud %s", nomApplication, noeudId)
-  const params = {noeudId, nom_application: nomApplication, ...opts}
-  return wsa.restaurerApplication(params)
-}
+// async function restaurerApplication(wsa, noeudId, nomApplication, opts) {
+//   opts = opts || {}
+//   console.debug("Restaurer application %s sur noeud %s", nomApplication, noeudId)
+//   const params = {noeudId, nom_application: nomApplication, ...opts}
+//   return wsa.restaurerApplication(params)
+// }
 
-async function backupApplication(wsa, noeudId, nomApplication, opts) {
-  opts = opts || {}
-  console.debug("Backup application %s sur noeud %s", nomApplication, noeudId)
-  const params = {noeudId, nom_application: nomApplication, ...opts}
-  return wsa.backupApplication(params)
-}
+// async function backupApplication(wsa, noeudId, nomApplication, opts) {
+//   opts = opts || {}
+//   console.debug("Backup application %s sur noeud %s", nomApplication, noeudId)
+//   const params = {noeudId, nom_application: nomApplication, ...opts}
+//   return wsa.backupApplication(params)
+// }

@@ -135,12 +135,12 @@ function Menu(props) {
 
   const workers = props.workers
 
-  let boutonProtege
-  if(props.rootProps.modeProtege) {
-    boutonProtege = <i className="fa fa-lg fa-lock protege"/>
-  } else {
-    boutonProtege = <i className="fa fa-lg fa-unlock"/>
-  }
+  // let boutonProtege
+  // if(props.rootProps.modeProtege) {
+  //   boutonProtege = <i className="fa fa-lg fa-lock protege"/>
+  // } else {
+  //   boutonProtege = <i className="fa fa-lg fa-unlock"/>
+  // }
 
   var renderCleMillegrille = ''
 

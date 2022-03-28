@@ -19,7 +19,7 @@ export class CommandeHttp extends React.Component {
   componentDidMount() {
     console.debug("Configuration MQ noeud, props : %O", this.props)
 
-    const noeudInfo = this.props.noeudInfo || ''
+    const noeudInfo = this.props.instance || ''
     var urlNoeud = noeudInfo.domaine || noeudInfo.ip_detectee
     this.setState({urlNoeud})
 
@@ -126,7 +126,7 @@ export class CommandeHttp extends React.Component {
   }
 
   conserverDomaineNoeud = async event => {
-    const noeud = this.props.noeud
+    const noeud = this.props.instance
     const transaction = {
       noeud_id: noeud.noeud_id,
       domaine: this.state.urlNoeud,
@@ -198,7 +198,7 @@ export class CommandeHttp extends React.Component {
                            urlNoeud={this.state.urlNoeud}
                            setErreur={this.setErreur}
                            setConfirmation={this.setConfirmation}
-                           ipDetectee={this.props.noeudInfo.ip_detectee} />
+                           ipDetectee={this.props.instance.ip_detectee} />
       </>
     )
   }
@@ -579,9 +579,9 @@ export class ConsignationNoeud extends React.Component {
     // console.debug("Proppuss : %O, Statuss : %O", this.props, this.state)
     // const signateurTransaction = this.props.rootProps.signateurTransaction
     const webWorker = this.props.rootProps.chiffrageWorker,
-          noeud_id = this.props.noeud_id,
+          noeud_id = this.props.instance.noeud_id,
           wsa = this.props.rootProps.websocketApp,
-          consignationWeb = this.props.noeud.consignation_web || {}
+          consignationWeb = this.props.instance.consignation_web || {}
 
     const modeConsignation = this.state.modeConsignation || consignationWeb.modeConsignation
     const transaction = {
@@ -644,7 +644,7 @@ export class ConsignationNoeud extends React.Component {
 
   render() {
 
-    const consignationWeb = this.props.noeud.consignation_web || {}
+    const consignationWeb = this.props.instance.consignation_web || {}
     const modeConsignation = this.state.modeConsignation || consignationWeb.modeConsignation || 'cachenginx'
     // console.debug("PROPPYS: %O\nCONSIGNATIONWEB: %O\nMODE CONSIGNATION : %s", this.props, consignationWeb, modeConsignation)
     var configurationConsignation = ''

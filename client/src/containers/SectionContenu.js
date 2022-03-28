@@ -41,7 +41,9 @@ function SectionContenu(props) {
   const Page = domainesConnus[props.rootProps.page]
 
   if(Page) {
-    return <Page workers={props.workers} rootProps={props.rootProps} />
+    return (
+        <Page workers={props.workers} rootProps={props.rootProps} etatConnexion={props.etatConnexion} />
+    )
   }
 
   return (

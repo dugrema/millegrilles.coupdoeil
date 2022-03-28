@@ -2,12 +2,12 @@ import React, {useState, useEffect, useCallback} from 'react'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
-import ButtonGroup from 'react-bootstrap/ButtonGroup'
 import Dropdown from 'react-bootstrap/Dropdown'
 import Form from 'react-bootstrap/Form'
 import Modal from 'react-bootstrap/Modal'
 import {proxy as comlinkProxy} from 'comlink'
-import { Alert } from 'react-bootstrap'
+
+import { AlertTimeout, ModalAttente } from './Util'
 
 function ApplicationsInstance(props) {
     
@@ -21,10 +21,10 @@ function ApplicationsInstance(props) {
     const [errorMessage, setErrorMessage] = useState('')
     const [attente, setAttente] = useState('')
 
-    const workers = props.workers,
-          instance = props.noeud,
-          instanceId = props.noeud_id,
-          securite = props.noeud.securite,
+    const {workers, etatConnexion} = props
+    const instance = props.instance,
+          instanceId = instance.noeud_id,
+          securite = props.instance.securite,
           connexion = workers.connexion
 
     useEffect(()=>{
@@ -80,12 +80,13 @@ function ApplicationsInstance(props) {
                 workers={workers} 
                 instance={instance} 
                 confirmationCb={confirmationCb}
-                erreurCb={erreurCb} />
+                erreurCb={erreurCb}
+                etatConnexion={etatConnexion} />
 
             <h3>Applications installees</h3>
             
             <ListeApplicationsInstallees 
-                workers={workers} instance={instance} 
+                workers={workers} instance={instance} etatConnexion={etatConnexion}
                 setAttente={setAttente} confirmationCb={confirmationCb} erreurCb={erreurCb} />
 
         </div>        
@@ -112,7 +113,7 @@ function traiterEvenement(evenement) {
 
 function InstallerApplications(props) {
 
-    const {workers, instance, confirmationCb, erreurCb} = props
+    const {workers, instance, confirmationCb, erreurCb, etatConnexion} = props
     const connexion = workers.connexion
     const instanceId = instance.noeud_id,
           exchange = instance.securite
@@ -162,14 +163,14 @@ function InstallerApplications(props) {
             </Col>
             <Col md={2}>
                 <Button variant="secondary" onClick={installerApplicationCb}
-                        disabled={!instance.actif || !connexion.estActif()}>Installer</Button>
+                        disabled={!instance.actif || !etatConnexion}>Installer</Button>
             </Col>
         </Form.Group>
     )
 }
 
 function ListeApplicationsInstallees(props) {
-    const {workers, instance, confirmationCb, erreurCb, setAttente} = props
+    const {workers, instance, confirmationCb, erreurCb, setAttente, etatConnexion} = props
 
     const [appsConfigurees, setAppsConfigurees] = useState([])
     const [modalApp, setModalApp] = useState('')
@@ -218,7 +219,8 @@ function ListeApplicationsInstallees(props) {
                     <BoutonsActionApplication 
                         workers={workers} app={app} instanceId={noeud_id} securite={securite} 
                         configurer={()=>setModalApp(app)}
-                        setAttente={setAttente} confirmationCb={confirmationCb} erreurCb={erreurCb} />
+                        setAttente={setAttente} confirmationCb={confirmationCb} erreurCb={erreurCb} 
+                        etatConnexion={etatConnexion} />
                 </Row>
             ))}
         </>
@@ -234,11 +236,10 @@ function EtatApplication(props) {
 
 function BoutonsActionApplication(props) {
 
-    const {instanceId, securite, setAttente, confirmationCb, erreurCb, configurer} = props
+    const {instanceId, securite, setAttente, confirmationCb, erreurCb, configurer, etatConnexion} = props
     const connexion = props.workers.connexion
     const app = props.app || {}
 
-    const connexionActive = connexion.estActif()
     const appDemarree = app.etat === 'running',
           starting = app.etat === 'starting'
 
@@ -258,7 +259,7 @@ function BoutonsActionApplication(props) {
     return [
         <Col key="switch" md={1}>
             <Form.Check id={"switch_app_" + app.nom} type="switch" 
-                disabled={!connexionActive || starting} 
+                disabled={!etatConnexion || starting} 
                 checked={appDemarree || starting}
                 value={app.nom}
                 onChange={toggleApplicationCb}
@@ -763,87 +764,4 @@ async function demarrerApplication(connexion, instanceId, nomApplication, securi
         console.error("Erreur de demarrage de l'application %s : %O", nomApplication, err)
         erreurCb(err, `Erreur de demarrage de l'application ${nomApplication}`)
     }
-}
-
-function AlertTimeout(props) {
-
-    const message = props.message,
-          setMessage = props.setMessage,
-          setError = props.setError,
-          err = props.err,
-          delay = props.delay || 10000,
-          variant = props.variant || 'success'
-
-    const [timeoutSucces, setTimeoutSucces] = useState('')
-
-    const titre = err?'Erreur':'Success'
-
-    const closeCb = useCallback(()=>{
-        if(setError) setError('')
-        setMessage('')
-    }, [setMessage, setError])
-
-    useEffect(()=>{
-        if(delay && message && !timeoutSucces) {
-            // Activer timeout
-            setTimeoutSucces(setTimeout(()=>setMessage(''), delay))
-        }
-    }, [message, timeoutSucces, setTimeoutSucces, delay])
-
-    useEffect(()=>{
-        if(!message && timeoutSucces) {
-            // Desactiver timeout
-            clearTimeout(timeoutSucces)
-            setTimeoutSucces('')
-        }
-    }, [message, timeoutSucces, setTimeoutSucces, delay])
-
-    return (
-        <Alert show={message?true:false} variant={variant} onClose={closeCb} dismissible>
-            <Alert.Heading>{titre}</Alert.Heading>
-            {message}
-            <ShowStackTrace err={err} />
-        </Alert>
-    )
-}
-
-function ShowStackTrace(props) {
-    const err = props.err
-
-    if(!err) return ''
-
-    let stack = ''
-    if(err.stack) {
-        console.debug("Stack : %O", err.stack)
-        stack = (
-            <>
-                <p>{''+err}</p>
-                <pre>{err.stack}</pre>
-            </>
-        )
-    } else {
-        stack = <p>{''+err}</p>
-    }
-
-    return (
-        <>
-            <p>Stack trace</p>
-            <pre className="stack">{stack}</pre>
-        </>
-    )
-}
-
-function ModalAttente(props) {
-
-    const show = props.show
-
-    return (
-        <Modal show={show?true:false}>
-            <Modal.Header>En cours...</Modal.Header>
-            <Modal.Footer>
-                <Button disabled={true} variant="secondary">Annuler</Button>
-            </Modal.Footer>
-        </Modal>
-    )
-
 }
