@@ -11,10 +11,6 @@ import { AlertTimeout, ModalAttente } from './Util'
 
 function ApplicationsInstance(props) {
     
-    const [catalogueApplications, setCatalogueApplications] = useState([])
-    const [afficherModalConfiguration, setAfficherModalConfiguration] = useState(false)
-    const [nomApplicationConfigurer, setNomApplicationConfigurer] = useState('')
-    const [contenuConfiguration, setContenuConfiguration] = useState('')
     const [serveurUrl, setServeurUrl] = useState('https://fichiers:443')
     const [confirmation, setConfirmation] = useState('')
     const [error, setError] = useState('')
@@ -24,8 +20,7 @@ function ApplicationsInstance(props) {
     const {workers, etatConnexion} = props
     const instance = props.instance,
           instanceId = instance.noeud_id,
-          securite = props.instance.securite,
-          connexion = workers.connexion
+          securite = props.instance.securite
 
     useEffect(()=>{
         console.debug("ApplicationsInstance proppies %O", props)
@@ -97,18 +92,20 @@ export default ApplicationsInstance
 
 function subscribe(workers, instanceId, securite, cb) {
     const connexion = workers.connexion
+    console.debug("Subscribe %s %s, cb : %O", securite, instanceId, cb)
     connexion.enregistrerCallbackEvenementsApplications(instanceId, securite, cb)
         .catch(err=>console.error("enregistrerCallbackEvenementsApplications : %O", err))
 }
 
 function unsubscribe(workers, instanceId, securite, cb) {
     const connexion = workers.connexion
+    console.debug("Unsubscribe %s %s, cb : %O", securite, instanceId, cb)
     connexion.retirerCallbackEvenementsApplications(instanceId, securite, cb)
         .catch(err=>console.error("retirerCallbackEvenementsApplications : %O", err))
 }
 
 function traiterEvenement(evenement) {
-    console.debug("Recu evenement : %O", evenement)
+    console.debug("traiterEvenement Recu evenement application : %O", evenement)
 }
 
 function InstallerApplications(props) {

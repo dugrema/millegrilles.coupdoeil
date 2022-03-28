@@ -36,7 +36,6 @@ function AffichageNoeud(props) {
   const [pageConfiguration, setPageConfiguration] = useState('')
   const [section, setSection] = useState('Information')
   const [serveurUrl, setServeurUrl] = useState('https://fichiers:443')
-  // const [traiterMessageEvenementApplication, setTraiterMessageEvenementApplication] = useState('')
 
   // const setServeurUrlCb = useCallback(event => {
   //   setServeurUrl(event.currentTarget.value)

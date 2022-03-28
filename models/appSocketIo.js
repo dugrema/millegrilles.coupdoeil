@@ -306,7 +306,7 @@ async function backupApplication(socket, commande, cb) {
   const amqpdao = socket.amqpdao
   const noeudId = commande.noeudId
   debug("Backup application %s sur noeud %s", noeudId)
-  const domaineAction = `commande.servicemonitor.${noeudId}.backupApplication`
+  const domaineAction = `commande.monitor.${noeudId}.backupApplication`
   try {
     let params = {exchange: commande.securite || '3.protege'}
     const reponse = await amqpdao.transmettreCommande(domaineAction, commande)
@@ -321,7 +321,7 @@ async function restaurerApplication(socket, commande, cb) {
   debug("Restaurer application")
   const amqpdao = socket.amqpdao
   const noeudId = commande.noeudId
-  const domaineAction = `commande.servicemonitor.${noeudId}.restoreApplication`
+  const domaineAction = `commande.monitor.${noeudId}.restoreApplication`
   try {
     let params = {exchange: commande.securite || '3.protege'}
     const reponse = await amqpdao.transmettreCommande(domaineAction, commande)
@@ -420,7 +420,7 @@ async function genererCertificatNoeud(socket, commande, cb) {
 //   debug("Desinstaller application %O", commande)
 
 //   const amqpdao = socket.amqpdao
-//   const domaineAction = ['servicemonitor', commande.noeudId ,'supprimerApplication'].join('.')
+//   const domaineAction = ['monitor', commande.noeudId ,'supprimerApplication'].join('.')
 
 //   try {
 //     // Commande nowait - c'est un broadcast (global), il faut capturer les
@@ -438,7 +438,7 @@ async function genererCertificatNoeud(socket, commande, cb) {
 // async function requeteConfigurationApplication(socket, params, cb) {
 //   debug("Requete configuration %O", params)
 //   const amqpdao = socket.amqpdao
-//   const domaineAction = ['servicemonitor', params.noeud_id ,'requeteConfigurationApplication'].join('.')
+//   const domaineAction = ['monitor', params.noeud_id ,'requeteConfigurationApplication'].join('.')
 //   try {
 //     // Commande nowait - c'est un broadcast (global), il faut capturer les
 //     // evenements de demarrage individuels (evenement.backup.backupTransactions)
@@ -455,7 +455,7 @@ async function genererCertificatNoeud(socket, commande, cb) {
 // async function configurerApplication(socket, params, cb) {
 //   debug("Configurer application %s sur noeud %s", params.nom_application, params.noeud_id)
 //   const amqpdao = socket.amqpdao
-//   const domaineAction = ['servicemonitor', params.noeud_id ,'configurerApplication'].join('.')
+//   const domaineAction = ['monitor', params.noeud_id ,'configurerApplication'].join('.')
 //   try {
 //     const reponse = await amqpdao.transmettreCommande(domaineAction, params, {exchange: params.exchange})
 //     debug("configurerApplication: Reponse \n%O", reponse)
@@ -469,7 +469,7 @@ async function genererCertificatNoeud(socket, commande, cb) {
 // async function demarrerApplication(socket, params, cb) {
 //   debug("Demarrer application %O", params)
 //   const amqpdao = socket.amqpdao
-//   const domaineAction = ['servicemonitor', params.noeud_id ,'demarrerApplication'].join('.')
+//   const domaineAction = ['monitor', params.noeud_id ,'demarrerApplication'].join('.')
 //   try {
 //     const reponse = await amqpdao.transmettreCommande(domaineAction, params, {exchange: params.exchange})
 //     debug("demarrerApplication: Reponse \n%O", reponse)
@@ -575,7 +575,7 @@ async function uploadCollectionsPubliques(socket, commande, cb) {
 //   const amqpdao = socket.amqpdao
 
 //   const {domaine, action} = commande['en-tete']
-//   if ( domaine !== 'servicemonitor' ) {
+//   if ( domaine !== 'monitor' ) {
 //     return cb({err: "Mauvais type d'action : " + domaineAction})
 //   }
 //   if ( action !== 'transmettreCatalogues' ) {
@@ -829,9 +829,9 @@ function ecouterEvenementsApplications(socket, params, cb) {
 
   const opts = {
     routingKeys: [
-      `evenement.servicemonitor.${instanceId}.applicationDemarree`,
-      `evenement.servicemonitor.${instanceId}.applicationArretee`,
-      `evenement.servicemonitor.${instanceId}.erreurDemarrageApplication`,
+      `evenement.monitor.${instanceId}.applicationDemarree`,
+      `evenement.monitor.${instanceId}.applicationArretee`,
+      `evenement.monitor.${instanceId}.erreurDemarrageApplication`,
     ],
     exchanges: [exchange],
   }
@@ -852,9 +852,9 @@ function retirerEvenementsApplications(socket, params, cb) {
 
   const opts = {
     routingKeys: [
-      `evenement.servicemonitor.${instanceId}.applicationDemarree`,
-      `evenement.servicemonitor.${instanceId}.applicationArretee`,
-      `evenement.servicemonitor.${instanceId}.erreurDemarrageApplication`,
+      `evenement.monitor.${instanceId}.applicationDemarree`,
+      `evenement.monitor.${instanceId}.applicationArretee`,
+      `evenement.monitor.${instanceId}.erreurDemarrageApplication`,
     ],
     exchanges: [exchange],
   }
