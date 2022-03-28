@@ -788,13 +788,13 @@ function majMonitor(socket, params, cb) {
 // Enregistrement d'evenements
 
 function ecouterEvenementsPresenceDomaines(socket, _params, cb) {
-  const opts = { routingKeys: ['evenement.monitor.domaine'], exchanges: ['3.protege'] }
+  const opts = { routingKeys: ['evenement.*.presenceDomaine'], exchanges: ['3.protege'] }
   debug("ecouterEvenementsPresenceDomaines : %O", opts)
   socket.subscribe(opts, cb)
 }
 
 function retirerEvenementsPresenceDomaines(socket, _params, cb) {
-  const opts = { routingKeys: ['evenement.monitor.domaine'], exchanges: ['3.protege'] }
+  const opts = { routingKeys: ['evenement.*.presenceDomaine'], exchanges: ['3.protege'] }
   debug("retirerEvenementsPresenceDomaines sur %O", opts)
   socket.unsubscribe(opts, cb)
 }

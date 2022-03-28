@@ -236,94 +236,27 @@ function majMonitor(params) {
 }
 
 // Listeners
-async function enregistrerCallbackEvenementsPresenceDomaine(cb) {
-  console.warn("!!! TODO FIX ME")
-  // connexionClient.socketOn('evenement.monitor.domaine', cb)
-  // const resultat = await connexionClient.emitBlocking('coupdoeil/ecouterEvenementsPresenceDomaines', {}, {})
-  // if(!resultat) {
-  //   throw new Error("Erreur enregistrerCallbackTopologie")
-  // }
+function enregistrerCallbackEvenementsPresenceDomaine(cb) { 
+  return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceDomaines', cb) 
 }
 
-function retirerCallbackEvenementsPresenceDomaine() {
-  connexionClient.socketOff('evenement.presence.domaine')
-  connexionClient.emitBlocking('coupdoeil/retirerEvenementsPresenceDomaines', {}, {})
+function retirerCallbackEvenementsPresenceDomaine(cb) { 
+  return connexionClient.unsubscribe('coupdoeil/retirerEvenementsPresenceDomaines', cb) 
 }
 
-async function enregistrerCallbackEvenementsNoeuds(cb) {
-  // connexionClient.socketOn('evenement.monitor.presence', cb)
-  const resultat = await connexionClient.emitBlocking('coupdoeil/ecouterEvenementsPresenceNoeuds', {}, {})
-  console.debug("Resultat enregistrerCallbackEvenementsNoeuds : %O", resultat)
-  if(resultat && resultat.ok === true) {
-    resultat.routingKeys.forEach(item=>{
-      console.debug("enregistrerCallbackEvenementsNoeuds Ajouter socketOn %s", item)
-      connexionClient.socketOn(item, cb)
-    })
-  } else {
-    const err = new Error("Erreur enregistrerCallbackEvenementsNoeuds")
-    err.reponse = resultat
-    throw err
-  }
+function enregistrerCallbackEvenementsNoeuds(cb) { 
+  return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceNoeuds', cb) 
 }
 
-function retirerCallbackEvenementsNoeuds(cb) {
-  connexionClient.socketOff('evenement.monitor.presence')
-  const resultat = connexionClient.emit('coupdoeil/retirerEvenementsPresenceNoeuds', {}, {})
-  if(resultat && resultat.ok === true) {
-    resultat.routingKeys.forEach(item=>{
-      console.debug("enregistrerCallbackEvenementsNoeuds Ajouter socketOn %s", item)
-      connexionClient.socketOff(item, cb)
-    })
-  }
+function retirerCallbackEvenementsNoeuds(cb) { 
+  return connexionClient.unsubscribe('coupdoeil/retirerEvenementsPresenceNoeuds', cb) 
 }
 
-async function enregistrerCallbackEvenementsApplications(instanceId, securite, cb) {
-  const resultat = await connexionClient.emitBlocking('coupdoeil/ecouterEvenementsApplications', {instanceId, exchange: securite}, {})
-  console.debug("Resultat enregistrerCallbackEvenementsApplications : %O", resultat)
-  if(resultat && resultat.ok === true) {
-    resultat.routingKeys.forEach(item=>{
-      console.debug("enregistrerCallbackEvenementsApplications Ajouter socketOn %s", item)
-      connexionClient.socketOn(item, cb)
-    })
-  } else {
-    const err = new Error("Erreur enregistrerCallbackEvenementsApplications")
-    err.reponse = resultat
-    throw err
-  }
+function enregistrerCallbackEvenementsApplications(instanceId, securite, cb) {
+  return connexionClient.subscribe('coupdoeil/ecouterEvenementsApplications', cb, {instanceId, exchange: securite})
 }
-
 async function retirerCallbackEvenementsApplications(instanceId, securite, cb) {
-  const resultat = await connexionClient.emitBlocking('coupdoeil/retirerEvenementsApplications', {instanceId, exchange: securite}, {})
-  console.debug("Resultat retirerCallbackEvenementsApplications : %O", resultat)
-  if(resultat && resultat.ok === true) {
-    resultat.routingKeys.forEach(item=>{
-      console.debug("retirerCallbackEvenementsApplications Ajouter socketOn %s", item)
-      connexionClient.socketOff(item, cb)
-    })
-  } else {
-    const err = new Error("Erreur retirerCallbackEvenementsApplications")
-    err.reponse = resultat
-    throw err
-  }
-}
-
-async function enregistrerCallbackEvenementsBackup(cb) {
-  connexionClient.socketOn('evenement.backup.backupMaj', cb)
-  connexionClient.socketOn('evenement.backup.backupApplication', cb)
-  connexionClient.socketOn('evenement.backup.restaurationMaj', cb)
-  connexionClient.socketOn('evenement.backup.regenerationMaj', cb)
-  const resultat = await connexionClient.emitBlocking('coupdoeil/ecouterEvenementsBackup', {}, {})
-  if(!resultat) {
-    throw new Error("Erreur enregistrerCallbackEvenementsNoeuds")
-  }
-}
-
-function retirerCallbackEvenementsBackup() {
-  connexionClient.emit('coupdoeil/retirerEvenementsBackup', {}, {})
-  connexionClient.socketOff('evenement.backup.backupMaj')
-  connexionClient.socketOff('evenement.backup.backupApplication')
-  connexionClient.socketOff('evenement.backup.restaurationMaj')
-  connexionClient.socketOff('evenement.backup.regenerationMaj')
+  return connexionClient.unsubscribe('coupdoeil/retirerEvenementsApplications', cb, {instanceId, exchange: securite})
 }
 
 comlinkExpose({
@@ -349,5 +282,4 @@ comlinkExpose({
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,
   enregistrerCallbackEvenementsApplications, retirerCallbackEvenementsApplications,
-  enregistrerCallbackEvenementsBackup, retirerCallbackEvenementsBackup,
 })
