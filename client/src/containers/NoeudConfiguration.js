@@ -191,17 +191,21 @@ export class CommandeHttp extends React.Component {
         </Row>
 
         <h2>Configurer MQ</h2>
-        <ConfigurerMQ rootProps={this.props.rootProps}
-                      urlNoeud={this.state.urlNoeud}
-                      setErreur={this.setErreur}
-                      setConfirmation={this.setConfirmation} />
+        <ConfigurerMQ 
+          workers={this.props.workers}
+          rootProps={this.props.rootProps}
+          urlNoeud={this.state.urlNoeud}
+          setErreur={this.setErreur}
+          setConfirmation={this.setConfirmation} />
 
         <h2>Configurer Domaine</h2>
-        <ConfigurerDomaine rootProps={this.props.rootProps}
-                           urlNoeud={this.state.urlNoeud}
-                           setErreur={this.setErreur}
-                           setConfirmation={this.setConfirmation}
-                           ipDetectee={this.props.instance.ip_detectee} />
+        <ConfigurerDomaine 
+          workers={this.props.workers}
+          rootProps={this.props.rootProps}
+          urlNoeud={this.state.urlNoeud}
+          setErreur={this.setErreur}
+          setConfirmation={this.setConfirmation}
+          ipDetectee={this.props.instance.ip_detectee} />
       </>
     )
   }
@@ -229,20 +233,22 @@ class ConfigurerMQ extends React.Component {
       commande.port = port
     }
 
+    const connexion = this.props.workers.connexion
+
     // const signateurTransaction = this.props.rootProps.signateurTransaction
     // await signateurTransaction.preparerTransaction(commande, 'Monitor.changerConfigurationMq')
 
-    const domaineAction = 'Monitor.changerConfigurationMq'
+    const domaine = 'Monitor', action = 'changerConfigurationMq'
     // await signateurTransaction.preparerTransaction(transaction, domaineTransaction)
-    commande = await this.props.rootProps.chiffrageWorker.formatterMessage(commande, domaineAction)
+    const commandeSignee = await connexion.formatterMessage(commande, domaine, {action})
 
-    console.debug("Commande a transmettre : %O", commande)
+    console.debug("Commande a transmettre : %O", commandeSignee)
     const url = 'https:/' + path.join('/', this.props.urlNoeud, '/installation/api/configurerMQ')
     try {
       const reponse = await axios({
         method: 'post',
         url,
-        data: commande,
+        data: commandeSignee,
         timeout: 5000,
       })
       console.debug("Reponse configuration MQ : %O", reponse)
@@ -376,11 +382,13 @@ class ConfigurerDomaine extends React.Component {
       commande['cloudnsPassword'] = infoInternet.cloudnsPassword
     }
 
+    const connexion = this.props.workers.connexion
+
     // const signateurTransaction = this.props.rootProps.signateurTransaction
     // await signateurTransaction.preparerTransaction(commande, 'Monitor.changerConfigurationDomaine')
 
-    const domaineAction = 'Monitor.changerConfigurationDomaine'
-    commande = await this.props.rootProps.chiffrageWorker.formatterMessage(commande, domaineAction)
+    const domaine = 'monitor', action = 'changerConfigurationDomaine'
+    const commandeSignee = await connexion.formatterMessage(commande, domaine, {action})
 
     console.debug("Commande a transmettre : %O", commande)
     const url = 'https:/' + path.join('/', this.props.urlNoeud, '/installation/api/configurerDomaine')
@@ -388,7 +396,7 @@ class ConfigurerDomaine extends React.Component {
       const reponse = await axios({
         method: 'post',
         url,
-        data: commande,
+        data: commandeSignee,
         timeout: 5000,
       })
       console.debug("Reponse configuration domaine : %O", reponse)
