@@ -17,7 +17,7 @@ export class CommandeHttp extends React.Component {
   }
 
   componentDidMount() {
-    console.debug("Configuration MQ noeud, props : %O", this.props)
+    console.debug("Configuration MQ instance, props : %O", this.props)
 
     const noeudInfo = this.props.instance || ''
     var urlNoeud = noeudInfo.domaine || noeudInfo.ip_detectee
@@ -152,7 +152,7 @@ export class CommandeHttp extends React.Component {
 
     return (
       <>
-        <h2>Configuration d'un noeud via Http</h2>
+        <h2>Configuration d'une instance via Http</h2>
 
         <Alert show={this.state.erreur?true:false} variant="danger" onClose={this.cacherErreur} dismissible>
           <Alert.Heading>Erreur</Alert.Heading>
@@ -167,7 +167,7 @@ export class CommandeHttp extends React.Component {
           Transmet des commandes de configuration signees avec le certificat du navigateur.
         </p>
 
-        <label htmlFor="hostmq">URL de connexion au noeud (https)</label>
+        <label htmlFor="hostmq">URL de connexion a l'instance (https)</label>
         <InputGroup>
           <InputGroup.Text id="urlNoeud">
             https://
@@ -186,7 +186,7 @@ export class CommandeHttp extends React.Component {
                                    etatConnexion={etatConnexion} />
 
         <Row>
-          <Col>Disponibilite du noeud via https</Col>
+          <Col>Disponibilite d'une instance via https</Col>
           <Col>{this.state.etatNoeud}</Col>
         </Row>
 
@@ -238,7 +238,7 @@ class ConfigurerMQ extends React.Component {
     // const signateurTransaction = this.props.rootProps.signateurTransaction
     // await signateurTransaction.preparerTransaction(commande, 'Monitor.changerConfigurationMq')
 
-    const domaine = 'Monitor', action = 'changerConfigurationMq'
+    const domaine = 'monitor', action = 'changerConfigurationMq'
     // await signateurTransaction.preparerTransaction(transaction, domaineTransaction)
     const commandeSignee = await connexion.formatterMessage(commande, domaine, {action})
 
@@ -414,7 +414,7 @@ class ConfigurerDomaine extends React.Component {
     return (
       <>
         <p>
-          Configurer le domaine internet du noeud. Genere un certificat SSL.
+          Configurer le domaine internet de l'instance. Genere un certificat SSL.
         </p>
 
         <AfficherFormInternet changerTextfield={this.changerTextfield}
@@ -810,32 +810,32 @@ function AfficherInfoConfiguration(props) {
 
   return (
     <>
-      <h2>Information Noeud</h2>
+      <h2>Information instance</h2>
       <Row>
-        <Col>Idmg</Col>
+        <Col md="2">Idmg</Col>
         <Col>{props.noeudInfo.idmg}</Col>
       </Row>
       <Row>
-        <Col>Noeud Id</Col>
+        <Col md="2">Id</Col>
         <Col>{props.noeudInfo.noeud_id}</Col>
       </Row>
       <Row>
-        <Col>Securite</Col>
+        <Col md="2">Securite</Col>
         <Col>{props.noeudInfo.securite}</Col>
       </Row>
       <Row>
-        <Col>Domaine</Col>
+        <Col md="2">Domaine</Col>
         <Col>{props.noeudInfo.domaine}</Col>
       </Row>
       <Row>
-        <Col>FQDN detecte</Col>
+        <Col md="2">FQDN detecte</Col>
         <Col>{props.noeudInfo.fqdn_detecte}</Col>
       </Row>
 
       <h2>Certificat</h2>
       <AfficherExpirationCertificat pem={props.noeudInfo.certificat || ''}/>
       <Row>
-        <Col></Col>
+        <Col md="2"></Col>
         <Col>
           <Button onClick={props.renouveler}
                   disabled={!props.etatConnexion}>Renouveler</Button>
