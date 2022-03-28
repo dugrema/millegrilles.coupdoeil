@@ -33,7 +33,9 @@ class DomaineMaitredescles extends React.Component {
   }
 
   render() {
-    if(!this.props.rootProps.modeProtege) {
+    const etatConnexion = this.props.etatConnexion
+
+    if(!etatConnexion) {
       return (<p>Activer mode protege pour poursuivre.</p>)
     }
 

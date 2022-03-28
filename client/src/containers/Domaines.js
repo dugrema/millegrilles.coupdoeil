@@ -63,7 +63,12 @@ function Domaines(props) {
     }
 
     if(Page) {
-        return <Page workers={workers} etatConnexion={etatConnexion} fermer={()=>setDomaineSelectionne('')} />
+        return (
+            <Page 
+                workers={workers} 
+                etatConnexion={etatConnexion} 
+                fermer={()=>setDomaineSelectionne('')} />
+        )
     }
 
     return (

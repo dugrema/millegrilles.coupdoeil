@@ -18,14 +18,17 @@ class ParametresCataloguesApplications extends React.Component {
   }
 
   render() {
+    const etatConnexion = this.props.etatConnexion,
+          connexion = this.props.workers.connexion
+
     return (
       <>
         <h1>Catalogues d'applications</h1>
 
-        <FormulaireAjout wsa={this.props.workers.connexion}
-                         modeProtege={this.props.rootProps.modeProtege}
-                         refresh={this.refresh}
-                         rootProps={this.props.rootProps} />
+        <Button variant="secondary" onClick={this.props.fermer}>Retour</Button>
+        <FormulaireAjout workers={this.props.workers}
+                         modeProtege={etatConnexion}
+                         refresh={this.refresh} />
 
         <hr />
 
@@ -125,7 +128,7 @@ class FormulaireAjout extends React.Component {
       const transaction = JSON.parse(this.state.json)
       console.debug("Soumettre configuration : %O", transaction)
 
-      const connexionWorker = this.props.rootProps.workers.connexion
+      const connexionWorker = this.props.workers.connexion
       const reponse = await connexionWorker.commandeSoumettreCatalogueApplication({catalogue: transaction})
       console.debug("Reponse : %O", reponse)
 
@@ -141,7 +144,7 @@ class FormulaireAjout extends React.Component {
   rechargerCatalogues = async event => {
     try {
       this.setState({erreur: '', confirmation: ''})
-      const connexionWorker = this.props.rootProps.workers.connexion
+      const connexionWorker = this.props.workers.connexion
       const reponse = await connexionWorker.commandeTransmettreCatalogues()
       console.debug("Reponse : %O", reponse)
 
@@ -192,10 +195,10 @@ class FormulaireAjout extends React.Component {
               <Button onClick={this.soumettre} disabled={!this.props.modeProtege}>
                 Soumettre
               </Button>
-              <Button onClick={this.refresh}>
+              <Button variant="secondary" onClick={this.refresh}>
                 Refresh
               </Button>
-              <Button onClick={this.rechargerCatalogues} disabled={!this.props.modeProtege}>
+              <Button variant="secondary" onClick={this.rechargerCatalogues} disabled={!this.props.modeProtege}>
                 Recharger
               </Button>
             </Col>
