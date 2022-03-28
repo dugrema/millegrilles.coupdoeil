@@ -29,7 +29,7 @@ function AffichageNoeud(props) {
 
   console.debug("AffichageNoeud proppies", props)
 
-  const { workers, etatConnexion, instance } = props
+  const { workers, etatConnexion, instance, idmg } = props
   const instanceId = instance.noeud_id
   
   const [erreur, setErreur] = useState('')
@@ -103,7 +103,8 @@ function AffichageNoeud(props) {
                     setPageConfiguration={setPageConfiguration}
                     setErreur={setErreur}
                     etatConnexion={etatConnexion}
-                    workers={workers} />
+                    workers={workers} 
+                    idmg={idmg} />
 
     </div>
   )

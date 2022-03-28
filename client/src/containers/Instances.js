@@ -8,7 +8,7 @@ import AfficherInstanceDetail from './Noeud'
 
 function Instances(props) {
 
-    const {workers, etatConnexion} = props
+    const {workers, etatConnexion, idmg} = props
     const connexion = workers.connexion
 
     const [instancesParId, setInstancesParId] = useState('')
@@ -55,6 +55,7 @@ function Instances(props) {
             <AfficherInstanceDetail 
                 workers={workers} 
                 etatConnexion={etatConnexion}
+                idmg={idmg}
                 instance={instance} 
                 fermer={()=>setInstanceSelectionnee('')} />
         )

@@ -93,7 +93,7 @@ export class CommandeHttp extends React.Component {
       console.debug("Response noeud : %O, proppys: %O", reponse, this.props)
 
       const idmg = reponse.data.idmg,
-            certIdmg = this.props.rootProps.rootProps.idmg
+            certIdmg = this.props.idmg
       console.debug("Comparaison idmg : Reponse %s, cert %s", idmg, certIdmg)
 
       if(idmg === certIdmg) {
@@ -147,6 +147,9 @@ export class CommandeHttp extends React.Component {
   cacherConfirmation = event => {this.setState({confirmation: ''})}
 
   render() {
+
+    const etatConnexion = this.props.etatConnexion
+
     return (
       <>
         <h2>Configuration d'un noeud via Http</h2>
@@ -180,7 +183,7 @@ export class CommandeHttp extends React.Component {
 
         <AfficherInfoConfiguration noeudInfo={this.state.noeudInfo || ''}
                                    renouveler={this.renouvelerCertificat}
-                                   rootProps={this.props.rootProps} />
+                                   etatConnexion={etatConnexion} />
 
         <Row>
           <Col>Disponibilite du noeud via https</Col>
@@ -827,7 +830,7 @@ function AfficherInfoConfiguration(props) {
         <Col></Col>
         <Col>
           <Button onClick={props.renouveler}
-                  disabled={!props.rootProps.modeProtege}>Renouveler</Button>
+                  disabled={!props.etatConnexion}>Renouveler</Button>
         </Col>
       </Row>
     </>
