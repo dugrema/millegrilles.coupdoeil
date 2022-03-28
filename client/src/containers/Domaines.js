@@ -1,7 +1,11 @@
 import React, {useState, useEffect, useCallback} from 'react'
 import {proxy as comlinkProxy} from 'comlink'
 
+import Row from 'react-bootstrap/Row'
+import Col from 'react-bootstrap/Col'
+
 import { AlertTimeout, ModalAttente } from './Util'
+import { FormatterDate } from '@dugrema/millegrilles.reactjs'
 
 function Domaines(props) {
     console.debug("Domaines proppys : %O", props)
@@ -12,6 +16,7 @@ function Domaines(props) {
     const [errorMessage, setErrorMessage] = useState('')
     const [attente, setAttente] = useState('')
     const [domaines, setDomaines] = useState('')
+    const [evenementDomaine, setEvenementDomaine] = useState('')
 
     const confirmationCb = useCallback( 
         confirmation => { setConfirmation(confirmation); setAttente('') },
@@ -29,11 +34,18 @@ function Domaines(props) {
     )
 
     useEffect(()=>{
-        const cb = comlinkProxy(traiterEvenement)
+        const cb = comlinkProxy(setEvenementDomaine)
         subscribe(workers, cb, erreurCb)
         chargerListeDomaines(workers, setDomaines, erreurCb).catch(err=>erreurCb(err, "Erreur chargement liste domaines."))
         return () => unsubscribe(workers, cb)
-    }, [workers, erreurCb])
+    }, [workers, erreurCb, setEvenementDomaine])
+
+    useEffect(()=>{
+        if(evenementDomaine && domaines) {
+            traiterEvenement(domaines, setDomaines, evenementDomaine.message, erreurCb).catch(err=>erreurCb(err))
+            setEvenementDomaine('')
+        }
+    }, [evenementDomaine, setEvenementDomaine, domaines, setDomaines, erreurCb])
 
     return (
         <>
@@ -44,12 +56,30 @@ function Domaines(props) {
             <ModalAttente show={attente} setAttente={setAttente} />
 
             <h1>Domaines</h1>
-
+            <ListeDomaines domaines={domaines} />
         </>
     )
 }
 
 export default Domaines
+
+function ListeDomaines(props) {
+
+    const domaines = props.domaines
+    if(!domaines) return <p>Aucuns domaines disponibles.</p>
+
+    return (
+        <>
+            {domaines.map(domaine=>(
+                <Row key={domaine.nom}>
+                    <Col>{domaine.nom}</Col>
+                    <Col><FormatterDate value={domaine.date_presence}/></Col>
+                    <Col>{domaine.actif?'Actif':'Inactif'}</Col>
+                </Row>
+            ))}
+        </>
+    )
+}
 
 function subscribe(workers, cb, erreurCb) {
     const connexion = workers.connexion
@@ -65,8 +95,21 @@ function unsubscribe(workers, cb) {
         .catch(err=>console.error("retirerCallbackEvenementsPresenceDomaine : %O", err))
 }
 
-function traiterEvenement(evenement) {
-    console.debug("traiterEvenement Recu evenement domaine : %O", evenement)
+async function traiterEvenement(domaines, setDomaines, evenementDomaine, erreurCb) {
+    console.debug("traiterEvenement Recu evenement domaine : %O", evenementDomaine)
+    const evenementMappe = mapperDomaine(evenementDomaine)
+    let traite = false
+    const domainesMaj = domaines.map(item=>{
+        if(item.nom === evenementMappe.nom) {
+            traite = true
+            return evenementMappe
+        } else {
+            return item
+        }
+    })
+    if(!traite) domainesMaj.push(evenementMappe)
+    trierDomaines(domainesMaj)
+    setDomaines(domainesMaj)
 }
 
 
@@ -128,7 +171,9 @@ async function chargerListeDomaines(workers, setDomaines, erreurCb) {
         // Trier la liste par descriptif, avec Principal en premier
         domaines = trierDomaines(domaines)
 
-        return domaines
+        console.debug("Liste domaines preparee : %O", domaines)
+
+        setDomaines(domaines)
     } catch(err) {
         erreurCb(err, "Erreur chargement domaines.")
     }
@@ -172,26 +217,36 @@ async function chargerListeDomaines(workers, setDomaines, erreurCb) {
 function trierDomaines(domaines) {
     return domaines.sort((a,b)=>{
         if(a === b) return 0
-        if(!a || !a.descriptif) return -1
-        if(!b || !b.descriptif) return 1
-        return a.descriptif.localeCompare(b.descriptif)
+        if(!a || !a.nom) return -1
+        if(!b || !b.nom) return 1
+        return a.nom.localeCompare(b.nom)
     })
 }
 
-function mapperDomaine(domaineInfo, derniereModification) {
-    var actif = true
-    const epochCourant = new Date().getTime() / 1000
-    if(epochCourant > derniereModification + 60) {
-        actif = false
+function mapperDomaine(domaineInfo) {
+    var actif = false
+    let date_presence = domaineInfo.date_presence
+    if(!date_presence && domaineInfo['en-tete']) {
+        // Message confirmation domaine
+        date_presence = domaineInfo['en-tete'].estampille
+    }
+    try {
+        const epochCourant = new Date().getTime() / 1000
+        if(Number(date_presence) > epochCourant - 120) {
+            actif = true
+        }
+    } catch(err) {
+        console.warn("Date presence domaine (%O) invalide : %O", domaineInfo, err)
     }
 
-    var descriptif = domaineInfo.domaine
+    var nom = domaineInfo.domaine
     var noeud_id = domaineInfo.noeud_id
 
     const mappingDomaine = {
-        descriptif,
+        nom,
         actif,
         noeud_id,
+        date_presence,
     }
 
     return mappingDomaine
