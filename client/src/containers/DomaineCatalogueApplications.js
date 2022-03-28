@@ -2,7 +2,7 @@ import React from 'react'
 import { Row, Col, Form, InputGroup, Button, FormControl, Alert } from 'react-bootstrap'
 import Dropzone from 'react-dropzone'
 
-export class ParametresCataloguesApplications extends React.Component {
+class ParametresCataloguesApplications extends React.Component {
 
   state = {
     catalogueApplications: '',
@@ -35,6 +35,8 @@ export class ParametresCataloguesApplications extends React.Component {
     )
   }
 }
+
+export default ParametresCataloguesApplications
 
 function ListeApplications(props) {
   if(props.liste) {

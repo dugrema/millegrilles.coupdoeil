@@ -3,9 +3,14 @@ import {proxy as comlinkProxy} from 'comlink'
 
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
+import Button from 'react-bootstrap/Button'
 
 import { AlertTimeout, ModalAttente } from './Util'
 import { FormatterDate } from '@dugrema/millegrilles.reactjs'
+
+import Catalogues from './DomaineCatalogueApplications'
+import Maitredescles from './DomaineMaitredescles'
+import Usagers from './GestionUsagers'
 
 function Domaines(props) {
     console.debug("Domaines proppys : %O", props)
@@ -17,6 +22,7 @@ function Domaines(props) {
     const [attente, setAttente] = useState('')
     const [domaines, setDomaines] = useState('')
     const [evenementDomaine, setEvenementDomaine] = useState('')
+    const [domaineSelectionne, setDomaineSelectionne] = useState('')
 
     const confirmationCb = useCallback( 
         confirmation => { setConfirmation(confirmation); setAttente('') },
@@ -47,6 +53,19 @@ function Domaines(props) {
         }
     }, [evenementDomaine, setEvenementDomaine, domaines, setDomaines, erreurCb])
 
+    let Page
+    switch(domaineSelectionne) {
+        case 'MaitreDesCles': Page = Maitredescles; break
+        case 'Catalogues': Page = Catalogues; break
+        case 'Usagers': Page = Usagers; break
+        default:
+            Page = null
+    }
+
+    if(Page) {
+        return <Page workers={workers} etatConnexion={etatConnexion} fermer={()=>setDomaineSelectionne('')} />
+    }
+
     return (
         <>
             <AlertTimeout 
@@ -56,7 +75,37 @@ function Domaines(props) {
             <ModalAttente show={attente} setAttente={setAttente} />
 
             <h1>Domaines</h1>
+
+            <h2>Domaines configures</h2>
             <ListeDomaines domaines={domaines} />
+
+            <h2>Actions</h2>
+            <Row>
+                <Row>
+                    <Col>
+                        Recuperer des cles non dechiffrables.
+                    </Col>
+                    <Col>
+                        <Button variant="secondary" onClick={()=>setDomaineSelectionne('MaitreDesCles')}>Dechiffrer</Button>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        Gerer les catalogues d'application.
+                    </Col>
+                    <Col>
+                        <Button variant="secondary" onClick={()=>setDomaineSelectionne('Catalogues')}>Catalogues</Button>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        Gerer les usagers.
+                    </Col>
+                    <Col>
+                        <Button variant="secondary" onClick={()=>setDomaineSelectionne('Usagers')}>Usagers</Button>
+                    </Col>
+                </Row>
+            </Row>
         </>
     )
 }
@@ -113,47 +162,6 @@ async function traiterEvenement(domaines, setDomaines, evenementDomaine, erreurC
 }
 
 
-// export function ListeDomaines(props) {
-
-//     const connexion = props.workers.connexion,
-//           modeProtege = props.rootProps.modeProtege
-  
-//     const [domaines, setDomaines] = useState([])
-  
-//     useEffect(()=>{domainesContexte.domaines = domaines}, [domaines])
-  
-//     useEffect(()=>{
-//       if(modeProtege) {
-//         connexion.enregistrerCallbackEvenementsPresenceDomaine(processMessageDomaine)
-//         chargerListeDomaines(connexion)
-//           .then(domaines=>{
-//             // console.debug("Domaines charges : %O", domaines)
-//             setDomaines(domaines)
-//           })
-  
-//         // Cleanup
-//         return ()=>{
-//           connexion.retirerCallbackEvenementsPresenceDomaine()
-//         }
-//       }
-//     }, [modeProtege, setDomaines])
-  
-//     const processMessageDomaine = useCallback(comlinkProxy(message => {
-//       // console.debug("Message recu : %O", message)
-//       const domaines = domainesContexte.domaines
-  
-//       const domainesMaj = majDomaines(domaines, message.exchange, message.message)
-//       setDomaines(domainesMaj)
-//     }), [setDomaines])
-  
-//     const children = props.children
-//     return React.Children.map(children, (child, i) => {
-//       const clone = React.cloneElement(child, {domaines})
-//       return clone
-//     })
-  
-// }
-
 // Charge la liste courante des noeuds
 async function chargerListeDomaines(workers, setDomaines, erreurCb) {
     try {
@@ -178,41 +186,6 @@ async function chargerListeDomaines(workers, setDomaines, erreurCb) {
         erreurCb(err, "Erreur chargement domaines.")
     }
 }
-
-// // Detecter nouveau noeud, ajoute a la liste
-// function majDomaines(domaines, niveauSecurite, message) {
-// // console.debug("Message update domaines recu :\n%O", message)
-// const noeud_id = message.noeud_id
-// const estampille = message['en-tete'].estampille
-
-// const valeursMaj = mapperDomaine(message, estampille)
-
-// var domainesCourants = [...domaines]
-// var trouve = false
-// for(let idx in domainesCourants) {
-//     var domaineCourant = domainesCourants[idx]
-//     if(domaineCourant.descriptif === valeursMaj.descriptif) {
-//     // Copier le noeud et remplacer l'instance dans l'array
-//     domaineCourant = Object.assign({}, domaineCourant)
-//     domainesCourants[idx] = domaineCourant
-
-//     domaineCourant = Object.assign(domaineCourant, valeursMaj)
-
-//     trouve = true
-//     break  // Noeud id trouve, plus rien a faire
-//     }
-// }
-
-// if(!trouve) {
-//     // Nouveau noeud, on l'ajoute a la liste
-//     domainesCourants.push(valeursMaj)
-//     domainesCourants = trierNoeuds(domainesCourants)
-// }
-
-// // console.debug("Liste noeuds maj:\n%O", noeudsCourants)
-
-// return domainesCourants
-// }
 
 function trierDomaines(domaines) {
     return domaines.sort((a,b)=>{

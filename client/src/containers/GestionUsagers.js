@@ -13,6 +13,7 @@ export default function GestionUsagers(props) {
   const [listeUsagers, setListeUsagers] = useState([])
   const [userId, setUserId] = useState('')
   const {connexion} = props.workers
+  const fermer = props.fermer
 
   useEffect(_=>{
     chargerListeUsagers(connexion, setListeUsagers)
@@ -20,14 +21,16 @@ export default function GestionUsagers(props) {
 
   if(userId) return (
     <AfficherUsager userId={userId}
-                    workers={props.workers} />
+                    workers={props.workers} 
+                    fermer={()=>setUserId('')} />
   )
 
   return (
     <>
       <h2>Gestion usagers</h2>
       <AfficherListeUsagers listeUsagers={listeUsagers}
-                            setUserId={setUserId} />
+                            setUserId={setUserId} 
+                            fermer={fermer} />
     </>
   )
 }
@@ -40,6 +43,8 @@ function AfficherListeUsagers(props) {
   return (
     <>
       <h3>Usagers</h3>
+
+      <Button variant="secondary" onClick={props.fermer}>Fermer</Button>
 
       <Row className="table-header">
         <Col xs={12} sm={6} lg={3}>
@@ -116,6 +121,8 @@ function AfficherUsager(props) {
       <GestionWebauthn usager={usager}
                        workers={props.workers}
                        reloadUsager={reloadUsager} />
+
+      <Button variant="secondary" onClick={props.fermer}>Fermer</Button>
 
     </>
   )

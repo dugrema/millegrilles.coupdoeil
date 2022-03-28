@@ -3,7 +3,6 @@ import React from 'react'
 import Alert from 'react-bootstrap/Alert'
 
 import Instances from './Instances.js'
-import Domaines from './Domaines.js'
 
 import {Accueil} from './Accueil.js'
 import {Backup as CoreBackup} from './Backup'
@@ -13,11 +12,11 @@ import {Pki} from './Pki.js'
 import {SommaireNoeud} from './Noeud'
 import {SommaireDomaine} from './Domaine'
 
-import {ParametresCataloguesApplications} from './DomaineCatalogueApplications'
+// import ParametresCataloguesApplications from './DomaineCatalogueApplications'
 import {ParametresGrosFichiers} from './DomaineGrosFichiers'
-import {DomaineMaitredescles} from './DomaineMaitredescles'
+// import DomaineMaitredescles from './DomaineMaitredescles'
 
-const GestionUsagers = React.lazy(_=>import('./GestionUsagers'))
+const Domaines = React.lazy(()=>import('./Domaines'))
 
 const domainesConnus = {
   Accueil,
@@ -30,10 +29,9 @@ const domainesConnus = {
   CorePki: Pki,
   SommaireNoeud,
   SommaireDomaine,
-  CoreCatalogues: ParametresCataloguesApplications,
-  MaitreDesCles: DomaineMaitredescles,
+  // CoreCatalogues: ParametresCataloguesApplications,
+  // MaitreDesCles: DomaineMaitredescles,
   GrosFichiers: ParametresGrosFichiers,
-  GestionUsagers,
 };
 
 function SectionContenu(props) {

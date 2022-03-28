@@ -53,12 +53,6 @@ function MenuItems(props) {
             </Nav.Link>
         </Nav.Item>
 
-        <Nav.Item>
-            <Nav.Link eventKey='GestionUsagers'>
-                <Trans>menu.GestionUsagers</Trans>
-            </Nav.Link>
-        </Nav.Item>
-
         <DropDownUsager {...props} />
 
         <Nav.Item>

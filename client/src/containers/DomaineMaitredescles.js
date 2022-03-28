@@ -12,7 +12,7 @@ const { sauvegarderPrivateKeyToPEM, extraireExtensionsMillegrille } = forgecommo
 
 const BATCH_NOMBRE_FETCH = 100       // Nombre cles downloadees a la fois
 
-export class DomaineMaitredescles extends React.Component {
+class DomaineMaitredescles extends React.Component {
 
   state = {
     nombreClesRechiffrees: '',
@@ -70,6 +70,8 @@ export class DomaineMaitredescles extends React.Component {
   }
 
 }
+
+export default DomaineMaitredescles
 
 function InformationClesNonChiffrees(props) {
 
