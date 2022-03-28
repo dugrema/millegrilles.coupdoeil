@@ -1,4 +1,5 @@
 import React, {useState, useEffect, useCallback} from 'react'
+import Button from 'react-bootstrap/Button'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Alert from 'react-bootstrap/Alert'
@@ -80,6 +81,8 @@ function AffichageNoeud(props) {
       <h1>Instance {nomNoeud}</h1>
 
       {erreur}
+
+      <Button variant="secondary" onClick={props.fermer}>Retour</Button>
 
       <Nav variant="tabs" defaultActiveKey="Information" onSelect={setSection}>
         <Nav.Item>

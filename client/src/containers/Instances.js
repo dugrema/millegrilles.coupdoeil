@@ -56,7 +56,7 @@ function Instances(props) {
                 workers={workers} 
                 etatConnexion={etatConnexion}
                 instance={instance} 
-                fermer={()=>setInstancesParId('')} />
+                fermer={()=>setInstanceSelectionnee('')} />
         )
     }
 
@@ -66,13 +66,24 @@ function Instances(props) {
             <h1>Instances</h1>
 
             <h2>Instance Protegee</h2>
-            <InstanceProtegee workers={workers} instances={instancesParId} selectionnerInstance={selectionnerInstanceCb} />
+            <InstanceProtegee 
+                workers={workers} 
+                instances={instancesParId} 
+                selectionnerInstance={selectionnerInstanceCb} />
 
             <h2>Instances Privees</h2>
-            <ListeInstances workers={workers} instances={instancesParId} selectionnerInstance={selectionnerInstanceCb} />
+            <ListeInstances 
+                workers={workers} 
+                instances={instancesParId} 
+                securite="2.prive" 
+                selectionnerInstance={selectionnerInstanceCb} />
 
             <h2>Instances Publiques</h2>
-            <ListeInstances workers={workers} instances={instancesParId} selectionnerInstance={selectionnerInstanceCb} />
+            <ListeInstances 
+                workers={workers} 
+                instances={instancesParId} 
+                securite="1.public" 
+                selectionnerInstance={selectionnerInstanceCb} />
         </>
     )
 }
@@ -108,11 +119,15 @@ function ListeInstances(props) {
 
     useEffect(()=>{
         const liste = Object.values(instances).filter(item=>item.securite === securite)
-        trierNoeuds(liste)
-        setListe(liste)
+        if(liste.length > 0) {
+            trierNoeuds(liste)
+            setListe(liste)
+        } else {
+            setListe('')
+        }
     }, [instances, setListe])
 
-    if(!instances) return <p>Aucunes instances</p>
+    if(!liste) return <p>Aucunes instances</p>
 
     return liste.map(instance=>{
         <InstanceItem key={instance.noeud_id} instance={instance} />
@@ -142,9 +157,6 @@ async function chargerListeInstances(connexion, setInstancesParNoeudId, setProte
         return infoNoeud
     })
 
-    const protege = instances.filter(item=>item.securite==='3.protege').pop()
-    const prives = instances.filter(item=>item.securite==='2.prives')
-    const publics = instances.filter(item=>item.securite==='1.public')
     const instancesParNoeudId = instances.reduce((acc, item)=>{
         acc[item.noeud_id] = item
         return acc
@@ -207,104 +219,6 @@ function mapperNoeud(noeudInfo, derniereModification) {
   
     return mappingNoeud
 }
-
-// Contexte global utilise pour fonctions wrappees par comlinkProxy
-// const noeudsContexte = {},
-//       domainesContexte = {}
-
-// export function ListeNoeuds(props) {
-
-//   const [noeuds, setNoeuds] = useState('')
-
-//   const modeProtege = props.rootProps.modeProtege,
-//         connexion = props.workers.connexion,
-//         noeud_id = props.noeud_id
-
-//   useEffect(()=>{noeudsContexte.noeuds = noeuds}, [noeuds])
-
-//   useEffect(()=>{
-//     if(modeProtege) {
-//       connexion.enregistrerCallbackEvenementsNoeuds(processMessageNoeuds)
-//       chargerListeNoeuds(connexion, noeud_id)
-//         .then(noeuds=>{setNoeuds(noeuds)})
-//         .catch(err=>{console.error("Erreur chargement liste noeuds : %O", err)})
-
-//       // Cleanup
-//       return () => {
-//         connexion.retirerCallbackEvenementsNoeuds()
-//       }
-//     }
-//   }, [modeProtege, connexion, noeud_id])
-
-//   const processMessageNoeuds = useCallback(comlinkProxy(event => {
-//     const noeuds = noeudsContexte.noeuds,
-//           noeud_id = noeudsContexte.noeud_id
-
-//     // console.debug("Message noeud : %o", event)
-//     if( ! noeud_id || noeud_id === event.message.noeud_id) {
-//       const noeudsMaj = majNoeuds(noeuds, '3.protege', event.message)
-//       setNoeuds(noeudsMaj)
-//     }
-
-//   }), [noeudsContexte, setNoeuds])
-
-//   // const processMessageApplication = useCallback(comlinkProxy(message => {
-//   //   console.debug("Message application : %O", message)
-//   //   if(noeud_id) {
-//   //     var noeud = noeuds.filter(item=>item.noeud_id===noeud_id)[0]
-//   //   }
-//   // }), [noeud_id, noeuds])
-//   //
-//   // _processMessageDocker = useCallback(comlinkProxy(event => {
-//   //   const message = event.message
-//   //   const domaineAction = event.routingKey.split('.').pop()
-//   //
-//   //   if(noeud_id) {
-//   //     var noeudCopy = {...noeuds.filter(item=>item.noeud_id===noeud_id)[0]}
-//   //     if(domaineAction === 'docker/container') {
-//   //       console.debug("Message docker container : %O", message)
-//   //     } else if(domaineAction === 'docker/service') {
-//   //       console.debug("Message docker service : %O", message)
-//   //       if(message.Action === 'remove') {
-//   //         // Supprimer le service
-//   //         // console.debug("Supprimer service, info noeud : %O", noeudCopy)
-//   //         var nomApplication = message.Actor.Attributes.name
-//   //         var servicesRestants = {...noeudCopy.services}
-//   //         // console.debug("Services avant suppression : %O", servicesRestants)
-//   //         delete servicesRestants[nomApplication]
-//   //         noeudCopy.services = servicesRestants
-//   //         // console.debug("Copie noeud apres suppression : %O", noeudCopy)
-//   //       } else if(message.Action === 'create') {
-//   //         // console.debug("Creer service, info noeud : %O", noeudCopy)
-//   //         var nomApplication = message.Actor.Attributes.name
-//   //       }
-//   //     } else {
-//   //       // console.debug("Message docker type non gere : %O", message)
-//   //     }
-//   //
-//   //     // Creer copie de la liste de noeuds
-//   //     var listeCopie = noeuds.map(item=>{
-//   //       if(item.noeud_id === noeud_id) {
-//   //         return noeudCopy
-//   //       }
-//   //       return item
-//   //     })
-//   //     setNoeuds(listeCopie)
-//   //   }
-//   // }), [noeud_id, noeuds, setNoeuds])
-
-
-//   if(noeuds) {
-//     const children = props.children
-//     return React.Children.map(children, (child, i) => {
-//       const clone = React.cloneElement(child, {noeuds})
-//       return clone
-//     })
-//   } else {
-//     return ''
-//   }
-
-// }
 
 function traiterMessageRecu(message, instancesParId, setInstancesParId) {
     console.debug("processMessageNoeudsCb recu : %O", message)
