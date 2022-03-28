@@ -5,7 +5,6 @@ import Col from 'react-bootstrap/Col'
 import Alert from 'react-bootstrap/Alert'
 import Nav from 'react-bootstrap/Nav'
 import NavDropdown from 'react-bootstrap/NavDropdown'
-import {proxy as comlinkProxy} from 'comlink'
 
 import {CommandeHttp, ConsignationNoeud} from './NoeudConfiguration'
 import ApplicationsInstance from './InstanceApplications'

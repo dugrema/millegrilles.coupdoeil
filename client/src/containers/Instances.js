@@ -4,6 +4,8 @@ import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
 import {proxy as comlinkProxy} from 'comlink'
 
+import { FormatterDate } from '@dugrema/millegrilles.reactjs'
+
 import AfficherInstanceDetail from './Noeud'
 
 function Instances(props) {
@@ -98,13 +100,17 @@ function InstanceProtegee(props) {
     const instance = Object.values(instances).filter(item=>item.securite === '3.protege').pop()
 
     const nomInstance = instance.domaine,
-          instanceId = instance.noeud_id
+          instanceId = instance.noeud_id,
+          dateInstance = instance.date
 
     return (
         <>
             <Row>
                 <Col md={4}>{nomInstance}</Col>
-                <Col md={8}>
+                <Col md={3}>
+                    <FormatterDate value={dateInstance} />
+                </Col>
+                <Col>
                     <Button variant="secondary" onClick={selectionnerInstance} value={instanceId}>Configurer</Button>
                 </Col>
             </Row>
@@ -153,7 +159,13 @@ async function chargerListeInstances(connexion, setInstancesParNoeudId, setProte
     if(!reponseInstances) reponseInstances = []
   
     let instances = reponseInstances.map(instance=>{
-        const derniereModification = instance['_mg-derniere-modification']
+        const instanceId = instance.noeud_id
+        let derniereModification = ''
+        try {
+            derniereModification = new Date(Number(instance.date_presence))
+        } catch(err) {
+            console.warn("chargerListeInstances Derniere modification absente de l'instance : %s", instanceId)
+        }
         const infoNoeud = mapperNoeud(instance, derniereModification)
         return infoNoeud
     })
