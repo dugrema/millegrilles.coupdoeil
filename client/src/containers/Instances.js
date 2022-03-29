@@ -85,7 +85,8 @@ function Instances(props) {
             <AjouterInstanceModal
                 show={showAssocier}
                 fermer={()=>setShowAssocier(false)}
-                workers={workers} />
+                workers={workers} 
+                confirmationCb={confirmationCb} />
 
             <Page
                 workers={workers} 
@@ -306,7 +307,7 @@ function traiterMessageRecu(evenement, instancesParId, setInstancesParId) {
 
 function AjouterInstanceModal(props) {
 
-    const workers = props.workers
+    const { workers, confirmationCb, fermer } = props
 
     const [hostname, setHostname] = useState('')
     const [instance, setInstance] = useState('')
@@ -368,7 +369,10 @@ function AjouterInstanceModal(props) {
                     hostname={hostname}
                     instance={instance}
                     csr={csr}
-                    prendrePossession={prendrePossession} />
+                    prendrePossession={prendrePossession} 
+                    confirmationCb={confirmationCb}
+                    erreurCb={erreurCb} 
+                    fermer={fermer} />
 
             </Modal.Body>
 
@@ -409,11 +413,8 @@ async function connecter(hostname, setInstance, setCsr, erreurCb) {
 
 function InformationNoeud(props) {
 
-    const instance = props.instance,
-          securite = instance.securite,
-          workers = props.workers,
-          csr = props.csr,
-          hostname = props.hostname
+    const {workers, csr, hostname, instance, confirmationCb, erreurCb, fermer} = props,
+          securite = instance.securite
 
     const [hostMq, setHostMq] = useState('')
     const [portMq, setPortMq] = useState('5673')
@@ -422,8 +423,10 @@ function InformationNoeud(props) {
     const setPortMqCb = useCallback(event=>setPortMq(event.currentTarget.value), [setPortMq])
 
     const prendrePossessionCb = useCallback(()=>{
-        prendrePossession(workers, csr, securite, hostname, hostMq, portMq)
-    }, [workers, csr, securite, hostname, hostMq, portMq])
+        prendrePossession(workers, csr, securite, hostname, hostMq, portMq, confirmationCb, erreurCb)
+            .then(()=>fermer())
+            .catch(err=>erreurCb(err))
+    }, [workers, csr, securite, hostname, hostMq, portMq, confirmationCb, erreurCb, fermer])
 
     useEffect(()=>{
         const urlLocal = window.location.host
@@ -497,27 +500,33 @@ function InformationNoeud(props) {
     )
   }
   
-  async function prendrePossession(workers, csr, securite, hostname, hostMq, portMq) {
+  async function prendrePossession(workers, csr, securite, hostname, hostMq, portMq, confirmationCb, erreurCb) {
   
-    console.debug("Demander la creation d'un nouveau certificat %s pour %s (MQ %s:%s)", securite, hostname, hostMq, portMq)
-  
-    const connexion = workers.connexion
-    const urlInstaller = new URL('https://localhost/installation/api/installer')
-    urlInstaller.hostname = hostname
+    try {
+        console.debug("Demander la creation d'un nouveau certificat %s pour %s (MQ %s:%s)", securite, hostname, hostMq, portMq)
+    
+        const connexion = workers.connexion
+        const urlInstaller = new URL('https://localhost/installation/api/installer')
+        urlInstaller.hostname = hostname
 
-    let role = 'public'
-    if(securite === '1.public') role = 'public'
-    else if(securite === '2.prive') role = 'prive'
-    else if(securite === '3.protege') role = 'protege'
-  
-    const commande = {csr, securite, role}
-  
-    const resultatCertificat = await connexion.genererCertificatNoeud(commande)
-  
-    if(resultatCertificat) {
+        let role = 'public'
+        if(securite === '1.public') role = 'public'
+        else if(securite === '2.prive') role = 'prive'
+        else if(securite === '3.protege') role = 'protege'
+    
+        const commande = {csr, securite, role}
+    
+        try {
+            var resultatCertificat = await connexion.genererCertificatNoeud(commande)
+        } catch(err) {
+            erreurCb(err, 'Erreur creation certificat')
+            return
+        }
+    
         console.debug("prendrePossession Reception info certificat : %O", resultatCertificat)
     
         const paramsInstallation = {
+            hostname,
             certificat: resultatCertificat.certificat,
             securite,
             role,
@@ -527,17 +536,27 @@ function InformationNoeud(props) {
     
         console.debug("Transmettre parametres installation noeud : %O", paramsInstallation)
     
-        const reponse = await axios({
-            url: urlInstaller.href,
-            method: 'post',
-            data: paramsInstallation,
-            timeout: 15000,
-        })
-        console.debug("Recu reponse demarrage installation noeud\n%O", reponse)
-  
-    } else {
-        throw new Error("Erreur : echec creation certificat")
+        try {
+            const reponse = await axios({
+                url: urlInstaller.href,
+                method: 'post',
+                data: paramsInstallation,
+                timeout: 15000,
+            })
+            console.debug("Recu reponse demarrage installation noeud\n%O", reponse)
+            const data = reponse.data || {}
+            if(data.err) {
+                erreurCb(data.err)
+            } else {
+                confirmationCb(`Prise de possession de ${hostname} reussie.`)
+            }
+        } catch(err) {
+            erreurCb(err, `Erreur prise de possession de l'instance`)
+            return
+        }
+    
+    } catch(err) {
+        erreurCb(err)
     }
-  
-  }
+}
   
