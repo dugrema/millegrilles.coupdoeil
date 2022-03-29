@@ -15,6 +15,7 @@ function configurerEvenements(socket) {
       {eventName: 'coupdoeil/ajouterCatalogueApplication', callback: (params, cb) => { traiter(socket, mqdao.ajouterCatalogueApplication, {params, cb}) }},
       {eventName: 'coupdoeil/configurerApplication', callback: (params, cb) => { traiter(socket, mqdao.configurerApplication, {params, cb}) }},
       {eventName: 'coupdoeil/transmettreCatalogues', callback: (params, cb) => { traiter(socket, mqdao.transmettreCatalogues, {params, cb}) }},
+      {eventName: 'coupdoeil/requeteConfigurationAcme', callback: (params, cb) => { traiter(socket, mqdao.requeteConfigurationAcme, {params, cb}) }},
 
       {eventName: 'coretopologie/majMonitor', callback: (params, cb) => { traiter(socket, mqdao.majMonitor, {params, cb}) }},
       {eventName: 'coretopologie/supprimerInstance', callback: (params, cb) => { traiter(socket, mqdao.supprimerInstance, {params, cb}) }},

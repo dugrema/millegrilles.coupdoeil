@@ -112,32 +112,25 @@ function supprimerInstance(socket, commande) {
     return transmettreCommande(socket, commande, 'supprimerInstance', {domaine: CONST_DOMAINE_TOPOLOGIE})
 }
 
-// function majContact(socket, params) {
-//     return transmettreCommande(socket, params, 'majContact')
-// }
-
-
-// function attachmentsRequis(socket, fuuids) {
-//     return socket.amqpdao.transmettreRequete(
-//         DOMAINE_MESSAGERIE, 
-//         {fuuids}, 
-//         {action: 'attachmentRequis', exchange: L2Prive, noformat: false, decoder: true}
-//     )
-// }
-
+function requeteConfigurationAcme(socket, requete) {
+    debug("requeteConfigurationAcme %O", requete)
+    const partition = requete['en-tete'].partition
+    return transmettreRequete(socket, requete, 'configurationAcme', {domaine: DOMAINE_MONITOR, partition, exchange: '1.public'})
+}
 
 // Fonctions generiques
 
 async function transmettreRequete(socket, params, action, opts) {
     opts = opts || {}
-    const domaine = opts.domaine || DOMAINE_MESSAGERIE
-    const exchange = opts.exchange || L2Prive
+    const domaine = opts.domaine || DOMAINE_MONITOR
+    const exchange = opts.exchange || L3Protege
+    const partition = opts.partition
     try {
         verifierMessage(params, domaine, action)
         return await socket.amqpdao.transmettreRequete(
             domaine, 
             params, 
-            {action, exchange, noformat: true, decoder: true}
+            {action, partition, exchange, noformat: true, decoder: true}
         )
     } catch(err) {
         console.error("mqdao.transmettreRequete ERROR : %O", err)
@@ -180,7 +173,7 @@ module.exports = {
     installerApplication, demarrerApplication, supprimerApplication,
     ajouterCatalogueApplication, requeteConfigurationApplication, configurerApplication, supprimerInstance,
 
-    majMonitor,
+    majMonitor, requeteConfigurationAcme,
     
     // ecouterMajFichiers, ecouterMajCollections, ecouterTranscodageProgres, 
     // retirerTranscodageProgres, 

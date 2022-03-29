@@ -7,6 +7,7 @@ import Nav from 'react-bootstrap/Nav'
 import NavDropdown from 'react-bootstrap/NavDropdown'
 
 import CommandeHttp from './NoeudConfiguration'
+import ConfigurationGenerale from './InstanceConfigurationGenerale'
 import ApplicationsInstance from './InstanceApplications'
 
 import { ListeNoeuds } from '../components/ListeTopologie'
@@ -54,6 +55,8 @@ function AffichageNoeud(props) {
     PageCourante = ApplicationsInstance
   } else if(section === 'Docker') {
     PageCourante = PageDocker
+  } else if(section === 'ConfigurationGenerale') {
+    PageCourante = ConfigurationGenerale
   }
 
   const nomNoeud = instance.domaine || instance.fqdn || instanceId
@@ -75,6 +78,7 @@ function AffichageNoeud(props) {
           <Nav.Link eventKey="Information">Information</Nav.Link>
         </Nav.Item>
         <NavDropdown title="Configuration" id="nav-dropdown">
+          <NavDropdown.Item eventKey="ConfigurationGenerale">Generale</NavDropdown.Item>
           <NavDropdown.Item eventKey="CommandeHttp">Commande HTTP</NavDropdown.Item>
         </NavDropdown>
         <Nav.Item>

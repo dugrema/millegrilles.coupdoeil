@@ -78,6 +78,19 @@ function getDocumentParFuuid(params) {
   return connexionClient.emitBlocking('coupdoeil/getDocumentParFuuid', params)
 }
 
+function getConfigurationAcme(instanceId) {
+  return connexionClient.emitBlocking(
+    'coupdoeil/requeteConfigurationAcme', 
+    {instanceId}, 
+    {
+      domaine: 'monitor', 
+      action: 'configurationAcme', 
+      partition: instanceId,
+      exchange: '1.public',
+      ajouterCertificat: true
+    }
+  )
+}
 
 // Commandes
 
@@ -294,6 +307,7 @@ comlinkExpose({
   regenererDomaine,
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
   majDelegations, requeteRapportBackup, resetBackup, majMonitor, supprimerInstance,
+  getConfigurationAcme,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,
