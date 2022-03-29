@@ -235,6 +235,14 @@ function majMonitor(params) {
   )
 }
 
+function supprimerInstance(instanceId) {
+  return connexionClient.emitBlocking(
+    'coretopologie/supprimerInstance',
+    {noeud_id: instanceId},
+    {domaine: 'CoreTopologie', action: 'supprimerInstance', attacherCertificat: true}
+  )
+}
+
 // Listeners
 function enregistrerCallbackEvenementsPresenceDomaine(cb) { 
   return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceDomaines', cb) 
@@ -277,7 +285,7 @@ comlinkExpose({
 
   regenererDomaine,
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
-  majDelegations, requeteRapportBackup, resetBackup, majMonitor,
+  majDelegations, requeteRapportBackup, resetBackup, majMonitor, supprimerInstance,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,

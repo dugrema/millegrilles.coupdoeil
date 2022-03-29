@@ -17,6 +17,7 @@ function configurerEvenements(socket) {
       {eventName: 'coupdoeil/transmettreCatalogues', callback: (params, cb) => { traiter(socket, mqdao.transmettreCatalogues, {params, cb}) }},
 
       {eventName: 'coretopologie/majMonitor', callback: (params, cb) => { traiter(socket, mqdao.majMonitor, {params, cb}) }},
+      {eventName: 'coretopologie/supprimerInstance', callback: (params, cb) => { traiter(socket, mqdao.supprimerInstance, {params, cb}) }},
 
       
       {eventName: 'coupdoeil/requeteListeNoeuds', callback: (params, cb) => {requeteListeNoeuds(socket, params, cb)}},
@@ -721,26 +722,6 @@ async function executerRequeteAction(domaine, action, socket, params, cb) {
   }
 }
 
-async function executerTransaction(domaine, action, socket, transaction, cb) {
-  const amqpdao = socket.amqpdao
-  try {
-    const amqpdao = socket.amqpdao
-    const entete = transaction['en-tete']
-    if(entete.domaine === domaine && entete.action === action) {
-      // const reponse = await amqpdao.transmettreEnveloppeTransaction(transaction)
-      // return cb(reponse)
-
-      const reponse = await amqpdao.transmettreEnveloppeTransaction(transaction)
-      cb(reponse)
-    } else {
-      cb({ok: false, err: "Mauvais type domaine/action"})
-    }
-  } catch(err) {
-    debug("Erreur executerRequete %s.\n%O", domaine, action, err)
-    if(cb) cb({err: 'Erreur: ' + err})
-  }
-}
-
 function requeteListeNoeuds(socket, params, cb) {
   executerRequeteAction('CoreTopologie', 'listeNoeuds', socket, params, cb)
 }
@@ -779,10 +760,6 @@ function requeteListeUsagers(socket, params, cb) {
 
 function requeteUsager(socket, params, cb) {
   executerRequeteAction('CoreMaitreDesComptes', 'chargerUsager', socket, params, cb)
-}
-
-function majMonitor(socket, params, cb) {
-  executerTransaction('CoreTopologie', 'monitor', socket, params, cb)
 }
 
 // Enregistrement d'evenements

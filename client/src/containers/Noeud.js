@@ -28,13 +28,18 @@ function AffichageNoeud(props) {
 
   console.debug("AffichageNoeud proppies", props)
 
-  const { workers, etatConnexion, instance, idmg } = props
+  const { workers, etatConnexion, instance, idmg, confirmationCb, attenteCb, fermer } = props
   const instanceId = instance.noeud_id
   
   const [erreur, setErreur] = useState('')
   const [pageConfiguration, setPageConfiguration] = useState('')
   const [section, setSection] = useState('Information')
   const [serveurUrl, setServeurUrl] = useState('https://fichiers:443')
+
+  const erreurCb = useCallback(err=>{
+    attenteCb(false)
+    setErreur(err)
+  }, [setErreur, attenteCb])
 
   // const setServeurUrlCb = useCallback(event => {
   //   setServeurUrl(event.currentTarget.value)
@@ -78,9 +83,7 @@ function AffichageNoeud(props) {
 
       <h1>Instance {nomNoeud}</h1>
 
-      {erreur}
-
-      <Button variant="secondary" onClick={props.fermer}>Retour</Button>
+      <Button variant="secondary" onClick={fermer}>Retour</Button>
 
       <Nav variant="tabs" defaultActiveKey="Information" onSelect={setSection}>
         <Nav.Item>
@@ -100,10 +103,13 @@ function AffichageNoeud(props) {
       <PageCourante instance={instance}
                     serveurUrl={serveurUrl}
                     setPageConfiguration={setPageConfiguration}
-                    setErreur={setErreur}
+                    setErreur={erreurCb}
                     etatConnexion={etatConnexion}
                     workers={workers} 
-                    idmg={idmg} />
+                    idmg={idmg} 
+                    confirmationCb={confirmationCb} 
+                    attenteCb={attenteCb} 
+                    fermer={fermer} />
 
     </div>
   )
@@ -124,11 +130,32 @@ function PageDocker(props) {
 
 function InformationTransactionsNoeud(props) {
 
-    // console.debug("Noeud info PROPPYS : %O", this.props.noeud)
+  // console.debug("Noeud info PROPPYS : %O", this.props.noeud)
 
-      var info = ''
-      const instance = props.instance || {},
-            instanceId = instance.noeud_id
+  const instance = props.instance || {},
+        instanceId = instance.noeud_id,
+        workers = props.workers,
+        connexion = workers.connexion,
+        erreurCb = props.setErreur,
+        confirmationCb = props.confirmationCb,
+        attenteCb = props.attenteCb,
+        fermer = props.fermer
+
+  const supprimerCb = useCallback(()=>{
+    console.debug("Supprimer %s", instanceId)
+    attenteCb(true)
+    connexion.supprimerInstance(instanceId)
+      .then(reponse=>{
+        console.debug("Reponse supprimer : %O", reponse)
+        if(reponse.err) {
+          erreurCb(`Erreur suppression instance ${instanceId} : ${''+reponse.err}`)
+        } else {
+          confirmationCb(`Instance ${instanceId} supprimee.`)
+          fermer()
+        }
+      })
+      .catch(err=>erreurCb(''+err))
+  }, [connexion, instanceId, erreurCb])
 
   return (
       <div>
@@ -163,6 +190,14 @@ function InformationTransactionsNoeud(props) {
             <Col>{instance.actif?'Actif':'Inactif'}</Col>
           </Row>
 
+          <Row>
+            <Col>Supprimer l'instance</Col>
+          </Row>
+          <Row>
+            <Col>
+              <Button variant="danger" onClick={supprimerCb}>Supprimer</Button>
+            </Col>
+          </Row>
       </div>
   )
 

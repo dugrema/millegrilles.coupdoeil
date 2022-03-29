@@ -73,13 +73,32 @@ function ShowStackTrace(props) {
 
 export function ModalAttente(props) {
 
-    const show = props.show
+    const show = props.show,
+          setAttente = props.setAttente
+
+    const [timerOuverture, setTimerOuverture] = useState()
+    const [actif, setActif] = useState(false)
+
+    useEffect(()=>{
+        if(show && !timerOuverture) {
+            setTimeout(()=>setActif(true), 250)
+        } else if(!show && timerOuverture) {
+            clearTimeout(timerOuverture)
+            setTimerOuverture(null)
+        }
+    }, [timerOuverture, setTimerOuverture, show, setActif])
+
+    useEffect(()=>{
+        if(!show && actif) {
+            setActif(false)
+        }
+    }, [actif, show, setActif])
 
     return (
-        <Modal show={show?true:false}>
+        <Modal show={actif}>
             <Modal.Header>En cours...</Modal.Header>
             <Modal.Footer>
-                <Button disabled={true} variant="secondary">Annuler</Button>
+                <Button disabled={!setAttente} variant="secondary" onClick={()=>setAttente(false)}>Annuler</Button>
             </Modal.Footer>
         </Modal>
     )

@@ -107,6 +107,11 @@ function majMonitor(socket, commande) {
     return transmettreCommande(socket, commande, 'monitor', {domaine: CONST_DOMAINE_TOPOLOGIE, exchange: commande.exchange})
 }
 
+function supprimerInstance(socket, commande) {
+    debug("Maj monitor %O", commande)
+    return transmettreCommande(socket, commande, 'supprimerInstance', {domaine: CONST_DOMAINE_TOPOLOGIE})
+}
+
 // function majContact(socket, params) {
 //     return transmettreCommande(socket, params, 'majContact')
 // }
@@ -173,7 +178,7 @@ module.exports = {
     challenge, getClesChiffrage,
     transmettreCatalogues,
     installerApplication, demarrerApplication, supprimerApplication,
-    ajouterCatalogueApplication, requeteConfigurationApplication, configurerApplication, 
+    ajouterCatalogueApplication, requeteConfigurationApplication, configurerApplication, supprimerInstance,
 
     majMonitor,
     
