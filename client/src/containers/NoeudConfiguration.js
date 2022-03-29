@@ -20,7 +20,6 @@ function CommandeHttp(props) {
   const [confirmation, setConfirmation] = useState('')
   const [error, setError] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
-  const [certificat, setCertificat] = useState('')
 
   useEffect(()=>{
     if(!instance) return
@@ -42,9 +41,9 @@ function CommandeHttp(props) {
   )
 
   const verifierAccesNoeudCb = useCallback(event => {
-    verifierAccesNoeud(hostname, idmg, setInstanceInfo, setCertificat, erreurCb)
+    verifierAccesNoeud(hostname, idmg, setInstanceInfo, erreurCb)
       .catch(err=>console.error("Erreur verifierAccesNoeudCb : %O", err))
-  }, [hostname, idmg, setInstanceInfo, setCertificat, erreurCb])
+  }, [hostname, idmg, setInstanceInfo, erreurCb])
 
   return (
     <>
@@ -240,7 +239,7 @@ async function renouvellerCertificat(workers, hostname, instance, confirmationCb
   }
 }
 
-async function verifierAccesNoeud(hostname, idmg, setInstance, setCertificat, erreurCb) {
+async function verifierAccesNoeud(hostname, idmg, setInstance, erreurCb) {
   const url = new URL("https://localhost/installation/api/infoMonitor")
   url.hostname = hostname
 
@@ -257,7 +256,6 @@ async function verifierAccesNoeud(hostname, idmg, setInstance, setCertificat, er
       try {
         const certificat = forgePki.certificateFromPem(reponse.data.certificat)
         console.debug("Certificat noeud : %O", certificat)
-        setCertificat(certificat)
       } catch(err) {
         erreurCb(err, 'Erreur chargement certificat (invalide)')
         return
