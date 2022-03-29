@@ -97,18 +97,13 @@ function AfficherInfoConfiguration(props) {
 
   const {
     workers, instance, instanceInfo,  etatConnexion, etatInstance, hostname,
-    renouveler, confirmationCb, erreurCb,
+    confirmationCb, erreurCb,
   } = props
 
   const renouvelerCertificatCb = useCallback(async event => {
     renouvellerCertificat(workers, hostname, instance, confirmationCb, erreurCb)
       .catch(err=>console.error("Erreur renouvelerCertificatCb : %O", err))
   }, [workers, hostname, instance, confirmationCb, erreurCb])
-
-  const changerHostnameInstanceCb = useCallback(event => {
-    changerHostnameInstance(workers, instance, hostname, confirmationCb, erreurCb)
-      .catch(err=>console.error("Erreur changerHostnameInstanceCb : %O", err))
-  }, [workers, instance, hostname, confirmationCb, erreurCb])
 
   if(!instanceInfo) return ''
 
@@ -141,7 +136,7 @@ function AfficherInfoConfiguration(props) {
       <AfficherExpirationCertificat pem={instanceInfo.certificat || ''}/>
       <Row>
         <Col>
-          <Button variant="secondary" onClick={renouveler}
+          <Button variant="secondary" onClick={renouvelerCertificatCb}
                   disabled={!etatConnexion}>Renouveler</Button>
         </Col>
       </Row>
@@ -186,28 +181,29 @@ function ConfigurerDomaine(props) {
 
 }
 
-async function renouvellerCertificat(workers, urlNoeud, instance, confirmationCb, erreurCb) {
-  console.debug("Renouveler certificat du noeud %s", urlNoeud)
+async function renouvellerCertificat(workers, hostname, instance, confirmationCb, erreurCb) {
+  console.debug("Renouveler certificat du noeud %s", hostname)
 
   const { connexion } = workers
 
-  const url = 'https:/' + path.join('/', urlNoeud, "installation/api/csr")
-  const reponseCsr = await axios.get(url)
+  const urlCsr = new URL('https://localhost/installation/api/csr')
+  urlCsr.hostname = hostname
+  const reponseCsr = await axios.get(urlCsr.href)
   console.debug("Reponse CSR : %O", reponseCsr)
 
   if(reponseCsr.status === 410) {
     console.debug("Le CSR n'existe pas, demander au noeud d'en generer un nouveau")
-    const url = 'https:/' + path.join('/', urlNoeud, "installation/api/genererCsr")
-    console.debug("URL verification noeud : %O", url)
+    const urlGenerer = new URL('https://localhost/installation/api/genererCsr')
+    urlGenerer.hostname = hostname
+    console.debug("URL verification noeud : %s", urlGenerer.href)
 
     const domaine = 'monitor', action = 'genererCsr'
-    // await signateurTransaction.preparerTransaction(transaction, domaineTransaction)
     const commande = await connexion.formatterMessage({}, domaine, {action, attacherCertificat: true})
 
     try {
       const reponse = await axios({
         method: 'post',
-        url,
+        url: urlGenerer.href,
         data: commande,
         timeout: 5000,
       })
@@ -229,7 +225,7 @@ async function renouvellerCertificat(workers, urlNoeud, instance, confirmationCb
 
   try {
     if(csr && securite) {
-      await prendrePossession(connexion, csr, securite, urlNoeud)
+      await prendrePossession(connexion, csr, securite, hostname)
       confirmationCb('Certificat renouvelle avec succes.')
     } else {
       erreurCb("Il manque le csr ou le niveau de securite")
@@ -971,7 +967,7 @@ async function chiffrerChamp(webWorker, noeud_id, certificats, secret) {
   return contenuChiffre
 }
 
-async function renouvelerCertificat(noeudUrl, csr) {
+async function renouvelerCertificat(workers, noeudUrl, csr) {
   console.debug("Renouveler le certificat avec csr %O", csr)
 
 }
