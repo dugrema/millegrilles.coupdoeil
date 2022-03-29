@@ -1,306 +1,398 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect, useCallback} from 'react'
 import {Row, Col, Button, Form, InputGroup, FormControl, Alert} from 'react-bootstrap'
 import path from 'path'
 import axios from 'axios'
 
+import { AlertTimeout, ModalAttente } from './Util'
+
 import { pki as forgePki } from '@dugrema/node-forge'
 import { prendrePossession } from './ConfigurationNoeudsListe'
 
-export class CommandeHttp extends React.Component {
+function CommandeHttp(props) {
 
-  state = {
-    urlNoeud: '',
-    etatNoeud: 'inconnu',
-    confirmation: '',
-    noeudInfo: '',
-    erreur: '',
-  }
+  const {workers, etatConnexion, instance, idmg} = props
+  const hostnameConfigure = instance.domaine
+  const ipDetectee = instance.ip_detectee
 
-  componentDidMount() {
-    console.debug("Configuration MQ instance, props : %O", this.props)
+  const [hostname, setHostname] = useState('')
+  const [etatInstance, setEtatInstance] = useState('inconnu')
+  const [instanceInfo, setInstanceInfo] = useState('')
+  const [attente, setAttente] = useState(false)
+  const [confirmation, setConfirmation] = useState('')
+  const [error, setError] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
+  const [certificat, setCertificat] = useState('')
 
-    const noeudInfo = this.props.instance || ''
-    var urlNoeud = noeudInfo.domaine || noeudInfo.ip_detectee
-    this.setState({urlNoeud})
+  useEffect(()=>{
+    if(!instance) return
+    var hostname = hostnameConfigure || ipDetectee
+    setHostname(hostname)
+  }, [setHostname, hostnameConfigure, ipDetectee])
 
-    // this.refresherNoeud = setInterval(_=>{
-    //   this.verifierAccesNoeud()
-    // }, 5000)
-  }
+  const confirmationCb = useCallback( confirmation => { setConfirmation(confirmation); setAttente(false) }, [setConfirmation, setAttente]  )
 
-  componentWillUnmount() {
-    // clearInterval(this.refresherNoeud)
-  }
+  const erreurCb = useCallback(
+      (err, message) => { 
+          console.debug("Set erreurs %O, %s", err, message)
+          setError(err, message)
+          if(message) setErrorMessage(message)
+          else setErrorMessage(''+err)
+          setAttente(false)  // Reset attente
+      }, 
+      [setError, setErrorMessage, setAttente]
+  )
 
-  renouvelerCertificat = async event => {
-    console.debug("Renouveler certificat du noeud %s", this.state.urlNoeud)
-    const url = 'https:/' + path.join('/', this.state.urlNoeud, "installation/api/csr")
-    const reponseCsr = await axios.get(url)
-    console.debug("Reponse CSR : %O", reponseCsr)
+  const verifierAccesNoeudCb = useCallback(event => {
+    verifierAccesNoeud(hostname, idmg, setEtatInstance, setInstanceInfo, setCertificat, erreurCb)
+      .catch(err=>console.error("Erreur verifierAccesNoeudCb : %O", err))
+  }, [hostname, idmg, setEtatInstance, setInstanceInfo, setCertificat, erreurCb])
 
-    var csr = null
-    if(reponseCsr.status === 410) {
-      console.debug("Le CSR n'existe pas, demander au noeud d'en generer un nouveau")
-      const url = 'https:/' + path.join('/', this.state.urlNoeud, "installation/api/genererCsr")
-      console.debug("URL verification noeud : %O", url)
+  return (
+    <>
+      <h2>Configuration d'une instance via Http</h2>
 
-      // const signateurTransaction = this.props.rootProps.signateurTransaction
-      // const commande = await signateurTransaction.preparerTransaction(commande, 'monitor.genererCsr')
+      <AlertTimeout 
+        variant="danger" delay={false} 
+        message={errorMessage} setMessage={setErrorMessage} err={error} setError={setError} />
+      <AlertTimeout message={confirmation} setMessage={setConfirmation} />
+      <ModalAttente show={attente} setAttente={setAttente} />
 
-      const domaineAction = 'monitor'
-      // await signateurTransaction.preparerTransaction(transaction, domaineTransaction)
-      const commande = await this.props.rootProps.chiffrageWorker.formatterMessage({}, domaineAction, {action: 'genererCsr', attacherCertificat: true})
+      <p>
+        Transmet des commandes de configuration signees avec le certificat du navigateur.
+      </p>
 
+      <label htmlFor="hostmq">URL de connexion a l'instance (https)</label>
+      <InputGroup>
+        <InputGroup.Text id="hostname">
+          https://
+        </InputGroup.Text>
+        <FormControl id="hostname"
+                      aria-describedby="urlNoeud"
+                      value={hostname}
+                      onChange={event=>setHostname(event.currentTarget.value)} />
+      </InputGroup>
+
+      <Row>
+        <Col>
+          <Button variant="primary" onClick={verifierAccesNoeudCb}>Charger</Button>
+        </Col>
+      </Row>
+
+      <AfficherInfoConfiguration 
+        workers={workers}
+        instance={instance}
+        instanceInfo={instanceInfo || ''}
+        hostname={hostname}
+        etatConnexion={etatConnexion} 
+        confirmationCb={confirmationCb}
+        erreurCb={erreurCb} />
+
+    </>
+  )
+}
+
+export default CommandeHttp
+
+function AfficherInfoConfiguration(props) {
+
+  const {
+    workers, instance, instanceInfo,  etatConnexion, etatInstance, hostname,
+    renouveler, confirmationCb, erreurCb,
+  } = props
+
+  const renouvelerCertificatCb = useCallback(async event => {
+    renouvellerCertificat(workers, hostname, instance, confirmationCb, erreurCb)
+      .catch(err=>console.error("Erreur renouvelerCertificatCb : %O", err))
+  }, [workers, hostname, instance, confirmationCb, erreurCb])
+
+  const changerHostnameInstanceCb = useCallback(event => {
+    changerHostnameInstance(workers, instance, hostname, confirmationCb, erreurCb)
+      .catch(err=>console.error("Erreur changerHostnameInstanceCb : %O", err))
+  }, [workers, instance, hostname, confirmationCb, erreurCb])
+
+  if(!instanceInfo) return ''
+
+  return (
+    <>
+      <h2>Information instance</h2>
+      <Row>
+        <Col md={3}>Idmg</Col>
+        <Col className="idmg">{instanceInfo.idmg}</Col>
+      </Row>
+      <Row>
+        <Col md={3}>Id</Col>
+        <Col>{instanceInfo.noeud_id}</Col>
+      </Row>
+      <Row>
+        <Col md={3}>Securite</Col>
+        <Col>{instanceInfo.securite}</Col>
+      </Row>
+      <Row>
+        <Col md={3}>FQDN detecte</Col>
+        <Col>{instanceInfo.fqdn_detecte}</Col>
+      </Row>
+
+      <ConfigurerDomaine
+        workers={workers}
+        instanceInfo={instanceInfo} 
+        hostname={hostname} />
+
+      <h3>Certificat</h3>
+      <AfficherExpirationCertificat pem={instanceInfo.certificat || ''}/>
+      <Row>
+        <Col>
+          <Button variant="secondary" onClick={renouveler}
+                  disabled={!etatConnexion}>Renouveler</Button>
+        </Col>
+      </Row>
+
+      <ConfigurerMQ 
+        workers={workers}
+        hostname={hostname}
+        erreurCb={erreurCb}
+        confirmationCb={confirmationCb} />
+    </>
+  )
+}
+
+function ConfigurerDomaine(props) {
+
+  const { instanceInfo, hostname } = props
+  const domaineConfigure = instanceInfo.domaine
+
+  const changerDomaineCb = useCallback(event=>{
+    console.debug("Changer domaine pour : %s", hostname)
+  }, [hostname])
+
+  return (
+    <>
+      <h3>Domaine</h3>
+      
+      <Row>
+        <Col md={4}>Configure</Col>
+        <Col>{domaineConfigure}</Col>
+      </Row>
+
+      <Row>
+        <Col md={4}>Utilise</Col>
+        <Col>{hostname}</Col>
+      </Row>
+
+      <label htmlFor="changerDomaine">Changer le hostname configure pour le hostname utilise.</label>
+      <br/>
+      <Button id="changerDomaine" variant="secondary" disabled={hostname===domaineConfigure} onClick={changerDomaineCb}>Changer</Button>
+    </>
+  )
+
+}
+
+async function renouvellerCertificat(workers, urlNoeud, instance, confirmationCb, erreurCb) {
+  console.debug("Renouveler certificat du noeud %s", urlNoeud)
+
+  const { connexion } = workers
+
+  const url = 'https:/' + path.join('/', urlNoeud, "installation/api/csr")
+  const reponseCsr = await axios.get(url)
+  console.debug("Reponse CSR : %O", reponseCsr)
+
+  if(reponseCsr.status === 410) {
+    console.debug("Le CSR n'existe pas, demander au noeud d'en generer un nouveau")
+    const url = 'https:/' + path.join('/', urlNoeud, "installation/api/genererCsr")
+    console.debug("URL verification noeud : %O", url)
+
+    const domaine = 'monitor', action = 'genererCsr'
+    // await signateurTransaction.preparerTransaction(transaction, domaineTransaction)
+    const commande = await connexion.formatterMessage({}, domaine, {action, attacherCertificat: true})
+
+    try {
       const reponse = await axios({
         method: 'post',
         url,
         data: commande,
         timeout: 5000,
       })
-      csr = reponse.data
 
-    } else if(reponseCsr.status === 200) {
-      csr = reponseCsr.data
-    } else {
-      this.setState({erreur: 'Erreur renouvellement certificat (CSR non recu)'})
+      var csr = reponse.data
+    } catch(err) {
+      erreurCb(err, "Erreur demande du CSR")
       return
     }
-
-    console.debug("CSR a utiliser\n%s", csr)
-    const securite = this.state.noeudInfo.securite
-
-    try {
-      if(csr && securite) {
-        const wsa = this.props.rootProps.connexionWorker
-        await prendrePossession(wsa, csr, securite, this.state.urlNoeud)
-      } else {
-        this.setState({erreur: "Il manque le csr ou le niveau de securite"})
-      }
-    } catch(err) {
-      console.error("Erreur prendrePossession : %O", err)
-      this.setState({erreur: err})
-    }
-
+  } else if(reponseCsr.status === 200) {
+    var csr = reponseCsr.data
+  } else {
+    erreurCb(`Erreur renouvellement certificat (CSR non recu, status : ${reponseCsr.status})`)
+    return
   }
 
-  verifierAccesNoeud = async event => {
-    console.debug("Check noeud")
+  console.debug("CSR a utiliser\n%s", csr)
+  const securite = instance.securite
 
-    const url = 'https:/' + path.join('/', this.state.urlNoeud, "installation/api/infoMonitor")
-    console.debug("URL verification noeud : %O", url)
-    try {
-      const reponse = await axios.get(url)
-      console.debug("Response noeud : %O, proppys: %O", reponse, this.props)
-
-      const idmg = reponse.data.idmg,
-            certIdmg = this.props.idmg
-      console.debug("Comparaison idmg : Reponse %s, cert %s", idmg, certIdmg)
-
-      if(idmg === certIdmg) {
-        var certificat = null, expirationCertificat = null
-        try {
-          certificat = forgePki.certificateFromPem(reponse.data.certificat)
-          console.debug("Certificat noeud : %O", certificat)
-        } catch(err) {console.warn("Erreur chargement certificat %O", err)}
-        this.setState({
-          etatNoeud: 'disponible',
-          noeudInfo: reponse.data,
-          certificat
-        })
-      } else {
-        this.setState({
-          etatNoeud: 'Mauvais idmg : ' + idmg,
-          noeudInfo: '',
-          certificat: '',
-        })
-      }
-    } catch(err) {
-      console.error("Erreur axios : %O", err)
-      this.setState({etatNoeud: 'Erreur/non disponible'})
-    }
-  }
-
-  changerTextfield = event => {
-    const {name, value} = event.currentTarget
-    this.setState({[name]: value})
-  }
-
-  conserverDomaineNoeud = async event => {
-    const noeud = this.props.instance
-    const transaction = {
-      noeud_id: noeud.noeud_id,
-      domaine: this.state.urlNoeud,
-    }
-    console.debug("conserverDomaineNoeud %O", transaction)
-
-    try {
-      const connexion = this.props.workers.connexion
-      console.debug("Workers %O, connexion %O", this.props.workers, connexion)
-      const resultat = await connexion.majMonitor(transaction)
-      console.debug("Resultat conserver domaine : %O", resultat)
-    } catch(e) {console.error("conserverDomaineNoeud Erreur majMonitor : %O", e)}
-  }
-
-  setErreur = erreur => {this.setState({erreur})}
-  setConfirmation = confirmation => {this.setConfirmation({confirmation})}
-  cacherErreur = event => {this.setState({erreur: ''})}
-  cacherConfirmation = event => {this.setState({confirmation: ''})}
-
-  render() {
-
-    const etatConnexion = this.props.etatConnexion
-
-    return (
-      <>
-        <h2>Configuration d'une instance via Http</h2>
-
-        <Alert show={this.state.erreur?true:false} variant="danger" onClose={this.cacherErreur} dismissible>
-          <Alert.Heading>Erreur</Alert.Heading>
-          {this.state.erreur.err?this.state.erreur.err:''+this.state.erreur}
-        </Alert>
-        <Alert show={this.state.confirmation?true:false} variant="success" onClose={this.cacherConfirmation} dismissible>
-          <Alert.Heading>Confirmation</Alert.Heading>
-          {this.state.confirmation}
-        </Alert>
-
-        <p>
-          Transmet des commandes de configuration signees avec le certificat du navigateur.
-        </p>
-
-        <label htmlFor="hostmq">URL de connexion a l'instance (https)</label>
-        <InputGroup>
-          <InputGroup.Text id="urlNoeud">
-            https://
-          </InputGroup.Text>
-          <FormControl id="urlNoeud"
-                       aria-describedby="urlNoeud"
-                       name="urlNoeud"
-                       value={this.state.urlNoeud}
-                       onChange={this.changerTextfield} />
-          <Button variant="outline-secondary" onClick={this.conserverDomaineNoeud}>Conserver</Button>
-          <Button variant="secondary" onClick={this.verifierAccesNoeud}>Verifier</Button>
-        </InputGroup>
-
-        <AfficherInfoConfiguration noeudInfo={this.state.noeudInfo || ''}
-                                   renouveler={this.renouvelerCertificat}
-                                   etatConnexion={etatConnexion} />
-
-        <Row>
-          <Col>Disponibilite d'une instance via https</Col>
-          <Col>{this.state.etatNoeud}</Col>
-        </Row>
-
-        <h2>Configurer MQ</h2>
-        <ConfigurerMQ 
-          workers={this.props.workers}
-          rootProps={this.props.rootProps}
-          urlNoeud={this.state.urlNoeud}
-          setErreur={this.setErreur}
-          setConfirmation={this.setConfirmation} />
-
-        <h2>Configurer Domaine</h2>
-        <ConfigurerDomaine 
-          workers={this.props.workers}
-          rootProps={this.props.rootProps}
-          urlNoeud={this.state.urlNoeud}
-          setErreur={this.setErreur}
-          setConfirmation={this.setConfirmation}
-          ipDetectee={this.props.instance.ip_detectee} />
-      </>
-    )
-  }
-}
-
-class ConfigurerMQ extends React.Component {
-
-  state = {
-    host: '',
-    port: '',
-  }
-
-  changerTextfield = event => {
-    const {name, value} = event.currentTarget
-    this.setState({[name]: value})
-  }
-
-  soumettre = async event => {
-    var {host, port} = this.state
-    var commande = {}
-    if(!host && !port) {
-      commande.supprimer_params_mq = true
+  try {
+    if(csr && securite) {
+      await prendrePossession(connexion, csr, securite, urlNoeud)
+      confirmationCb('Certificat renouvelle avec succes.')
     } else {
-      commande.host = host
-      commande.port = port
+      erreurCb("Il manque le csr ou le niveau de securite")
     }
-
-    const connexion = this.props.workers.connexion
-
-    // const signateurTransaction = this.props.rootProps.signateurTransaction
-    // await signateurTransaction.preparerTransaction(commande, 'Monitor.changerConfigurationMq')
-
-    const domaine = 'monitor', action = 'changerConfigurationMq'
-    // await signateurTransaction.preparerTransaction(transaction, domaineTransaction)
-    const commandeSignee = await connexion.formatterMessage(commande, domaine, {action})
-
-    console.debug("Commande a transmettre : %O", commandeSignee)
-    const url = 'https:/' + path.join('/', this.props.urlNoeud, '/installation/api/configurerMQ')
-    try {
-      const reponse = await axios({
-        method: 'post',
-        url,
-        data: commandeSignee,
-        timeout: 5000,
-      })
-      console.debug("Reponse configuration MQ : %O", reponse)
-      this.setState({confirmation: "Configuration transmise"})
-    } catch(err) {
-      this.setState({erreur: ''+err})
-    }
-  }
-
-  render() {
-    return (
-      <>
-        <label htmlFor="hostmq">Configuration de la connexion MQ</label>
-        <Row>
-          <Col md={8}>
-            <InputGroup>
-              <InputGroup.Text id="hostmq">
-                Host
-              </InputGroup.Text>
-              <FormControl id="hostmq"
-                           aria-describedby="hostmq"
-                           name="host"
-                           value={this.state.host}
-                           onChange={this.changerTextfield} />
-            </InputGroup>
-          </Col>
-
-          <Col md={4}>
-            <InputGroup>
-              <InputGroup.Text id="portmq">
-                Port
-              </InputGroup.Text>
-              <FormControl id="portmq"
-                           aria-describedby="portmq"
-                           name="port"
-                           value={this.state.port}
-                           onChange={this.changerTextfield} />
-            </InputGroup>
-          </Col>
-        </Row>
-
-        <Row>
-          <Col>
-            <Button onClick={this.soumettre}>Soumettre</Button>
-          </Col>
-        </Row>
-      </>
-    )
+  } catch(err) {
+    console.error("Erreur prendrePossession : %O", err)
+    erreurCb(err, 'Erreur renouvellement de certificat.')
   }
 }
 
-class ConfigurerDomaine extends React.Component {
+async function verifierAccesNoeud(hostname, idmg, setEtatInstance, setInstance, setCertificat, erreurCb) {
+  const url = new URL("https://localhost/installation/api/infoMonitor")
+  url.hostname = hostname
+
+  console.debug("URL verification noeud : %s", url.href)
+  try {
+    const reponse = await axios.get(url.href)
+    console.debug("Reponse noeud : %O", reponse)
+
+    const idmgReponse = reponse.data.idmg
+    console.debug("Comparaison idmg : Reponse %s, cert %s", idmg, idmgReponse)
+
+    if(idmg === idmgReponse) {
+
+      try {
+        const certificat = forgePki.certificateFromPem(reponse.data.certificat)
+        console.debug("Certificat noeud : %O", certificat)
+        setCertificat(certificat)
+      } catch(err) {
+        erreurCb(err, 'Erreur chargement certificat (invalide)')
+        return
+      }
+
+      setEtatInstance('disponible')
+      setInstance(reponse.data)
+
+    } else {
+      erreurCb(`Mauvais idmg ${idmgReponse}`)
+    }
+  } catch(err) {
+    erreurCb(err, `Erreur connexion`)
+  }
+}
+
+async function changerHostnameInstance(workers, instance, hostname, confirmationCb, erreurCb) {
+  const {connexion} = workers
+
+  const commande = {
+    noeud_id: instance.noeud_id,
+    domaine: hostname,
+  }
+
+  console.debug("changerDomaineInstance %O", commande)
+
+  try {
+    const resultat = await connexion.changerDomaineInstance(commande)
+    console.debug("Resultat changerDomaineInstance : %O", resultat)
+    if(resultat.err) {
+      erreurCb(resultat.err, 'Erreur changement hostname.')
+    } else {
+      confirmationCb('Hostname change avec succes.')
+    }
+  } catch(err) {
+    console.error("conserverDomaineNoeud Erreur majMonitor : %O", err)
+    erreurCb(err, 'Erreur changement hostname.')
+  }
+}
+
+function ConfigurerMQ(props) {
+
+  const { workers, hostname, confirmationCb, erreurCb } = props
+
+  const [hostMq, setHostMq] = useState('')
+  const [portMq, setPortMq] = useState('5673')
+
+  const soumettre = useCallback(event=>{
+    configurerMq(workers, hostname, hostMq, portMq, confirmationCb, erreurCb)
+      .catch(err=>console.error("Erreur %O", err))
+  }, [workers, hostname, hostMq, portMq, confirmationCb, erreurCb])
+
+  return (
+    <>
+      <h3>Configurer MQ</h3>
+      <p>Modifier la configuration de MQ pour reconnecter l'instance au serveur 3.protege.</p>
+
+      <label htmlFor="hostmq">Configuration de la connexion MQ</label>
+      <Row>
+        <Col md={8}>
+          <InputGroup>
+            <InputGroup.Text id="hostmq">
+              Host
+            </InputGroup.Text>
+            <FormControl 
+              id="hostmq"
+              aria-describedby="hostmq"
+              name="host"
+              value={hostMq}
+              placeholder="exemple : serveur.domain.com"
+              onChange={event=>setHostMq(event.currentTarget.value)} />
+          </InputGroup>
+        </Col>
+
+        <Col md={4}>
+          <InputGroup>
+            <InputGroup.Text id="portmq">
+              Port
+            </InputGroup.Text>
+            <FormControl 
+              id="portmq"
+              aria-describedby="portmq"
+              name="port"
+              value={portMq}
+              onChange={event=>setPortMq(event.currentTarget.value)} />
+          </InputGroup>
+        </Col>
+      </Row>
+
+      <Row>
+        <Col>
+          <Button variant="secondary" disabled={!hostMq} onClick={soumettre}>Configurer</Button>
+        </Col>
+      </Row>
+    </>
+  )
+}
+
+async function configurerMq(workers, hostname, hostMq, portMq, confirmationCb, erreurCb) {
+  const {connexion} = workers
+
+  var commande = {}
+  if(!hostMq && !portMq) {
+    commande.supprimer_params_mq = true
+  } else {
+    commande.host = hostMq
+    commande.port = portMq
+  }
+
+  const domaine = 'monitor', action = 'changerConfigurationMq'
+  const commandeSignee = await connexion.formatterMessage(commande, domaine, {action})
+
+  console.debug("Commande a transmettre : %O", commandeSignee)
+  const url = new URL('https://localhost/installation/api/configurerMQ')
+  url.hostname = hostname
+  try {
+    const reponse = await axios({
+      method: 'post',
+      url,
+      data: commandeSignee,
+      timeout: 20000,
+    })
+    console.debug("Reponse configuration MQ : %O", reponse)
+    const data = reponse.data
+    if(data.ok === false) {
+      erreurCb(data.err, 'Erreur changement configuration MQ')
+    } else {
+      confirmationCb('Configuration MQ modifiee avec succes')
+    }
+  } catch(err) {
+    erreurCb(err, 'Erreur changement configuration MQ')
+  }
+}
+
+class ConfigurerDomaineOld extends React.Component {
 
   state = {
     domaine: '',
@@ -805,46 +897,6 @@ function AmazonWebServicesS3(props) {
   )
 }
 
-function AfficherInfoConfiguration(props) {
-  if(!props.noeudInfo) return ''
-
-  return (
-    <>
-      <h2>Information instance</h2>
-      <Row>
-        <Col md="2">Idmg</Col>
-        <Col>{props.noeudInfo.idmg}</Col>
-      </Row>
-      <Row>
-        <Col md="2">Id</Col>
-        <Col>{props.noeudInfo.noeud_id}</Col>
-      </Row>
-      <Row>
-        <Col md="2">Securite</Col>
-        <Col>{props.noeudInfo.securite}</Col>
-      </Row>
-      <Row>
-        <Col md="2">Domaine</Col>
-        <Col>{props.noeudInfo.domaine}</Col>
-      </Row>
-      <Row>
-        <Col md="2">FQDN detecte</Col>
-        <Col>{props.noeudInfo.fqdn_detecte}</Col>
-      </Row>
-
-      <h2>Certificat</h2>
-      <AfficherExpirationCertificat pem={props.noeudInfo.certificat || ''}/>
-      <Row>
-        <Col md="2"></Col>
-        <Col>
-          <Button onClick={props.renouveler}
-                  disabled={!props.etatConnexion}>Renouveler</Button>
-        </Col>
-      </Row>
-    </>
-  )
-}
-
 function AfficherExpirationCertificat(props) {
   const [certificat, setCertificat] = useState('')
   useEffect(_=>{
@@ -888,11 +940,11 @@ function AfficherExpirationCertificat(props) {
   return (
     <>
       <Row>
-        <Col>Expiration du certificat</Col>
+        <Col md={3}>Expiration</Col>
         <Col>{notAfter}</Col>
       </Row>
       <Row>
-        <Col>Expiration duree</Col>
+        <Col md={3}>Duree restante</Col>
         <Col>{expirationDuree}</Col>
       </Row>
     </>

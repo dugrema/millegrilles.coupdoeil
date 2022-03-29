@@ -6,7 +6,7 @@ import Alert from 'react-bootstrap/Alert'
 import Nav from 'react-bootstrap/Nav'
 import NavDropdown from 'react-bootstrap/NavDropdown'
 
-import {CommandeHttp, ConsignationNoeud} from './NoeudConfiguration'
+import CommandeHttp from './NoeudConfiguration'
 import ApplicationsInstance from './InstanceApplications'
 
 import { ListeNoeuds } from '../components/ListeTopologie'
@@ -48,7 +48,8 @@ function AffichageNoeud(props) {
   if(section === 'CommandeHttp') {
     PageCourante = CommandeHttp
   } else if(section === 'Consignation') {
-    PageCourante = ConsignationNoeud
+    // PageCourante = ConsignationNoeud
+    throw new Error("Page ConsignationNoeud TODO")
   } else if(section === 'Applications') {
     PageCourante = ApplicationsInstance
   } else if(section === 'Docker') {
