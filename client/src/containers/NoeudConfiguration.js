@@ -15,7 +15,6 @@ function CommandeHttp(props) {
   const ipDetectee = instance.ip_detectee
 
   const [hostname, setHostname] = useState('')
-  const [etatInstance, setEtatInstance] = useState('inconnu')
   const [instanceInfo, setInstanceInfo] = useState('')
   const [attente, setAttente] = useState(false)
   const [confirmation, setConfirmation] = useState('')
@@ -43,9 +42,9 @@ function CommandeHttp(props) {
   )
 
   const verifierAccesNoeudCb = useCallback(event => {
-    verifierAccesNoeud(hostname, idmg, setEtatInstance, setInstanceInfo, setCertificat, erreurCb)
+    verifierAccesNoeud(hostname, idmg, setInstanceInfo, setCertificat, erreurCb)
       .catch(err=>console.error("Erreur verifierAccesNoeudCb : %O", err))
-  }, [hostname, idmg, setEtatInstance, setInstanceInfo, setCertificat, erreurCb])
+  }, [hostname, idmg, setInstanceInfo, setCertificat, erreurCb])
 
   return (
     <>
@@ -96,9 +95,10 @@ export default CommandeHttp
 function AfficherInfoConfiguration(props) {
 
   const {
-    workers, instance, instanceInfo,  etatConnexion, etatInstance, hostname,
+    workers, instance, instanceInfo,  etatConnexion, hostname,
     confirmationCb, erreurCb,
   } = props
+  const instanceId = instance.noeud_id
 
   const renouvelerCertificatCb = useCallback(async event => {
     renouvellerCertificat(workers, hostname, instance, confirmationCb, erreurCb)
@@ -129,8 +129,11 @@ function AfficherInfoConfiguration(props) {
 
       <ConfigurerDomaine
         workers={workers}
+        instanceId={instanceId}
         instanceInfo={instanceInfo} 
-        hostname={hostname} />
+        hostname={hostname} 
+        confirmationCb={confirmationCb} 
+        erreurCb={erreurCb} />
 
       <h3>Certificat</h3>
       <AfficherExpirationCertificat pem={instanceInfo.certificat || ''}/>
@@ -152,12 +155,13 @@ function AfficherInfoConfiguration(props) {
 
 function ConfigurerDomaine(props) {
 
-  const { instanceInfo, hostname } = props
+  const { workers, instanceId, instanceInfo, hostname, confirmationCb, erreurCb } = props
   const domaineConfigure = instanceInfo.domaine
 
   const changerDomaineCb = useCallback(event=>{
     console.debug("Changer domaine pour : %s", hostname)
-  }, [hostname])
+    changerHostnameInstance(workers, instanceId, hostname, confirmationCb, erreurCb)
+  }, [workers, instanceId, hostname, confirmationCb, erreurCb])
 
   return (
     <>
@@ -236,7 +240,7 @@ async function renouvellerCertificat(workers, hostname, instance, confirmationCb
   }
 }
 
-async function verifierAccesNoeud(hostname, idmg, setEtatInstance, setInstance, setCertificat, erreurCb) {
+async function verifierAccesNoeud(hostname, idmg, setInstance, setCertificat, erreurCb) {
   const url = new URL("https://localhost/installation/api/infoMonitor")
   url.hostname = hostname
 
@@ -259,7 +263,6 @@ async function verifierAccesNoeud(hostname, idmg, setEtatInstance, setInstance, 
         return
       }
 
-      setEtatInstance('disponible')
       setInstance(reponse.data)
 
     } else {
@@ -270,27 +273,35 @@ async function verifierAccesNoeud(hostname, idmg, setEtatInstance, setInstance, 
   }
 }
 
-async function changerHostnameInstance(workers, instance, hostname, confirmationCb, erreurCb) {
-  const {connexion} = workers
-
-  const commande = {
-    noeud_id: instance.noeud_id,
-    domaine: hostname,
-  }
-
-  console.debug("changerDomaineInstance %O", commande)
-
+async function changerHostnameInstance(workers, instanceId, hostname, confirmationCb, erreurCb) {
   try {
-    const resultat = await connexion.changerDomaineInstance(commande)
-    console.debug("Resultat changerDomaineInstance : %O", resultat)
-    if(resultat.err) {
-      erreurCb(resultat.err, 'Erreur changement hostname.')
-    } else {
-      confirmationCb('Hostname change avec succes.')
+    const {connexion} = workers
+
+    const commande = {
+      noeud_id: instanceId,
+      domaine: hostname,
     }
+    const domaine = 'monitor', action = 'changerDomaine'
+    const commandeSignee = await connexion.formatterMessage(commande, domaine, {action})
+
+    const url = new URL("https://localhost/installation/api/changerDomaine")
+    url.hostname = hostname
+    console.debug("URL verification noeud : %s", url.href)
+
+    const reponse = await axios({
+      method: 'post',
+      url: url.href,
+      data: commandeSignee,
+      timeout: 20000,
+    })
+    console.debug("Reponse noeud : %O", reponse)
+
+    const idmgReponse = reponse.data.idmg
+    console.debug("Comparaison idmg : Reponse %s", idmgReponse)
+
+    confirmationCb("Hostname change avec succes.")
   } catch(err) {
-    console.error("conserverDomaineNoeud Erreur majMonitor : %O", err)
-    erreurCb(err, 'Erreur changement hostname.')
+    erreurCb(err, `Erreur connexion`)
   }
 }
 
