@@ -28,7 +28,8 @@ function AffichageNoeud(props) {
 
   console.debug("AffichageNoeud proppies", props)
 
-  const { workers, etatConnexion, instance, idmg, confirmationCb, attenteCb, fermer } = props
+  const { workers, etatConnexion, idmg, confirmationCb, attenteCb, fermer } = props
+  const instance = props.instance || {}
   const instanceId = instance.noeud_id
   
   const [erreur, setErreur] = useState('')
@@ -41,24 +42,7 @@ function AffichageNoeud(props) {
     setErreur(err)
   }, [setErreur, attenteCb])
 
-  // const setServeurUrlCb = useCallback(event => {
-  //   setServeurUrl(event.currentTarget.value)
-  // }, [setServeurUrl])
-
   const fermerErreur = useCallback(()=>setErreur(''), [setErreur])
-
-  // useEffect(()=>{
-  //   const traiterMessageEvenementApplication = comlinkProxy(event => {
-  //     console.debug("Evenement application : %O", event)
-  //     var {nom_application, evenement} = event.message
-  //     var routingAction = event.routingKey.split('.').pop()
-  //     evenement = evenement || routingAction
-  //     this.setState(
-  //       {evenementApplication: {...this.state.evenementApplication, [nom_application]: evenement}}
-  //     )
-  //   })
-  //   setTraiterMessageEvenementApplication(traiterMessageEvenementApplication) 
-  // }, [])
 
   var PageCourante = InformationTransactionsNoeud
   if(section === 'CommandeHttp') {

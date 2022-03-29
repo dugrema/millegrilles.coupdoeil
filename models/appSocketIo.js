@@ -18,7 +18,6 @@ function configurerEvenements(socket) {
 
       {eventName: 'coretopologie/majMonitor', callback: (params, cb) => { traiter(socket, mqdao.majMonitor, {params, cb}) }},
       {eventName: 'coretopologie/supprimerInstance', callback: (params, cb) => { traiter(socket, mqdao.supprimerInstance, {params, cb}) }},
-
       
       {eventName: 'coupdoeil/requeteListeNoeuds', callback: (params, cb) => {requeteListeNoeuds(socket, params, cb)}},
       {eventName: 'coupdoeil/requeteListeDomaines', callback: cb => {requeteListeDomaines(socket, cb)}},
@@ -109,6 +108,13 @@ function configurerEvenements(socket) {
       }},
       {eventName: 'coupdoeil/retirerEvenementsPresenceNoeuds', callback: (params, cb) => {
         retirerEvenementsPresenceNoeuds(socket, params, cb)
+      }},
+
+      {eventName: 'coupdoeil/ecouterEvenementsInstances', callback: (params, cb) => {
+        ecouterEvenementsInstances(socket, params, cb)
+      }},
+      {eventName: 'coupdoeil/retirerEvenementsInstances', callback: (params, cb) => {
+        retirerEvenementsInstances(socket, params, cb)
       }},
 
       {eventName: 'coupdoeil/ecouterEvenementsApplications', callback: (params, cb) => {
@@ -776,22 +782,30 @@ function retirerEvenementsPresenceDomaines(socket, _params, cb) {
   socket.unsubscribe(opts, cb)
 }
 
+const RK_PRESENCE_INSTANCES = ['evenement.monitor.presence'],
+      EX_PRESENCE_INSTANCES = ['1.public', '2.prive', '3.protege']
+
 function ecouterEvenementsPresenceNoeuds(socket, _params, cb) {
-  const opts = {
-    routingKeys: ['evenement.monitor.presence'],
-    exchanges: ['1.public', '2.prive', '3.protege'],
-  }
-  debug("ecouterEvenementsPresenceNoeuds Params : %O", opts)
-  socket.subscribe(opts, cb)
+  const presence = { routingKeys: RK_PRESENCE_INSTANCES, exchanges: EX_PRESENCE_INSTANCES }
+  socket.subscribe(presence, cb)
 }
 
 function retirerEvenementsPresenceNoeuds(socket, _params, cb) {
-  const opts = {
-    routingKeys: ['evenement.monitor.presence'],
-    exchanges: ['1.public', '2.prive', '3.protege'],
-  }
-  debug("retirerEvenementsPresenceNoeuds sur %O", opts)
-  socket.unsubscribe(opts, cb)
+  const presence = { routingKeys: RK_PRESENCE_INSTANCES, exchanges: EX_PRESENCE_INSTANCES }
+  socket.unsubscribe(presence, cb)
+}
+
+const RK_TOPOLOGIE_INSTANCES = ['evenement.CoreTopologie.instanceSupprimee'],
+      EX_TOPOLOGIE_INSTANCES = ['3.protege']
+
+function ecouterEvenementsInstances(socket, _params, cb) {
+  const topologie = { routingKeys: RK_TOPOLOGIE_INSTANCES, exchanges: EX_TOPOLOGIE_INSTANCES }
+  socket.subscribe(topologie, cb)
+}
+
+function retirerEvenementsInstances(socket, _params, cb) {
+  const topologie = { routingKeys: RK_TOPOLOGIE_INSTANCES, exchanges: EX_TOPOLOGIE_INSTANCES }
+  socket.unsubscribe(topologie, cb)
 }
 
 function ecouterEvenementsApplications(socket, params, cb) {

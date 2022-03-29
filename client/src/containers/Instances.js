@@ -29,7 +29,7 @@ function Instances(props) {
         
     useEffect(()=>{
         if(evenementRecu) {
-            traiterMessageRecu(evenementRecu.message, instancesParId, setInstancesParId)
+            traiterMessageRecu(evenementRecu, instancesParId, setInstancesParId)
         }
         setEvenementRecu('')
     }, [instancesParId, setInstancesParId, evenementRecu, setEvenementRecu])
@@ -51,6 +51,8 @@ function Instances(props) {
             
             const cb = comlinkProxy(setEvenementRecu)
             connexion.enregistrerCallbackEvenementsNoeuds(cb)
+                .catch(err=>console.error("Erreur enregistrement evenements presence : %O", err))
+            connexion.enregistrerCallbackEvenementsInstances(cb)
                 .catch(err=>console.error("Erreur enregistrement evenements instances : %O", err))
 
             // Charger (recharger) instances
@@ -60,8 +62,10 @@ function Instances(props) {
             // Cleanup
             return () => {
                 connexion.retirerCallbackEvenementsNoeuds(cb)
-                    .catch(err=>console.warn("Erreur retrait evenements instances : %O", err))
-            }
+                    .catch(err=>console.warn("Erreur retrait evenements presence : %O", err))
+                connexion.retirerCallbackEvenementsInstances(cb)
+                    .catch(err=>console.error("Erreur enregistrement evenements instances : %O", err))
+                }
         }
     }, [connexion, etatConnexion, setEvenementRecu])
 
@@ -282,15 +286,22 @@ function mapperNoeud(noeudInfo, derniereModification) {
     return mappingNoeud
 }
 
-function traiterMessageRecu(message, instancesParId, setInstancesParId) {
-    console.debug("processMessageNoeudsCb recu : %O", message)
-
-    const instanceId = message.noeud_id
-    const derniereModification = message['en-tete'].estampille
-    const instance = mapperNoeud(message, derniereModification)
+function traiterMessageRecu(evenement, instancesParId, setInstancesParId) {
+    const message = evenement.message,
+          routingKey = evenement.routingKey
+    console.debug("processMessageNoeudsCb recu : %s : %O", routingKey, message)
     
-    const copieInstances = {...instancesParId, [instanceId]: instance}
-    setInstancesParId(copieInstances)
+    const instanceId = message.noeud_id
+    if(routingKey === 'evenement.CoreTopologie.instanceSupprimee') {
+        const copieInstances = {...instancesParId}
+        delete copieInstances[instanceId]
+        setInstancesParId(copieInstances)
+    } else {
+        const derniereModification = message['en-tete'].estampille
+        const instance = mapperNoeud(message, derniereModification)
+        const copieInstances = {...instancesParId, [instanceId]: instance}
+        setInstancesParId(copieInstances)
+    }
 }
 
 function AjouterInstanceModal(props) {

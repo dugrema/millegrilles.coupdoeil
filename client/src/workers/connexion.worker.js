@@ -260,6 +260,14 @@ function retirerCallbackEvenementsNoeuds(cb) {
   return connexionClient.unsubscribe('coupdoeil/retirerEvenementsPresenceNoeuds', cb) 
 }
 
+function enregistrerCallbackEvenementsInstances(cb) { 
+  return connexionClient.subscribe('coupdoeil/ecouterEvenementsInstances', cb) 
+}
+
+function retirerCallbackEvenementsInstances(cb) { 
+  return connexionClient.unsubscribe('coupdoeil/retirerEvenementsInstances', cb) 
+}
+
 function enregistrerCallbackEvenementsApplications(instanceId, securite, cb) {
   return connexionClient.subscribe('coupdoeil/ecouterEvenementsApplications', cb, {instanceId, exchange: securite})
 }
@@ -289,5 +297,6 @@ comlinkExpose({
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,
+  enregistrerCallbackEvenementsInstances, retirerCallbackEvenementsInstances,
   enregistrerCallbackEvenementsApplications, retirerCallbackEvenementsApplications,
 })
