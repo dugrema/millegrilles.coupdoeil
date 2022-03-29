@@ -6,7 +6,7 @@ import { VerificationInfoServeur } from './Authentification'
 // import { SectionContenu } from './SectionContenu'
 import MenuItems from './Menu'
 
-import stylesCommuns from '@dugrema/millegrilles.reactjs/dist/index.css'
+import _stylesCommuns from '@dugrema/millegrilles.reactjs/dist/index.css'
 import './App.css'
 
 const SectionContenu = React.lazy(()=>import('./SectionContenu'))
@@ -155,7 +155,7 @@ function Menu(props) {
 
   return (
     <Navbar collapseOnSelect expand="md" bg="info" variant="dark" fixed="top" className="header-menu">
-      <Navbar.Brand onClick={_=>{props.changerPage('Accueil')}}><i className="fa fa-home"/></Navbar.Brand>
+      {/* <Navbar.Brand onClick={_=>{props.changerPage('Instances')}}><i className="fa fa-home"/></Navbar.Brand> */}
       <Navbar.Toggle aria-controls="responsive-navbar-menu" />
       <Navbar.Collapse id="responsive-navbar-menu">
 

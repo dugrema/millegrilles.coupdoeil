@@ -4,7 +4,7 @@ import Alert from 'react-bootstrap/Alert'
 
 import Instances from './Instances.js'
 
-import {Accueil} from './Accueil.js'
+// import {Accueil} from './Accueil.js'
 import {Backup as CoreBackup} from './Backup'
 import {PageConfigurationNoeudsListe as ConfigurationNoeuds} from './ConfigurationNoeudsListe'
 import {Parametres} from './Parametres.js'
@@ -19,7 +19,7 @@ import {ParametresGrosFichiers} from './DomaineGrosFichiers'
 const Domaines = React.lazy(()=>import('./Domaines'))
 
 const domainesConnus = {
-  Accueil,
+  // Accueil,
   Instances,
   Domaines,
 

@@ -12,8 +12,7 @@ import { IconeConnexion } from '@dugrema/millegrilles.reactjs'
 
 function MenuItems(props) {
     console.debug("Menu props : %O", props)
-    const workers = props.workers,
-          etatConnexion = props.etatConnexion
+    const etatConnexion = props.etatConnexion
 
     const changerPage = props.changerPage
 
@@ -64,61 +63,6 @@ function MenuItems(props) {
 }
 
 export default MenuItems
-
-function DropdownDomaines(props) {
-  const domaines = props.domaines
-
-  const items = domaines.map((domaine, idx)=>{
-    return <DropdownDomaine key={idx} domaine={domaine} />
-  })
-
-  return (
-    <Dropdown as={NavItem}>
-      <Dropdown.Toggle as={NavLink}><Trans>menu.Domaines</Trans></Dropdown.Toggle>
-      <Dropdown.Menu>
-        {items}
-      </Dropdown.Menu>
-    </Dropdown>
-  )
-
-}
-
-function DropdownDomaine(props) {
-  const domaine = props.domaine
-  const nomDomaine = domaine.descriptif
-  const eventKey = "SommaireDomaine/domaine:" + nomDomaine
-  return (
-    <Dropdown.Item eventKey={eventKey}><Trans>{'menu.' + nomDomaine}</Trans></Dropdown.Item>
-  )
-}
-
-function DropdownNoeuds(props) {
-  const noeuds = props.noeuds
-
-  const items = noeuds.map((noeud, idx)=>{
-    return <DropdownNoeud key={idx} noeud={noeud} />
-  })
-
-  return (
-    <Dropdown as={NavItem}>
-      <Dropdown.Toggle as={NavLink}><Trans>menu.Noeuds</Trans></Dropdown.Toggle>
-      <Dropdown.Menu>
-        <Dropdown.Item eventKey="ConfigurationNoeuds"><Trans>menu.AjouterNoeud</Trans></Dropdown.Item>
-        {items}
-      </Dropdown.Menu>
-    </Dropdown>
-  )
-
-}
-
-function DropdownNoeud(props) {
-  const noeud = props.noeud
-  const nomNoeud = noeud.descriptif
-  const eventKey = "SommaireNoeud/noeudid:" + noeud.noeud_id
-  return (
-    <Dropdown.Item eventKey={eventKey}>{nomNoeud}</Dropdown.Item>
-  )
-}
 
 function DropDownUsager(props) {
 
