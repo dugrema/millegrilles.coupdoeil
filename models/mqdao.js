@@ -118,6 +118,13 @@ function requeteConfigurationAcme(socket, requete) {
     return transmettreRequete(socket, requete, 'configurationAcme', {domaine: DOMAINE_MONITOR, partition, exchange: '1.public'})
 }
 
+function configurerDomaineAcme(socket, requete) {
+    debug("configurerDomaineAcme %O", requete)
+    const partition = requete['en-tete'].partition,
+          exchange = requete.securite
+    return transmettreCommande(socket, requete, 'configurerDomaine', {domaine: DOMAINE_MONITOR, partition, exchange})
+}
+
 // Fonctions generiques
 
 async function transmettreRequete(socket, params, action, opts) {
@@ -173,7 +180,7 @@ module.exports = {
     installerApplication, demarrerApplication, supprimerApplication,
     ajouterCatalogueApplication, requeteConfigurationApplication, configurerApplication, supprimerInstance,
 
-    majMonitor, requeteConfigurationAcme,
+    majMonitor, requeteConfigurationAcme, configurerDomaineAcme,
     
     // ecouterMajFichiers, ecouterMajCollections, ecouterTranscodageProgres, 
     // retirerTranscodageProgres, 

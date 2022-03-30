@@ -16,6 +16,7 @@ function configurerEvenements(socket) {
       {eventName: 'coupdoeil/configurerApplication', callback: (params, cb) => { traiter(socket, mqdao.configurerApplication, {params, cb}) }},
       {eventName: 'coupdoeil/transmettreCatalogues', callback: (params, cb) => { traiter(socket, mqdao.transmettreCatalogues, {params, cb}) }},
       {eventName: 'coupdoeil/requeteConfigurationAcme', callback: (params, cb) => { traiter(socket, mqdao.requeteConfigurationAcme, {params, cb}) }},
+      {eventName: 'coupdoeil/configurerDomaineAcme', callback: (params, cb) => { traiter(socket, mqdao.configurerDomaineAcme, {params, cb}) }},
 
       {eventName: 'coretopologie/majMonitor', callback: (params, cb) => { traiter(socket, mqdao.majMonitor, {params, cb}) }},
       {eventName: 'coretopologie/supprimerInstance', callback: (params, cb) => { traiter(socket, mqdao.supprimerInstance, {params, cb}) }},
@@ -123,6 +124,13 @@ function configurerEvenements(socket) {
       }},
       {eventName: 'coupdoeil/retirerEvenementsApplications', callback: (params, cb) => {
         retirerEvenementsApplications(socket, params, cb)
+      }},
+
+      {eventName: 'coupdoeil/ecouterEvenementsAcme', callback: (params, cb) => {
+        ecouterEvenementsAcme(socket, params, cb)
+      }},
+      {eventName: 'coupdoeil/retirerEvenementsAcme', callback: (params, cb) => {
+        retirerEvenementsAcme(socket, params, cb)
       }},
 
       {eventName: 'coupdoeil/ecouterEvenementsBackup', callback: (params, cb) => {
@@ -853,6 +861,24 @@ function retirerEvenementsApplications(socket, params, cb) {
 
   debug("retirerEvenementsApplications sur %O", opts)
   socket.unsubscribe(opts, cb)
+}
+
+const RK_EVENEMENTS_ACME = ['evenement.monitor.INSTANCE_ID.resultatAcme']
+
+function ecouterEvenementsAcme(socket, params, cb) {
+  const instanceId = params.instanceId,
+        exchange = params.exchange
+  const routingKeys = RK_EVENEMENTS_ACME.map(item=>item.replace('INSTANCE_ID', instanceId))
+  const evenements = { routingKeys, exchanges: [exchange] }
+  socket.subscribe(evenements, cb)
+}
+
+function retirerEvenementsAcme(socket, params, cb) {
+  const instanceId = params.instanceId,
+        exchange = params.exchange
+  const routingKeys = RK_EVENEMENTS_ACME.map(item=>item.replace('INSTANCE_ID', instanceId))
+  const evenements = { routingKeys, exchanges: [exchange] }
+  socket.unsubscribe(evenements, cb)
 }
 
 function ecouterEvenementsBackup(socket, params, cb) {

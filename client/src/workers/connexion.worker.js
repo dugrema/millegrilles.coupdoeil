@@ -92,6 +92,20 @@ function getConfigurationAcme(instanceId) {
   )
 }
 
+function configurerDomaineAcme(commande) {
+  const partition = commande.instanceId
+  return connexionClient.emitBlocking(
+    'coupdoeil/configurerDomaineAcme', 
+    commande,
+    {
+      domaine: 'monitor', 
+      action: 'configurerDomaine', 
+      partition,
+      ajouterCertificat: true
+    }
+  )
+}
+
 // Commandes
 
 function restaurationChargerCles(params) {
@@ -288,6 +302,13 @@ async function retirerCallbackEvenementsApplications(instanceId, securite, cb) {
   return connexionClient.unsubscribe('coupdoeil/retirerEvenementsApplications', cb, {instanceId, exchange: securite})
 }
 
+function enregistrerEvenementsAcme(instanceId, securite, cb) {
+  return connexionClient.subscribe('coupdoeil/ecouterEvenementsAcme', cb, {instanceId, exchange: securite})
+}
+async function retirerEvenementsAcme(instanceId, securite, cb) {
+  return connexionClient.unsubscribe('coupdoeil/retirerEvenementsAcme', cb, {instanceId, exchange: securite})
+}
+
 comlinkExpose({
   ...connexionClient,
   connecter,  // Override de connexionClient.connecter
@@ -307,10 +328,11 @@ comlinkExpose({
   regenererDomaine,
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
   majDelegations, requeteRapportBackup, resetBackup, majMonitor, supprimerInstance,
-  getConfigurationAcme,
+  getConfigurationAcme, configurerDomaineAcme,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,
   enregistrerCallbackEvenementsInstances, retirerCallbackEvenementsInstances,
   enregistrerCallbackEvenementsApplications, retirerCallbackEvenementsApplications,
+  enregistrerEvenementsAcme, retirerEvenementsAcme,
 })

@@ -1,5 +1,6 @@
 import React, {useState, useEffect, useCallback} from 'react'
 import {Row, Col, Button, Form, InputGroup, FormControl, Alert} from 'react-bootstrap'
+import {proxy as comlinkProxy} from 'comlink'
 
 import { AlertTimeout, ModalAttente } from './Util'
 
@@ -60,105 +61,65 @@ export default ConfigurationGenerale
 
 function ConfigurerDomaine(props) {
 
-    const { workers, instance, erreurCb } = props
+    const { workers, instance, confirmationCb, erreurCb } = props
     const { connexion } = workers
-    const { domaine } = instance
+    const { domaine, securite } = instance
     const instanceId = instance.noeud_id
 
-    const [configurationAvancee, setConfigurationAvancee] = useState(false)
     const [configurationAcme, setConfigurationAcme] = useState('')
+    const [configurationAvancee, setConfigurationAvancee] = useState(false)
+    const [domainesAdditionnels, setDomainesAdditionnels] = useState('')
+    const [force, setForce] = useState(false)
     const [modeTest, setModeTest] = useState(false)
+    const [dnssleep, setDnssleep] = useState('')
+    const [modeCreation, setModeCreation] = useState('webroot')
     const [cloudns_subauthid, setCloudns_subauthid] = useState('')
+    const [cloudns_password, setCloudns_password] = useState('')
+    const [evenementAcme, setEvenementAcme] = useState('')
+
+    // Ecouter events ACME
+    useEffect(()=>{
+        const cb = comlinkProxy(setEvenementAcme)
+        connexion.enregistrerEvenementsAcme(instanceId, securite, cb)
+            .catch(err=>erreurCb(err))
+        return () => connexion.retirerEvenementsAcme(instanceId, securite, cb)
+            .catch(err=>console.erreur("Erreur retirerEvenementsAcme : %O", err))
+    }, [instanceId, securite, setEvenementAcme])
+
+    // Pipeline messages ACME
+    useEffect(()=>{
+        if(evenementAcme) {
+            console.debug("Traiter evenement Acme: %O", evenementAcme)
+            setEvenementAcme('')
+        }
+    }, [evenementAcme, setEvenementAcme])
 
     useEffect(()=>{
         const methode = configurationAcme.methode
         if(methode) {
             setConfigurationAvancee(true)
         }
-    }, [configurationAcme, setConfigurationAvancee, setModeTest, setCloudns_subauthid])
+    }, [configurationAcme, setConfigurationAvancee, setCloudns_subauthid])
 
-    // state = {
-    //   domaine: '',
-    //   domaineValide: false,
-  
-    //   configurationAvancee: false,
-    //   modeTest: false,
-    //   modeCreation: 'webroot',
-  
-    //   cloudnsSubid: '',
-    //   cloudnsPassword: '',
-    //   dnssleep: '240',
-  
-    //   confirmation: '',
-    //   erreur: '',
-    // }
-  
-    // setInternetDisponible = event => {
-    //   const eventInfo = event.currentTarget
-    //   this.setState({internetDisponible: event.currentTarget.checked})
-    // }
-  
-    // changerDomaine = event => {
-    //   const value = event.currentTarget?event.currentTarget.value:event
-    //   const valide = this.RE_DOMAINE.test(value)
-    //   this.setState({domaine: value, domaineValide: valide})
-    // }
-  
-    // changerTextfield = event => {
-    //   const {name, value} = event.currentTarget
-    //   this.setState({[name]: value})
-    // }
-  
-    // setCheckbox = event => {
-    //   const {name, checked} = event.currentTarget
-    //   this.setState({[name]: checked})
-    // }
-  
-    // setModeCreation = event => {
-    //   const {value} = event.currentTarget
-    //   this.setState({modeCreation: value}, ()=>{console.debug("State :\n%O", this.state)})
-    // }
-  
-    // soumettre = async event => {
-    //   const infoInternet = this.state
-    //   var commande = {
-    //     domaine: infoInternet.domaine,
-    //     modeTest: infoInternet.modeTest,
-    //   }
-  
-    //   if(this.state.modeCreation === 'dns_cloudns') {
-    //     commande['modeCreation'] = infoInternet.modeCreation
-    //     commande['cloudnsSubid'] = infoInternet.cloudnsSubid
-    //     commande['cloudnsPassword'] = infoInternet.cloudnsPassword
-    //   }
-  
-    //   const connexion = this.props.workers.connexion
-  
-    //   // const signateurTransaction = this.props.rootProps.signateurTransaction
-    //   // await signateurTransaction.preparerTransaction(commande, 'Monitor.changerConfigurationDomaine')
-  
-    //   const domaine = 'monitor', action = 'changerConfigurationDomaine'
-    //   const commandeSignee = await connexion.formatterMessage(commande, domaine, {action})
-  
-    //   console.debug("Commande a transmettre : %O", commande)
-    //   const url = 'https:/' + path.join('/', this.props.urlNoeud, '/installation/api/configurerDomaine')
-    //   try {
-    //     const reponse = await axios({
-    //       method: 'post',
-    //       url,
-    //       data: commandeSignee,
-    //       timeout: 5000,
-    //     })
-    //     console.debug("Reponse configuration domaine : %O", reponse)
-    //     this.setState({confirmation: "Configuration transmise"})
-    //   } catch(err) {
-    //     this.setState({erreur: ''+err})
-    //   }
-    // }
-  
     const soumettreCb = useCallback(event=>{
         console.debug("Soumettre")
-    }, [])
+        const params = {}
+        if(modeCreation) params.modeCreation = modeCreation
+        if(domainesAdditionnels) {
+            params.domainesAdditionnels = domainesAdditionnels.split(',').map(item=>item.trim())
+        }
+        if(force===true) params.force = true
+        if(modeTest===true) params.modeTest = true
+        if(cloudns_subauthid) params.cloudns_subauthid = cloudns_subauthid
+        if(cloudns_password) params.cloudns_password = cloudns_password
+        if(dnssleep) params.dnssleep = dnssleep
+        soumettreDomaineAcme(workers, instanceId, securite, domaine, params, confirmationCb, erreurCb)
+    }, [
+        workers, instanceId, securite, domaine, 
+        domainesAdditionnels, setDomainesAdditionnels, force, modeTest,
+        dnssleep, modeCreation, cloudns_subauthid, cloudns_password, 
+        confirmationCb, erreurCb
+    ])
 
     const toggleAvanceCb = useCallback(event=>setConfigurationAvancee(event.currentTarget.checked), [setConfigurationAvancee])
 
@@ -196,7 +157,22 @@ function ConfigurerDomaine(props) {
 
             {configurationAvancee?
                 <ConfigurationLetencryptAvancee 
-                    configurationAcme={configurationAcme} />
+                    configurationAcme={configurationAcme} 
+                    domainesAdditionnels={domainesAdditionnels}
+                    setDomainesAdditionnels={setDomainesAdditionnels}
+                    force={force}
+                    setForce={setForce}
+                    modeTest={modeTest}
+                    setModeTest={setModeTest} 
+                    dnssleep={dnssleep}
+                    setDnssleep={setDnssleep}
+                    modeCreation={modeCreation}
+                    setModeCreation={setModeCreation}
+                    cloudns_subauthid={cloudns_subauthid}
+                    setCloudns_subauthid={setCloudns_subauthid}
+                    cloudns_password={cloudns_password}
+                    setCloudns_password={setCloudns_password}
+                    />
                 :
                 <p>
                     Le certificat va etre renouvelle gratuitement avec <a href="https://letsencrypt.org/">Let's Encrypt</a>. 
@@ -217,27 +193,26 @@ function ConfigurerDomaine(props) {
 function ConfigurationLetencryptAvancee(props) {
 
     const {configurationAcme} = props
-
-    const [modeTest, setModeTest] = useState(false)
-
-    const [modeCreation, setModeCreation] = useState('webroot')
-    const [params, setParams] = useState('')
+    const {force, setForce, modeTest, setModeTest, modeCreation, setModeCreation} = props
+    const {dnssleep, setDnssleep, domainesAdditionnels, setDomainesAdditionnels} = props
+    const {cloudns_subauthid, setCloudns_subauthid, cloudns_password, setCloudns_password} = props
 
     useEffect(()=>{
         const { methode } = configurationAcme
-        const {commande, mode_test, params_environnement} = methode || {}
-        setModeTest(mode_test?true:false)
-        if(commande) {
-            if(commande.indexOf('dns_cloudns') > -1) setModeCreation('dns_cloudns')
-        }
-        if(params_environnement) {
-            const params = params_environnement.reduce((acc, item)=>{
-                const items = item.split('=')
-                acc[items[0]] = items[1]
-                return acc
-            }, {})
-            setParams(params)
-        }
+        // TODO
+        // const {commande, mode_test, params_environnement} = methode || {}
+        // setModeTest(mode_test?true:false)
+        // if(commande) {
+        //     if(commande.indexOf('dns_cloudns') > -1) setModeCreation('dns_cloudns')
+        // }
+        // if(params_environnement) {
+        //     const params = params_environnement.reduce((acc, item)=>{
+        //         const items = item.split('=')
+        //         acc[items[0]] = items[1]
+        //         return acc
+        //     }, {})
+        //     setParams(params)
+        // }
 
     }, [configurationAcme, setModeCreation])
 
@@ -250,8 +225,25 @@ function ConfigurationLetencryptAvancee(props) {
     return (
         <>
             <p>Configuration avancee</p>
+
+            <InputGroup>
+                <InputGroup.Text id="additionnels">
+                    Domaines additionnels
+                </InputGroup.Text>
+                <FormControl 
+                    id="additionnels"
+                    aria-describedby="additionnels"
+                    value={domainesAdditionnels}
+                    onChange={event=>setDomainesAdditionnels(event.currentTarget.value)} />
+            </InputGroup>
+
+            <Form.Check id="certificat-force">
+                <Form.Check.Input type='checkbox' checked={force} onChange={event=>setForce(event.currentTarget.checked)} />
+                <Form.Check.Label>Force update</Form.Check.Label>
+            </Form.Check>
+
             <Form.Check id="certificat-test">
-                <Form.Check.Input type='checkbox' name="modeTest" value="true" checked={modeTest} onChange={event=>setModeTest(event.currentTarget.checked)} />
+                <Form.Check.Input type='checkbox' checked={modeTest} onChange={event=>setModeTest(event.currentTarget.checked)} />
                 <Form.Check.Label>Certificat de test</Form.Check.Label>
             </Form.Check>
 
@@ -268,23 +260,31 @@ function ConfigurationLetencryptAvancee(props) {
                 </Form.Select>
             </Form.Group>
 
-            <PageConfigurationMode params={params} />
+            <PageConfigurationMode 
+                dnssleep={dnssleep}
+                setDnssleep={setDnssleep}
+                cloudns_subauthid={cloudns_subauthid}
+                setCloudns_subauthid={setCloudns_subauthid}
+                cloudns_password={cloudns_password}
+                setCloudns_password={setCloudns_password}
+                />
         </>
     )
 }
 
 function ModeCloudns(props) {
 
-    const params = props.params || {}
-
-    const [subid, setSubid] = useState('')
-    const [password, setPassword] = useState('')
-    const [sleep, setSleep] = useState('240')
+    const {configurationAcme} = props
+    const {dnssleep, setDnssleep} = props
+    const {cloudns_subauthid, setCloudns_subauthid, cloudns_password, setCloudns_password} = props
 
     useEffect(()=>{
-        const subid = params['CLOUDNS_SUB_AUTH_ID']
-        if(subid) setSubid(subid)
-    }, [params, setSubid])
+        if(!configurationAcme) return
+        const methode = configurationAcme['methode'] || {}
+        // TODO
+        //const subid = params['CLOUDNS_SUB_AUTH_ID']
+        //if(subid) setCloudns_subauthid(subid)
+    }, [configurationAcme, setCloudns_subauthid])
 
     return (
         <>
@@ -296,9 +296,8 @@ function ModeCloudns(props) {
                 <FormControl 
                     id="cloudns-subid"
                     aria-describedby="cloudns-subid"
-                    name="cloudnsSubid"
-                    value={subid}
-                    onChange={event=>setSubid(event.currentTarget.value)} />
+                    value={cloudns_subauthid}
+                    onChange={event=>setCloudns_subauthid(event.currentTarget.value)} />
             </InputGroup>
             <InputGroup>
                 <InputGroup.Text id="cloudns-password">
@@ -310,8 +309,8 @@ function ModeCloudns(props) {
                     placeholder="Saisir mot de passe"
                     type="password"
                     name="cloudnsPassword"
-                    value={password}
-                    onChange={event=>setPassword(event.currentTarget.value)} />
+                    value={cloudns_password}
+                    onChange={event=>setCloudns_password(event.currentTarget.value)} />
             </InputGroup>
 
             <InputGroup>
@@ -321,13 +320,33 @@ function ModeCloudns(props) {
                 <FormControl id="dns-sleep"
                     aria-describedby="dns-sleep"
                     name="dnssleep"
-                    value={sleep}
-                    onChange={event=>setSleep(event.currentTarget.value)} />
+                    value={dnssleep}
+                    onChange={event=>setDnssleep(event.currentTarget.value)} />
             </InputGroup>
         </>
     )
 }
-  
+
+async function soumettreDomaineAcme(workers, instanceId, securite, domaine, params, confirmationCb, erreurCb) {
+    try {
+        const {connexion} = workers
+        const commande = {
+            instanceId,
+            securite,
+            domaine,
+            ...params, // modeCreation, modeTest, cloudnsSubid, cloudnsPassword
+        }
+        const resultat = await connexion.configurerDomaineAcme(commande)
+        if(resultat.err) {
+            erreurCb(resultat.err, 'Erreur demande creation certificat web TLS avec Acme')
+        } else {
+            confirmationCb('Creation du certificat web TLS en cours ...')
+        }
+    } catch(err) {
+        erreurCb(err)
+    }
+}
+
 // function AfficherFormInternet(props) {
 
 //     var flagDomaineInvalide = null;
