@@ -2,7 +2,7 @@ import React, {useState, useEffect, useCallback} from 'react'
 import {Row, Col, Button, Form, InputGroup, FormControl, Alert} from 'react-bootstrap'
 import {proxy as comlinkProxy} from 'comlink'
 
-import { AlertTimeout, ModalAttente } from './Util'
+import { AlertTimeout, ModalAttente } from '@dugrema/millegrilles.reactjs'
 
 // Note: Look behind (?<!) pas supporte sur Safari (iOS)
 // RE_DOMAINE = /^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)+[A-Za-z]{2,6}$/
@@ -90,16 +90,38 @@ function ConfigurerDomaine(props) {
     useEffect(()=>{
         if(evenementAcme) {
             console.debug("Traiter evenement Acme: %O", evenementAcme)
+            const message = evenementAcme.message
+            if(message.ok === false) {
+                erreurCb(message.output, message.err)
+            } else {
+                confirmationCb('Certificat TLS renouvelle avec succes.')
+            }
             setEvenementAcme('')
         }
-    }, [evenementAcme, setEvenementAcme])
+    }, [evenementAcme, setEvenementAcme, confirmationCb, erreurCb])
 
     useEffect(()=>{
-        const methode = configurationAcme.methode
+        const {methode, domaines_additionnels, modeTest, force } = configurationAcme
+        let modeCreation = null
         if(methode) {
+            modeCreation = methode.modeCreation
+            setModeCreation(modeCreation || 'webroot')
+
+            const { modeTest, dnssleep } = configurationAcme
+            setModeTest(modeTest || false)
+            setDnssleep(methode.dnssleep || '')
+            setModeCreation(methode.modeCreation || '')
+            
+            const params_environnement = methode.params_environnement || {}
+            if(params_environnement.CLOUDNS_SUB_AUTH_ID) setCloudns_subauthid(params_environnement.CLOUDNS_SUB_AUTH_ID)
+        }
+        if(domaines_additionnels || modeTest || modeCreation !== 'webroot') {
             setConfigurationAvancee(true)
         }
-    }, [configurationAcme, setConfigurationAvancee, setCloudns_subauthid])
+    }, [
+        configurationAcme, setConfigurationAvancee, setModeCreation, setModeTest, 
+        setDnssleep, setModeCreation, setCloudns_subauthid
+    ])
 
     const soumettreCb = useCallback(event=>{
         console.debug("Soumettre")
@@ -196,25 +218,6 @@ function ConfigurationLetencryptAvancee(props) {
     const {force, setForce, modeTest, setModeTest, modeCreation, setModeCreation} = props
     const {dnssleep, setDnssleep, domainesAdditionnels, setDomainesAdditionnels} = props
     const {cloudns_subauthid, setCloudns_subauthid, cloudns_password, setCloudns_password} = props
-
-    useEffect(()=>{
-        const { methode } = configurationAcme
-        // TODO
-        // const {commande, mode_test, params_environnement} = methode || {}
-        // setModeTest(mode_test?true:false)
-        // if(commande) {
-        //     if(commande.indexOf('dns_cloudns') > -1) setModeCreation('dns_cloudns')
-        // }
-        // if(params_environnement) {
-        //     const params = params_environnement.reduce((acc, item)=>{
-        //         const items = item.split('=')
-        //         acc[items[0]] = items[1]
-        //         return acc
-        //     }, {})
-        //     setParams(params)
-        // }
-
-    }, [configurationAcme, setModeCreation])
 
     let PageConfigurationMode
     switch(modeCreation) {
