@@ -9,10 +9,9 @@ import FormControl from 'react-bootstrap/FormControl'
 import axios from 'axios'
 import {proxy as comlinkProxy} from 'comlink'
 
-import { FormatterDate } from '@dugrema/millegrilles.reactjs'
+import { AlertTimeout, ModalAttente, FormatterDate } from '@dugrema/millegrilles.reactjs'
 
 import AfficherInstanceDetail from './Noeud'
-import { AlertTimeout, ModalAttente } from './Util'
 import { Modal } from "react-bootstrap"
 
 function Instances(props) {

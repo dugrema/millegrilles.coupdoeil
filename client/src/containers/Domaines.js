@@ -5,8 +5,7 @@ import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
 
-import { AlertTimeout, ModalAttente } from './Util'
-import { FormatterDate } from '@dugrema/millegrilles.reactjs'
+import { AlertTimeout, ModalAttente, FormatterDate } from '@dugrema/millegrilles.reactjs'
 
 import Catalogues from './DomaineCatalogueApplications'
 import Maitredescles from './DomaineMaitredescles'

@@ -2,9 +2,9 @@ import React, {useState, useEffect, useCallback} from 'react'
 import {Row, Col, Button, Form, InputGroup, FormControl, Alert} from 'react-bootstrap'
 import axios from 'axios'
 
-import { AlertTimeout, ModalAttente } from './Util'
-
+import { AlertTimeout, ModalAttente } from '@dugrema/millegrilles.reactjs'
 import { pki as forgePki } from '@dugrema/node-forge'
+
 import { prendrePossession } from './ConfigurationNoeudsListe'
 
 function CommandeHttp(props) {

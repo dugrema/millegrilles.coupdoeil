@@ -7,7 +7,7 @@ import Form from 'react-bootstrap/Form'
 import Modal from 'react-bootstrap/Modal'
 import {proxy as comlinkProxy} from 'comlink'
 
-import { AlertTimeout, ModalAttente } from './Util'
+import { AlertTimeout, ModalAttente } from '@dugrema/millegrilles.reactjs'
 
 function ApplicationsInstance(props) {
     
