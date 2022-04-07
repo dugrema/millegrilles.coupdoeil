@@ -98,6 +98,7 @@ function configurerEvenements(socket) {
       {eventName: 'coupdoeil/regenererDomaine', callback: (params, cb) => {
         regenererDomaine(socket, params, cb)
       }},
+      {eventName: 'getRecoveryCsr', callback: async (params, cb) => {traiterCompteUsagersDao(socket, 'getRecoveryCsr', {params, cb})}},
 
       // Listeners evenements
       {eventName: 'coupdoeil/ecouterEvenementsPresenceDomaines', callback: (params, cb) => {
@@ -907,6 +908,17 @@ function retirerEvenementsBackup(socket, params, cb) {
   socket.unsubscribe({routingKeys})
   debug("retirerEvenementsBackup sur %O", params)
   if(cb) cb(true)
+}
+
+async function traiterCompteUsagersDao(socket, methode, {params, cb}) {
+  try {
+    const comptesUsagersDao = socket.comptesUsagersDao
+    const reponse = await comptesUsagersDao[methode](socket, params)
+    if(cb) cb(reponse)
+  } catch(err) {
+    debug("traiterCompteUsagersDao ERROR %O", err)
+    cb({ok: false, err: "Erreur serveur : " + err})
+  }
 }
 
 module.exports = {configurerEvenements}

@@ -13,29 +13,19 @@ import Usagers from './GestionUsagers'
 
 function Domaines(props) {
     console.debug("Domaines proppys : %O", props)
-    const { workers, etatAuthentifie } = props
+    const { workers, etatAuthentifie, confirmationCb, erreurCb } = props
 
-    const [confirmation, setConfirmation] = useState('')
-    const [error, setError] = useState('')
-    const [errorMessage, setErrorMessage] = useState('')
     const [attente, setAttente] = useState('')
     const [domaines, setDomaines] = useState('')
     const [evenementDomaine, setEvenementDomaine] = useState('')
     const [domaineSelectionne, setDomaineSelectionne] = useState('')
 
-    const confirmationCb = useCallback( 
-        confirmation => { setConfirmation(confirmation); setAttente('') },
-        [setConfirmation, setAttente] 
-    )
-
-    const erreurCb = useCallback(
+    const erreurCbLocal = useCallback(
         (err, message) => { 
-            setError(err)
-            if(message) setErrorMessage(message)
-            else setErrorMessage(''+err)
+            erreurCb(err, message)
             setAttente('')  // Reset attente
         },
-        [setError, setErrorMessage, setAttente]
+        [erreurCb, setAttente]
     )
 
     useEffect(()=>{
@@ -68,16 +58,14 @@ function Domaines(props) {
             <Page 
                 workers={workers} 
                 etatAuthentifie={etatAuthentifie}
+                confirmationCb={confirmationCb}
+                erreurCb={erreurCbLocal}
                 fermer={()=>setDomaineSelectionne('')} />
         )
     }
 
     return (
         <>
-            <AlertTimeout 
-                variant="danger" delay={false} 
-                message={errorMessage} setMessage={setErrorMessage} err={error} setError={setError} />
-            <AlertTimeout message={confirmation} setMessage={setConfirmation} />
             <ModalAttente show={attente} setAttente={setAttente} />
 
             <h1>Domaines</h1>

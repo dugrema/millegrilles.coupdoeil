@@ -1,16 +1,15 @@
 import React, {useState, useEffect, useCallback} from 'react'
 import {Row, Col, Button, Alert, Form, Modal} from 'react-bootstrap'
 import {pki as forgePki} from '@dugrema/node-forge'
-import { detecterAppareilsDisponibles } from '@dugrema/millegrilles.reactjs'
+import { base64 } from 'multiformats/bases/base64'
 
-// import QrReader from 'react-qr-reader'
+import { AfficherActivationsUsager } from '@dugrema/millegrilles.reactjs'
 
-// const QrCodeScanner = React.lazy(()=>import('./QrCodeScanner'))
 import {QrCodeScanner, parseCsrQr} from './QrCodeScanner'
 
 export default function GestionUsagers(props) {
 
-  const { etatAuthentifie } = props
+  const { etatAuthentifie, confirmationCb, erreurCb } = props
 
   const [listeUsagers, setListeUsagers] = useState([])
   const [userId, setUserId] = useState('')
@@ -27,6 +26,8 @@ export default function GestionUsagers(props) {
     <AfficherUsager userId={userId}
                     workers={props.workers} 
                     etatAuthentifie={etatAuthentifie}
+                    confirmationCb={confirmationCb}
+                    erreurCb={erreurCb}
                     fermer={()=>setUserId('')} />
   )
 
@@ -96,8 +97,10 @@ function UsagerRow(props) {
 }
 
 function AfficherUsager(props) {
+
+  const { confirmationCb, erreurCb, etatAuthentifie } = props
+
   const [usager, setUsager] = useState('')
-  const [err, setErr] = useState('')
 
   useEffect(_=>{
     chargerUsager(props.workers.connexion, {userId: props.userId}, setUsager)
@@ -111,28 +114,60 @@ function AfficherUsager(props) {
     <>
       <h2>Usager</h2>
 
-      <Alert variant="danger" show={err?true:false}>
-        <Alert.Heading>Erreur</Alert.Heading>
-        {err}
-      </Alert>
+      <InformationUsager 
+        etatAuthentifie={etatAuthentifie}
+        usager={usager}
+        workers={props.workers}
+        setUsager={setUsager}
+        setErr={erreurCb} />
 
-      <InformationUsager usager={usager}
-                         workers={props.workers}
-                         setUsager={setUsager}
-                         setErr={setErr} />
+      <ActivationUsager 
+        etatAuthentifie={etatAuthentifie}
+        usager={usager}
+        workers={props.workers}
+        confirmationCb={confirmationCb}
+        erreurCb={erreurCb} />
 
-      <AfficherActivationsUsager usager={usager}
-                                 workers={props.workers} />
-
-      <GestionWebauthn usager={usager}
-                       workers={props.workers}
-                       reloadUsager={reloadUsager} />
+      <GestionWebauthn 
+        etatAuthentifie={etatAuthentifie}
+        usager={usager}
+        workers={props.workers}
+        reloadUsager={reloadUsager} />
 
       <Button variant="secondary" onClick={props.fermer}>Fermer</Button>
 
     </>
   )
 }
+
+function ActivationUsager(props) {
+
+  const { workers, usager, confirmationCb, erreurCb, etatAuthentifie } = props
+
+  const [csr, setCsr] = useState('')
+
+  const csrCb = useCallback(csr=>{
+    console.debug("Recu csr : %O", csr)
+    setCsr(csr)
+  }, [setCsr])
+
+  const activerCsr = useCallback(()=>{
+    console.debug("Activer CSR\n%O", csr)
+    confirmationCb(`Activer CSR :\n${csr}`)
+  }, [csr, confirmationCb])
+
+  return (
+    <>
+      <AfficherActivationsUsager nomUsager={usager.nomUsager}
+        workers={props.workers}
+        csrCb={csrCb}
+        erreurCb={erreurCb} />
+
+      <Button onClick={activerCsr} disabled={!csr || !etatAuthentifie}>Activer</Button>
+    </>
+  )
+}
+
 
 function InformationUsager(props) {
 
@@ -190,7 +225,7 @@ function InformationUsager(props) {
       </Row>
       <Row>
         <Col lg={3}>
-          <Form.Label for="switch_compte_prive">Acces prive complet</Form.Label>
+          <Form.Label htmlFor="switch_compte_prive">Acces prive complet</Form.Label>
         </Col>
         <Col>
           <Form.Check type="switch"
@@ -205,13 +240,15 @@ function InformationUsager(props) {
         </Col>
         <Col>
           {['proprietaire', 'delegue', 'aucune'].map(item=>
-            <Form.Check type="radio"
-                        name="delegationGlobale"
-                        checked={((delegationGlobale!=='')?delegationGlobale:props.usager.delegation_globale) === item}
-                        onChange={changerChamp}
-                        label={item}
-                        value={item}
-                        id={"radio_delegation_globale_" + item} />
+            <Form.Check 
+              key={item}
+              type="radio"
+              name="delegationGlobale"
+              checked={((delegationGlobale!=='')?delegationGlobale:props.usager.delegation_globale) === item}
+              onChange={changerChamp}
+              label={item}
+              value={item}
+              id={"radio_delegation_globale_" + item} />
           )}
         </Col>
       </Row>
@@ -230,56 +267,45 @@ function InformationUsager(props) {
   )
 }
 
-function AfficherActivationsUsager(props) {
+// function AfficherActivationsUsager(props) {
 
-  const [cameraDisponible, setCameraDisponible] = useState(false)
-  const [showCsr, setShowCsr] = useState(false)
-  const [showQrScanner, setShowQrScanner] = useState(false)
+//   const [cameraDisponible, setCameraDisponible] = useState(false)
+//   const [showCsr, setShowCsr] = useState(false)
+//   const [showQrScanner, setShowQrScanner] = useState(false)
 
-  useEffect(_=>{
-    // Detecter si camera est disponible pour scanner code QR
-    detecterAppareilsDisponibles().then(appareils=>{
-      // if(appareils && appareils.videoinput) setCameraDisponible(true)
-      setCameraDisponible(true)
-    }).catch(err=>{console.warn("Erreur detection camera", err)})
-  }, [])
+//   useEffect(_=>{
+//     // Detecter si camera est disponible pour scanner code QR
+//     detecterAppareilsDisponibles().then(appareils=>{
+//       // if(appareils && appareils.videoinput) setCameraDisponible(true)
+//       setCameraDisponible(true)
+//     }).catch(err=>{console.warn("Erreur detection camera", err)})
+//   }, [])
 
-  const hideCsr = useCallback(_=>{setShowCsr(false)}, [])
-  const hideQrScanner = useCallback(_=>{setShowQrScanner(false)}, [])
+//   const hideCsr = useCallback(_=>{setShowCsr(false)}, [])
+//   const hideQrScanner = useCallback(_=>{setShowQrScanner(false)}, [])
 
-  return (
-    <>
-      <CollerCSR show={showCsr}
-                 retour={hideCsr}
-                 usager={props.usager}
-                 workers={props.workers} />
+//   return (
+//     <>
+//       <QRCodeReader show={showQrScanner}
+//                     retour={hideQrScanner}
+//                     usager={props.usager}
+//                     workers={props.workers} />
 
-      <QRCodeReader show={showQrScanner}
-                    retour={hideQrScanner}
-                    usager={props.usager}
-                    workers={props.workers} />
+//       <h3>Signer certificat usager</h3>
 
-      <h3>Signer certificat usager</h3>
+//       <SectionActiverCompte />
 
-      <Row>
-        <Col lg={3}>CSR en attente</Col>
-        <Col>0</Col>
-      </Row>
-
-      <Row>
-        <Col>
-          <Button onClick={useCallback(_=>{setShowCsr(true)}, [])}>Coller CSR</Button>
-          <Button onClick={useCallback(_=>{setShowQrScanner(true)}, [setShowQrScanner])}
-                  disabled={!cameraDisponible}>
-            Scan QR
-          </Button>
-        </Col>
-      </Row>
-
-      <h3>Activations</h3>
-    </>
-  )
-}
+//       <Row>
+//         <Col>
+//           <Button onClick={useCallback(_=>{setShowQrScanner(true)}, [setShowQrScanner])}
+//                   disabled={!cameraDisponible}>
+//             Scan QR
+//           </Button>
+//         </Col>
+//       </Row>
+//     </>
+//   )
+// }
 
 function GestionWebauthn(props) {
 
@@ -324,98 +350,23 @@ function GestionWebauthn(props) {
   )
 }
 
-function CollerCSR(props) {
 
-  const [csr, setCsr] = useState('')
-  const [err, setErr] = useState('')
-  const [csrOk, setCsrOk] = useState(false)
+// async function activerCsr(connexionWorker, csr, nomUsager, userId) {
+//   console.debug("Activer CSR usager %s (%s) %O", nomUsager, userId, csr)
 
-  const usager = props.usager || {},
-        nomUsager = usager.nomUsager,
-        userId = usager.userId
+//   // Generer une "permission" avec le certificat local (delegation proprietaire)
+//   // let permission = {
+//   //   date: Math.floor(new Date().getTime()/1000), // Date epoch en secondes
+//   //   userId,
+//   //   activationTierce: true,  // Permet a l'usager d'acceder au compte sans token
+//   // }
+//   // permission = await chiffrageWorker.formatterMessage(permission, 'CoreMaitreDesComptes', {action: 'signatureCsr', attacherCertificat: true})
 
-  const onChange = event => {
-    const value = event.currentTarget.value
-    setCsr(value)
+//   // Generer certificat - l'usager va pouvoir y acceder a son prochain login
+//   const cert = await connexionWorker.genererCertificatNavigateur({csr, nomUsager, userId, activationTierce: true})
 
-    try {
-      traiterCsr(value, nomUsager)
-      // CSR ok
-      setErr('')
-      setCsrOk(true)
-      return
-    } catch(err) {
-      setErr(''+err)
-    }
-    setCsrOk(false)
-  }
-
-  const _activerCsr = async event => {
-    try {
-      await activerCsr(props.workers.connexion, csr, nomUsager, userId)
-
-      // Activation completee
-      props.retour()
-    } catch(err) {
-      console.debug("Erreur activation CSR %O", err)
-      setErr(''+err)
-    }
-  }
-
-  return (
-    <Modal size="lg" show={props.show} onHide={props.retour}>
-
-      <Modal.Header closeButton>
-        <Modal.Title>Activer usager {nomUsager}</Modal.Title>
-      </Modal.Header>
-
-      <Modal.Body>
-
-        <Alert variant="danger" show={err?true:false}>
-          <Alert.Heading>Erreur</Alert.Heading>
-          <p>{err}</p>
-        </Alert>
-
-        <Form.Group>
-          <Form.Label>Coller le CERTIFICATE REQUEST (CSR) ici</Form.Label>
-          <Form.Control as="textarea" rows={16} onChange={onChange} value={csr}/>
-        </Form.Group>
-
-        <Row>
-          {csrOk?
-            <Col>CSR ok et correspond a l'usager. Cliquer sur le bouton pour Activer.</Col>
-            :
-            <Col>Coller un CSR dans la zone de texte.</Col>
-          }
-        </Row>
-        <Row>
-          <Col>
-            <Button onClick={_activerCsr} disabled={!csrOk}>Activer</Button>
-          </Col>
-        </Row>
-
-      </Modal.Body>
-
-    </Modal>
-  )
-}
-
-async function activerCsr(connexionWorker, csr, nomUsager, userId) {
-  console.debug("Activer CSR usager %s (%s) %O", nomUsager, userId, csr)
-
-  // Generer une "permission" avec le certificat local (delegation proprietaire)
-  // let permission = {
-  //   date: Math.floor(new Date().getTime()/1000), // Date epoch en secondes
-  //   userId,
-  //   activationTierce: true,  // Permet a l'usager d'acceder au compte sans token
-  // }
-  // permission = await chiffrageWorker.formatterMessage(permission, 'CoreMaitreDesComptes', {action: 'signatureCsr', attacherCertificat: true})
-
-  // Generer certificat - l'usager va pouvoir y acceder a son prochain login
-  const cert = await connexionWorker.genererCertificatNavigateur({csr, nomUsager, userId, activationTierce: true})
-
-  console.debug("Certificat genere : %O", cert)
-}
+//   console.debug("Certificat genere : %O", cert)
+// }
 
 function QRCodeReader(props) {
 
@@ -441,10 +392,10 @@ function QRCodeReader(props) {
 
   const _activerCsr = useCallback(async event => {
     try {
-      await activerCsr(props.workers.connexion, csr, nomUsager, userId)
+      // await activerCsr(props.workers.connexion, csr, nomUsager, userId)
 
       // Activation completee
-      props.retour()
+      console.debug("Activation completee , TODO mettre fenetre succes")
     } catch(err) {
       console.debug("Erreur activation CSR %O", err)
       setErr(''+err)

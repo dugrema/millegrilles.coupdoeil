@@ -274,6 +274,14 @@ function supprimerInstance(instanceId) {
   )
 }
 
+function getRecoveryCsr(code, nomUsager) {
+  return connexionClient.emitBlocking(
+    'getRecoveryCsr',
+    {nom_usager: nomUsager, code},
+    {domaine: 'CoreMaitreDesComptes', action: 'getCsrRecoveryParcode', attacherCertificat: true}
+  )
+}
+
 // Listeners
 function enregistrerCallbackEvenementsPresenceDomaine(cb) { 
   return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceDomaines', cb) 
@@ -334,7 +342,7 @@ comlinkExpose({
   regenererDomaine,
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
   majDelegations, requeteRapportBackup, resetBackup, majMonitor, supprimerInstance,
-  getConfigurationAcme, configurerDomaineAcme,
+  getConfigurationAcme, configurerDomaineAcme, getRecoveryCsr,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,

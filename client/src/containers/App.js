@@ -1,6 +1,8 @@
-import React, {Suspense, useState} from 'react'
+import React, {useState, useCallback} from 'react'
 import { Container, Row, Col, Nav, Navbar } from 'react-bootstrap'
 import { Trans } from 'react-i18next'
+
+import {AlertTimeout} from '@dugrema/millegrilles.reactjs'
 
 // import { VerificationInfoServeur } from './Authentification'
 // import { SectionContenu } from './SectionContenu'
@@ -19,6 +21,12 @@ function ApplicationCoupdoeil(props) {
   // Params de pages
   const [paramsPage, setParamsPage] = useState('')
 
+  // Alert messages
+  const [confirmation, setConfirmation] = useState('')
+  const [erreur, setErreur] = useState('')
+  const confirmationCb = useCallback(confirmation=>setConfirmation(confirmation), [setConfirmation])
+  const erreurCb = useCallback((err, message)=>{setErreur({err, message})}, [setErreur])
+  
   const changerPage = eventPage => {
     // Verifier si event ou page
     let pageResultat
@@ -53,9 +61,16 @@ function ApplicationCoupdoeil(props) {
     page,
     paramsPage,
     changerPage,
+    confirmationCb,
+    erreurCb,
   }
 
-  return <LayoutCoudpoeil {...appProps}>
+  return <LayoutCoudpoeil 
+            {...appProps} 
+            confirmation={confirmation} 
+            erreur={erreur}
+            setConfirmation={setConfirmation}
+            setErreur={setErreur}>
           <Container>
             <SectionContenu {...appProps} />
           </Container>
@@ -69,18 +84,26 @@ function Entete(props) {
   return (
     <Container>
       <Menu {...props} />
-      <h1>Coup D'Oeil</h1>
+      <br />
+      <br />
     </Container>
   )
 }
 
 function LayoutCoudpoeil(props) {
 
+  const { erreur, confirmation, setErreur, setConfirmation } = props
+
   return (
     <div className="flex-wrapper">
       <div>
         <Entete {...props} />
+        
+        <AlertTimeout variant="danger" titre="Erreur" delay={false} value={erreur} setValue={setErreur}/>
+        <AlertTimeout value={confirmation} setValue={setConfirmation} />
+
         {props.children}
+
       </div>
       <Footer {...props} />
     </div>
