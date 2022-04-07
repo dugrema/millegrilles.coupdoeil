@@ -16,7 +16,7 @@ import { Modal } from "react-bootstrap"
 
 function Instances(props) {
 
-    const {workers, etatConnexion, etatAuthentifie, idmg} = props
+    const {workers, etatConnexion, etatAuthentifie, usager} = props
     const connexion = workers.connexion
 
     const [instancesParId, setInstancesParId] = useState('')
@@ -92,7 +92,7 @@ function Instances(props) {
                 workers={workers} 
                 etatConnexion={etatConnexion}
                 etatAuthentifie={etatAuthentifie}
-                idmg={idmg}
+                usager={usager}
                 instancesParId={instancesParId}
                 selectionnerInstanceCb={selectionnerInstanceCb}
                 setShowAssocier={setShowAssocier}

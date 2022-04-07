@@ -13,7 +13,7 @@ import Usagers from './GestionUsagers'
 
 function Domaines(props) {
     console.debug("Domaines proppys : %O", props)
-    const { workers, etatConnexion, etatAuthentifie } = props
+    const { workers, etatAuthentifie } = props
 
     const [confirmation, setConfirmation] = useState('')
     const [error, setError] = useState('')

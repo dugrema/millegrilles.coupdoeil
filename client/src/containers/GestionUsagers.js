@@ -10,18 +10,23 @@ import {QrCodeScanner, parseCsrQr} from './QrCodeScanner'
 
 export default function GestionUsagers(props) {
 
+  const { etatAuthentifie } = props
+
   const [listeUsagers, setListeUsagers] = useState([])
   const [userId, setUserId] = useState('')
   const {connexion} = props.workers
   const fermer = props.fermer
 
   useEffect(_=>{
-    chargerListeUsagers(connexion, setListeUsagers)
-  }, [])
+    if(etatAuthentifie) {
+      chargerListeUsagers(connexion, setListeUsagers).catch(err=>console.error("Erreur chargement liste usagers : %O", err))
+    }
+  }, [etatAuthentifie])
 
   if(userId) return (
     <AfficherUsager userId={userId}
                     workers={props.workers} 
+                    etatAuthentifie={etatAuthentifie}
                     fermer={()=>setUserId('')} />
   )
 
@@ -30,6 +35,7 @@ export default function GestionUsagers(props) {
       <h2>Gestion usagers</h2>
       <AfficherListeUsagers listeUsagers={listeUsagers}
                             setUserId={setUserId} 
+                            etatAuthentifie={etatAuthentifie}
                             fermer={fermer} />
     </>
   )

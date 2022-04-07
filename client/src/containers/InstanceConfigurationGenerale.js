@@ -10,7 +10,7 @@ const RE_DOMAINE = /^([A-Za-z0-9-]{1,63}\.)+[A-Za-z]{2,6}$/
 
 function ConfigurationGenerale(props) {
 
-    const {workers, etatConnexion, instance, idmg} = props
+    const {workers, etatConnexion, etatAuthentifie, instance, idmg} = props
     const hostnameConfigure = instance.domaine
 
     const [attente, setAttente] = useState(false)
@@ -50,6 +50,7 @@ function ConfigurationGenerale(props) {
 
             <ConfigurerDomaine 
                 workers={workers} 
+                etatAuthentifie={etatAuthentifie}
                 instance={instance}
                 confirmationCb={confirmationCb}
                 erreurCb={erreurCb} />
@@ -61,7 +62,7 @@ export default ConfigurationGenerale
 
 function ConfigurerDomaine(props) {
 
-    const { workers, instance, confirmationCb, erreurCb } = props
+    const { workers, instance, etatAuthentifie, confirmationCb, erreurCb } = props
     const { connexion } = workers
     const { domaine, securite } = instance
     const instanceId = instance.noeud_id
@@ -83,7 +84,7 @@ function ConfigurerDomaine(props) {
         connexion.enregistrerEvenementsAcme(instanceId, securite, cb)
             .catch(err=>erreurCb(err))
         return () => connexion.retirerEvenementsAcme(instanceId, securite, cb)
-            .catch(err=>console.erreur("Erreur retirerEvenementsAcme : %O", err))
+            .catch(err=>console.error("Erreur retirerEvenementsAcme : %O", err))
     }, [instanceId, securite, setEvenementAcme])
 
     // Pipeline messages ACME
@@ -175,10 +176,12 @@ function ConfigurerDomaine(props) {
                 type="switch"
                 checked={configurationAvancee} 
                 onChange={toggleAvanceCb}
-                label="Configuration avancee" />
+                label="Configuration avancee"
+                disabled={!etatAuthentifie} />
 
             {configurationAvancee?
                 <ConfigurationLetencryptAvancee 
+                    etatAuthentifie={etatAuthentifie}
                     configurationAcme={configurationAcme} 
                     domainesAdditionnels={domainesAdditionnels}
                     setDomainesAdditionnels={setDomainesAdditionnels}
@@ -205,7 +208,7 @@ function ConfigurerDomaine(props) {
 
             <Row>
                 <Col>
-                    <Button onClick={soumettreCb}>Soumettre</Button>
+                    <Button onClick={soumettreCb} disabled={!etatAuthentifie}>Soumettre</Button>
                 </Col>
             </Row>
         </>
@@ -214,7 +217,7 @@ function ConfigurerDomaine(props) {
 
 function ConfigurationLetencryptAvancee(props) {
 
-    const {configurationAcme} = props
+    const {etatAuthentifie} = props
     const {force, setForce, modeTest, setModeTest, modeCreation, setModeCreation} = props
     const {dnssleep, setDnssleep, domainesAdditionnels, setDomainesAdditionnels} = props
     const {cloudns_subauthid, setCloudns_subauthid, cloudns_password, setCloudns_password} = props
@@ -236,17 +239,26 @@ function ConfigurationLetencryptAvancee(props) {
                 <FormControl 
                     id="additionnels"
                     aria-describedby="additionnels"
+                    disabled={!etatAuthentifie}
                     value={domainesAdditionnels}
                     onChange={event=>setDomainesAdditionnels(event.currentTarget.value)} />
             </InputGroup>
 
             <Form.Check id="certificat-force">
-                <Form.Check.Input type='checkbox' checked={force} onChange={event=>setForce(event.currentTarget.checked)} />
+                <Form.Check.Input 
+                    type='checkbox' 
+                    disabled={!etatAuthentifie} 
+                    checked={force} 
+                    onChange={event=>setForce(event.currentTarget.checked)} />
                 <Form.Check.Label>Force update</Form.Check.Label>
             </Form.Check>
 
             <Form.Check id="certificat-test">
-                <Form.Check.Input type='checkbox' checked={modeTest} onChange={event=>setModeTest(event.currentTarget.checked)} />
+                <Form.Check.Input 
+                    type='checkbox' 
+                    checked={modeTest} 
+                    disabled={!etatAuthentifie}
+                    onChange={event=>setModeTest(event.currentTarget.checked)} />
                 <Form.Check.Label>Certificat de test</Form.Check.Label>
             </Form.Check>
 
@@ -255,7 +267,8 @@ function ConfigurationLetencryptAvancee(props) {
                 <Form.Select type="text"
                     placeholder="Choisir un mode"
                     onChange={event=>setModeCreation(event.currentTarget.value)}
-                    value={modeCreation}>
+                    value={modeCreation}
+                    disabled={!etatAuthentifie}>
                     
                     <option value="webroot">Mode http (port 80)</option>
                     <option value="dns_cloudns">ClouDNS</option>

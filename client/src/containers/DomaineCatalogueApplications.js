@@ -27,7 +27,7 @@ class ParametresCataloguesApplications extends React.Component {
 
         <Button variant="secondary" onClick={this.props.fermer}>Retour</Button>
         <FormulaireAjout workers={this.props.workers}
-                         modeProtege={etatConnexion}
+                         etatAuthentifie={this.props.etatAuthentifie}
                          refresh={this.refresh} />
 
         <hr />
@@ -192,13 +192,13 @@ class FormulaireAjout extends React.Component {
                 )}
               </Dropzone>
 
-              <Button onClick={this.soumettre} disabled={!this.props.modeProtege}>
+              <Button onClick={this.soumettre} disabled={!this.props.etatAuthentifie}>
                 Soumettre
               </Button>
-              <Button variant="secondary" onClick={this.refresh}>
+              <Button variant="secondary" onClick={this.refresh} disabled={!this.props.etatAuthentifie}>
                 Refresh
               </Button>
-              <Button variant="secondary" onClick={this.rechargerCatalogues} disabled={!this.props.modeProtege}>
+              <Button variant="secondary" onClick={this.rechargerCatalogues} disabled={!this.props.etatAuthentifie}>
                 Recharger
               </Button>
             </Col>

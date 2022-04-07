@@ -13,23 +13,11 @@ import ApplicationsInstance from './InstanceApplications'
 import { ListeNoeuds } from '../components/ListeTopologie'
 import { FormatterDate } from '@dugrema/millegrilles.reactjs'
 
-export function SommaireNoeud(props) {
-
-  const noeud_id = props.rootProps.paramsPage.noeudid
-
-  return (
-    <ListeNoeuds noeud_id={noeud_id} rootProps={props.rootProps} workers={props.workers}>
-      <AffichageNoeud noeud_id={noeud_id} rootProps={props.rootProps} workers={props.workers}/>
-    </ListeNoeuds>
-  )
-
-}
-
 function AffichageNoeud(props) {
 
   console.debug("AffichageNoeud proppies", props)
 
-  const { workers, etatConnexion, etatAuthentifie, idmg, confirmationCb, attenteCb, fermer } = props
+  const { workers, usager, etatConnexion, etatAuthentifie, confirmationCb, attenteCb, fermer } = props
   const instance = props.instance || {}
   const instanceId = instance.noeud_id
   
@@ -95,8 +83,8 @@ function AffichageNoeud(props) {
                     setErreur={erreurCb}
                     etatConnexion={etatConnexion}
                     etatAuthentifie={etatAuthentifie}
+                    usager={usager}
                     workers={workers} 
-                    idmg={idmg} 
                     confirmationCb={confirmationCb} 
                     attenteCb={attenteCb} 
                     fermer={fermer} />

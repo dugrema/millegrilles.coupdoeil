@@ -9,7 +9,8 @@ import { prendrePossession } from './ConfigurationNoeudsListe'
 
 function CommandeHttp(props) {
 
-  const {workers, etatConnexion, instance, idmg} = props
+  const {workers, etatConnexion, etatAuthentifie, instance, usager} = props
+  const idmg = usager.idmg
   const hostnameConfigure = instance.domaine
   const ipDetectee = instance.ip_detectee
 
@@ -81,6 +82,7 @@ function CommandeHttp(props) {
         instanceInfo={instanceInfo || ''}
         hostname={hostname}
         etatConnexion={etatConnexion} 
+        etatAuthentifie={etatAuthentifie}
         confirmationCb={confirmationCb}
         erreurCb={erreurCb} />
 
@@ -93,7 +95,7 @@ export default CommandeHttp
 function AfficherInfoConfiguration(props) {
 
   const {
-    workers, instance, instanceInfo,  etatConnexion, hostname,
+    workers, instance, instanceInfo, etatConnexion, etatAuthentifie, hostname,
     confirmationCb, erreurCb,
   } = props
   const instanceId = instance.noeud_id
@@ -130,6 +132,7 @@ function AfficherInfoConfiguration(props) {
         instanceId={instanceId}
         instanceInfo={instanceInfo} 
         hostname={hostname} 
+        etatAuthentifie={etatAuthentifie}
         confirmationCb={confirmationCb} 
         erreurCb={erreurCb} />
 
@@ -138,13 +141,14 @@ function AfficherInfoConfiguration(props) {
       <Row>
         <Col>
           <Button variant="secondary" onClick={renouvelerCertificatCb}
-                  disabled={!etatConnexion}>Renouveler</Button>
+                  disabled={!etatAuthentifie}>Renouveler</Button>
         </Col>
       </Row>
 
       <ConfigurerMQ 
         workers={workers}
         hostname={hostname}
+        etatAuthentifie={etatAuthentifie}
         erreurCb={erreurCb}
         confirmationCb={confirmationCb} />
     </>
@@ -153,7 +157,7 @@ function AfficherInfoConfiguration(props) {
 
 function ConfigurerDomaine(props) {
 
-  const { workers, instanceId, instanceInfo, hostname, confirmationCb, erreurCb } = props
+  const { workers, etatAuthentifie, instanceId, instanceInfo, hostname, confirmationCb, erreurCb } = props
   const domaineConfigure = instanceInfo.domaine
 
   const changerDomaineCb = useCallback(event=>{
@@ -177,7 +181,11 @@ function ConfigurerDomaine(props) {
 
       <label htmlFor="changerDomaine">Changer le hostname configure pour le hostname utilise.</label>
       <br/>
-      <Button id="changerDomaine" variant="secondary" disabled={hostname===domaineConfigure} onClick={changerDomaineCb}>Changer</Button>
+      <Button 
+        id="changerDomaine" 
+        variant="secondary" 
+        disabled={hostname===domaineConfigure||!etatAuthentifie} 
+        onClick={changerDomaineCb}>Changer</Button>
     </>
   )
 
@@ -304,7 +312,7 @@ async function changerHostnameInstance(workers, instanceId, hostname, confirmati
 
 function ConfigurerMQ(props) {
 
-  const { workers, hostname, confirmationCb, erreurCb } = props
+  const { workers, hostname, etatAuthentifie, confirmationCb, erreurCb } = props
 
   const [hostMq, setHostMq] = useState('')
   const [portMq, setPortMq] = useState('5673')
@@ -395,262 +403,6 @@ async function configurerMq(workers, hostname, hostMq, portMq, confirmationCb, e
     erreurCb(err, 'Erreur changement configuration MQ')
   }
 }
-
-// export class ConsignationNoeud extends React.Component {
-
-//   state = {
-//     modeConsignation: '',
-
-//     awss3_credentialsAccessKeyId: '',
-//     awss3_credentialsSecretAccessKey: '',
-//     awss3_credentialsRegion: '',
-//     awss3_bucketRegion: '',
-//     awss3_bucketName: '',
-//     awss3_bucketDirfichier: '',
-
-//     certificatMaitredescles: '',
-//   }
-
-//   componentDidMount() {
-//     // console.debug("PROPPYS : %O", this.props)
-
-//     // Aller chercher le certificat du maitre des cles pour chiffrer le mot de passe
-//     const wsa = this.props.rootProps.websocketApp
-//     wsa.getCertificatsMaitredescles().then(certs=>{
-//       // console.debug("Certs %O", certs)
-//       this.setState({certificatMaitredescles: certs})
-//     })
-
-//   }
-
-//   setChamp = event => {
-//     const {name, value} = event.currentTarget
-//     this.setState({[name]: value})
-//   }
-
-//   setModeConsignation = event => {
-//     const value = event.currentTarget.value
-//     this.setState({modeConsignation: value})
-//   }
-
-//   soumettre = async event => {
-//     // console.debug("Proppuss : %O, Statuss : %O", this.props, this.state)
-//     // const signateurTransaction = this.props.rootProps.signateurTransaction
-//     const webWorker = this.props.rootProps.chiffrageWorker,
-//           noeud_id = this.props.instance.noeud_id,
-//           wsa = this.props.rootProps.websocketApp,
-//           consignationWeb = this.props.instance.consignation_web || {}
-
-//     const modeConsignation = this.state.modeConsignation || consignationWeb.modeConsignation
-//     const transaction = {
-//       noeud_id,
-//       modeConsignation,
-//     }
-
-//     for(let champ in this.state) {
-//       // console.debug("Verif champ %s", champ)
-//       if(champ.startsWith(modeConsignation) && this.state[champ]) {
-//         var nomChamp = champ.split('_')[1]
-//         transaction[nomChamp] = this.state[champ]
-//       }
-//     }
-
-//     // Chiffrer mot de passe si fourni
-//     if(transaction.credentialsSecretAccessKey) {
-//       // console.debug("Chiffrer le nouveau mot de passe AWS S3")
-//       const contenuChiffre = await chiffrerChamp(
-//         webWorker, noeud_id, this.state.certificatMaitredescles, transaction.credentialsSecretAccessKey)
-//       const transactionMaitredescles = contenuChiffre.transactionMaitredescles
-
-//       transaction.credentialsSecretAccessKey = contenuChiffre.contenuChiffre
-
-//       // Soumettre transaction maitredescles
-//       // console.debug("Transaction maitre des cles : %O", transactionMaitredescles)
-//       try {
-//         const reponse = await wsa.soumettreTransactionMaitredescles(transactionMaitredescles)
-//         // console.debug("Reponse transaction maitre des cles : %O", reponse)
-
-//         if(reponse.err || !reponse.succes) {
-//           this.props.setErreur('Erreur sauvegarde configuration (transaction cle)\n' + reponse.message)
-//         }
-
-//       } catch(err) {
-//         console.error("Erreur sauvegarde transaction cle : %O", err)
-//         this.props.setErreur('Erreur sauvegarde configuration (transaction cle)\n' + err)
-//       }
-
-//     }
-
-//     // await signateurTransaction.preparerTransaction(transaction, 'Topologie.configurerConsignationWeb')
-//     const domaineAction = 'Topologie.configurerConsignationWeb'
-//     transaction = await webWorker.formatterMessage(transaction, domaineAction)
-
-//     // console.debug("Transaction information AWS S3: %O", transaction)
-//     const reponse = await wsa.configurerConsignationWeb(transaction)
-//     if(!reponse.err && reponse.succes) {
-//       // Ok, reset les valeurs dans this.state
-//       const resetValeurs = {}
-//       for(let champ in this.state) {
-//         if(champ.startsWith(modeConsignation) && this.state[champ]) {
-//           resetValeurs[champ] = ''
-//         }
-//       }
-//       this.setState(resetValeurs)
-//     }
-
-//   }
-
-//   render() {
-
-//     const consignationWeb = this.props.instance.consignation_web || {}
-//     const modeConsignation = this.state.modeConsignation || consignationWeb.modeConsignation || 'cachenginx'
-//     // console.debug("PROPPYS: %O\nCONSIGNATIONWEB: %O\nMODE CONSIGNATION : %s", this.props, consignationWeb, modeConsignation)
-//     var configurationConsignation = ''
-//     if(modeConsignation === 'awss3') {
-//       configurationConsignation = (
-//         <AmazonWebServicesS3 setChamp={this.setChamp}
-//                              awss3_credentialsAccessKeyId={this.state.awss3_credentialsAccessKeyId || consignationWeb.credentialsAccessKeyId}
-//                              awss3_credentialsSecretAccessKey={this.state.awss3_credentialsSecretAccessKey}
-//                              awss3_credentialsSecretAccessKeyExiste={consignationWeb.credentialsSecretAccessKey}
-//                              awss3_credentialsRegion={this.state.awss3_credentialsRegion || consignationWeb.credentialsRegion}
-//                              awss3_bucketRegion={this.state.awss3_bucketRegion || consignationWeb.bucketRegion}
-//                              awss3_bucketName={this.state.awss3_bucketName || consignationWeb.bucketName}
-//                              awss3_bucketDirfichier={this.state.awss3_bucketDirfichier || consignationWeb.bucketDirfichier} />
-//       )
-//     } else if(modeConsignation === 'cachenginx') {
-//       configurationConsignation = (
-//         <>
-//           <h3>Cache Nginx</h3>
-//           <p>
-//             Les fichiers sont telecharges sur demande a partir du serveur consignationfichiers
-//             du noeud protege. Idealement la connexion upstream entre le serveur de fichiers et
-//             le serveur de nginx devrait etre plus rapide que la connexion internet outgoing.
-//           </p>
-//         </>
-//       )
-//     }
-
-//     return (
-//       <>
-//         <h2>Acces web des fichiers du noeud</h2>
-
-//         <InputGroup>
-//           <Form.Check id="modeconsignation-cachenginx"
-//                       type="radio"
-//                       name="modeConsignation"
-//                       value="cachenginx"
-//                       label="Cache Nginx"
-//                       checked={modeConsignation==='cachenginx'}
-//                       onChange={this.setModeConsignation} />
-//         </InputGroup>
-//         <InputGroup>
-//           <Form.Check id="modeconsignation-awss3"
-//                       type="radio"
-//                       name="modeConsignation"
-//                       value="awss3"
-//                       label="Amazon Web Services S3"
-//                       checked={modeConsignation==='awss3'}
-//                       onChange={this.setModeConsignation} />
-//         </InputGroup>
-
-//         {configurationConsignation}
-
-//         <Button onClick={this.soumettre} disabled={!this.props.rootProps.modeProtege}>
-//           Soumettre
-//         </Button>
-//       </>
-//     )
-//   }
-// }
-
-// function AmazonWebServicesS3(props) {
-//   return (
-//     <>
-//       <h2>Amazon Web Services S3</h2>
-
-//       <p>
-//         Les fichiers sont telecharges a l'avance vers un serveur Amazon Web Services S3 public.
-//         Le serveur nginx va rediriger les requetes de fichiers vers le serveur S3 de maniere transparente.
-//       </p>
-
-//       <h3>Configuration credentials S3</h3>
-//       <Row>
-//         <Col>
-//           <label htmlFor="noeud-url">Credentials Region</label>
-//           <InputGroup>
-//             <FormControl id="awss3_credentialsRegion"
-//                          aria-describedby="awss3_credentialsRegion"
-//                          name="awss3_credentialsRegion"
-//                          value={props.awss3_credentialsRegion}
-//                          onChange={props.setChamp} />
-//           </InputGroup>
-//         </Col>
-//       </Row>
-
-//       <Row>
-//         <Col>
-//           <label htmlFor="noeud-url">Credentials Access Key Id</label>
-//           <InputGroup>
-//             <FormControl id="awss3_credentialsAccessKeyId"
-//                          aria-describedby="awss3_credentialsAccessKeyId"
-//                          name="awss3_credentialsAccessKeyId"
-//                          value={props.awss3_credentialsAccessKeyId}
-//                          onChange={props.setChamp} />
-//           </InputGroup>
-//         </Col>
-//         <Col>
-//           <label htmlFor="noeud-url">Credentials Secret Key (mot de passe)</label>
-//           <InputGroup>
-//             <FormControl id="awss3_credentialsSecretAccessKey"
-//                          aria-describedby="awss3_credentialsSecretAccessKey"
-//                          name="awss3_credentialsSecretAccessKey"
-//                          placeholder="Entrer une valeur pour modifier"
-//                          value={props.awss3_credentialsSecretAccessKey}
-//                          onChange={props.setChamp} />
-//           </InputGroup>
-//         </Col>
-//       </Row>
-
-//       <h3>Configuration bucket S3</h3>
-//       <Row>
-//         <Col>
-//           <label htmlFor="noeud-url">Region Amazon S3 bucket</label>
-//           <InputGroup>
-//             <FormControl id="awss3_bucketRegion"
-//                          aria-describedby="awss3_bucketRegion"
-//                          name="awss3_bucketRegion"
-//                          value={props.awss3_bucketRegion}
-//                          onChange={props.setChamp} />
-//           </InputGroup>
-//         </Col>
-//         <Col>
-//           <label htmlFor="noeud-url">Bucket</label>
-//           <InputGroup>
-//             <FormControl id="awss3_bucketName"
-//                          aria-describedby="awss3_bucketName"
-//                          name="awss3_bucketName"
-//                          value={props.awss3_bucketName}
-//                          onChange={props.setChamp} />
-//           </InputGroup>
-//         </Col>
-//       </Row>
-
-//       <Row>
-//         <Col>
-//           <label htmlFor="noeud-url">Repertoire fichier</label>
-//           <InputGroup>
-//             <FormControl id="awss3_bucketDirfichier"
-//                          aria-describedby="awss3_bucketDirfichier"
-//                          name="awss3_bucketDirfichier"
-//                          value={props.awss3_bucketDirfichier}
-//                          onChange={props.setChamp} />
-//           </InputGroup>
-//         </Col>
-//       </Row>
-
-//     </>
-//   )
-// }
 
 function AfficherExpirationCertificat(props) {
   const [certificat, setCertificat] = useState('')
