@@ -29,30 +29,23 @@ const domainesConnus = {
   CorePki: Pki,
   SommaireNoeud,
   SommaireDomaine,
-  // CoreCatalogues: ParametresCataloguesApplications,
-  // MaitreDesCles: DomaineMaitredescles,
   GrosFichiers: ParametresGrosFichiers,
 };
 
 function SectionContenu(props) {
 
-  const Page = domainesConnus[props.rootProps.page]
-  const idmg = props.rootProps.idmg
+  const Page = domainesConnus[props.page]
 
   if(Page) {
     return (
-        <Page 
-          workers={props.workers} 
-          rootProps={props.rootProps} 
-          etatConnexion={props.etatConnexion} 
-          idmg={idmg} />
+        <Page {...props} />
     )
   }
 
   return (
     <Alert variant="warning">
       <Alert.Heading>Section inconnue</Alert.Heading>
-      <p>Section non definie : "{props.rootProps.page}"</p>
+      <p>Section non definie : "{props.page}"</p>
     </Alert>
   )
 }

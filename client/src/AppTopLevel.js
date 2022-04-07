@@ -1,24 +1,11 @@
 import React, { Suspense, useState, useCallback, useEffect, lazy } from 'react'
-import {proxy as comlinkProxy, releaseProxy} from 'comlink'
-
-// import {setupWorkers, preparerWorkersAvecCles} from './workers/workers.load'
-// import {ApplicationCoupdoeil} from './containers/App'
 
 import connecter from './workers/connecter'
 
-// import '@dugrema/millegrilles.common/css/millegrilles.css'
 import './containers/App.css'
 import './containers/Layout.css'
 
 const ApplicationCoupdoeil = lazy(()=>import('./containers/App'))
-
-// import manifest from './manifest.build.js'
-// const manifest = {
-//   date: "DUMMY",
-//   version: "DUMMY",
-// }
-
-const NOM_USAGER_PROPRIETAIRE = 'proprietaire'
 
 // export default class AppTopLevel extends React.Component {
 
@@ -243,16 +230,6 @@ async function reconnecter(workers, setEtatAuthentifie, setCertificatMaitreDesCl
   // reconnecter() est appele apres l'authentification de l'usager (callback du worker)
   setEtatAuthentifie(true)
 
-  // await preparerWorkersAvecCles(nomUsager, workers)
-  // await connexion.authentifier()
-
-  // chiffrage.getIdmgLocal()
-  //   .then(idmg=>{
-  //     console.debug("IDMG local chiffrage : %O", idmg)
-  //     setIdmg(idmg)
-  //   })
-  //   .catch(err=>console.error("Erreur chargement idmg local : %O", err))
-
   connexion.getClesChiffrage()
     .then(cles=>{
       console.debug("Cles chiffrage recues : %O", cles)
@@ -261,19 +238,3 @@ async function reconnecter(workers, setEtatAuthentifie, setCertificatMaitreDesCl
     .catch(err=>console.error("Erreur chargement cles chiffrage : %O", err))
 
 }
-
-//   callbackCleMillegrille = comlinkProxy(chargee => {
-//     console.debug("Recu changement etat cle de millegrille dans le web worker : chargee = %s", chargee)
-//     this.setState({cleMillegrilleChargee: chargee===true})
-//   })
-
-//   async preparerWorkersAvecCles() {
-//     console.debug("Preparation workers avec cle %O", this.state)
-//     const {nomUsager, chiffrageWorker, connexionWorker} = this.state
-//     if(nomUsager) {
-//       await preparerWorkersAvecCles(nomUsager, chiffrageWorker, connexionWorker)
-//       console.debug("preparerWorkersAvecCles pret")
-//     } else {
-//       console.warn("Nom d'usager manquant")
-//     }
-//   }

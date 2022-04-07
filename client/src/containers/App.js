@@ -2,7 +2,7 @@ import React, {Suspense, useState} from 'react'
 import { Container, Row, Col, Nav, Navbar } from 'react-bootstrap'
 import { Trans } from 'react-i18next'
 
-import { VerificationInfoServeur } from './Authentification'
+// import { VerificationInfoServeur } from './Authentification'
 // import { SectionContenu } from './SectionContenu'
 import MenuItems from './Menu'
 
@@ -48,38 +48,16 @@ function ApplicationCoupdoeil(props) {
     }
   }
 
-  const rootProps = {
-    ...props, ...props.rootProps,
-    serveurInfo, page,
+  const appProps = {
+    ...props,
+    page,
     paramsPage,
     changerPage,
   }
 
-  let pageRendered
-  if(!serveurInfo) {
-    // 1. Recuperer information du serveur
-    pageRendered = <VerificationInfoServeur setInfoServeur={setServeurInfo} />
-  } else if(!props.workers) {
-    // 2. Connecter avec Socket.IO
-    pageRendered = <p>Attente de connexion</p>
-  } else {
-    // 3. Afficher application
-    pageRendered = (
-      <SectionContenu 
-        workers={props.workers} 
-        etatConnexion={rootProps.modeProtege} 
-        rootProps={rootProps} />
-    )
-  }
-
-  return <LayoutCoudpoeil changerPage={changerPage}
-                          page={page}
-                          rootProps={rootProps}
-                          workers={props.workers}>
+  return <LayoutCoudpoeil {...appProps}>
           <Container>
-            <Suspense fallback={<ChargementEnCours/>}>
-              {pageRendered}
-            </Suspense>
+            <SectionContenu {...appProps} />
           </Container>
         </LayoutCoudpoeil>
 
@@ -90,10 +68,7 @@ export default ApplicationCoupdoeil
 function Entete(props) {
   return (
     <Container>
-      <Menu changerPage={props.changerPage}
-            rootProps={props.rootProps}
-            workers={props.workers}
-            etatConnexion={props.rootProps.modeProtege} />
+      <Menu {...props} />
       <h1>Coup D'Oeil</h1>
     </Container>
   )
@@ -107,15 +82,15 @@ function LayoutCoudpoeil(props) {
         <Entete {...props} />
         {props.children}
       </div>
-      <Footer rootProps={props.rootProps}/>
+      <Footer {...props} />
     </div>
   )
 
 }
 
 function Footer(props) {
-
-  const idmg = props.rootProps.rootProps.idmg
+  console.debug("FOoter rpropsies : %O", props)
+  const idmg = props.idmg
 
   return (
     <Container fluid className="footer bg-info">
@@ -147,7 +122,7 @@ function Menu(props) {
   var renderCleMillegrille = ''
 
   const clearCleMillegrille = _=>{workers.chiffrage.clearCleMillegrilleSubtle()}
-  if(props.rootProps.cleMillegrilleChargee) {
+  if(props.cleMillegrilleChargee) {
     renderCleMillegrille = (
       <Nav className="justify-content-end">
         <Nav.Link onClick={clearCleMillegrille}><i className="fa fa-key"/></Nav.Link>
@@ -161,13 +136,7 @@ function Menu(props) {
       <Navbar.Toggle aria-controls="responsive-navbar-menu" />
       <Navbar.Collapse id="responsive-navbar-menu">
 
-        <MenuItems
-          changerPage={props.changerPage}
-          rootProps={props.rootProps}
-          websocketApp={props.workers.connexion}
-          workers={workers}
-          etatConnexion={props.rootProps.modeProtege}
-          />
+        <MenuItems {...props} />
 
         {renderCleMillegrille}
 
