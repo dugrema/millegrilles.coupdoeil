@@ -282,6 +282,14 @@ function getRecoveryCsr(code, nomUsager) {
   )
 }
 
+function signerRecoveryCsr(commande) {
+  return connexionClient.emitBlocking(
+    'signerRecoveryCsr', 
+    commande, 
+    {domaine: 'CoreMaitreDesComptes', action: 'signerCompteUsager', attacherCertificat: true}
+  )
+}
+
 // Listeners
 function enregistrerCallbackEvenementsPresenceDomaine(cb) { 
   return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceDomaines', cb) 
@@ -342,7 +350,7 @@ comlinkExpose({
   regenererDomaine,
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
   majDelegations, requeteRapportBackup, resetBackup, majMonitor, supprimerInstance,
-  getConfigurationAcme, configurerDomaineAcme, getRecoveryCsr,
+  getConfigurationAcme, configurerDomaineAcme, getRecoveryCsr, signerRecoveryCsr,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,

@@ -152,9 +152,16 @@ function ActivationUsager(props) {
   }, [setCsr])
 
   const activerCsr = useCallback(()=>{
-    console.debug("Activer CSR\n%O", csr)
-    confirmationCb(`Activer CSR :\n${csr}`)
-  }, [csr, confirmationCb])
+    console.debug("Activer CSR pour usager %O\n%O", usager, csr)
+    const { connexion } = workers
+    const userId = usager.userId
+    connexion.signerRecoveryCsr({userId, csr, activation_tierce: true})
+      .then(resultat=>{
+        console.debug("Reponse activation : %O", resultat)
+        confirmationCb('Code usager active')
+      })
+      .catch(err=>erreurCb(err))
+  }, [workers, usager, csr, confirmationCb])
 
   useEffect(()=>{
     supporteCamera()
@@ -275,46 +282,6 @@ function InformationUsager(props) {
   )
 }
 
-// function AfficherActivationsUsager(props) {
-
-//   const [cameraDisponible, setCameraDisponible] = useState(false)
-//   const [showCsr, setShowCsr] = useState(false)
-//   const [showQrScanner, setShowQrScanner] = useState(false)
-
-//   useEffect(_=>{
-//     // Detecter si camera est disponible pour scanner code QR
-//     detecterAppareilsDisponibles().then(appareils=>{
-//       // if(appareils && appareils.videoinput) setCameraDisponible(true)
-//       setCameraDisponible(true)
-//     }).catch(err=>{console.warn("Erreur detection camera", err)})
-//   }, [])
-
-//   const hideCsr = useCallback(_=>{setShowCsr(false)}, [])
-//   const hideQrScanner = useCallback(_=>{setShowQrScanner(false)}, [])
-
-//   return (
-//     <>
-//       <QRCodeReader show={showQrScanner}
-//                     retour={hideQrScanner}
-//                     usager={props.usager}
-//                     workers={props.workers} />
-
-//       <h3>Signer certificat usager</h3>
-
-//       <SectionActiverCompte />
-
-//       <Row>
-//         <Col>
-//           <Button onClick={useCallback(_=>{setShowQrScanner(true)}, [setShowQrScanner])}
-//                   disabled={!cameraDisponible}>
-//             Scan QR
-//           </Button>
-//         </Col>
-//       </Row>
-//     </>
-//   )
-// }
-
 function GestionWebauthn(props) {
 
   const [err, setErr] = useState('')
@@ -356,141 +323,6 @@ function GestionWebauthn(props) {
       </Row>
     </>
   )
-}
-
-
-// async function activerCsr(connexionWorker, csr, nomUsager, userId) {
-//   console.debug("Activer CSR usager %s (%s) %O", nomUsager, userId, csr)
-
-//   // Generer une "permission" avec le certificat local (delegation proprietaire)
-//   // let permission = {
-//   //   date: Math.floor(new Date().getTime()/1000), // Date epoch en secondes
-//   //   userId,
-//   //   activationTierce: true,  // Permet a l'usager d'acceder au compte sans token
-//   // }
-//   // permission = await chiffrageWorker.formatterMessage(permission, 'CoreMaitreDesComptes', {action: 'signatureCsr', attacherCertificat: true})
-
-//   // Generer certificat - l'usager va pouvoir y acceder a son prochain login
-//   const cert = await connexionWorker.genererCertificatNavigateur({csr, nomUsager, userId, activationTierce: true})
-
-//   console.debug("Certificat genere : %O", cert)
-// }
-
-function QRCodeReader(props) {
-
-  const [scanActif, setScanActif] = useState(false)
-  const [err, setErr] = useState('')
-  const [info, setInfo] = useState('')
-  const [csr, setCsr] = useState('')
-  // const [csrOk, setCsrOk] = useState(false)
-
-  const usager = props.usager,
-        nomUsager = usager.nomUsager,
-        userId = usager.userId
-
-  useEffect(_=>{
-    if(props.show) setScanActif(props.show)
-  }, [props.show])
-
-  const annuler = useCallback(_=>{
-    setErr('')
-    setScanActif(false)
-    props.retour()
-  }, [])
-
-  const _activerCsr = useCallback(async event => {
-    try {
-      // await activerCsr(props.workers.connexion, csr, nomUsager, userId)
-
-      // Activation completee
-      console.debug("Activation completee , TODO mettre fenetre succes")
-    } catch(err) {
-      console.debug("Erreur activation CSR %O", err)
-      setErr(''+err)
-    }
-  }, [csr, nomUsager, userId])
-
-  const handleScan = useCallback(scan=>{
-    if(scan) {
-      try {
-        const pem = parseCsrQr(scan)
-        traiterCsr(pem, nomUsager)
-
-        setScanActif(false)
-        setInfo(''+pem)
-        setErr('')
-        setCsr(pem)
-        return
-      } catch(err) {
-        setErr(''+err)
-      }
-    }
-
-    setCsr('')
-
-  }, [usager])
-
-  const handleError = useCallback(err=>{
-    setErr(''+err)
-  }, [])
-
-  return (
-    <Modal show={props.show} onHide={props.retour}>
-      <Modal.Header closeButton>
-        Scan CSR
-      </Modal.Header>
-      <Modal.Body>
-
-        <Alert variant="danger" show={err?true:false}>
-          <Alert.Heading>Erreur</Alert.Heading>
-          <pre>{err}</pre>
-        </Alert>
-
-        <Alert variant="info" show={info?true:false}>
-          <Alert.Heading>Information</Alert.Heading>
-          <pre>{''+info}</pre>
-        </Alert>
-
-        {scanActif?
-          <>
-            <QrCodeScanner handleError={handleError} handleScan={handleScan} show={scanActif}/>
-            <Row>
-              <Col>
-                <Button onClick={annuler}>Annuler</Button>
-              </Col>
-            </Row>
-          </>
-          :''
-        }
-
-        <Row>
-          {csr?
-            <Col>CSR ok et correspond a l'usager. Cliquer sur le bouton pour Activer.</Col>
-            :
-            <Col>Coller un CSR dans la zone de texte.</Col>
-          }
-        </Row>
-        <Row>
-          <Col>
-            <Button onClick={_activerCsr} disabled={csr?false:true}>Activer</Button>
-          </Col>
-        </Row>
-
-      </Modal.Body>
-    </Modal>
-  )
-}
-
-function traiterCsr(pem, nomUsager) {
-  // Verifier avec nodeForge
-  const csrForge = forgePki.certificationRequestFromPem(pem)
-  const nomUsagerCsr = csrForge.subject.getField('CN').value
-
-  if(nomUsager !== nomUsagerCsr) {
-    throw new Error(`Nom usager "${nomUsagerCsr}" du code QR ne correspond pas au compte "${nomUsager}"`)
-  }
-
-  return pem
 }
 
 async function chargerListeUsagers(connexion, setListeUsagers) {

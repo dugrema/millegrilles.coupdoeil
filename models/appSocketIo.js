@@ -99,7 +99,8 @@ function configurerEvenements(socket) {
         regenererDomaine(socket, params, cb)
       }},
       {eventName: 'getRecoveryCsr', callback: async (params, cb) => {traiterCompteUsagersDao(socket, 'getRecoveryCsr', {params, cb})}},
-
+      {eventName: 'signerRecoveryCsr', callback: async (params, cb) => {traiterCompteUsagersDao(socket, 'signerRecoveryCsr', {params, cb})}},
+      
       // Listeners evenements
       {eventName: 'coupdoeil/ecouterEvenementsPresenceDomaines', callback: (params, cb) => {
         ecouterEvenementsPresenceDomaines(socket, params, cb)
