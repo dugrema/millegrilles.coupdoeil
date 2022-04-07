@@ -29,7 +29,7 @@ function AffichageNoeud(props) {
 
   console.debug("AffichageNoeud proppies", props)
 
-  const { workers, etatConnexion, idmg, confirmationCb, attenteCb, fermer } = props
+  const { workers, etatConnexion, etatAuthentifie, idmg, confirmationCb, attenteCb, fermer } = props
   const instance = props.instance || {}
   const instanceId = instance.noeud_id
   
@@ -94,6 +94,7 @@ function AffichageNoeud(props) {
                     setPageConfiguration={setPageConfiguration}
                     setErreur={erreurCb}
                     etatConnexion={etatConnexion}
+                    etatAuthentifie={etatAuthentifie}
                     workers={workers} 
                     idmg={idmg} 
                     confirmationCb={confirmationCb} 
@@ -123,12 +124,8 @@ function InformationTransactionsNoeud(props) {
 
   const instance = props.instance || {},
         instanceId = instance.noeud_id,
-        workers = props.workers,
-        connexion = workers.connexion,
-        erreurCb = props.setErreur,
-        confirmationCb = props.confirmationCb,
-        attenteCb = props.attenteCb,
-        fermer = props.fermer
+        {workers, etatAuthentifie, fermer, attenteCb, confirmationCb, erreurCb } = props,
+        connexion = workers.connexion
 
   const supprimerCb = useCallback(()=>{
     console.debug("Supprimer %s", instanceId)
@@ -184,7 +181,7 @@ function InformationTransactionsNoeud(props) {
           </Row>
           <Row>
             <Col>
-              <Button variant="danger" onClick={supprimerCb}>Supprimer</Button>
+              <Button variant="danger" onClick={supprimerCb} disabled={!etatAuthentifie}>Supprimer</Button>
             </Col>
           </Row>
       </div>

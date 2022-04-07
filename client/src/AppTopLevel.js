@@ -160,7 +160,8 @@ function App(props) {
   const setUsagerCb = useCallback(usager=>{
     console.debug('setUsagerCb Usager : %O', usager)
     setUsager(usager)
-  }, [setUsager])
+    setEtatAuthentifie(true)  // Utilise lors d'une reconnexion
+  }, [setUsager, setEtatAuthentifie])
 
   const erreurCb = useCallback((erreur, erreurMessage)=>{
     console.error("erreurCb message: %s\n%O", erreurMessage, erreur)
@@ -183,8 +184,8 @@ function App(props) {
 
   // Reconnecter session
   useEffect(
-    ()=>{ if(etatConnexion&&usager) reconnecter(workers, setEtatAuthentifie, setCertificatMaitreDesCles).catch(err=>erreurCb(err)) }, 
-    [etatConnexion, usager, setCertificatMaitreDesCles]
+    ()=>{ if(etatAuthentifie) reconnecter(workers, setEtatAuthentifie, setCertificatMaitreDesCles).catch(err=>erreurCb(err)) }, 
+    [etatAuthentifie, setCertificatMaitreDesCles, erreurCb]
   )
 
   if(!usager || !workers) {
@@ -197,6 +198,7 @@ function App(props) {
         <ApplicationCoupdoeil 
           workers={workers}
           etatConnexion={etatConnexion}
+          usager={usager}
           etatAuthentifie={etatAuthentifie}
           cleMillegrilleChargee={cleMillegrilleChargee}
           certificatMaitreDesCles={certificatMaitreDesCles} />
@@ -220,9 +222,6 @@ async function importerWorkers() {
 async function reconnecter(workers, setEtatAuthentifie, setCertificatMaitreDesCles) {
   console.debug("AppTopLevel.reconnecte")
   const {connexion} = workers
-
-  // reconnecter() est appele apres l'authentification de l'usager (callback du worker)
-  setEtatAuthentifie(true)
 
   connexion.getClesChiffrage()
     .then(cles=>{

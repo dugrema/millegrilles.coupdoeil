@@ -90,7 +90,7 @@ function LayoutCoudpoeil(props) {
 
 function Footer(props) {
   console.debug("FOoter rpropsies : %O", props)
-  const idmg = props.idmg
+  const idmg = props.usager?props.usager.idmg:''
 
   return (
     <Container fluid className="footer bg-info">

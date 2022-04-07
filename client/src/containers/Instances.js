@@ -16,7 +16,7 @@ import { Modal } from "react-bootstrap"
 
 function Instances(props) {
 
-    const {workers, etatConnexion, idmg} = props
+    const {workers, etatConnexion, etatAuthentifie, idmg} = props
     const connexion = workers.connexion
 
     const [instancesParId, setInstancesParId] = useState('')
@@ -44,8 +44,9 @@ function Instances(props) {
         setConfirmation(confirmation)
     }, [attenteCb, setConfirmation])
 
+    // Chargement data page sur connexion/reconnexion
     useEffect(()=>{
-        if(etatConnexion) {
+        if(etatAuthentifie) {
             console.debug("Requete topologie instances")
             
             const cb = comlinkProxy(setEvenementRecu)
@@ -63,10 +64,10 @@ function Instances(props) {
                 connexion.retirerCallbackEvenementsNoeuds(cb)
                     .catch(err=>console.warn("Erreur retrait evenements presence : %O", err))
                 connexion.retirerCallbackEvenementsInstances(cb)
-                    .catch(err=>console.error("Erreur enregistrement evenements instances : %O", err))
+                    .catch(err=>console.warn("Erreur enregistrement evenements instances : %O", err))
                 }
         }
-    }, [connexion, etatConnexion, setEvenementRecu])
+    }, [connexion, etatAuthentifie, setEvenementRecu])
 
     let Page = PageAccueil, instance = null
     // Afficher l'instance selectionnee (si applicable)
@@ -90,6 +91,7 @@ function Instances(props) {
             <Page
                 workers={workers} 
                 etatConnexion={etatConnexion}
+                etatAuthentifie={etatAuthentifie}
                 idmg={idmg}
                 instancesParId={instancesParId}
                 selectionnerInstanceCb={selectionnerInstanceCb}
@@ -157,8 +159,6 @@ function InstanceProtegee(props) {
     const { instances, selectionnerInstance } = props
     if(!instances) return <p>Aucune instance protegee</p>
     const instance = Object.values(instances).filter(item=>item.securite === '3.protege').pop()
-
-    const instanceId = instance.noeud_id
 
     return (
         <InstanceItem key={instance.noeud_id} instance={instance} selectionnerInstance={selectionnerInstance} />
@@ -306,7 +306,7 @@ function traiterMessageRecu(evenement, instancesParId, setInstancesParId) {
 
 function AjouterInstanceModal(props) {
 
-    const { workers, confirmationCb, fermer } = props
+    const { workers, etatAuthentifie, confirmationCb, fermer } = props
 
     const [hostname, setHostname] = useState('')
     const [instance, setInstance] = useState('')
@@ -371,7 +371,8 @@ function AjouterInstanceModal(props) {
                     prendrePossession={prendrePossession} 
                     confirmationCb={confirmationCb}
                     erreurCb={erreurCb} 
-                    fermer={fermer} />
+                    fermer={fermer} 
+                    etatAuthentifie={etatAuthentifie} />
 
             </Modal.Body>
 
@@ -412,7 +413,7 @@ async function connecter(hostname, setInstance, setCsr, erreurCb) {
 
 function InformationNoeud(props) {
 
-    const {workers, csr, hostname, instance, confirmationCb, erreurCb, fermer} = props,
+    const {workers, csr, hostname, instance, confirmationCb, erreurCb, fermer, etatAuthentifie} = props,
           securite = instance.securite
 
     const [hostMq, setHostMq] = useState('')
@@ -492,7 +493,7 @@ function InformationNoeud(props) {
         </Row>
 
         {csr?
-            <Button onClick={prendrePossessionCb}>Prendre possession</Button>
+            <Button onClick={prendrePossessionCb} disabled={!etatAuthentifie}>Prendre possession</Button>
         :''}
   
       </>

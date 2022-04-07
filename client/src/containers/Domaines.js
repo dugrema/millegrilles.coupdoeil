@@ -13,7 +13,7 @@ import Usagers from './GestionUsagers'
 
 function Domaines(props) {
     console.debug("Domaines proppys : %O", props)
-    const { workers, etatConnexion } = props
+    const { workers, etatConnexion, etatAuthentifie } = props
 
     const [confirmation, setConfirmation] = useState('')
     const [error, setError] = useState('')
@@ -39,11 +39,13 @@ function Domaines(props) {
     )
 
     useEffect(()=>{
-        const cb = comlinkProxy(setEvenementDomaine)
-        subscribe(workers, cb, erreurCb)
-        chargerListeDomaines(workers, setDomaines, erreurCb).catch(err=>erreurCb(err, "Erreur chargement liste domaines."))
-        return () => unsubscribe(workers, cb)
-    }, [workers, erreurCb, setEvenementDomaine])
+        if(etatAuthentifie) {
+            const cb = comlinkProxy(setEvenementDomaine)
+            subscribe(workers, cb, erreurCb)
+            chargerListeDomaines(workers, setDomaines, erreurCb).catch(err=>erreurCb(err, "Erreur chargement liste domaines."))
+            return () => unsubscribe(workers, cb)
+        }
+    }, [workers, etatAuthentifie, erreurCb, setEvenementDomaine])
 
     useEffect(()=>{
         if(evenementDomaine && domaines) {
@@ -65,7 +67,7 @@ function Domaines(props) {
         return (
             <Page 
                 workers={workers} 
-                etatConnexion={etatConnexion} 
+                etatAuthentifie={etatAuthentifie}
                 fermer={()=>setDomaineSelectionne('')} />
         )
     }
