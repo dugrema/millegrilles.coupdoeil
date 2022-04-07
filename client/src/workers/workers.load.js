@@ -1,5 +1,4 @@
-import {wrap, proxy as comlinkProxy, releaseProxy} from 'comlink'
-import { usagerDao } from '@dugrema/millegrilles.reactjs'
+import {wrap, releaseProxy} from 'comlink'
 
 import ConnexionWorker from './connexion.worker'
 
@@ -29,6 +28,9 @@ function charger(ClasseWorker) {
 export async function preparerWorkersAvecCles(nomUsager, workers) {
   // Initialiser certificat de MilleGrille et cles si presentes
   // Sert aussi a initialiser/upgrader la base de donnees si nouvelle
+
+  const { usagerDao } = await import('@dugrema/millegrilles.reactjs')
+
   const usager = await usagerDao.getUsager(nomUsager)
 
   // Charger cle privee pour obtenir methodes sign et decrypt

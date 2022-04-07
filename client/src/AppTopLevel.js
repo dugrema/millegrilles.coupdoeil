@@ -187,13 +187,6 @@ function App(props) {
     [etatConnexion, usager, setCertificatMaitreDesCles]
   )
 
-  const rootProps = {
-    workers,
-    etatAuthentifie,
-    cleMillegrilleChargee,
-    certificatMaitreDesCles,
-  }
-
   if(!usager || !workers) {
     // Connecter avec Socket.IO
     return <p>Connexion en cours</p>
@@ -203,6 +196,7 @@ function App(props) {
       <Suspense fallback={<Attente />}>
         <ApplicationCoupdoeil 
           workers={workers}
+          etatConnexion={etatConnexion}
           etatAuthentifie={etatAuthentifie}
           cleMillegrilleChargee={cleMillegrilleChargee}
           certificatMaitreDesCles={certificatMaitreDesCles} />

@@ -1,9 +1,6 @@
 import React, {useCallback} from 'react'
 
 import Nav from 'react-bootstrap/Nav'
-import NavLink from 'react-bootstrap/NavLink'
-import NavItem from 'react-bootstrap/NavItem'
-import Dropdown from 'react-bootstrap/Dropdown'
 import NavDropdown from 'react-bootstrap/NavDropdown'
 
 import { Trans } from 'react-i18next';
@@ -79,7 +76,7 @@ function DropDownUsager(props) {
         <NavDropdown.Item href="/millegrilles">
           <i className="fa fa-home" /> {' '} Portail
         </NavDropdown.Item>
-        <NavDropdown.Item href="/fermer">
+        <NavDropdown.Item href="/millegrilles/authentification/fermer">
           <i className="fa fa-close" /> {' '} Deconnecter
         </NavDropdown.Item>
       </NavDropdown>

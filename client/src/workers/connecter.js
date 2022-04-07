@@ -29,7 +29,7 @@ export default connecter
 async function setUsager(workers, nomUsager, setUsagerState, opts) {
     opts = opts || {}
     console.debug("connecter setUsager (cb worker) '%s'", nomUsager)
-    const { usagerDao, forgecommon } = await import('@dugrema/millegrilles.reactjs')
+    const { usagerDao, forgecommon, idmg: idmgUtils } = await import('@dugrema/millegrilles.reactjs')
     const { pki } = await import('@dugrema/node-forge')
     const { extraireExtensionsMillegrille } = forgecommon
     const usager = await usagerDao.getUsager(nomUsager)
@@ -38,6 +38,9 @@ async function setUsager(workers, nomUsager, setUsagerState, opts) {
     if(usager && usager.certificat) {
         const fullchain = usager.certificat,
               caPem = usager.ca
+
+        // Calculer le idmg
+        const idmg = await idmgUtils.getIdmg(caPem)
 
         const certificatPem = fullchain.join('')
 
@@ -57,10 +60,12 @@ async function setUsager(workers, nomUsager, setUsagerState, opts) {
 
         // Authentifier aupres du back-en (socket.io)
         // console.debug("Authentifier usager")
-        await workers.connexion.authentifier()
+        const reponseAuthentifier = await workers.connexion.authentifier()
+        console.debug("Reponse authentifier : %O", reponseAuthentifier)
+        if(reponseAuthentifier.protege !== true) throw new Error("Echec authentification (protege=false)")
 
         // Appeler methode pour conserver information usager (doit etre apres authentification)
-        await setUsagerState({...usager, nomUsager, extensions})
+        await setUsagerState({...usager, nomUsager, idmg, extensions})
 
     } else {
         console.warn("Pas de certificat pour l'usager '%s'", usager)
