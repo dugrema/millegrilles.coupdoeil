@@ -11,7 +11,7 @@ import './App.css'
 
 const SectionContenu = React.lazy(()=>import('./SectionContenu'))
 
-export function ApplicationCoupdoeil(props) {
+function ApplicationCoupdoeil(props) {
 
   const [serveurInfo, setServeurInfo] = useState('')
   const [page, setPage] = useState('Instances')
@@ -84,6 +84,8 @@ export function ApplicationCoupdoeil(props) {
         </LayoutCoudpoeil>
 
 }
+
+export default ApplicationCoupdoeil
 
 function Entete(props) {
   return (

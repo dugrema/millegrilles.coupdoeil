@@ -6,19 +6,23 @@ import * as connexionClient from '@dugrema/millegrilles.reactjs/src/connexionCli
 
 const URL_SOCKET = '/coupdoeil/socket.io'
 
-function connecter(opts) {
-  opts = opts || {}
-  var url = opts.url
-  if(!url) {
-    // Utiliser le serveur local mais remplacer le pathname par URL_SOCKET
-    const urlLocal = new URL(opts.location)
-    urlLocal.pathname = URL_SOCKET
-    urlLocal.hash = ''
-    urlLocal.search = ''
-    url = urlLocal.href
-  }
-  console.debug("Connecter socket.io sur url %s", url)
-  return connexionClient.connecter(url, opts)
+// function connecter(opts) {
+//   opts = opts || {}
+//   var url = opts.url
+//   if(!url) {
+//     // Utiliser le serveur local mais remplacer le pathname par URL_SOCKET
+//     const urlLocal = new URL(opts.location)
+//     urlLocal.pathname = URL_SOCKET
+//     urlLocal.hash = ''
+//     urlLocal.search = ''
+//     url = urlLocal.href
+//   }
+//   console.debug("Connecter socket.io sur url %s", url)
+//   return connexionClient.connecter(url, opts)
+// }
+
+function getClesChiffrage() {
+  return connexionClient.emitBlocking('getClesChiffrage', {})
 }
 
 function requeteListeNoeuds(params) {
@@ -311,7 +315,9 @@ async function retirerEvenementsAcme(instanceId, securite, cb) {
 
 comlinkExpose({
   ...connexionClient,
-  connecter,  // Override de connexionClient.connecter
+  // connecter,  // Override de connexionClient.connecter
+
+  getClesChiffrage,
 
   requeteListeNoeuds, requeteListeDomaines, requeteCatalogueDomaines,
   requeteClesNonDechiffrables, getCatalogueApplications, requeteInfoApplications,
