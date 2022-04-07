@@ -99,8 +99,10 @@ function LayoutCoudpoeil(props) {
       <div>
         <Entete {...props} />
         
-        <AlertTimeout variant="danger" titre="Erreur" delay={false} value={erreur} setValue={setErreur}/>
-        <AlertTimeout value={confirmation} setValue={setConfirmation} />
+        <Container>
+          <AlertTimeout variant="danger" titre="Erreur" delay={false} value={erreur} setValue={setErreur}/>
+          <AlertTimeout value={confirmation} setValue={setConfirmation} />
+        </Container>
 
         {props.children}
 

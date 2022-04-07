@@ -1,9 +1,8 @@
 import React, {useState, useEffect, useCallback} from 'react'
 import {Row, Col, Button, Alert, Form, Modal} from 'react-bootstrap'
 import {pki as forgePki} from '@dugrema/node-forge'
-import { base64 } from 'multiformats/bases/base64'
 
-import { AfficherActivationsUsager } from '@dugrema/millegrilles.reactjs'
+import { AfficherActivationsUsager, supporteCamera } from '@dugrema/millegrilles.reactjs'
 
 import {QrCodeScanner, parseCsrQr} from './QrCodeScanner'
 
@@ -145,6 +144,7 @@ function ActivationUsager(props) {
   const { workers, usager, confirmationCb, erreurCb, etatAuthentifie } = props
 
   const [csr, setCsr] = useState('')
+  const [supportCodeQr, setSupportCodeQr] = useState(false)
 
   const csrCb = useCallback(csr=>{
     console.debug("Recu csr : %O", csr)
@@ -156,10 +156,18 @@ function ActivationUsager(props) {
     confirmationCb(`Activer CSR :\n${csr}`)
   }, [csr, confirmationCb])
 
+  useEffect(()=>{
+    supporteCamera()
+      .then(support=>setSupportCodeQr(support))
+      .catch(err=>erreurCb(err))
+  }, [setSupportCodeQr])
+
   return (
     <>
-      <AfficherActivationsUsager nomUsager={usager.nomUsager}
+      <AfficherActivationsUsager 
+        nomUsager={usager.nomUsager}
         workers={props.workers}
+        supportCodeQr={supportCodeQr}
         csrCb={csrCb}
         erreurCb={erreurCb} />
 
