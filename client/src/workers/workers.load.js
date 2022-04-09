@@ -1,20 +1,22 @@
 import {wrap, releaseProxy} from 'comlink'
 
 import ConnexionWorker from './connexion.worker'
+import ChiffrageWorker from './chiffrage.worker'
 
 export function chargerWorkers() {
-  // const chiffrage = charger(ChiffrageWorker)
+  const chiffrage = charger(ChiffrageWorker)
   const connexion = charger(ConnexionWorker)
-  console.debug("chargerWorkers: Workers prets")
 
   const workers = {
     instances: {
       connexion: connexion.instance, 
-      // chiffrage: chiffrage.instance
+      chiffrage: chiffrage.instance
     },
     connexion: connexion.worker,
-    //chiffrage: chiffrage.worker,
+    chiffrage: chiffrage.worker,
   }
+
+  console.debug("chargerWorkers: Workers prets : %O", workers)
 
   return workers
 }
