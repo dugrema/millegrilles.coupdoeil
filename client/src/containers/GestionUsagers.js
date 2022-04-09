@@ -110,6 +110,8 @@ function AfficherUsager(props) {
     <>
       <h2>Usager</h2>
 
+      <Button variant="secondary" onClick={props.fermer}>Retour</Button>
+
       <InformationUsager 
         etatAuthentifie={etatAuthentifie}
         usager={usager}
@@ -129,8 +131,6 @@ function AfficherUsager(props) {
         usager={usager}
         workers={props.workers}
         reloadUsager={reloadUsager} />
-
-      <Button variant="secondary" onClick={props.fermer}>Fermer</Button>
 
     </>
   )
@@ -290,9 +290,17 @@ function GestionWebauthn(props) {
 
   const {connexion} = props.workers
 
-  const resetWebauthn = async event => {
+  const [resetWebauthn, setResetWebauthn] = useState(true)
+  const [resetActivations, setResetActivations] = useState(false)
+  const [evictAllSessions, setEvictAllSessions] = useState(false)
+
+  const resetWebauthnCb = useCallback(event=>setResetWebauthn(event.currentTarget.checked))
+  const resetActivationsCb = useCallback(event=>setResetActivations(event.currentTarget.checked))
+  const evictAllSessionsCb = useCallback(event=>setEvictAllSessions(event.currentTarget.checked))
+
+  const resetCb = async event => {
     try {
-      await connexion.resetWebauthn(userId)
+      await connexion.resetWebauthn(userId, resetWebauthn, resetActivations, evictAllSessions)
       setConfirmation('Reset webauthn complete')
       props.reloadUsager()
     } catch(err) {
@@ -300,24 +308,54 @@ function GestionWebauthn(props) {
     }
   }
 
+  const disabledButton = !(resetWebauthn || resetActivations || evictAllSessions)
+
   return (
     <>
-      <h3>Authentification webauthn</h3>
+      <h3>Authentification et sessions</h3>
 
       <Alert variant="danger" show={err?true:false}>{err}</Alert>
       <Alert variant="success" show={confirmation?true:false}>{confirmation}</Alert>
 
       <Row>
-        <Col lg={3}>Nombre autorisations</Col>
+        <Col lg={3}>Nombre autorisations webauthn (tokens) sur le compte</Col>
         <Col lg={3}>{webauthn.length}</Col>
+      </Row>
+
+      <Row>
+        <Col lg={6}>
+          <Form.Group id="resetWebauthn">
+            <Form.Check checked={resetWebauthn} onChange={resetWebauthnCb} label="Reset tokens Webauthn"/>
+          </Form.Group>
+        </Col>
+      </Row>
+
+      <Row>
+        <Col lg={6}>
+          <Form.Group id="resetActivations">
+            <Form.Check checked={resetActivations} onChange={resetActivationsCb} label="Reset activations de navigateurs"/>
+          </Form.Group>
+        </Col>
+      </Row>
+
+      <Row>
+        <Col lg={6}>
+          <Form.Group id="evictAllSessions">
+            <Form.Check checked={evictAllSessions} onChange={evictAllSessionsCb} label="Expulser toutes les sessions actives"/>
+          </Form.Group>
+        </Col>
+      </Row>
+
+      <Row>
         <Col>
           <Button variant="danger"
-                  onClick={resetWebauthn}
-                  disabled={webauthn.length===0}>
-            Reset webauthn
+                  onClick={resetCb}
+                  disabled={disabledButton}>
+            Reset
           </Button>
         </Col>
       </Row>
+
     </>
   )
 }

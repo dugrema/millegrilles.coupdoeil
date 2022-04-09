@@ -239,11 +239,11 @@ function genererCertificatNavigateur(params) {
     {domaine: 'CoreMaitreDesComptes', action: 'signerCompteUsager', attacherCertificat: true}
   )
 }
-function resetWebauthn(userId) {
+function resetWebauthn(userId, resetWebauthn, resetActivations, evictAllSessions) {
   return connexionClient.emitBlocking(
-    'maitrecomptes/resetWebauthn',
-    {userId},
-    {domaine: 'CoreMaitreDesComptes', action: 'supprimerCles', attacherCertificat: true}
+    'maitrecomptes/resetWebauthnUsager',
+    {userId, resetWebauthn, resetActivations, evictAllSessions},
+    {domaine: 'CoreMaitreDesComptes', action: 'resetWebauthnUsager', attacherCertificat: true}
   )
 }
 function majDelegations(params) {

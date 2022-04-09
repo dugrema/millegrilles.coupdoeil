@@ -33,7 +33,7 @@ function configurerEvenements(socket) {
       {eventName: 'coupdoeil/getDocumentParFuuid', callback: (params, cb) => {getDocumentParFuuid(socket, params, cb)}},
       {eventName: 'maitrecomptes/requeteListeUsagers', callback: (params, cb) => {requeteListeUsagers(socket, params, cb)}},
       {eventName: 'maitrecomptes/requeteUsager', callback: (params, cb) => {requeteUsager(socket, params, cb)}},
-      {eventName: 'maitrecomptes/resetWebauthn', callback: (params, cb) => {resetWebauthn(socket, params, cb)}},
+      {eventName: 'maitrecomptes/resetWebauthnUsager', callback: (params, cb) => {resetWebauthn(socket, params, cb)}},
 
       {eventName: 'coupdoeil/requeteClesNonDechiffrables', callback: (params, cb) => {
         requeteClesNonDechiffrables(socket, params, cb)
@@ -656,15 +656,9 @@ async function genererCertificatNavigateurWS(socket, commande, cb) {
 async function resetWebauthn(socket, commande, cb) {
   debug("resetWebauthn commande: %O", commande)
 
-  // const userId = params.userId
-  // const comptesUsagers = socket.comptesUsagers
-  // const opts = {}
-  // const reponse = await comptesUsagers.resetWebauthn(userId)
-  // debug("Reponse reset webauthn %s:\n%O", userId, reponse)
-
   const domaine = commande['en-tete'].domaine
   const action = commande['en-tete'].action
-  if ( domaine !== 'CoreMaitreDesComptes' || action !== 'supprimerCles') {
+  if ( domaine !== 'CoreMaitreDesComptes' || action !== 'resetWebauthnUsager') {
     return cb({err: "Mauvais type d'action : " + domaine + "/" + action})
   }
 
