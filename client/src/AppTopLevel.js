@@ -18,7 +18,7 @@ function App(props) {
   const [usager, setUsager] = useState('')
   const [etatAuthentifie, setEtatAuthentifie] = useState(false)  // modeProtege: false,
   const [certificatMaitreDesCles, setCertificatMaitreDesCles] = useState('')
-  const [cleMillegrilleChargee, setcleMillegrilleChargee] = useState(false)  // cleMillegrilleChargee: false,
+  const [cleMillegrille, setCleMillegrille] = useState('')  // Cle de MilleGrille
 
   // Affichage d'une erreur
   const [erreur, setErreur] = useState('')
@@ -72,7 +72,8 @@ function App(props) {
           etatConnexion={etatConnexion}
           etatAuthentifie={etatAuthentifie}
           usager={usager}
-          cleMillegrilleChargee={cleMillegrilleChargee}
+          cleMillegrille={cleMillegrille}
+          setCleMillegrille={setCleMillegrille}
           certificatMaitreDesCles={certificatMaitreDesCles} />
       </Suspense>
     )

@@ -5,7 +5,7 @@ import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
 
-import { AlertTimeout, ModalAttente, FormatterDate } from '@dugrema/millegrilles.reactjs'
+import { ModalAttente, FormatterDate } from '@dugrema/millegrilles.reactjs'
 
 import Catalogues from './DomaineCatalogueApplications'
 import Maitredescles from './DomaineMaitredescles'
@@ -13,7 +13,11 @@ import Usagers from './GestionUsagers'
 
 function Domaines(props) {
     console.debug("Domaines proppys : %O", props)
-    const { workers, etatAuthentifie, confirmationCb, erreurCb } = props
+    const { 
+        workers, certificatMaitreDesCles, etatAuthentifie, confirmationCb, 
+        cleMillegrille, setCleMillegrille, 
+        erreurCb 
+    } = props
 
     const [attente, setAttente] = useState('')
     const [domaines, setDomaines] = useState('')
@@ -58,6 +62,9 @@ function Domaines(props) {
             <Page 
                 workers={workers} 
                 etatAuthentifie={etatAuthentifie}
+                certificatMaitreDesCles={certificatMaitreDesCles}
+                cleMillegrille={cleMillegrille}
+                setCleMillegrille={setCleMillegrille}
                 confirmationCb={confirmationCb}
                 erreurCb={erreurCbLocal}
                 fermer={()=>setDomaineSelectionne('')} />

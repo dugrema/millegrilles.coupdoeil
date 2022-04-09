@@ -48,7 +48,7 @@ async function setUsager(workers, nomUsager, setUsagerState, opts) {
         const certificatPem = fullchain.join('')
 
         // Initialiser le CertificateStore
-        //await workers.chiffrage.initialiserCertificateStore(caPem, {isPEM: true, DEBUG: false})
+        await workers.chiffrage.initialiserCertificateStore(caPem, {isPEM: true, DEBUG: false})
 
         // Initialiser chaque worker avec la cle privee
         await Promise.all(Object.keys(workers).filter(item=>item!=='instances').map(nomWorker=>{

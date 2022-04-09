@@ -104,3 +104,7 @@ div.table div.table-header {
 PRE.stack {
   font-size: small;
 }
+
+.icone-cle-millegrille a i {
+  color: white;
+}
