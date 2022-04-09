@@ -19,7 +19,6 @@ function CommandeHttp(props) {
   const [attente, setAttente] = useState(false)
   const [confirmation, setConfirmation] = useState('')
   const [error, setError] = useState('')
-  const [errorMessage, setErrorMessage] = useState('')
 
   useEffect(()=>{
     if(!instance) return
@@ -32,12 +31,10 @@ function CommandeHttp(props) {
   const erreurCb = useCallback(
       (err, message) => { 
           console.debug("Set erreurs %O, %s", err, message)
-          setError(err, message)
-          if(message) setErrorMessage(message)
-          else setErrorMessage(''+err)
+          setError({err, message})
           setAttente(false)  // Reset attente
       }, 
-      [setError, setErrorMessage, setAttente]
+      [setError, setAttente]
   )
 
   const verifierAccesNoeudCb = useCallback(event => {
@@ -49,9 +46,7 @@ function CommandeHttp(props) {
     <>
       <h2>Configuration d'une instance via Http</h2>
 
-      <AlertTimeout 
-        variant="danger" delay={false} 
-        message={errorMessage} setMessage={setErrorMessage} err={error} setError={setError} />
+      <AlertTimeout variant="danger" titre="Erreur" delay={false} value={error} setValue={setError} />
       <AlertTimeout message={confirmation} setMessage={setConfirmation} />
       <ModalAttente show={attente} setAttente={setAttente} />
 
@@ -196,10 +191,14 @@ async function renouvellerCertificat(workers, hostname, instance, confirmationCb
 
   const { connexion } = workers
 
-  const urlCsr = new URL('https://localhost/installation/api/csr')
-  urlCsr.hostname = hostname
-  const reponseCsr = await axios.get(urlCsr.href)
-  console.debug("Reponse CSR : %O", reponseCsr)
+  try {
+    const urlCsr = new URL('https://localhost/installation/api/csr')
+    urlCsr.hostname = hostname
+    var reponseCsr = await axios.get(urlCsr.href)
+    console.debug("Reponse CSR : %O", reponseCsr)
+  } catch(err) {
+    return erreurCb(err, 'Erreur recuperation de la requete de certificat (CSR)')
+  }
 
   if(reponseCsr.status === 410) {
     console.debug("Le CSR n'existe pas, demander au noeud d'en generer un nouveau")
