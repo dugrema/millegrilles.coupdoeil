@@ -10,7 +10,7 @@ import { IconeConnexion } from '@dugrema/millegrilles.reactjs'
 function MenuItems(props) {
     console.debug("Menu props : %O", props)
 
-    const { etatConnexion, changerPage, cleMillegrille, setCleMillegrille } = props
+    const { workers, etatConnexion, changerPage, cleMillegrilleChargee } = props
 
     const changerPageCb = useCallback(param => {
       const params_split = param.split('/')
@@ -54,10 +54,6 @@ function MenuItems(props) {
             <IconeConnexion connecte={etatConnexion} />
         </Nav.Item>
 
-        <Nav.Item>
-            <IconeCleMillegrille cleMilleGrille={cleMillegrille} setCleMillegrille={setCleMillegrille} />
-        </Nav.Item>
-
       </Nav>
     )
 }
@@ -83,22 +79,6 @@ function DropDownUsager(props) {
           <i className="fa fa-close" /> {' '} Deconnecter
         </NavDropdown.Item>
       </NavDropdown>
-  )
-
-}
-
-function IconeCleMillegrille(props) {
-  const {cleMilleGrille, setCleMillegrille} = props
-
-  const clickCle = useCallback(()=>{
-    console.debug("Click cle")
-    setCleMillegrille('')
-  }, [])
-
-  if(!cleMilleGrille) return ''
-
-  return (
-    <span className="icone-cle-millegrille"><a onClick={clickCle}><i className="fa fa-key"/></a></span>
   )
 
 }

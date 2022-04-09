@@ -18,7 +18,7 @@ function App(props) {
   const [usager, setUsager] = useState('')
   const [etatAuthentifie, setEtatAuthentifie] = useState(false)  // modeProtege: false,
   const [certificatMaitreDesCles, setCertificatMaitreDesCles] = useState('')
-  const [cleMillegrille, setCleMillegrille] = useState('')  // Cle de MilleGrille
+  const [cleMillegrilleChargee, setCleMillegrilleChargee] = useState(false)
 
   // Affichage d'une erreur
   const [erreur, setErreur] = useState('')
@@ -40,7 +40,7 @@ function App(props) {
 
   useEffect(()=>{
     if(workers) {
-      connecter(workers, setEtatConnexion, setUsagerCb, setEtatFormatteur)
+      connecter(workers, setEtatConnexion, setUsagerCb, setEtatFormatteur, setCleMillegrilleChargee)
         .then(infoConnexion=>{console.debug("Info connexion : %O", infoConnexion)})
         .catch(err=>erreurCb(err, 'Erreur de connexion au serveur'))
     }
@@ -72,8 +72,7 @@ function App(props) {
           etatConnexion={etatConnexion}
           etatAuthentifie={etatAuthentifie}
           usager={usager}
-          cleMillegrille={cleMillegrille}
-          setCleMillegrille={setCleMillegrille}
+          cleMillegrilleChargee={cleMillegrilleChargee}
           certificatMaitreDesCles={certificatMaitreDesCles} />
       </Suspense>
     )

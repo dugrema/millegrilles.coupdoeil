@@ -15,7 +15,7 @@ function Domaines(props) {
     console.debug("Domaines proppys : %O", props)
     const { 
         workers, certificatMaitreDesCles, etatAuthentifie, confirmationCb, 
-        cleMillegrille, setCleMillegrille, 
+        cleMillegrilleChargee, setCleMillegrille, 
         erreurCb 
     } = props
 
@@ -63,8 +63,7 @@ function Domaines(props) {
                 workers={workers} 
                 etatAuthentifie={etatAuthentifie}
                 certificatMaitreDesCles={certificatMaitreDesCles}
-                cleMillegrille={cleMillegrille}
-                setCleMillegrille={setCleMillegrille}
+                cleMillegrilleChargee={cleMillegrilleChargee}
                 confirmationCb={confirmationCb}
                 erreurCb={erreurCbLocal}
                 fermer={()=>setDomaineSelectionne('')} />

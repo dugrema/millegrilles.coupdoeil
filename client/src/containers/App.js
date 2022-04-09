@@ -15,7 +15,6 @@ const SectionContenu = React.lazy(()=>import('./SectionContenu'))
 
 function ApplicationCoupdoeil(props) {
 
-  const [serveurInfo, setServeurInfo] = useState('')
   const [page, setPage] = useState('Instances')
 
   // Params de pages
@@ -145,7 +144,7 @@ function Menu(props) {
 
   var renderCleMillegrille = ''
 
-  const clearCleMillegrille = _=>{workers.chiffrage.clearCleMillegrilleSubtle()}
+  const clearCleMillegrille = _=>{workers.chiffrage.clearCleMillegrille()}
   if(props.cleMillegrilleChargee) {
     renderCleMillegrille = (
       <Nav className="justify-content-end">
