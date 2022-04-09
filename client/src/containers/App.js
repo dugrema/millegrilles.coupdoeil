@@ -114,7 +114,6 @@ function LayoutCoudpoeil(props) {
 }
 
 function Footer(props) {
-  console.debug("FOoter rpropsies : %O", props)
   const idmg = props.usager?props.usager.idmg:''
 
   return (

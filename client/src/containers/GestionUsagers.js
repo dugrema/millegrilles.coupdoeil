@@ -1,10 +1,7 @@
 import React, {useState, useEffect, useCallback} from 'react'
-import {Row, Col, Button, Alert, Form, Modal} from 'react-bootstrap'
-import {pki as forgePki} from '@dugrema/node-forge'
+import {Row, Col, Button, Alert, Form} from 'react-bootstrap'
 
 import { AfficherActivationsUsager, supporteCamera } from '@dugrema/millegrilles.reactjs'
-
-import {QrCodeScanner, parseCsrQr} from './QrCodeScanner'
 
 export default function GestionUsagers(props) {
 
