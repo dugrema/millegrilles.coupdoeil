@@ -79,13 +79,16 @@ function DomaineMaitredescles(props) {
 
   const { workers, certificatMaitreDesCles, cleMillegrilleChargee } = props
 
-  const [nombreClesNonDechiffrables, setNombreClesNonDechiffrables] = useState('')
   const [showModalCle, setShowModalCle] = useState(false)
+  const [infoCles, setInfoCles] = useState('')
+  const [succes, setSucces] = useState('')
   const [erreur, setErreur] = useState('')
 
   const showModalCleCb = useCallback(()=>setShowModalCle(true), [setShowModalCle])
   const hideModalCleCb = useCallback(()=>setShowModalCle(false), [setShowModalCle])
   const erreurCb = useCallback((err, message) => setErreur({err, message}), [setErreur])
+  const resetClesNonDechiffrablesCb = useCallback(()=>resetClesNonDechiffrables(workers, setSucces, erreurCb), [workers])
+  const chargerInfoClesCb = useCallback(()=>{fetchInfoCles(workers).then(info=>setInfoCles(info)).catch(erreurCb)}, [workers, setInfoCles, erreurCb])
 
   const setCleMillegrille = useCallback(cle=>{
     const { chiffrage } = workers
@@ -94,20 +97,14 @@ function DomaineMaitredescles(props) {
       .catch(err=>erreurCb(err))
   }, [workers])
 
-  useEffect(()=>{
-    fetchInfoCles(workers)
-      .then(info=>{
-        console.debug("Info cles non dechiffrables: %O", info)
-        setNombreClesNonDechiffrables(info.nonDechiffrables)
-      })
-      .catch(err=>erreurCb(err))
-  }, [workers, setNombreClesNonDechiffrables])
+  useEffect(chargerInfoClesCb, [chargerInfoClesCb])
 
   return (
     <div>
       <h1>Recuperer les cles</h1>
 
-      <AlertTimeout titre="Erreur" delay={30} value={erreur} setValue={setErreur} />
+      <AlertTimeout titre="Succes" delay={10000} value={succes} setValue={setSucces} />
+      <AlertTimeout titre="Erreur" variant="danger" delay={30000} value={erreur} setValue={setErreur} />
       <Alert variant="danger" show={certificatMaitreDesCles?false:true}>
         <Alert.Heading>Certificat absent</Alert.Heading>
         <p>Le certificat de rechiffrage est absent. Veuillez recharger la page pour reessayer.</p>
@@ -115,14 +112,25 @@ function DomaineMaitredescles(props) {
 
       <p>Cette page permet de recuperer les cles connues qui ne sont pas dechiffrables.</p>
 
-      <p>Nombre de cles connues qui ne sont pas dechiffrables : {nombreClesNonDechiffrables}</p>
+      <p>Nombre de cles connues qui ne sont pas dechiffrables : {infoCles.nonDechiffrables}</p>
 
-      <Alert show={nombreClesNonDechiffrables===0}>
+      <Row>
+        <Col>
+          Dev tools
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <Button variant="danger" onClick={resetClesNonDechiffrablesCb}>Reset cles non dechiffrables</Button>
+        </Col>
+      </Row>
+
+      <Alert show={infoCles.nonDechiffrables===0}>
         <Alert.Heading>Aucune cle a rechiffrer</Alert.Heading>
         <p>Il n'y a aucune cle a rechiffrer.</p>
       </Alert>
 
-      <Alert show={(nombreClesNonDechiffrables>0 && cleMillegrilleChargee)?false:true}>
+      <Alert show={(infoCles.nonDechiffrables>0 && cleMillegrilleChargee)?false:true}>
         <Alert.Heading>Charger la cle de millegrille</Alert.Heading>
         <p>La cle de MilleGrille est requise pour le rechiffrage.</p>
 
@@ -136,9 +144,11 @@ function DomaineMaitredescles(props) {
 
       <RechiffrerCles 
         workers={workers}
-        nombreClesNonDechiffrables={nombreClesNonDechiffrables}
+        nombreClesNonDechiffrables={infoCles.nonDechiffrables}
         certificatMaitreDesCles={certificatMaitreDesCles}
         cleMillegrilleChargee={cleMillegrilleChargee} 
+        chargerInfoClesCb={chargerInfoClesCb}
+        confirmationCb={setSucces}
         erreurCb={erreurCb} />
 
       <ModalChargerCleMillegrille 
@@ -153,7 +163,7 @@ export default DomaineMaitredescles
 
 function RechiffrerCles(props) {
 
-  const { workers, nombreClesNonDechiffrables, certificatMaitreDesCles, cleMillegrilleChargee, erreurCb } = props
+  const { workers, nombreClesNonDechiffrables, certificatMaitreDesCles, cleMillegrilleChargee, chargerInfoClesCb, erreurCb } = props
 
   const [nombreClesRechiffrees, setNombreClesRechiffrees] = useState(0)
   const [nombreErreurs, setNombreErreurs] = useState(0)
@@ -162,7 +172,9 @@ function RechiffrerCles(props) {
 
   const rechiffrerCb = useCallback(()=>{
     rechiffrer(workers, certificatMaitreDesCles, setNombreClesRechiffrees, setNombreErreurs, erreurCb)
-  }, [workers, certificatMaitreDesCles, setNombreClesRechiffrees, setNombreErreurs, erreurCb])
+      .then(chargerInfoClesCb)
+      .catch(erreurCb)
+  }, [workers, certificatMaitreDesCles, setNombreClesRechiffrees, setNombreErreurs, chargerInfoClesCb, erreurCb])
 
   // useEffect(()=>{
   //   validerCertificatRechiffrage(workers, certificatMaitreDesCles)
@@ -238,15 +250,31 @@ async function rechiffrer(workers, certificatRechiffrage, setNombreClesRechiffre
   const setNombreErreursProxy = proxy(setNombreErreurs)
 
   try {
-    console.debug("Call rechiffrers")
     const params = {
-      DEBUG: true,
+      DEBUG: false,
+      batchSize: 5,
     }
-    await chiffrage.rechiffrerAvecCleMillegrille(connexion, certificatRechiffrage, setNombreClesRechiffreesProxy, setNombreErreursProxy, params)
+    await chiffrage.rechiffrerAvecCleMillegrille(
+      connexion, certificatRechiffrage, setNombreClesRechiffreesProxy, setNombreErreursProxy, params)
   } catch(err) {
     erreurCb(err, 'Erreur rechiffrage')
   }
 
+}
+
+async function resetClesNonDechiffrables(workers, confirmationCb, erreurCb) {
+  const {connexion} = workers
+  try {
+    const reponse = await connexion.resetClesNonDechiffrables()
+    console.debug("Reponse")
+    if(reponse.ok === false) {
+      erreurCb(reponse.err, 'Erreur reset cles')
+    } else {
+      confirmationCb('Reset cles ok')
+    }
+  } catch(err) {
+    erreurCb(err)
+  }
 }
 
 // function chargerCleMillegrilleForge(cleMillegrille) {

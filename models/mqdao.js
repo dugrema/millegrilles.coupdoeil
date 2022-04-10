@@ -125,6 +125,11 @@ function configurerDomaineAcme(socket, requete) {
     return transmettreCommande(socket, requete, 'configurerDomaine', {domaine: DOMAINE_MONITOR, partition, exchange})
 }
 
+function resetClesNonDechiffrables(socket, commande) {
+    debug("resetClesNonDechiffrables %O", commande)
+    return transmettreCommande(socket, commande, 'resetNonDechiffrable', {domaine: CONST_DOMAINE_MAITREDESCLES, exchange: '3.protege'})
+}
+
 // Fonctions generiques
 
 async function transmettreRequete(socket, params, action, opts) {
@@ -179,6 +184,7 @@ module.exports = {
     transmettreCatalogues,
     installerApplication, demarrerApplication, supprimerApplication,
     ajouterCatalogueApplication, requeteConfigurationApplication, configurerApplication, supprimerInstance,
+    resetClesNonDechiffrables,
 
     majMonitor, requeteConfigurationAcme, configurerDomaineAcme,
     

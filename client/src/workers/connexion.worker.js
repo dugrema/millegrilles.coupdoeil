@@ -298,6 +298,15 @@ function signerRecoveryCsr(commande) {
   )
 }
 
+function resetClesNonDechiffrables(commande) {
+  commande = commande || {}
+  return connexionClient.emitBlocking(
+    'resetClesNonDechiffrables', 
+    commande, 
+    {domaine: 'MaitreDesCles', action: 'resetNonDechiffrable', attacherCertificat: true}
+  )
+}
+
 // Listeners
 function enregistrerCallbackEvenementsPresenceDomaine(cb) { 
   return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceDomaines', cb) 
@@ -361,6 +370,7 @@ comlinkExpose({
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
   majDelegations, requeteRapportBackup, resetBackup, majMonitor, supprimerInstance,
   getConfigurationAcme, configurerDomaineAcme, getRecoveryCsr, signerRecoveryCsr,
+  resetClesNonDechiffrables,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,
