@@ -172,7 +172,7 @@ async function rechiffrer(workers, certificatRechiffrage, setNombreClesRechiffre
   try {
     const params = {
       DEBUG: false,
-      batchSize: 100,
+      batchSize: BATCH_NOMBRE_FETCH,
     }
     await chiffrage.rechiffrerAvecCleMillegrille(
       connexion, certificatRechiffrage, setNombreClesRechiffreesProxy, setNombreErreursProxy, params)
