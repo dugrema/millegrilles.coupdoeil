@@ -16,14 +16,18 @@ export function chargerWorkers() {
     chiffrage: chiffrage.worker,
   }
 
-  console.debug("chargerWorkers: Workers prets : %O", workers)
+  connexion.worker.testWorker().catch(err=>console.error("Erreur test worker connexion : %O", err))
+
+  // chiffrage.worker.importWasmCrypto().catch(err=>console.error("chiffrage worker : Erreur chargement WASM crypto"))
 
   return workers
 }
 
 function charger(ClasseWorker) {
   const instance = new ClasseWorker()
+  console.debug("Instance worker %s : %O", ClasseWorker, instance)
   const worker = wrap(instance)
+  console.debug("Worker wrappe : %O", worker)
   return {instance, worker}
 }
 

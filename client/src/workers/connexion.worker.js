@@ -21,6 +21,11 @@ const URL_SOCKET = '/coupdoeil/socket.io'
 //   return connexionClient.connecter(url, opts)
 // }
 
+function testWorker() {
+  console.debug("connexion worker ok")
+  return true
+}
+
 function getClesChiffrage() {
   return connexionClient.emitBlocking('getClesChiffrage', {})
 }
@@ -43,9 +48,12 @@ function requeteCatalogueDomaines() {
   throw new Error("deprecated")
   // return connexionClient.emitBlocking('coupdoeil/requeteCatalogueDomaines')
 }
-function requeteClesNonDechiffrables(tailleBatch, pageBatch) {
+function requeteClesNonDechiffrables(tailleBatch, dateCreationMin, excludeHachageBytes) {
   return connexionClient.emitBlocking('coupdoeil/requeteClesNonDechiffrables', {
-    limite: tailleBatch, page: pageBatch})
+    limite: tailleBatch, 
+    date_creation_min: dateCreationMin,
+    exclude_hachage_bytes: excludeHachageBytes,
+  })
 }
 function getCatalogueApplications() {
   return connexionClient.emitBlocking('coupdoeil/requeteCatalogueApplications')
@@ -332,6 +340,8 @@ async function retirerEvenementsAcme(instanceId, securite, cb) {
 comlinkExpose({
   ...connexionClient,
   // connecter,  // Override de connexionClient.connecter
+
+  testWorker,
 
   getClesChiffrage,
 

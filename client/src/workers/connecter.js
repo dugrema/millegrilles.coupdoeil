@@ -18,7 +18,7 @@ async function connecter(workers, setEtatConnexion, setUsagerState, setFormatteu
     const setCallbackCleMillegrilleCb = proxy(setCleMillegrilleChargee)
 
     await connexion.setCallbacks(setEtatConnexionCb, setUsagerCb, setFormatteurPretCb)
-    await chiffrage.setCallbackCleMillegrille(setCallbackCleMillegrilleCb)
+    if(chiffrage) await chiffrage.setCallbackCleMillegrille(setCallbackCleMillegrilleCb)
 
     const resultat = await connexion.connecter(location.href)
     console.debug("Resultat connexion : %O", resultat)
@@ -51,7 +51,7 @@ async function setUsager(workers, nomUsager, setUsagerState, opts) {
         const certificatPem = fullchain.join('')
 
         // Initialiser le CertificateStore
-        await workers.chiffrage.initialiserCertificateStore(caPem, {isPEM: true, DEBUG: false})
+        if(workers.chiffrage) await workers.chiffrage.initialiserCertificateStore(caPem, {isPEM: true, DEBUG: false})
 
         // Initialiser chaque worker avec la cle privee
         await Promise.all(Object.keys(workers).filter(item=>item!=='instances').map(nomWorker=>{

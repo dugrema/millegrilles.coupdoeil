@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { Row, Col, Button, Alert, ProgressBar } from 'react-bootstrap'
 import { pki as forgePki } from '@dugrema/node-forge'
 import multibase from 'multibase'
+import { proxy } from 'comlink'
 
 import { ChargementClePrivee } from './ChargementCle'
 // import { hacherCertificat } from '@dugrema/millegrilles.common/lib/hachage'
@@ -157,22 +158,22 @@ function RechiffrerCles(props) {
   const [nombreClesRechiffrees, setNombreClesRechiffrees] = useState(0)
   const [nombreErreurs, setNombreErreurs] = useState(0)
   
-  const [certificatRechiffrageForge, setCertificatRechiffrageForge] = useState('')
+  // const [certificatRechiffrageForge, setCertificatRechiffrageForge] = useState('')
 
   const rechiffrerCb = useCallback(()=>{
-    rechiffrer(workers, cleMillegrilleChargee, certificatRechiffrageForge, setNombreClesRechiffrees, setNombreErreurs, erreurCb)
-  }, [workers, cleMillegrilleChargee, certificatRechiffrageForge, setNombreClesRechiffrees, setNombreErreurs, erreurCb])
+    rechiffrer(workers, certificatMaitreDesCles, setNombreClesRechiffrees, setNombreErreurs, erreurCb)
+  }, [workers, certificatMaitreDesCles, setNombreClesRechiffrees, setNombreErreurs, erreurCb])
 
-  useEffect(()=>{
-    validerCertificatRechiffrage(workers, certificatMaitreDesCles)
-      .then(certificatMaitreClesForge=>{
-        console.debug("Certificat maitre des cles (forge) : %O", certificatMaitreClesForge)
-        setCertificatRechiffrageForge(certificatMaitreClesForge)
-      })
-      .catch(err=>erreurCb(err))
-  }, [workers, certificatMaitreDesCles, setCertificatRechiffrageForge])
+  // useEffect(()=>{
+  //   validerCertificatRechiffrage(workers, certificatMaitreDesCles)
+  //     .then(certificatMaitreClesForge=>{
+  //       console.debug("Certificat maitre des cles (forge) : %O", certificatMaitreClesForge)
+  //       setCertificatRechiffrageForge(certificatMaitreClesForge)
+  //     })
+  //     .catch(err=>erreurCb(err))
+  // }, [workers, certificatMaitreDesCles, setCertificatRechiffrageForge])
 
-  if(!(nombreClesNonDechiffrables && certificatRechiffrageForge && cleMillegrilleChargee)) return ''
+  if(!(nombreClesNonDechiffrables && certificatMaitreDesCles && cleMillegrilleChargee)) return ''
 
   return (
     <div>
@@ -207,34 +208,45 @@ async function fetchInfoCles(workers, erreurCb) {
   return {nonDechiffrables: compte}
 }
 
-async function validerCertificatRechiffrage(workers, certificatRechiffragePEM) {
-  console.debug("Verifier certificat : %O", certificatRechiffragePEM)
-  const { chiffrage } = workers
+// async function validerCertificatRechiffrage(workers, certificatRechiffragePEM) {
+//   console.debug("Verifier certificat : %O", certificatRechiffragePEM)
+//   const { chiffrage } = workers
 
-  const certificatValide = await chiffrage.verifierCertificat(certificatRechiffragePEM)
-  if(!certificatValide) throw new Error("Certificat maitre des cles est invalide")
+//   const certificatValide = await chiffrage.verifierCertificat(certificatRechiffragePEM)
+//   if(!certificatValide) throw new Error("Certificat maitre des cles est invalide")
 
-  const certificatForge = forgePki.certificateFromPem(certificatRechiffragePEM)
-  const extensions = extraireExtensionsMillegrille(certificatForge)
-  console.debug("Certificat rechiffrage cles : %O\nExtensions: %O", certificatForge, extensions)
+//   const certificatForge = forgePki.certificateFromPem(certificatRechiffragePEM)
+//   const extensions = extraireExtensionsMillegrille(certificatForge)
+//   console.debug("Certificat rechiffrage cles : %O\nExtensions: %O", certificatForge, extensions)
 
-  // S'assurer que le certificat est le maitre des cles
-  if( ! extensions.roles.includes('maitrecles') ) {
-    throw new Error("Certificat de rechiffrage doit etre pour le maitre des cles")
-  }
+//   // S'assurer que le certificat est le maitre des cles
+//   if( ! extensions.roles.includes('maitrecles') ) {
+//     throw new Error("Certificat de rechiffrage doit etre pour le maitre des cles")
+//   }
 
-  if( ! ( extensions.niveauxSecurite.includes('3.protege') || extensions.niveauxSecurite.includes('4.secure')) ) {
-    throw new Error("Certificat de rechiffrage doit etre de niveau 3.protege ou 4.secure")
-  }
+//   if( ! ( extensions.niveauxSecurite.includes('3.protege') || extensions.niveauxSecurite.includes('4.secure')) ) {
+//     throw new Error("Certificat de rechiffrage doit etre de niveau 3.protege ou 4.secure")
+//   }
 
-  return certificatForge
-}
+//   return certificatForge
+// }
 
-async function rechiffrer(workers, cleMillegrille, certificatForge, setNombreClesRechiffrees, setNombreErreurs, erreurCb) {
+async function rechiffrer(workers, certificatRechiffrage, setNombreClesRechiffrees, setNombreErreurs, erreurCb) {
   const { connexion, chiffrage } = workers
 
-  const batch = await connexion.requeteClesNonDechiffrables(BATCH_NOMBRE_FETCH, 0)
-  console.debug("Batch rechiffrage : %O", batch)
+  const setNombreClesRechiffreesProxy = proxy(setNombreClesRechiffrees)
+  const setNombreErreursProxy = proxy(setNombreErreurs)
+
+  try {
+    console.debug("Call rechiffrers")
+    const params = {
+      DEBUG: true,
+    }
+    await chiffrage.rechiffrerAvecCleMillegrille(connexion, certificatRechiffrage, setNombreClesRechiffreesProxy, setNombreErreursProxy, params)
+  } catch(err) {
+    erreurCb(err, 'Erreur rechiffrage')
+  }
+
 }
 
 // function chargerCleMillegrilleForge(cleMillegrille) {
