@@ -307,6 +307,15 @@ function resetClesNonDechiffrables(commande) {
   )
 }
 
+function rechiffrerClesBatch(commande, partition) {
+  commande = commande || {}
+  return connexionClient.emitBlocking(
+    'rechiffrerClesBatch', 
+    commande, 
+    {domaine: 'MaitreDesCles', action: 'rechiffrerBatch', partition, attacherCertificat: true}
+  )
+}
+
 // Listeners
 function enregistrerCallbackEvenementsPresenceDomaine(cb) { 
   return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceDomaines', cb) 
@@ -370,7 +379,7 @@ comlinkExpose({
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
   majDelegations, requeteRapportBackup, resetBackup, majMonitor, supprimerInstance,
   getConfigurationAcme, configurerDomaineAcme, getRecoveryCsr, signerRecoveryCsr,
-  resetClesNonDechiffrables,
+  resetClesNonDechiffrables, rechiffrerClesBatch,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,

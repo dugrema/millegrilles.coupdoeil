@@ -1,79 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Row, Col, Button, Alert, ProgressBar } from 'react-bootstrap'
-import { pki as forgePki } from '@dugrema/node-forge'
-import multibase from 'multibase'
 import { proxy } from 'comlink'
 
-import { ChargementClePrivee } from './ChargementCle'
-// import { hacherCertificat } from '@dugrema/millegrilles.common/lib/hachage'
-import { AlertTimeout, ModalChargerCleMillegrille, hachage, forgecommon } from '@dugrema/millegrilles.reactjs'
-import { chargerPemClePriveeEd25519 } from '@dugrema/millegrilles.utiljs/src/certificats'
-
-const { hacherCertificat } = hachage
-const { sauvegarderPrivateKeyToPEM, extraireExtensionsMillegrille } = forgecommon
+import { AlertTimeout, ModalChargerCleMillegrille } from '@dugrema/millegrilles.reactjs'
 
 const BATCH_NOMBRE_FETCH = 100       // Nombre cles downloadees a la fois
-
-// class DomaineMaitredescles extends React.Component {
-
-//   state = {
-//     nombreClesRechiffrees: '',
-//     nombreClesNonDechiffrables: '',
-//   }
-
-//   updateEtatRechiffrage = (nombreClesRechiffrees, nombreClesNonDechiffrables) => {
-//     this.setState({nombreClesRechiffrees, nombreClesNonDechiffrables})
-//   }
-
-//   setClePrivee = async clePrivee => {
-//     // Cle privee est en format nodeforge. Recharger en mode subtle.
-//     // const clePriveeSubtle = await transformerClePriveeForgeVersSubtle(this.props.rootProps.webWorker, clePriveeForge)
-//     // this.setState({clePriveeSubtle}, _=>{console.debug("State apres cle privee : %O", this.state)})
-//     // this.props.rootProps.setCleMillegrille(clePriveeForge)
-//     const clePriveePem = sauvegarderPrivateKeyToPEM(clePrivee)
-//     await this.props.rootProps.chiffrageWorker.chargerCleMillegrilleSubtle(clePriveePem)
-//   }
-
-//   render() {
-//     const etatConnexion = this.props.etatConnexion
-
-//     if(!etatConnexion) {
-//       return (<p>Activer mode protege pour poursuivre.</p>)
-//     }
-
-//     var sectionRechiffrer = ''
-//     if(!this.state.nombreClesNonDechiffrables) {
-//       // Rien a faire
-//     } else if(!this.props.rootProps.cleMillegrilleChargee) {
-//       console.debug("Root props : %O", this.props.rootProps)
-//       sectionRechiffrer = <ChargementClePrivee setClePrivee={this.setClePrivee} />
-//     } else {
-//       sectionRechiffrer = (
-//         <>
-//           <p>Cle privee chargee OK</p>
-//         </>
-//       )
-//     }
-
-//     return (
-//       <>
-//         <h1>Maitre des cles</h1>
-
-//         {sectionRechiffrer}
-
-//         <RechiffrerCles wsa={this.props.workers.connexion}
-//                         modeProtege={this.props.rootProps.modeProtege}
-//                         idmg={this.props.rootProps.idmg}
-//                         cleMillegrilleChargee={this.props.rootProps.cleMillegrilleChargee}
-//                         nombreClesNonDechiffrables={this.state.nombreClesNonDechiffrables}
-//                         updateEtatRechiffrage={this.updateEtatRechiffrage}
-//                         webWorker={this.props.rootProps.chiffrageWorker}
-//                         workers={this.props.workers} />
-//       </>
-//     )
-//   }
-
-// }
 
 function DomaineMaitredescles(props) {
 
@@ -130,7 +61,7 @@ function DomaineMaitredescles(props) {
         <p>Il n'y a aucune cle a rechiffrer.</p>
       </Alert>
 
-      <Alert show={(infoCles.nonDechiffrables>0 && cleMillegrilleChargee)?false:true}>
+      <Alert show={(infoCles.nonDechiffrables===0 || cleMillegrilleChargee)?false:true}>
         <Alert.Heading>Charger la cle de millegrille</Alert.Heading>
         <p>La cle de MilleGrille est requise pour le rechiffrage.</p>
 
@@ -168,22 +99,11 @@ function RechiffrerCles(props) {
   const [nombreClesRechiffrees, setNombreClesRechiffrees] = useState(0)
   const [nombreErreurs, setNombreErreurs] = useState(0)
   
-  // const [certificatRechiffrageForge, setCertificatRechiffrageForge] = useState('')
-
   const rechiffrerCb = useCallback(()=>{
     rechiffrer(workers, certificatMaitreDesCles, setNombreClesRechiffrees, setNombreErreurs, erreurCb)
       .then(chargerInfoClesCb)
       .catch(erreurCb)
   }, [workers, certificatMaitreDesCles, setNombreClesRechiffrees, setNombreErreurs, chargerInfoClesCb, erreurCb])
-
-  // useEffect(()=>{
-  //   validerCertificatRechiffrage(workers, certificatMaitreDesCles)
-  //     .then(certificatMaitreClesForge=>{
-  //       console.debug("Certificat maitre des cles (forge) : %O", certificatMaitreClesForge)
-  //       setCertificatRechiffrageForge(certificatMaitreClesForge)
-  //     })
-  //     .catch(err=>erreurCb(err))
-  // }, [workers, certificatMaitreDesCles, setCertificatRechiffrageForge])
 
   if(!(nombreClesNonDechiffrables && certificatMaitreDesCles && cleMillegrilleChargee)) return ''
 
@@ -252,7 +172,7 @@ async function rechiffrer(workers, certificatRechiffrage, setNombreClesRechiffre
   try {
     const params = {
       DEBUG: false,
-      batchSize: 5,
+      batchSize: 100,
     }
     await chiffrage.rechiffrerAvecCleMillegrille(
       connexion, certificatRechiffrage, setNombreClesRechiffreesProxy, setNombreErreursProxy, params)
