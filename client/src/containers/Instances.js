@@ -86,6 +86,7 @@ function Instances(props) {
                 show={showAssocier}
                 fermer={()=>setShowAssocier(false)}
                 workers={workers} 
+                etatAuthentifie={etatAuthentifie}
                 confirmationCb={confirmationCb} />
 
             <Page
@@ -412,6 +413,7 @@ async function connecter(hostname, setInstance, setCsr, erreurCb) {
 }
 
 function InformationNoeud(props) {
+    console.debug("InformationNoeud proppies : %O", props)
 
     const {workers, csr, hostname, instance, confirmationCb, erreurCb, fermer, etatAuthentifie} = props,
           securite = instance.securite
