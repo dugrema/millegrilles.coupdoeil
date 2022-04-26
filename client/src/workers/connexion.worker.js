@@ -325,6 +325,15 @@ function getConfigurationConsignation() {
   )
 }
 
+function getPublicKeySsh() {
+  const requete = {}
+  return connexionClient.emitBlocking(
+    'getPublicKeySsh',
+    requete ,
+    {domaine: 'fichiers', action: 'getPublicKeySsh', attacherCertificat: true}
+  )
+}
+
 // Listeners
 function enregistrerCallbackEvenementsPresenceDomaine(cb) { 
   return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceDomaines', cb) 
@@ -387,8 +396,8 @@ comlinkExpose({
   regenererDomaine,
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
   majDelegations, requeteRapportBackup, resetBackup, majMonitor, supprimerInstance,
-  getConfigurationAcme, configurerDomaineAcme, getRecoveryCsr, signerRecoveryCsr,
-  resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationConsignation,
+  getConfigurationAcme, configurerDomaineAcme, getRecoveryCsr, signerRecoveryCsr, 
+  resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationConsignation, getPublicKeySsh,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,

@@ -143,6 +143,14 @@ function getConfigurationConsignation(socket, requete) {
     )
 }
 
+function getPublicKeySsh(socket, requete) {
+    debug("getPublicKeySsh %O", requete)
+    return transmettreRequete(
+        socket, requete, 'getPublicKeySsh', 
+        {domaine: 'fichiers', exchange: '2.prive'}
+    )
+}
+
 // Fonctions generiques
 
 async function transmettreRequete(socket, params, action, opts) {
@@ -197,7 +205,7 @@ module.exports = {
     transmettreCatalogues,
     installerApplication, demarrerApplication, supprimerApplication,
     ajouterCatalogueApplication, requeteConfigurationApplication, configurerApplication, supprimerInstance,
-    resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationConsignation,
+    resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationConsignation, getPublicKeySsh,
 
     majMonitor, requeteConfigurationAcme, configurerDomaineAcme,
     
