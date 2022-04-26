@@ -316,6 +316,15 @@ function rechiffrerClesBatch(commande, partition) {
   )
 }
 
+function getConfigurationConsignation() {
+  const requete = {}
+  return connexionClient.emitBlocking(
+    'getConfigurationConsignation',
+    requete ,
+    {domaine: 'fichiers', action: 'getConfiguration', attacherCertificat: true}
+  )
+}
+
 // Listeners
 function enregistrerCallbackEvenementsPresenceDomaine(cb) { 
   return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceDomaines', cb) 
@@ -379,7 +388,7 @@ comlinkExpose({
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
   majDelegations, requeteRapportBackup, resetBackup, majMonitor, supprimerInstance,
   getConfigurationAcme, configurerDomaineAcme, getRecoveryCsr, signerRecoveryCsr,
-  resetClesNonDechiffrables, rechiffrerClesBatch,
+  resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationConsignation,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,

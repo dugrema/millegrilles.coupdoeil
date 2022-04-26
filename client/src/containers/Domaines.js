@@ -10,9 +10,10 @@ import { ModalAttente, FormatterDate } from '@dugrema/millegrilles.reactjs'
 import Catalogues from './DomaineCatalogueApplications'
 import Maitredescles from './DomaineMaitredescles'
 import Usagers from './GestionUsagers'
+import DomaineConsignation from './DomaineConsignation'
 
 function Domaines(props) {
-    console.debug("Domaines proppys : %O", props)
+    // console.debug("Domaines proppys : %O", props)
     const { 
         workers, certificatMaitreDesCles, etatAuthentifie, confirmationCb, 
         cleMillegrilleChargee, setCleMillegrille, 
@@ -53,6 +54,7 @@ function Domaines(props) {
         case 'MaitreDesCles': Page = Maitredescles; break
         case 'Catalogues': Page = Catalogues; break
         case 'Usagers': Page = Usagers; break
+        case 'Consignation': Page = DomaineConsignation; break
         default:
             Page = null
     }
@@ -103,6 +105,14 @@ function Domaines(props) {
                     </Col>
                     <Col>
                         <Button variant="secondary" onClick={()=>setDomaineSelectionne('Usagers')}>Usagers</Button>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        Consignation des fichiers
+                    </Col>
+                    <Col>
+                        <Button variant="secondary" onClick={()=>setDomaineSelectionne('Consignation')}>Fichiers</Button>
                     </Col>
                 </Row>
             </Row>

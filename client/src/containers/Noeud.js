@@ -10,7 +10,6 @@ import CommandeHttp from './NoeudConfiguration'
 import ConfigurationGenerale from './InstanceConfigurationGenerale'
 import ApplicationsInstance from './InstanceApplications'
 
-import { ListeNoeuds } from '../components/ListeTopologie'
 import { FormatterDate } from '@dugrema/millegrilles.reactjs'
 
 function AffichageNoeud(props) {
@@ -36,9 +35,6 @@ function AffichageNoeud(props) {
   var PageCourante = InformationTransactionsNoeud
   if(section === 'CommandeHttp') {
     PageCourante = CommandeHttp
-  } else if(section === 'Consignation') {
-    // PageCourante = ConsignationNoeud
-    throw new Error("Page ConsignationNoeud TODO")
   } else if(section === 'Applications') {
     PageCourante = ApplicationsInstance
   } else if(section === 'Docker') {

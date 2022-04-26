@@ -135,6 +135,14 @@ function rechiffrerClesBatch(socket, commande) {
     return transmettreCommande(socket, commande, 'rechiffrerBatch', {domaine: CONST_DOMAINE_MAITREDESCLES, exchange: '3.protege'})
 }
 
+function getConfigurationConsignation(socket, requete) {
+    debug("getConfigurationConsignation %O", requete)
+    return transmettreRequete(
+        socket, requete, 'getConfiguration', 
+        {domaine: 'fichiers', exchange: '2.prive'}
+    )
+}
+
 // Fonctions generiques
 
 async function transmettreRequete(socket, params, action, opts) {
@@ -189,7 +197,7 @@ module.exports = {
     transmettreCatalogues,
     installerApplication, demarrerApplication, supprimerApplication,
     ajouterCatalogueApplication, requeteConfigurationApplication, configurerApplication, supprimerInstance,
-    resetClesNonDechiffrables, rechiffrerClesBatch,
+    resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationConsignation,
 
     majMonitor, requeteConfigurationAcme, configurerDomaineAcme,
     

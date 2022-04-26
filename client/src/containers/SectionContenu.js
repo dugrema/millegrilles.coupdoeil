@@ -9,7 +9,7 @@ import {Backup as CoreBackup} from './Backup'
 import {PageConfigurationNoeudsListe as ConfigurationNoeuds} from './ConfigurationNoeudsListe'
 import {Parametres} from './Parametres.js'
 import {Pki} from './Pki.js'
-import {SommaireDomaine} from './Domaine'
+// import {SommaireDomaine} from './Domaine'
 
 // import ParametresCataloguesApplications from './DomaineCatalogueApplications'
 import {ParametresGrosFichiers} from './DomaineGrosFichiers'
@@ -26,7 +26,7 @@ const domainesConnus = {
   ConfigurationNoeuds,
   Parametres,
   CorePki: Pki,
-  SommaireDomaine,
+  // SommaireDomaine,
   GrosFichiers: ParametresGrosFichiers,
 };
 
