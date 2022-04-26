@@ -37,7 +37,7 @@ function ConfigurationConsignation(props) {
         <>
             <h2>Configuration de consignation des fichiers</h2>
     
-            <AlertTimeout variant="danger" delay={false} value={error} setValue={setError} />
+            <AlertTimeout variant="danger" titre="Erreur" delay={false} value={error} setValue={setError} />
             <AlertTimeout value={confirmation} setValue={setConfirmation} />
             <ModalAttente show={attente} setAttente={setAttente} />
     
@@ -72,15 +72,21 @@ function ConfigurerConsignation(props) {
     const appliquerConfiguration = useCallback(()=>{
         const {connexion} = workers
         if(connexion && etatAuthentifie) {
+            // Preparer nouvelle configuration
             const config = {typeStore, urlDownload, hostnameSftp, usernameSftp, remotePathSftp, keyTypeSftp}
-
             if(portSftp) config.portSftp = Number.parseInt(portSftp)
 
-
-            setConfiguration(config)
-
-            console.debug("Sauvegarder : %O", config)
-            confirmationCb("Configuration sauvegardee")
+            // Changer fichier de config stocke local
+            connexion.modifierConfigurationConsignation(config)
+                .then(resultat=>{
+                    if(resultat.ok===false) {
+                        return erreurCb(resultat.err, "Erreur de sauvegarde de la configuration")
+                    }
+                    console.debug("Configuration sauvegardee : %O", config)
+                    setConfiguration(config)
+                    confirmationCb("Configuration sauvegardee")
+                })
+                .catch(err=>erreurCb(err, 'Erreur de sauvegarde de la configuration'))
         } else {
             erreurCb('Erreur de connexion au serveur, veuillez reessayer plus tard')
         }

@@ -151,6 +151,11 @@ function getPublicKeySsh(socket, requete) {
     )
 }
 
+function modifierConfigurationConsignation(socket, commande) {
+    debug("modifierConfigurationConsignation %O", commande)
+    return transmettreCommande(socket, commande, 'modifierConfiguration', {domaine: CONST_DOMAINE_FICHIERS, exchange: '2.prive'})
+}
+
 // Fonctions generiques
 
 async function transmettreRequete(socket, params, action, opts) {
@@ -199,13 +204,13 @@ function verifierMessage(message, domaine, action) {
     if(actionRecue !== action) throw new Error(`Mismatch action (${actionRecue} !== ${action})"`)
 }
 
-
 module.exports = {
     challenge, getClesChiffrage,
     transmettreCatalogues,
     installerApplication, demarrerApplication, supprimerApplication,
     ajouterCatalogueApplication, requeteConfigurationApplication, configurerApplication, supprimerInstance,
     resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationConsignation, getPublicKeySsh,
+    modifierConfigurationConsignation,
 
     majMonitor, requeteConfigurationAcme, configurerDomaineAcme,
     

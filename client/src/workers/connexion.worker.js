@@ -334,6 +334,14 @@ function getPublicKeySsh() {
   )
 }
 
+function modifierConfigurationConsignation(commande) {
+  return connexionClient.emitBlocking(
+    'modifierConfigurationConsignation',
+    commande,
+    {domaine: 'fichiers', action: 'modifierConfiguration', attacherCertificat: true}
+  )
+}
+
 // Listeners
 function enregistrerCallbackEvenementsPresenceDomaine(cb) { 
   return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceDomaines', cb) 
@@ -398,6 +406,7 @@ comlinkExpose({
   majDelegations, requeteRapportBackup, resetBackup, majMonitor, supprimerInstance,
   getConfigurationAcme, configurerDomaineAcme, getRecoveryCsr, signerRecoveryCsr, 
   resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationConsignation, getPublicKeySsh,
+  modifierConfigurationConsignation,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,
