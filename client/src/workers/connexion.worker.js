@@ -69,7 +69,7 @@ function requeteConfigurationApplication(params) {
     'coupdoeil/requeteConfigurationApplication', 
     params, 
     {
-      domaine: 'monitor', 
+      domaine: 'instance', 
       action: 'requeteConfigurationApplication', 
       partition: params.instanceId, 
       exchange: params.exchange, 
@@ -95,7 +95,7 @@ function getConfigurationAcme(instanceId) {
     'coupdoeil/requeteConfigurationAcme', 
     {instanceId}, 
     {
-      domaine: 'monitor', 
+      domaine: 'instance', 
       action: 'configurationAcme', 
       partition: instanceId,
       exchange: '1.public',
@@ -110,7 +110,7 @@ function configurerDomaineAcme(commande) {
     'coupdoeil/configurerDomaineAcme', 
     commande,
     {
-      domaine: 'monitor', 
+      domaine: 'instance', 
       action: 'configurerDomaine', 
       partition,
       ajouterCertificat: true
@@ -148,7 +148,7 @@ function soumettreConfigurationApplication(configuration) {
   return connexionClient.emitBlocking(
     'coupdoeil/ajouterCatalogueApplication', 
     configuration, 
-    {domaine: 'monitor', action: 'ajouterCatalogueApplication', partition: configuration.noeud_id, exchange: configuration.exchange, ajouterCertificat: true}
+    {domaine: 'instance', action: 'ajouterCatalogueApplication', partition: configuration.noeud_id, exchange: configuration.exchange, ajouterCertificat: true}
   )
 }
 async function installerApplication(params) {
@@ -156,7 +156,7 @@ async function installerApplication(params) {
     return await connexionClient.emitBlocking(
       'coupdoeil/installerApplication', 
       params, 
-      {domaine: 'monitor', action: 'installerApplication', partition: params.noeudId, exchange: params.exchange, ajouterCertificat: true}
+      {domaine: 'instance', action: 'installerApplication', partition: params.noeudId, exchange: params.exchange, ajouterCertificat: true}
     )
   } catch(err) {
     console.error("Erreur InstallerApplication %O", err)
@@ -168,7 +168,7 @@ function supprimerApplication(commande) {
   return connexionClient.emitBlocking(
     'coupdoeil/supprimerApplication', 
     commande, 
-    {domaine: 'monitor', action: 'supprimerApplication', partition: commande.noeudId, exchange: commande.exchange, ajouterCertificat: true}
+    {domaine: 'instance', action: 'supprimerApplication', partition: commande.noeudId, exchange: commande.exchange, ajouterCertificat: true}
   )
 }
 function installerDomaine(params) {
@@ -201,14 +201,14 @@ function configurerApplication(commande) {
   return connexionClient.emitBlocking(
     'coupdoeil/configurerApplication', 
     commande, 
-    {domaine: 'monitor', action: 'configurerApplication', partition: commande.noeud_id, exchange: commande.exchange, ajouterCertificat: true}
+    {domaine: 'instance', action: 'configurerApplication', partition: commande.noeud_id, exchange: commande.exchange, ajouterCertificat: true}
   )
 }
 function demarrerApplication(commande) {
   return connexionClient.emitBlocking(
     'coupdoeil/demarrerApplication', 
     commande, 
-    {domaine: 'monitor', action: 'demarrerApplication', partition: commande.noeud_id, exchange: commande.exchange, ajouterCertificat: true}
+    {domaine: 'instance', action: 'demarrerApplication', partition: commande.noeud_id, exchange: commande.exchange, ajouterCertificat: true}
   )
 }
 function regenererPreviews() {
@@ -230,7 +230,7 @@ function commandeTransmettreCatalogues() {
   return connexionClient.emitBlocking(
     'coupdoeil/transmettreCatalogues', 
     {},
-    {domaine: 'monitor', action: 'transmettreCatalogues', attacherCertificat: true}
+    {domaine: 'instance', action: 'transmettreCatalogues', attacherCertificat: true}
   )
 }
 function commandeSoumettreCatalogueApplication(commande) {
@@ -266,11 +266,10 @@ function regenererDomaine(domaine) {
 }
 
 function majMonitor(params) {
-  console.debug("MAJ Monitor")
   return connexionClient.emitBlocking(
     'coretopologie/majMonitor',
     params,
-    {domaine: 'CoreTopologie', action: 'monitor', attacherCertificat: true}
+    {domaine: 'CoreTopologie', action: 'instance', attacherCertificat: true}
   )
 }
 

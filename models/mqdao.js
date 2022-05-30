@@ -3,7 +3,8 @@ const debug = require('debug')('mqdao')
 const L2Prive = '2.prive',
       L3Protege = '3.protege'
 
-const DOMAINE_MONITOR = 'monitor',
+const DOMAINE_INSTANCE = 'instance',
+      DOMAINE_MONITOR = DOMAINE_INSTANCE,
       CONST_DOMAINE_GROSFICHIERS = 'GrosFichiers',
       CONST_DOMAINE_MAITREDESCLES = 'MaitreDesCles',
       CONST_DOMAINE_FICHIERS = 'fichiers',
@@ -83,7 +84,7 @@ function requeteConfigurationApplication(socket, requete) {
     debug("Requete configuration application application %O", requete)
     return transmettreRequete(
         socket, requete, 'requeteConfigurationApplication', 
-        {domaine: 'monitor', exchange: requete.exchange, partition: requete.instanceId}
+        {domaine: 'instance', exchange: requete.exchange, partition: requete.instanceId}
     )
 }
 
@@ -103,12 +104,10 @@ function transmettreCatalogues(socket, commande) {
 }
 
 function majMonitor(socket, commande) {
-    debug("Maj monitor %O", commande)
-    return transmettreCommande(socket, commande, 'monitor', {domaine: CONST_DOMAINE_TOPOLOGIE, exchange: commande.exchange})
+    return transmettreCommande(socket, commande, 'instance', {domaine: CONST_DOMAINE_TOPOLOGIE, exchange: commande.exchange})
 }
 
 function supprimerInstance(socket, commande) {
-    debug("Maj monitor %O", commande)
     return transmettreCommande(socket, commande, 'supprimerInstance', {domaine: CONST_DOMAINE_TOPOLOGIE})
 }
 

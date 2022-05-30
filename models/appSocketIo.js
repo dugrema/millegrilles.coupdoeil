@@ -331,7 +331,7 @@ async function backupApplication(socket, commande, cb) {
   const amqpdao = socket.amqpdao
   const noeudId = commande.noeudId
   debug("Backup application %s sur noeud %s", noeudId)
-  const domaineAction = `commande.monitor.${noeudId}.backupApplication`
+  const domaineAction = `commande.instance.${noeudId}.backupApplication`
   try {
     let params = {exchange: commande.securite || '3.protege'}
     const reponse = await amqpdao.transmettreCommande(domaineAction, commande)
@@ -346,7 +346,7 @@ async function restaurerApplication(socket, commande, cb) {
   debug("Restaurer application")
   const amqpdao = socket.amqpdao
   const noeudId = commande.noeudId
-  const domaineAction = `commande.monitor.${noeudId}.restoreApplication`
+  const domaineAction = `commande.instance.${noeudId}.restoreApplication`
   try {
     let params = {exchange: commande.securite || '3.protege'}
     const reponse = await amqpdao.transmettreCommande(domaineAction, commande)
@@ -794,7 +794,7 @@ function retirerEvenementsPresenceDomaines(socket, _params, cb) {
   socket.unsubscribe(opts, cb)
 }
 
-const RK_PRESENCE_INSTANCES = ['evenement.monitor.presence'],
+const RK_PRESENCE_INSTANCES = ['evenement.instance.presence'],
       EX_PRESENCE_INSTANCES = ['1.public', '2.prive', '3.protege']
 
 function ecouterEvenementsPresenceNoeuds(socket, _params, cb) {
@@ -832,9 +832,9 @@ function ecouterEvenementsApplications(socket, params, cb) {
 
   const opts = {
     routingKeys: [
-      `evenement.monitor.${instanceId}.applicationDemarree`,
-      `evenement.monitor.${instanceId}.applicationArretee`,
-      `evenement.monitor.${instanceId}.erreurDemarrageApplication`,
+      `evenement.instance.${instanceId}.applicationDemarree`,
+      `evenement.instance.${instanceId}.applicationArretee`,
+      `evenement.instance.${instanceId}.erreurDemarrageApplication`,
     ],
     exchanges: [exchange],
   }
@@ -855,9 +855,9 @@ function retirerEvenementsApplications(socket, params, cb) {
 
   const opts = {
     routingKeys: [
-      `evenement.monitor.${instanceId}.applicationDemarree`,
-      `evenement.monitor.${instanceId}.applicationArretee`,
-      `evenement.monitor.${instanceId}.erreurDemarrageApplication`,
+      `evenement.instance.${instanceId}.applicationDemarree`,
+      `evenement.instance.${instanceId}.applicationArretee`,
+      `evenement.instance.${instanceId}.erreurDemarrageApplication`,
     ],
     exchanges: [exchange],
   }
@@ -866,7 +866,7 @@ function retirerEvenementsApplications(socket, params, cb) {
   socket.unsubscribe(opts, cb)
 }
 
-const RK_EVENEMENTS_ACME = ['evenement.monitor.INSTANCE_ID.resultatAcme']
+const RK_EVENEMENTS_ACME = ['evenement.instance.INSTANCE_ID.resultatAcme']
 
 function ecouterEvenementsAcme(socket, params, cb) {
   const instanceId = params.instanceId,

@@ -159,7 +159,12 @@ function InstanceProtegee(props) {
 
     const { instances, selectionnerInstance } = props
     if(!instances) return <p>Aucune instance protegee</p>
-    const instance = Object.values(instances).filter(item=>item.securite === '3.protege').pop()
+    const instancesList = Object.values(instances)
+    if(instancesList.length === 0) return <p>Aucune instance protegee</p>
+
+    console.debug("Instances : %O", instancesList)
+
+    const instance = instancesList.filter(item=>item.securite === '3.protege').pop()
 
     return (
         <InstanceItem key={instance.noeud_id} instance={instance} selectionnerInstance={selectionnerInstance} />
