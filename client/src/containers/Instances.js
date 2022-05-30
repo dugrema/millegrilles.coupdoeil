@@ -167,7 +167,7 @@ function InstanceProtegee(props) {
     const instance = instancesList.filter(item=>item.securite === '3.protege').pop()
 
     return (
-        <InstanceItem key={instance.noeud_id} instance={instance} selectionnerInstance={selectionnerInstance} />
+        <InstanceItem key={instance.instance_id} instance={instance} selectionnerInstance={selectionnerInstance} />
     )
 }
 
@@ -192,14 +192,14 @@ function ListeInstances(props) {
     console.debug("Liste instances %s : %O", securite, liste)
 
     return liste.map(instance=>(
-        <InstanceItem key={instance.noeud_id} instance={instance} selectionnerInstance={selectionnerInstance} />
+        <InstanceItem key={instance.instance_id} instance={instance} selectionnerInstance={selectionnerInstance} />
     ))
 }
 
 function InstanceItem(props) {
     const {instance, selectionnerInstance} = props,
           {descriptif, date} = instance,
-          instanceId = instance.noeud_id
+          instanceId = instance.instance_id
 
     const nomNoeud = descriptif || instance.domaine || instanceId
 
@@ -224,7 +224,7 @@ async function chargerListeInstances(connexion, setInstancesParNoeudId, setProte
     if(!reponseInstances) reponseInstances = []
   
     let instances = reponseInstances.map(instance=>{
-        const instanceId = instance.noeud_id
+        const instanceId = instance.instance_id
         let derniereModification = ''
         try {
             derniereModification = new Date(Number(instance.date_presence))
@@ -236,7 +236,7 @@ async function chargerListeInstances(connexion, setInstancesParNoeudId, setProte
     })
 
     const instancesParNoeudId = instances.reduce((acc, item)=>{
-        acc[item.noeud_id] = item
+        acc[item.instance_id] = item
         return acc
     }, {})
   
@@ -265,19 +265,19 @@ function mapperNoeud(noeudInfo, derniereModification) {
   
     var principal = false
     var securite = noeudInfo.securite
-    if(!noeudInfo.parent_noeud_id && securite === '3.protege') {
+    if(!noeudInfo.parent_instance_id && securite === '3.protege') {
       principal = true
     }
   
-    var descriptif = noeudInfo.domaine || noeudInfo.noeud_id
+    var descriptif = noeudInfo.domaine || noeudInfo.instance_id
   
     const mappingNoeud = {
       descriptif,
       actif,
       securite,
       principal,
-      parent_noeud_id: noeudInfo.parent_noeud_id,
-      noeud_id: noeudInfo.noeud_id,
+      parent_instance_id: noeudInfo.parent_instance_id,
+      instance_id: noeudInfo.instance_id,
       ip_detectee: noeudInfo.ip_detectee,
       fqdn: noeudInfo.fqdn_detecte,
       date: derniereModification,
@@ -297,7 +297,7 @@ function traiterMessageRecu(evenement, instancesParId, setInstancesParId) {
           routingKey = evenement.routingKey
     console.debug("processMessageNoeudsCb recu : %s : %O", routingKey, message)
     
-    const instanceId = message.noeud_id
+    const instanceId = message.instance_id
     if(routingKey === 'evenement.CoreTopologie.instanceSupprimee') {
         const copieInstances = {...instancesParId}
         delete copieInstances[instanceId]
@@ -465,7 +465,7 @@ function InformationNoeud(props) {
 
         <Row>
           <Col sm={2}>ID</Col>
-          <Col sm={10}>{instance.noeud_id}</Col>
+          <Col sm={10}>{instance.instance_id}</Col>
         </Row>
   
         <Alert show={props.certificat?true:false} variant="warning">Le noeud est deja initialise avec un certificat</Alert>
