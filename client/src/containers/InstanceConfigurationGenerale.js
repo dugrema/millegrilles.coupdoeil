@@ -65,7 +65,7 @@ function ConfigurerDomaine(props) {
     const { workers, instance, etatAuthentifie, confirmationCb, erreurCb } = props
     const { connexion } = workers
     const { domaine, securite } = instance
-    const instanceId = instance.noeud_id
+    const instanceId = instance.instance_id
 
     const [configurationAcme, setConfigurationAcme] = useState('')
     const [configurationAvancee, setConfigurationAvancee] = useState(false)

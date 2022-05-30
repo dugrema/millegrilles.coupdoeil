@@ -19,7 +19,7 @@ function ApplicationsInstance(props) {
 
     const {workers, etatConnexion} = props
     const instance = props.instance,
-          instanceId = instance.noeud_id,
+          instanceId = instance.instance_id,
           securite = props.instance.securite
 
     useEffect(()=>{
@@ -112,7 +112,7 @@ function InstallerApplications(props) {
 
     const {workers, instance, confirmationCb, erreurCb, etatConnexion} = props
     const connexion = workers.connexion
-    const instanceId = instance.noeud_id,
+    const instanceId = instance.instance_id,
           exchange = instance.securite
 
     const [catalogue, setCatalogue] = useState([])
@@ -172,11 +172,11 @@ function ListeApplicationsInstallees(props) {
     const [appsConfigurees, setAppsConfigurees] = useState([])
     const [modalApp, setModalApp] = useState('')
 
-    const {noeud_id, applications_configurees, services, containers, securite} = instance || {}
-    const instanceId = noeud_id
+    const {instance_id, applications_configurees, services, containers, securite} = instance || {}
+    const instanceId = instance_id
 
     useEffect(()=>{
-        const infoInstance = {noeud_id, applications_configurees, services, containers}
+        const infoInstance = {instance_id, applications_configurees, services, containers}
         console.debug("Changement liste applications : %O", infoInstance)
         const listeApplications = extraireListeApplications(infoInstance)        
 
@@ -193,7 +193,7 @@ function ListeApplicationsInstallees(props) {
         console.debug("Apps configurees : %O", appListe)
         setAppsConfigurees(appListe)
 
-    }, [setAppsConfigurees, noeud_id, applications_configurees, services, containers])
+    }, [setAppsConfigurees, instance_id, applications_configurees, services, containers])
     
     console.debug("ModalApp : %O", modalApp)
 
@@ -214,7 +214,7 @@ function ListeApplicationsInstallees(props) {
                     <Col md={4}>{app.description}</Col>
                     <Col md={2}><EtatApplication app={app} /></Col>
                     <BoutonsActionApplication 
-                        workers={workers} app={app} instanceId={noeud_id} securite={securite} 
+                        workers={workers} app={app} instanceId={instance_id} securite={securite} 
                         configurer={()=>setModalApp(app)}
                         setAttente={setAttente} confirmationCb={confirmationCb} erreurCb={erreurCb} 
                         etatConnexion={etatConnexion} />
@@ -423,7 +423,7 @@ async function configurerApplication(workers, instanceId, securite, nom, configu
 
         const reponse = await connexion.configurerApplication({
             nom_application: nom,
-            noeud_id: instanceId,
+            instance_id: instanceId,
             configuration,
             exchange: securite,
         })
@@ -488,7 +488,7 @@ async function demarrerApplication(connexion, instanceId, nomApplication, securi
     try {
         console.debug("Demarrer application %s sur instance %s", nomApplication, instanceId)
         const reponse = await connexion.demarrerApplication({
-            nom_application: nomApplication, noeud_id: instanceId, exchange: securite
+            nom_application: nomApplication, instance_id: instanceId, exchange: securite
         })
         if(reponse.err) {
             erreurCb(reponse.err, `Erreur de demarrage de l'application ${nomApplication}`)

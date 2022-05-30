@@ -285,8 +285,8 @@ function InformationNoeud(props) {
         <Col sm={10}>{props.securite}</Col>
       </Row>
       <Row>
-        <Col sm={2}>Noeud ID</Col>
-        <Col sm={10}>{props.noeud_id}</Col>
+        <Col sm={2}>InstanceId ID</Col>
+        <Col sm={10}>{props.instance_id}</Col>
       </Row>
 
       {notice}

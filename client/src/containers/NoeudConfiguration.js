@@ -93,7 +93,7 @@ function AfficherInfoConfiguration(props) {
     workers, instance, instanceInfo, etatConnexion, etatAuthentifie, hostname,
     confirmationCb, erreurCb,
   } = props
-  const instanceId = instance.noeud_id
+  const instanceId = instance.instance_id
 
   const renouvelerCertificatCb = useCallback(async event => {
     renouvellerCertificat(workers, hostname, instance, confirmationCb, erreurCb)
@@ -111,7 +111,7 @@ function AfficherInfoConfiguration(props) {
       </Row>
       <Row>
         <Col md={3}>Id</Col>
-        <Col>{instanceInfo.noeud_id}</Col>
+        <Col>{instanceInfo.instance_id}</Col>
       </Row>
       <Row>
         <Col md={3}>Securite</Col>
@@ -282,7 +282,7 @@ async function changerHostnameInstance(workers, instanceId, hostname, confirmati
     const {connexion} = workers
 
     const commande = {
-      noeud_id: instanceId,
+      instance_id: instanceId,
       domaine: hostname,
     }
     const domaine = 'monitor', action = 'changerDomaine'
@@ -457,10 +457,10 @@ function AfficherExpirationCertificat(props) {
   )
 }
 
-async function chiffrerChamp(webWorker, noeud_id, certificats, secret) {
+async function chiffrerChamp(webWorker, instance_id, certificats, secret) {
   const identificateurs_document = {
     libelle: 'noeud',
-    noeud_id,
+    instance_id,
     'champ': 'consignation_web.credentialsSecretAccessKey',
   }
   const certificatMaitredescles = certificats.certificat

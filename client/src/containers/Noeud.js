@@ -18,7 +18,7 @@ function AffichageNoeud(props) {
 
   const { workers, usager, etatConnexion, etatAuthentifie, confirmationCb, attenteCb, fermer } = props
   const instance = props.instance || {}
-  const instanceId = instance.noeud_id
+  const instanceId = instance.instance_id
   
   const [erreur, setErreur] = useState('')
   const [pageConfiguration, setPageConfiguration] = useState('')
@@ -107,7 +107,7 @@ function InformationTransactionsNoeud(props) {
   // console.debug("Noeud info PROPPYS : %O", this.props.noeud)
 
   const instance = props.instance || {},
-        instanceId = instance.noeud_id,
+        instanceId = instance.instance_id,
         {workers, etatAuthentifie, fermer, attenteCb, confirmationCb, erreurCb } = props,
         connexion = workers.connexion
 

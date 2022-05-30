@@ -31,7 +31,7 @@ export class ParametresGrosFichiers extends React.Component {
       console.debug("Noeuds recus : %O", noeuds)
       const nomNoeudParId = {}
       noeuds.forEach(item=>{
-        nomNoeudParId[item.noeud_id] = item.domaine || item.fqdn_detecte || item.noeud_id
+        nomNoeudParId[item.instance_id] = item.domaine || item.fqdn_detecte || item.instance_id
       })
       this.setState({nomNoeudParId}, _=>{console.debug("State : %O", this.state)})
     }).catch(err=>{console.error("Erreur chargement liste noeuds : %O", err)})
@@ -47,7 +47,7 @@ export class ParametresGrosFichiers extends React.Component {
     // console.debug("Message evenement : %O", message)
     const etat = message.etat,
           progres = message.progres,
-          noeud_id = message.noeud_id,
+          instance_id = message.instance_id,
           fuuid = message.fuuid,
           derniere_activite = message['en-tete'].estampille
 
@@ -56,14 +56,14 @@ export class ParametresGrosFichiers extends React.Component {
       // Verifier si le fichier existe dans la liste
       var fichierTrouve = false
       var uploadsEnCours = this.state.uploadsEnCours.map(item=>{
-        if(item.fuuid === fuuid && item.noeud_id === noeud_id) {
+        if(item.fuuid === fuuid && item.instance_id === instance_id) {
           fichierTrouve = true
           return {...item, etat, progres}
         } else return item
       })
       if(!fichierTrouve) {
         // // Ajouter nouveau fichier a la liste
-        // const fichier = { derniere_activite, etat, fuuid, noeud_id, progres }
+        // const fichier = { derniere_activite, etat, fuuid, instance_id, progres }
         // uploadsEnCours = [...uploadsEnCours, fichier]
 
         // Il manque un fichier - recharger la liste complete
@@ -78,14 +78,14 @@ export class ParametresGrosFichiers extends React.Component {
 
     } else if(etat === 'echec') {
       const uploadsEnCours = this.state.uploadsEnCours.map(item=>{
-        if(item.fuuid === fuuid && item.noeud_id === noeud_id) {
+        if(item.fuuid === fuuid && item.instance_id === instance_id) {
           return {...item, etat, progres}
         } else return item
       })
       this.setState({uploadsEnCours})
     } else if(progres > 0) {
       const uploadsEnCours = this.state.uploadsEnCours.map(item=>{
-        if(item.fuuid === fuuid && item.noeud_id === noeud_id) {
+        if(item.fuuid === fuuid && item.instance_id === instance_id) {
           return {...item, etat, progres}
         } else return item
       })
@@ -110,10 +110,10 @@ export class ParametresGrosFichiers extends React.Component {
   }
 
   clearFichier = async infoFichier => {
-    const {noeud_id, fuuid} = infoFichier
-    console.debug("Supprimer noeudId: %s, fuuid: %s", noeud_id, fuuid)
+    const {instance_id, fuuid} = infoFichier
+    console.debug("Supprimer noeudId: %s, fuuid: %s", instance_id, fuuid)
 
-    var commande = {noeud_id, fuuid}
+    var commande = {instance_id, fuuid}
     // const signateurTransaction = this.props.rootProps.signateurTransaction
     // signateurTransaction.preparerTransaction(commande, 'GrosFichiers.clearFichierPublie')
     const domaineAction = 'GrosFichiers.clearFichierPublie'
@@ -125,17 +125,17 @@ export class ParametresGrosFichiers extends React.Component {
       const reponse = await wsa.clearFichierPublie(commande)
       console.debug("Reponse commande clear fichier publie : %O", reponse)
       if(reponse.resultats.ok === true) {
-        this._retirerUpload(noeud_id, fuuid)
+        this._retirerUpload(instance_id, fuuid)
       }
     } catch(err) {
       console.error("Erreur clear fichier : %O", err)
     }
   }
 
-  _retirerUpload(noeud_id, fuuid) {
+  _retirerUpload(instance_id, fuuid) {
     // Supprimer le fichier de la liste
     const uploadsEnCours = this.state.uploadsEnCours.filter(item=>{
-      return item.fuuid !== fuuid || item.noeud_id !== noeud_id
+      return item.fuuid !== fuuid || item.instance_id !== instance_id
     })
     this.setState({uploadsEnCours})
   }
@@ -200,7 +200,7 @@ function UploadsEnCours(props) {
   if( ! props.uploadsEnCours ) return ''
 
   const uploads = props.uploadsEnCours.map(item=>{
-    const key = item.noeud_id + '/' + item.fuuid
+    const key = item.instance_id + '/' + item.fuuid
     return <UploadEnCours key={key}
                           rootProps={props.rootProps}
                           nomNoeudParId={props.nomNoeudParId}
@@ -242,7 +242,7 @@ class UploadEnCours extends React.Component {
   render() {
     const item = this.props.infoFichier
 
-    const noeudId = item.noeud_id, fuuid = item.fuuid
+    const noeudId = item.instance_id, fuuid = item.fuuid
     var nomNoeud = noeudId
     if(this.props.nomNoeudParId) {
       nomNoeud = this.props.nomNoeudParId[noeudId] || noeudId

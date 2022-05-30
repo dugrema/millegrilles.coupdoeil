@@ -223,12 +223,12 @@ function mapperDomaine(domaineInfo) {
     }
 
     var nom = domaineInfo.domaine
-    var noeud_id = domaineInfo.noeud_id
+    var instance_id = domaineInfo.instance_id
 
     const mappingDomaine = {
         nom,
         actif,
-        noeud_id,
+        instance_id,
         date_presence,
     }
 
