@@ -12,6 +12,7 @@ function configurerEvenements(socket) {
 
       {eventName: 'coupdoeil/installerApplication', callback: (params, cb) => traiter(socket, mqdao.installerApplication, {params, cb}) },
       {eventName: 'coupdoeil/demarrerApplication', callback: (params, cb) => { traiter(socket, mqdao.demarrerApplication, {params, cb}) }},
+      {eventName: 'coupdoeil/arreterApplication', callback: (params, cb) => { traiter(socket, mqdao.arreterApplication, {params, cb}) }},
       {eventName: 'coupdoeil/supprimerApplication', callback: (params, cb) => { traiter(socket, mqdao.supprimerApplication, {params, cb}) }},
       {eventName: 'coupdoeil/requeteConfigurationApplication', callback: (params, cb) => { traiter(socket, mqdao.requeteConfigurationApplication, {params, cb}) }},
       {eventName: 'coupdoeil/ajouterCatalogueApplication', callback: (params, cb) => { traiter(socket, mqdao.ajouterCatalogueApplication, {params, cb}) }},

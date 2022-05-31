@@ -71,8 +71,13 @@ function installerApplication(socket, commande) {
 }
 
 function demarrerApplication(socket, commande) {
-    debug("Installer application : %O", commande)
+    debug("Demarrer application : %O", commande)
     return transmettreCommande(socket, commande, 'demarrerApplication', {exchange: commande.exchange})
+}
+
+function arreterApplication(socket, commande) {
+    debug("Arreter application : %O", commande)
+    return transmettreCommande(socket, commande, 'arreterApplication', {exchange: commande.exchange})
 }
 
 function supprimerApplication(socket, commande) {
@@ -206,7 +211,7 @@ function verifierMessage(message, domaine, action) {
 module.exports = {
     challenge, getClesChiffrage,
     transmettreCatalogues,
-    installerApplication, demarrerApplication, supprimerApplication,
+    installerApplication, demarrerApplication, arreterApplication, supprimerApplication,
     ajouterCatalogueApplication, requeteConfigurationApplication, configurerApplication, supprimerInstance,
     resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationConsignation, getPublicKeySsh,
     modifierConfigurationConsignation,

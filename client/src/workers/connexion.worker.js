@@ -148,7 +148,7 @@ function soumettreConfigurationApplication(configuration) {
   return connexionClient.emitBlocking(
     'coupdoeil/ajouterCatalogueApplication', 
     configuration, 
-    {domaine: 'instance', action: 'ajouterCatalogueApplication', partition: configuration.noeud_id, exchange: configuration.exchange, ajouterCertificat: true}
+    {domaine: 'instance', action: 'ajouterCatalogueApplication', partition: configuration.instance_id, exchange: configuration.exchange, ajouterCertificat: true}
   )
 }
 async function installerApplication(params) {
@@ -201,14 +201,21 @@ function configurerApplication(commande) {
   return connexionClient.emitBlocking(
     'coupdoeil/configurerApplication', 
     commande, 
-    {domaine: 'instance', action: 'configurerApplication', partition: commande.noeud_id, exchange: commande.exchange, ajouterCertificat: true}
+    {domaine: 'instance', action: 'configurerApplication', partition: commande.instance_id, exchange: commande.exchange, ajouterCertificat: true}
   )
 }
 function demarrerApplication(commande) {
   return connexionClient.emitBlocking(
     'coupdoeil/demarrerApplication', 
     commande, 
-    {domaine: 'instance', action: 'demarrerApplication', partition: commande.noeud_id, exchange: commande.exchange, ajouterCertificat: true}
+    {domaine: 'instance', action: 'demarrerApplication', partition: commande.instance_id, exchange: commande.exchange, ajouterCertificat: true}
+  )
+}
+function arreterApplication(commande) {
+  return connexionClient.emitBlocking(
+    'coupdoeil/arreterApplication', 
+    commande, 
+    {domaine: 'instance', action: 'arreterApplication', partition: commande.instance_id, exchange: commande.exchange, ajouterCertificat: true}
   )
 }
 function regenererPreviews() {
@@ -276,7 +283,7 @@ function majMonitor(params) {
 function supprimerInstance(instanceId) {
   return connexionClient.emitBlocking(
     'coretopologie/supprimerInstance',
-    {noeud_id: instanceId},
+    {instance_id: instanceId},
     {domaine: 'CoreTopologie', action: 'supprimerInstance', attacherCertificat: true}
   )
 }
@@ -396,7 +403,7 @@ comlinkExpose({
   backupApplication, restaurerApplication, soumettreCleRechiffree,
   soumettreConfigurationApplication, installerApplication, installerDomaine,
   lancerBackupSnapshot, genererCertificatNoeud, supprimerApplication,
-  configurerApplication, demarrerApplication, regenererPreviews,
+  configurerApplication, demarrerApplication, arreterApplication, regenererPreviews,
   configurerConsignationWeb, soumettreTransactionMaitredescles, clearFichierPublie,
   uploadCollectionsPubliques, commandeTransmettreCatalogues, commandeSoumettreCatalogueApplication,
 

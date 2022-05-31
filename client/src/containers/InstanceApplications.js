@@ -248,9 +248,18 @@ function BoutonsActionApplication(props) {
             if(checked) {
                 demarrerApplication(connexion, instanceId, event.currentTarget.value, securite, confirmationCb, erreurCb) 
             } else {
-                desinstallerApplication(connexion, instanceId, event.currentTarget.value, securite, confirmationCb, erreurCb)
+                // desinstallerApplication(connexion, instanceId, event.currentTarget.value, securite, confirmationCb, erreurCb)
+                arreterApplication(connexion, instanceId, event.currentTarget.value, securite, confirmationCb, erreurCb)
             }
         }, [connexion, instanceId, securite, setAttente]
+    )
+
+    const supprimerCb = useCallback(
+        event=>{
+            console.debug("Supprimer application value: %s", app.nom)
+            //setAttente(true)
+            //supprimerApplication(connexion, instanceId, app.nom, securite, confirmationCb, erreurCb) 
+        },[connexion, instanceId, securite, setAttente]
     )
 
     return [
@@ -271,6 +280,7 @@ function BoutonsActionApplication(props) {
 
                 <Dropdown.Menu>
                     <Dropdown.Item onClick={configurer}>Configurer</Dropdown.Item>
+                    <Dropdown.Item onClick={supprimerCb}>Supprimer</Dropdown.Item>
                     {/*                     
                     <Dropdown.Item href="#/action-2">Backup</Dropdown.Item>
                     <Dropdown.Item href="#/action-3">Restaurer</Dropdown.Item>
@@ -467,7 +477,7 @@ async function installerApplication(connexion, instanceId, nomApplication, excha
 
 async function desinstallerApplication(connexion, instanceId, nomApplication, securite, confirmationCb, erreurCb) {
     try {
-        const params = { noeudId: instanceId, 'nom_application': nomApplication, exchange: securite }
+        const params = { instance_id: instanceId, 'nom_application': nomApplication, exchange: securite }
         console.debug("desinstallerApplication: Transmettre commande %O", params)
     
         const reponse = await connexion.supprimerApplication(params)
@@ -498,5 +508,24 @@ async function demarrerApplication(connexion, instanceId, nomApplication, securi
     } catch (err) {
         console.error("Erreur de demarrage de l'application %s : %O", nomApplication, err)
         erreurCb(err, `Erreur de demarrage de l'application ${nomApplication}`)
+    }
+}
+
+async function arreterApplication(connexion, instanceId, nomApplication, securite, confirmationCb, erreurCb) {
+    try {
+        const params = { instance_id: instanceId, 'nom_application': nomApplication, exchange: securite }
+        console.debug("arreterApplication: Transmettre commande %O", params)
+    
+        const reponse = await connexion.arreterApplication(params)
+        if(reponse.err) {
+            console.error("Erreur arreter application : %O", reponse.err)
+            erreurCb(reponse.err, `Erreur arreter application ${nomApplication}`)
+        } else {
+            console.debug("Reponse arreter application : %O", reponse)
+            confirmationCb(`Application ${nomApplication} arretee.`)
+        }
+    } catch(err) {
+        console.error("Erreur arreter application %s : %O", nomApplication, err)
+        erreurCb(err, `Erreur arreter application ${nomApplication}`)
     }
 }
