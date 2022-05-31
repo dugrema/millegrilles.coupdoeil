@@ -156,7 +156,7 @@ async function installerApplication(params) {
     return await connexionClient.emitBlocking(
       'coupdoeil/installerApplication', 
       params, 
-      {domaine: 'instance', action: 'installerApplication', partition: params.noeudId, exchange: params.exchange, ajouterCertificat: true}
+      {domaine: 'instance', action: 'installerApplication', partition: params.instance_id, exchange: params.exchange, ajouterCertificat: true}
     )
   } catch(err) {
     console.error("Erreur InstallerApplication %O", err)
@@ -168,7 +168,7 @@ function supprimerApplication(commande) {
   return connexionClient.emitBlocking(
     'coupdoeil/supprimerApplication', 
     commande, 
-    {domaine: 'instance', action: 'supprimerApplication', partition: commande.noeudId, exchange: commande.exchange, ajouterCertificat: true}
+    {domaine: 'instance', action: 'supprimerApplication', partition: commande.instance_id, exchange: commande.exchange, ajouterCertificat: true}
   )
 }
 function installerDomaine(params) {

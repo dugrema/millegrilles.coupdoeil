@@ -74,6 +74,7 @@ function ApplicationsInstance(props) {
             <InstallerApplications 
                 workers={workers} 
                 instance={instance} 
+                setAttente={setAttente}
                 confirmationCb={confirmationCb}
                 erreurCb={erreurCb}
                 etatConnexion={etatConnexion} />
@@ -110,7 +111,7 @@ function traiterEvenement(evenement) {
 
 function InstallerApplications(props) {
 
-    const {workers, instance, confirmationCb, erreurCb, etatConnexion} = props
+    const {workers, instance, setAttente, confirmationCb, erreurCb, etatConnexion} = props
     const connexion = workers.connexion
     const instanceId = instance.instance_id,
           exchange = instance.securite
@@ -126,8 +127,9 @@ function InstallerApplications(props) {
 
     const installerApplicationCb = useCallback(event=>{
         console.debug("Installer application %s", applicationInstaller)
+        setAttente(true)
         installerApplication(connexion, instanceId, applicationInstaller, exchange, confirmationCb, erreurCb)
-    }, [applicationInstaller, connexion, instanceId, exchange, confirmationCb, erreurCb])
+    }, [applicationInstaller, connexion, instanceId, exchange, setAttente, confirmationCb, erreurCb])
 
     useEffect(()=>{
         connexion.getCatalogueApplications()
@@ -206,6 +208,7 @@ function ListeApplicationsInstallees(props) {
                 securite={securite}
                 app={modalApp}
                 fermer={()=>setModalApp('')} 
+                setAttente={setAttente}
                 confirmationCb={confirmationCb}
                 erreurCb={erreurCb} />
 
@@ -258,7 +261,7 @@ function BoutonsActionApplication(props) {
         event=>{
             console.debug("Supprimer application value: %s", app.nom)
             //setAttente(true)
-            //supprimerApplication(connexion, instanceId, app.nom, securite, confirmationCb, erreurCb) 
+            supprimerApplication(connexion, instanceId, app.nom, securite, confirmationCb, erreurCb) 
         },[connexion, instanceId, securite, setAttente]
     )
 
@@ -340,7 +343,7 @@ function ModalConfigurationApplication(props) {
     console.debug("ModalConfigurationApplication proppys : %O", props)
 
     const show = props.show?true:false
-    const {workers, instanceId, securite, fermer, app, confirmationCb, erreurCb} = props
+    const {workers, instanceId, securite, fermer, app, setAttente, confirmationCb, erreurCb} = props
     const {connexion} = workers
     const { nom, description } = app
 
@@ -458,7 +461,7 @@ async function installerApplication(connexion, instanceId, nomApplication, excha
         const configuration = await connexion.requeteInfoApplications(requete)
         console.debug("Installation application avec configuration : %O", configuration)
 
-        const params = { 'nom_application': nomApplication, configuration, noeudId: instanceId, exchange }
+        const params = { 'nom_application': nomApplication, configuration, instance_id: instanceId, exchange }
         console.debug("Transmettre commande installation application vers %s :\n%O", instanceId, params)
 
         const reponseInstallerApplication = await connexion.installerApplication(params)
@@ -475,7 +478,7 @@ async function installerApplication(connexion, instanceId, nomApplication, excha
     }
 }
 
-async function desinstallerApplication(connexion, instanceId, nomApplication, securite, confirmationCb, erreurCb) {
+async function supprimerApplication(connexion, instanceId, nomApplication, securite, confirmationCb, erreurCb) {
     try {
         const params = { instance_id: instanceId, 'nom_application': nomApplication, exchange: securite }
         console.debug("desinstallerApplication: Transmettre commande %O", params)
