@@ -116,7 +116,7 @@ class ConfigurationNoeudUrl extends React.Component {
   connecter = async event => {
     const url = this.state.url
 
-    const pathInfoMonitor = 'https://' + url + '/installation/api/infoMonitor'
+    const pathInfoMonitor = 'https://' + url + '/installation/api/info'
     try {
       const reponseInfoMonitor = await axios.get(pathInfoMonitor)
       this.setState({infoNoeud: reponseInfoMonitor.data})

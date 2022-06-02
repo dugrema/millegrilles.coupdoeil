@@ -86,6 +86,7 @@ function Instances(props) {
                 show={showAssocier}
                 fermer={()=>setShowAssocier(false)}
                 workers={workers} 
+                usager={usager}
                 etatAuthentifie={etatAuthentifie}
                 confirmationCb={confirmationCb} />
 
@@ -312,7 +313,7 @@ function traiterMessageRecu(evenement, instancesParId, setInstancesParId) {
 
 function AjouterInstanceModal(props) {
 
-    const { workers, etatAuthentifie, confirmationCb, fermer } = props
+    const { workers, usager, etatAuthentifie, confirmationCb, fermer } = props
 
     const [hostname, setHostname] = useState('')
     const [instance, setInstance] = useState('')
@@ -373,6 +374,7 @@ function AjouterInstanceModal(props) {
                     workers={workers}
                     hostname={hostname}
                     instance={instance}
+                    usager={usager}
                     csr={csr}
                     prendrePossession={prendrePossession} 
                     confirmationCb={confirmationCb}
@@ -388,7 +390,7 @@ function AjouterInstanceModal(props) {
 
 async function connecter(hostname, setInstance, setCsr, erreurCb) {
     try {
-        const pathInfoMonitor = new URL('https://localhost/installation/api/infoMonitor')
+        const pathInfoMonitor = new URL('https://localhost/installation/api/info')
         pathInfoMonitor.hostname = hostname
 
         try {
@@ -400,7 +402,7 @@ async function connecter(hostname, setInstance, setCsr, erreurCb) {
 
             if( ! instance.certificat ) {
                 const urlCsr = new URL(pathInfoMonitor.href)
-                urlCsr.pathname = '/installation/api/csr'
+                urlCsr.pathname = '/installation/api/csrInstance'
                 try {
                     const reponseCsr = await axios.get(urlCsr.href)
                     console.debug("Reponse CSR : %O", reponseCsr)
@@ -420,7 +422,7 @@ async function connecter(hostname, setInstance, setCsr, erreurCb) {
 function InformationNoeud(props) {
     console.debug("InformationNoeud proppies : %O", props)
 
-    const {workers, csr, hostname, instance, confirmationCb, erreurCb, fermer, etatAuthentifie} = props,
+    const {workers, usager, csr, hostname, instance, confirmationCb, erreurCb, fermer, etatAuthentifie} = props,
           securite = instance.securite
 
     const [hostMq, setHostMq] = useState('')
@@ -430,10 +432,10 @@ function InformationNoeud(props) {
     const setPortMqCb = useCallback(event=>setPortMq(event.currentTarget.value), [setPortMq])
 
     const prendrePossessionCb = useCallback(()=>{
-        prendrePossession(workers, csr, securite, hostname, hostMq, portMq, confirmationCb, erreurCb)
+        prendrePossession(workers, usager, csr, securite, hostname, hostMq, portMq, confirmationCb, erreurCb)
             .then(()=>fermer())
             .catch(err=>erreurCb(err))
-    }, [workers, csr, securite, hostname, hostMq, portMq, confirmationCb, erreurCb, fermer])
+    }, [workers, usager, csr, securite, hostname, hostMq, portMq, confirmationCb, erreurCb, fermer])
 
     useEffect(()=>{
         const urlLocal = window.location.host
@@ -507,21 +509,36 @@ function InformationNoeud(props) {
     )
   }
   
-  async function prendrePossession(workers, csr, securite, hostname, hostMq, portMq, confirmationCb, erreurCb) {
+  async function prendrePossession(workers, usager, csr, securite, hostname, hostMq, portMq, confirmationCb, erreurCb) {
   
     try {
-        console.debug("Demander la creation d'un nouveau certificat %s pour %s (MQ %s:%s)", securite, hostname, hostMq, portMq)
+        // console.debug("Demander la creation d'un nouveau certificat %s pour %s (MQ %s:%s)", securite, hostname, hostMq, portMq)
     
         const connexion = workers.connexion
         const urlInstaller = new URL('https://localhost/installation/api/installer')
         urlInstaller.hostname = hostname
 
         let role = 'public'
+        let exchanges = ['1.public']
         if(securite === '1.public') role = 'public'
-        else if(securite === '2.prive') role = 'prive'
-        else if(securite === '3.protege') role = 'protege'
-    
-        const commande = {csr, securite, role}
+        else if(securite === '2.prive') {
+            role = 'prive'
+            exchanges.push('2.prive')
+        }
+        else if(securite === '3.protege') {
+            exchanges.push('2.prive')
+            exchanges.push('3.protege')
+            role = 'protege'
+        }
+        exchanges = exchanges.reverse()
+        
+        const hostnames = [hostname]
+        const hostnameNoDomain = hostname.split('.').shift()
+        if(hostnameNoDomain != hostname) {
+            hostnames.push(hostnameNoDomain)
+        }
+
+        const commande = {csr, securite, role, roles: ['instance'], exchanges, dns: {localhost: true, hostnames}}
     
         try {
             var resultatCertificat = await connexion.genererCertificatNoeud(commande)
@@ -531,12 +548,16 @@ function InformationNoeud(props) {
         }
     
         console.debug("prendrePossession Reception info certificat : %O", resultatCertificat)
-    
+        if(!resultatCertificat.certificat) {
+            erreurCb(null, "Erreur creation certificat pour prise de possession - non genere")
+            return
+        }
+
         const paramsInstallation = {
             hostname,
             certificat: resultatCertificat.certificat,
+            certificatMillegrille: usager.ca,
             securite,
-            role,
             host: hostMq,
             port: portMq,
         }

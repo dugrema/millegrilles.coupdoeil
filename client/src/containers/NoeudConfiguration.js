@@ -246,7 +246,7 @@ async function renouvellerCertificat(workers, hostname, instance, confirmationCb
 }
 
 async function verifierAccesNoeud(hostname, idmg, setInstance, erreurCb) {
-  const url = new URL("https://localhost/installation/api/infoMonitor")
+  const url = new URL("https://localhost/installation/api/info")
   url.hostname = hostname
 
   console.debug("URL verification noeud : %s", url.href)
