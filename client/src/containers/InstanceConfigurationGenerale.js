@@ -102,26 +102,33 @@ function ConfigurerDomaine(props) {
     }, [evenementAcme, setEvenementAcme, confirmationCb, erreurCb])
 
     useEffect(()=>{
-        const {methode, domaines_additionnels, modeTest, force } = configurationAcme
-        let modeCreation = null
-        if(methode) {
-            modeCreation = methode.modeCreation
+        console.debug("Traitement configuration acme recue : %O", configurationAcme)
+        const {dnssleep, modeCreation, domainesAdditionnels, modeTest, force, cloudns_subauthid } = configurationAcme
+        //let modeCreation = null
+        //if(methode) {
+            // modeCreation = methode.modeCreation
             setModeCreation(modeCreation || 'webroot')
 
-            const { modeTest, dnssleep } = configurationAcme
+            // const { modeTest, dnssleep } = configurationAcme
             setModeTest(modeTest || false)
-            setDnssleep(methode.dnssleep || '')
-            setModeCreation(methode.modeCreation || '')
+            setForce(force || false)
+            setDnssleep(dnssleep || '')
+            setModeCreation(modeCreation || '')
+            if(Array.isArray(domainesAdditionnels)) {
+                setDomainesAdditionnels(domainesAdditionnels.join(','))
+            } else {
+                setDomainesAdditionnels(domainesAdditionnels || '')
+            }
             
-            const params_environnement = methode.params_environnement || {}
-            if(params_environnement.CLOUDNS_SUB_AUTH_ID) setCloudns_subauthid(params_environnement.CLOUDNS_SUB_AUTH_ID)
-        }
-        if(domaines_additionnels || modeTest || modeCreation !== 'webroot') {
+            // const params_environnement = methode.params_environnement || {}
+            setCloudns_subauthid(cloudns_subauthid || '')
+        //}
+        if(domainesAdditionnels || modeTest || modeCreation !== 'webroot') {
             setConfigurationAvancee(true)
         }
     }, [
-        configurationAcme, setConfigurationAvancee, setModeCreation, setModeTest, 
-        setDnssleep, setModeCreation, setCloudns_subauthid
+        configurationAcme, setConfigurationAvancee, setModeCreation, setModeTest, setForce,
+        setDnssleep, setModeCreation, setDomainesAdditionnels, setCloudns_subauthid
     ])
 
     const soumettreCb = useCallback(event=>{
@@ -129,13 +136,17 @@ function ConfigurerDomaine(props) {
         const params = {}
         if(modeCreation) params.modeCreation = modeCreation
         if(domainesAdditionnels) {
+            console.debug("Domaines additionnels: %O", domainesAdditionnels)
             params.domainesAdditionnels = domainesAdditionnels.split(',').map(item=>item.trim())
         }
         if(force===true) params.force = true
         if(modeTest===true) params.modeTest = true
         if(cloudns_subauthid) params.cloudns_subauthid = cloudns_subauthid
-        if(cloudns_password) params.cloudns_password = cloudns_password
         if(dnssleep) params.dnssleep = dnssleep
+
+        console.debug("Soumettre (password removed): %O", params)
+
+        if(cloudns_password) params.cloudns_password = cloudns_password
         soumettreDomaineAcme(workers, instanceId, securite, domaine, params, confirmationCb, erreurCb)
     }, [
         workers, instanceId, securite, domaine, 
