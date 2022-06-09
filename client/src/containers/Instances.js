@@ -202,7 +202,7 @@ function InstanceItem(props) {
           {descriptif, date} = instance,
           instanceId = instance.instance_id
 
-    const nomNoeud = descriptif || instance.domaine || instanceId
+    const nomNoeud = descriptif || instance.hostname || instance.domaine || instanceId
 
     return (
         <Row key={instanceId}>
@@ -270,7 +270,7 @@ function mapperNoeud(noeudInfo, derniereModification) {
       principal = true
     }
   
-    var descriptif = noeudInfo.domaine || noeudInfo.instance_id
+    var descriptif = noeudInfo.hostname || noeudInfo.domaine || noeudInfo.instance_id
   
     const mappingNoeud = {
       descriptif,
@@ -283,6 +283,7 @@ function mapperNoeud(noeudInfo, derniereModification) {
       fqdn: noeudInfo.fqdn_detecte,
       date: derniereModification,
       domaine: noeudInfo.domaine,
+      hostname: noeudInfo.hostname,
     }
   
     const champsOptionnels = ['services', 'containers', 'consignation_web', 'applications_configurees']

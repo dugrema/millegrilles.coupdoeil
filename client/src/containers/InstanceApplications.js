@@ -23,7 +23,7 @@ function ApplicationsInstance(props) {
           securite = props.instance.securite
 
     useEffect(()=>{
-        console.debug("ApplicationsInstance proppies %O", props)
+        // console.debug("ApplicationsInstance proppies %O", props)
         const cb = comlinkProxy(traiterEvenement)
         subscribe(workers, instanceId, securite, cb)
         return () => unsubscribe(workers, instanceId, securite, cb)

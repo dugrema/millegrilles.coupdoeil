@@ -5,13 +5,13 @@ import axios from 'axios'
 import { AlertTimeout, ModalAttente } from '@dugrema/millegrilles.reactjs'
 import { pki as forgePki } from '@dugrema/node-forge'
 
-import { prendrePossession } from './ConfigurationNoeudsListe'
+import { signerCertificatInstance } from './ConfigurationNoeudsListe'
 
 function CommandeHttp(props) {
 
   const {workers, etatConnexion, etatAuthentifie, instance, usager} = props
   const idmg = usager.idmg
-  const hostnameConfigure = instance.domaine
+  const hostnameConfigure = instance.hostname
   const ipDetectee = instance.ip_detectee
 
   const [hostname, setHostname] = useState('')
@@ -153,7 +153,7 @@ function AfficherInfoConfiguration(props) {
 function ConfigurerDomaine(props) {
 
   const { workers, etatAuthentifie, instanceId, instanceInfo, hostname, confirmationCb, erreurCb } = props
-  const domaineConfigure = instanceInfo.domaine
+  const domaineConfigure = instanceInfo.hostname
 
   const changerDomaineCb = useCallback(event=>{
     console.debug("Changer domaine pour : %s", hostname)
@@ -192,7 +192,7 @@ async function renouvellerCertificat(workers, hostname, instance, confirmationCb
   const { connexion } = workers
 
   try {
-    const urlCsr = new URL('https://localhost/installation/api/csr')
+    const urlCsr = new URL('https://localhost/installation/api/csrInstance')
     urlCsr.hostname = hostname
     var reponseCsr = await axios.get(urlCsr.href)
     console.debug("Reponse CSR : %O", reponseCsr)
@@ -234,7 +234,20 @@ async function renouvellerCertificat(workers, hostname, instance, confirmationCb
 
   try {
     if(csr && securite) {
-      await prendrePossession(connexion, csr, securite, hostname)
+      const reponseCertificat = await signerCertificatInstance(connexion, csr, securite, hostname)
+      console.debug("Certificat signe : %O", reponseCertificat)
+      const certificat = reponseCertificat.certificat
+
+      const urlInstallerCertificat = new URL('https://localhost/installation/api/installerCertificat')
+      urlInstallerCertificat.hostname = hostname
+      const reponseAxios = await axios({
+        url: urlInstallerCertificat.href,
+        method: 'post',
+        data: {certificat},
+        timeout: 5000,
+      })
+      console.debug("Recu reponse installation certificat\n%O", reponseAxios)
+      
       confirmationCb('Certificat renouvelle avec succes.')
     } else {
       erreurCb("Il manque le csr ou le niveau de securite")
@@ -283,7 +296,7 @@ async function changerHostnameInstance(workers, instanceId, hostname, confirmati
 
     const commande = {
       instance_id: instanceId,
-      domaine: hostname,
+      hostname,
     }
     const domaine = 'monitor', action = 'changerDomaine'
     const commandeSignee = await connexion.formatterMessage(commande, domaine, {action})
