@@ -12,7 +12,7 @@
     "font-awesome": "^4.7.0",
     "i18next": "^21.8.11",
     "i18next-browser-languagedetector": "^6.1.4",
-    "moment": "^2.29.3",
+    "moment": "^2.29.4",
     "moment-timezone": "^0.5.34",
     "qrcode.react": "^3.1.0",
     "react": "^17",
