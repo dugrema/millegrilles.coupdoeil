@@ -22,7 +22,7 @@ const URL_SOCKET = '/coupdoeil/socket.io'
 // }
 
 function testWorker() {
-  console.debug("connexion worker ok")
+  // console.debug("connexion worker ok")
   return true
 }
 
@@ -31,7 +31,7 @@ function getClesChiffrage() {
 }
 
 function requeteListeNoeuds(params) {
-  console.debug("Requete liste noeuds, params : %O", params)
+  // console.debug("Requete liste noeuds, params : %O", params)
   return connexionClient.emitBlocking('coupdoeil/requeteListeNoeuds', params)
 }
 function requeteListeDomaines() {
@@ -128,7 +128,7 @@ function restaurationDomaines(params) {
   if(params.domaine) {
     domaine = params.domaine + '.restaurerTransactions'
   }
-  console.debug("Demarrer restaurationDomaines domaine = %s : %O", domaine, params)
+  // console.debug("Demarrer restaurationDomaines domaine = %s : %O", domaine, params)
   return connexionClient.emitBlocking('coupdoeil/restaurationDomaines', params, {domaine})
 }
 function restaurationGrosfichiers(params) {
@@ -164,7 +164,7 @@ async function installerApplication(params) {
   }
 }
 function supprimerApplication(commande) {
-  console.debug("supprimer application %O", commande)
+  // console.debug("supprimer application %O", commande)
   return connexionClient.emitBlocking(
     'coupdoeil/supprimerApplication', 
     commande, 
@@ -187,7 +187,7 @@ function resetBackup(params) {
   if(params.domaine) {
     domaine = params.domaine + '.resetBackup'
   }
-  console.debug("Reset backup domaine = %s : %O", domaine, params)
+  // console.debug("Reset backup domaine = %s : %O", domaine, params)
   return connexionClient.emitBlocking('coupdoeil/resetBackup', params, {domaine})
 }
 function genererCertificatNoeud(commande) {

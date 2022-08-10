@@ -1,6 +1,7 @@
 import React, { Suspense, useState, useCallback, useEffect, lazy } from 'react'
 
 import connecter from './workers/connecter'
+import { setupWorkers, cleanupWorkers } from './workers/workers.load'
 
 import './containers/App.css'
 import './containers/Layout.css'
@@ -25,7 +26,7 @@ function App(props) {
   const [erreurMessage, setErreurMessage] = useState('')
 
   const setUsagerCb = useCallback(usager=>{
-    console.debug('setUsagerCb Usager : %O', usager)
+    //console.debug('setUsagerCb Usager : %O', usager)
     setUsager(usager)
     setEtatAuthentifie(true)  // Utilise lors d'une reconnexion
   }, [setUsager, setEtatAuthentifie])
@@ -36,12 +37,23 @@ function App(props) {
   }, [setErreur, setErreurMessage])
 
   // Chargement des workers
-  useEffect(()=>importerWorkers().then(workers=>setWorkers(workers)).catch(err=>erreurCb(err)), [setWorkers, erreurCb])
+  useEffect(()=>{
+    const workerInstances = setupWorkers()
+    const workers = Object.keys(workerInstances).reduce((acc, item)=>{
+      acc[item] = workerInstances[item].proxy
+      return acc
+    }, {})
+    setWorkers(workers)
+    return () => {
+        // console.debug("Cleanup workers")
+        cleanupWorkers(workerInstances)
+    }
+  }, [setWorkers, erreurCb])
 
   useEffect(()=>{
     if(workers) {
       connecter(workers, setEtatConnexion, setUsagerCb, setEtatFormatteur, setCleMillegrilleChargee)
-        .then(infoConnexion=>{console.debug("Info connexion : %O", infoConnexion)})
+        .then(infoConnexion=>{console.info("Info connexion : %O", infoConnexion)})
         .catch(err=>erreurCb(err, 'Erreur de connexion au serveur'))
     }
   }, [workers, setUsagerCb, setEtatConnexion, setEtatFormatteur, erreurCb])
@@ -86,18 +98,13 @@ function Attente(props) {
   return <p>Chargement en cours</p>
 }
 
-async function importerWorkers() {
-  const { chargerWorkers } = await import('./workers/workers.load')
-  return chargerWorkers()
-}
-
 async function reconnecter(workers, setCertificatMaitreDesCles) {
-  console.debug("AppTopLevel.reconnecte")
+  //console.debug("AppTopLevel.reconnecte")
   const {connexion} = workers
 
   connexion.getClesChiffrage()
     .then(cles=>{
-      console.debug("Cles chiffrage recues : %O", cles)
+      //console.debug("Cles chiffrage recues : %O", cles)
       setCertificatMaitreDesCles(cles.certificat)
     })
     .catch(err=>console.error("Erreur chargement cles chiffrage : %O", err))

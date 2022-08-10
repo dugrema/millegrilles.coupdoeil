@@ -47,7 +47,7 @@ function Instances(props) {
     // Chargement data page sur connexion/reconnexion
     useEffect(()=>{
         if(etatAuthentifie) {
-            console.debug("Requete topologie instances")
+            //console.debug("Requete topologie instances")
             
             const cb = comlinkProxy(setEvenementRecu)
             connexion.enregistrerCallbackEvenementsNoeuds(cb)
@@ -72,7 +72,7 @@ function Instances(props) {
     let Page = PageAccueil, instance = null
     // Afficher l'instance selectionnee (si applicable)
     if(instanceSelectionnee) {
-        console.debug("Instance selectionnee : %s", instanceSelectionnee)
+        //console.debug("Instance selectionnee : %s", instanceSelectionnee)
         Page = AfficherInstanceDetail
         instance = instancesParId[instanceSelectionnee]
     }
@@ -163,7 +163,7 @@ function InstanceProtegee(props) {
     const instancesList = Object.values(instances)
     if(instancesList.length === 0) return <p>Aucune instance protegee</p>
 
-    console.debug("Instances : %O", instancesList)
+    //console.debug("Instances : %O", instancesList)
 
     const instance = instancesList.filter(item=>item.securite === '3.protege').pop()
 
@@ -178,7 +178,7 @@ function ListeInstances(props) {
     const [liste, setListe] = useState('')
 
     useEffect(()=>{
-        console.debug("Traiter instances : %O", instances)
+        //console.debug("Traiter instances : %O", instances)
         const liste = Object.values(instances).filter(item=>item.securite === securite)
         if(liste.length > 0) {
             trierNoeuds(liste)
@@ -190,7 +190,7 @@ function ListeInstances(props) {
 
     if(!liste) return <p>Aucunes instances</p>
 
-    console.debug("Liste instances %s : %O", securite, liste)
+    //console.debug("Liste instances %s : %O", securite, liste)
 
     return liste.map(instance=>(
         <InstanceItem key={instance.instance_id} instance={instance} selectionnerInstance={selectionnerInstance} />
@@ -220,7 +220,7 @@ function InstanceItem(props) {
 // Charge la liste courante des noeuds
 async function chargerListeInstances(connexion, setInstancesParNoeudId, setProtege, setPrives, setPublics) {
     var reponseInstances = await connexion.requeteListeNoeuds({})
-    console.debug("Reponse instances : %O", reponseInstances)
+    //console.debug("Reponse instances : %O", reponseInstances)
   
     if(!reponseInstances) reponseInstances = []
   
@@ -297,7 +297,7 @@ function mapperNoeud(noeudInfo, derniereModification) {
 function traiterMessageRecu(evenement, instancesParId, setInstancesParId) {
     const message = evenement.message,
           routingKey = evenement.routingKey
-    console.debug("processMessageNoeudsCb recu : %s : %O", routingKey, message)
+    //console.debug("processMessageNoeudsCb recu : %s : %O", routingKey, message)
     
     const instanceId = message.instance_id
     if(routingKey === 'evenement.CoreTopologie.instanceSupprimee') {
@@ -326,7 +326,7 @@ function AjouterInstanceModal(props) {
 
     const erreurCb = useCallback(
         (err, message) => { 
-            console.debug("Set erreurs %O, %s", err, message)
+            //console.debug("Set erreurs %O, %s", err, message)
             setError(err)
             if(message) setErrorMessage(message)
             else setErrorMessage(''+err)
@@ -396,7 +396,7 @@ async function connecter(hostname, setInstance, setCsr, erreurCb) {
 
         try {
             const reponseInfoMonitor = await axios.get(pathInfoMonitor.href)
-            console.debug("Reponse info monitor : %O", reponseInfoMonitor)
+            //console.debug("Reponse info monitor : %O", reponseInfoMonitor)
 
             const instance = reponseInfoMonitor.data
             setInstance(instance)
@@ -406,7 +406,7 @@ async function connecter(hostname, setInstance, setCsr, erreurCb) {
                 urlCsr.pathname = '/installation/api/csrInstance'
                 try {
                     const reponseCsr = await axios.get(urlCsr.href)
-                    console.debug("Reponse CSR : %O", reponseCsr)
+                    //console.debug("Reponse CSR : %O", reponseCsr)
                     setCsr(reponseCsr.data)
                 } catch(err) {
                     erreurCb(`Erreur access URL ${urlCsr.href}`)
@@ -421,7 +421,7 @@ async function connecter(hostname, setInstance, setCsr, erreurCb) {
 }
 
 function InformationNoeud(props) {
-    console.debug("InformationNoeud proppies : %O", props)
+    //console.debug("InformationNoeud proppies : %O", props)
 
     const {workers, usager, csr, hostname, instance, confirmationCb, erreurCb, fermer, etatAuthentifie} = props,
           securite = instance.securite
@@ -548,7 +548,7 @@ function InformationNoeud(props) {
             return
         }
     
-        console.debug("prendrePossession Reception info certificat : %O", resultatCertificat)
+        //console.debug("prendrePossession Reception info certificat : %O", resultatCertificat)
         if(!resultatCertificat.certificat) {
             erreurCb(null, "Erreur creation certificat pour prise de possession - non genere")
             return
@@ -563,7 +563,7 @@ function InformationNoeud(props) {
             port: portMq,
         }
     
-        console.debug("Transmettre parametres installation noeud : %O", paramsInstallation)
+        //console.debug("Transmettre parametres installation noeud : %O", paramsInstallation)
     
         try {
             const reponse = await axios({
@@ -572,7 +572,7 @@ function InformationNoeud(props) {
                 data: paramsInstallation,
                 timeout: 15000,
             })
-            console.debug("Recu reponse demarrage installation noeud\n%O", reponse)
+            //console.debug("Recu reponse demarrage installation noeud\n%O", reponse)
             const data = reponse.data || {}
             if(data.err) {
                 erreurCb(data.err)

@@ -8,7 +8,7 @@ import { Trans } from 'react-i18next';
 import { IconeConnexion } from '@dugrema/millegrilles.reactjs'
 
 function MenuItems(props) {
-    console.debug("Menu props : %O", props)
+    //console.debug("Menu props : %O", props)
 
     const { workers, etatConnexion, changerPage, cleMillegrilleChargee } = props
 

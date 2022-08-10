@@ -6,22 +6,31 @@ const CONST_APP_URL = 'coupdoeil/socket.io'
 async function connecter(workers, setEtatConnexion, setUsagerState, setFormatteurPret, setCleMillegrilleChargee) {
     const { connexion, chiffrage } = workers
   
-    console.debug("Set callbacks connexion worker")
+    // console.debug("Set callbacks connexion worker")
     const location = new URL(window.location.href)
     location.pathname = CONST_APP_URL
     console.info("Connecter a %O", location.href)
 
     // Preparer callbacks
-    const setUsagerCb = proxy( usager => {console.debug("usager cb : %O", usager); setUsager(workers, usager, setUsagerState)} )
-    const setEtatConnexionCb = proxy(etat => {console.debug('etat connexion cb %s', etat); setEtatConnexion(etat)})
-    const setFormatteurPretCb = proxy(etat => {console.debug('formatteur cb %O', etat); setFormatteurPret(etat)})
+    const setUsagerCb = proxy( usager => {
+        //console.debug("usager cb : %O", usager)
+        setUsager(workers, usager, setUsagerState)
+    } )
+    const setEtatConnexionCb = proxy(etat => {
+        //console.debug('etat connexion cb %s', etat)
+        setEtatConnexion(etat)
+    })
+    const setFormatteurPretCb = proxy(etat => {
+        // console.debug('formatteur cb %O', etat)
+        setFormatteurPret(etat)
+    })
     const setCallbackCleMillegrilleCb = proxy(setCleMillegrilleChargee)
 
     await connexion.setCallbacks(setEtatConnexionCb, setUsagerCb, setFormatteurPretCb)
     if(chiffrage) await chiffrage.setCallbackCleMillegrille(setCallbackCleMillegrilleCb)
 
     const resultat = await connexion.connecter(location.href)
-    console.debug("Resultat connexion : %O", resultat)
+    // console.debug("Resultat connexion : %O", resultat)
 
     return resultat
 }
@@ -32,14 +41,14 @@ export default connecter
 // Initialise (ou re-initialise) les formatteurs de message de chaque worker
 async function setUsager(workers, nomUsager, setUsagerState, opts) {
     opts = opts || {}
-    console.debug("connecter setUsager (cb worker) '%s'", nomUsager)
+    // console.debug("connecter setUsager (cb worker) '%s'", nomUsager)
     const { usagerDao, forgecommon, idmg: idmgUtils } = await import('@dugrema/millegrilles.reactjs')
     const { pki } = await import('@dugrema/node-forge')
     const { extraireExtensionsMillegrille } = forgecommon
 
-    console.debug("Charger usager : %s", nomUsager)
+    // console.debug("Charger usager : %s", nomUsager)
     const usager = await usagerDao.getUsager(nomUsager)
-    console.debug("Usager info : %O", usager)
+    // console.debug("Usager info : %O", usager)
     
     if(usager && usager.certificat) {
         const fullchain = usager.certificat,
