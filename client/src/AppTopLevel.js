@@ -3,8 +3,22 @@ import React, { Suspense, useState, useCallback, useEffect, lazy } from 'react'
 import connecter from './workers/connecter'
 import { setupWorkers, cleanupWorkers } from './workers/workers.load'
 
-import './containers/App.css'
-import './containers/Layout.css'
+import './i18n'
+
+// Importer JS global
+import 'react-bootstrap/dist/react-bootstrap.min.js'
+
+// Importer cascade CSS global
+import 'bootstrap/dist/css/bootstrap.min.css'
+import 'font-awesome/css/font-awesome.min.css'
+import '@dugrema/millegrilles.reactjs/dist/index.css'
+
+import manifest from './manifest.build'
+
+import './index.scss'
+// import './containers/App.css'
+// import './containers/Layout.css'
+
 
 const ApplicationCoupdoeil = lazy(()=>import('./containers/App'))
 
