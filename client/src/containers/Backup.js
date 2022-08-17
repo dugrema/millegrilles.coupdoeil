@@ -11,7 +11,7 @@ import { chargerStatsTransactionsDomaines } from '../components/UtilDomaines'
 const contexteGlobal = {},
       contexteBackup = {}
 
-export function Backup(props) {
+function Backup(props) {
 
   const [operation, setOperation] = useState('')
   const [domaines, setDomaines] = useState('')
@@ -91,6 +91,8 @@ export function Backup(props) {
                  setNoeuds={setNoeuds}
                  rapport={rapport} />
 }
+
+export default Backup
 
 function Sommaire(props) {
 

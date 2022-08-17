@@ -13,12 +13,9 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import 'font-awesome/css/font-awesome.min.css'
 import '@dugrema/millegrilles.reactjs/dist/index.css'
 
-import manifest from './manifest.build'
-
 import './index.scss'
 // import './containers/App.css'
 // import './containers/Layout.css'
-
 
 const ApplicationCoupdoeil = lazy(()=>import('./containers/App'))
 
@@ -88,7 +85,7 @@ function App(props) {
 
   if(!usager || !workers) {
     // Connecter avec Socket.IO
-    return <p>Connexion en cours</p>
+    return <Attente />
   } else {
     // Afficher application
     return (
@@ -99,7 +96,8 @@ function App(props) {
           etatAuthentifie={etatAuthentifie}
           usager={usager}
           cleMillegrilleChargee={cleMillegrilleChargee}
-          certificatMaitreDesCles={certificatMaitreDesCles} />
+          certificatMaitreDesCles={certificatMaitreDesCles} 
+          erreurCb={erreurCb} />
       </Suspense>
     )
   }
@@ -108,8 +106,18 @@ function App(props) {
 
 export default App
 
-function Attente(props) {
-  return <p>Chargement en cours</p>
+function Attente(_props) {
+  return (
+      <div>
+          <p className="titleinit">Preparation de Coup D'Oeil</p>
+          <p>Veuillez patienter durant le chargement de la page.</p>
+          <ol>
+              <li>Initialisation</li>
+              <li>Chargement des composants dynamiques</li>
+              <li>Connexion a la page</li>
+          </ol>
+      </div>
+  )
 }
 
 async function reconnecter(workers, setCertificatMaitreDesCles) {
