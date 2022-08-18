@@ -1,1 +1,20 @@
-{}
+{
+    "titre": "Coup D'Oeil",
+    "menu": {
+        "instances": "Instances",
+        "domaines": "Domains",
+        "information": "Information",
+        "language": "Language",
+        "deconnecter": "Sign out"
+    },
+    "Instances": {
+        "titre": "Instances",
+        "titre-instance-protegee": "Protected instances",
+        "titre-satellites": "Satellites",
+        "titre-satellites-secures": "Secure satellites",
+        "titre-satellites-prives": "Private satellites",
+        "titre-satellites-publics": "Public satellites",
+        "titre-associer": "Associate a new satellite",
+        "bouton-associer": "Associate"
+    }
+}

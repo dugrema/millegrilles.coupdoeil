@@ -1,5 +1,6 @@
-import React, {useState, useEffect, useCallback} from 'react'
+import React, {useState, useEffect, useCallback, useTransition} from 'react'
 import {proxy as comlinkProxy} from 'comlink'
+import { useTranslation } from "react-i18next"
 
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
@@ -19,6 +20,8 @@ function Domaines(props) {
         cleMillegrilleChargee, setCleMillegrille, 
         erreurCb 
     } = props
+
+    const { t } = useTranslation()
 
     const [attente, setAttente] = useState('')
     const [domaines, setDomaines] = useState('')
@@ -76,7 +79,7 @@ function Domaines(props) {
         <>
             <ModalAttente show={attente} setAttente={setAttente} />
 
-            <h1>Domaines</h1>
+            <h1>{t('Domaines.titre')}</h1>
 
             <h2>Domaines configures</h2>
             <ListeDomaines domaines={domaines} />

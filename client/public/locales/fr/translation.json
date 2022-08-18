@@ -1,1 +1,26 @@
-{}
+{
+    "titre": "Coup D'Oeil",
+    "menu": {
+        "instances": "Instances",
+        "domaines": "Domaines",
+        "information": "Information",
+        "language": "Language",
+        "deconnecter": "Deconnecter"
+    },
+    "Instances": {
+        "titre": "Instances",
+        "titre-instance-protegee": "Instance Protégée",
+        "titre-satellites": "Instances satellite",
+        "titre-satellites-secures": "Satellites Sécures",
+        "titre-satellites-prives": "Satellites Privés",
+        "titre-satellites-publics": "Satellites Publics",
+        "titre-associer": "Associer une nouvelle instance",
+        "bouton-associer": "Associer"
+    },
+    "Domaines": {
+        "titre": "Domaines"
+    },
+    "Noeud": {
+        "titre": "Instance {{nom}}"
+    }
+}

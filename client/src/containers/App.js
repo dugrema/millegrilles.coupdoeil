@@ -5,9 +5,11 @@ import Navbar from 'react-bootstrap/Navbar'
 import NavDropdown from 'react-bootstrap/NavDropdown'
 import { Trans } from 'react-i18next'
 
-import { useTranslation } from 'react-i18next'
-
 import { LayoutMillegrilles, ModalErreur, Menu as MenuMillegrilles, DropDownLanguage, ModalInfo } from '@dugrema/millegrilles.reactjs'
+
+import { i18n, useTranslation } from 'react-i18next'
+import '../i18n'
+
 
 // import { VerificationInfoServeur } from './Authentification'
 // import { SectionContenu } from './SectionContenu'
@@ -22,10 +24,10 @@ const SectionContenu = React.lazy(()=>import('./SectionContenu'))
 
 function ApplicationCoupdoeil(props) {
 
-  const { workers, i18n, usager, etatAuthentifie, certificatMaitreDesCles, cleMillegrilleChargee } = props
+  const { workers, usager, etatAuthentifie, certificatMaitreDesCles, cleMillegrilleChargee } = props
   const idmg = usager?usager.idmg:''
 
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const [sectionAfficher, setSectionAfficher] = useState('')
 
@@ -107,6 +109,7 @@ function ApplicationCoupdoeil(props) {
                 <SectionContenu 
                     workers={workers}
                     usager={usager}
+                    etatAuthentifie={etatAuthentifie}
                     sectionAfficher={sectionAfficher}
                     setSectionAfficher={setSectionAfficher}
                     certificatMaitreDesCles={certificatMaitreDesCles}

@@ -13,6 +13,7 @@ import { AlertTimeout, ModalAttente, FormatterDate } from '@dugrema/millegrilles
 
 import AfficherInstanceDetail from './Noeud'
 import { Modal } from "react-bootstrap"
+import { useTranslation } from "react-i18next"
 
 function Instances(props) {
 
@@ -113,40 +114,43 @@ function PageAccueil(props) {
 
     const {workers, instancesParId, selectionnerInstanceCb, setShowAssocier} = props
 
+    const { t } = useTranslation()
+
     return (
         <>
-            <h1>Instances</h1>
+            <h1>{t('Instances.titre')}</h1>
 
-            <h2>Instance Protegee</h2>
+            <h2>{t('Instances.titre-instance-protegee')}</h2>
             <InstanceProtegee 
                 workers={workers} 
                 instances={instancesParId} 
                 selectionnerInstance={selectionnerInstanceCb} />
 
-            <h2>Instances satellite</h2>
+            <h2>{t('Instances.titre-satellites')}</h2>
 
             <Row>
-                <Col md={9}>Associer une nouvelle instance</Col>
+                <Col md={9}>{t('Instances.titre-associer')}</Col>
                 <Col>
-                    <Button variant="secondary" onClick={()=>setShowAssocier(true)}>Associer</Button>
+                    <Button variant="secondary" onClick={()=>setShowAssocier(true)}>{t('Instances.bouton-associer')}</Button>
                 </Col>
             </Row>
 
-            <h3>Satellites secures</h3>
+            <h3>{t('Instances.titre-satellites-secures')}</h3>
+
             <ListeInstances 
                 workers={workers} 
                 instances={instancesParId} 
                 securite="4.secure" 
                 selectionnerInstance={selectionnerInstanceCb} />
 
-            <h3>Satellites prives</h3>
+            <h3>{t('Instances.titre-satellites-prives')}</h3>
             <ListeInstances 
                 workers={workers} 
                 instances={instancesParId} 
                 securite="2.prive" 
                 selectionnerInstance={selectionnerInstanceCb} />
 
-            <h3>Satellites publics</h3>
+            <h3>{t('Instances.titre-satellites-publics')}</h3>
             <ListeInstances 
                 workers={workers} 
                 instances={instancesParId} 
@@ -220,7 +224,7 @@ function InstanceItem(props) {
 // Charge la liste courante des noeuds
 async function chargerListeInstances(connexion, setInstancesParNoeudId, setProtege, setPrives, setPublics) {
     var reponseInstances = await connexion.requeteListeNoeuds({})
-    //console.debug("Reponse instances : %O", reponseInstances)
+    console.debug("Reponse instances : %O", reponseInstances)
   
     if(!reponseInstances) reponseInstances = []
   

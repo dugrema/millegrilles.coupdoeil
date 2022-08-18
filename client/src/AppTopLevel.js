@@ -3,8 +3,6 @@ import React, { Suspense, useState, useCallback, useEffect, lazy } from 'react'
 import connecter from './workers/connecter'
 import { setupWorkers, cleanupWorkers } from './workers/workers.load'
 
-import './i18n'
-
 // Importer JS global
 import 'react-bootstrap/dist/react-bootstrap.min.js'
 

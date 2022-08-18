@@ -1,4 +1,6 @@
 import React, {useState, useEffect, useCallback} from 'react'
+import { useTranslation } from 'react-i18next'
+
 import Button from 'react-bootstrap/Button'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
@@ -20,6 +22,8 @@ function AffichageNoeud(props) {
   const instance = props.instance || {}
   const instanceId = instance.instance_id
   
+  const { t } = useTranslation()
+
   const [erreur, setErreur] = useState('')
   const [pageConfiguration, setPageConfiguration] = useState('')
   const [section, setSection] = useState('Information')
@@ -53,9 +57,12 @@ function AffichageNoeud(props) {
           <p>{erreur}</p>
       </Alert>
 
-      <h1>Instance {nomNoeud}</h1>
-
-      <Button variant="secondary" onClick={fermer}>Retour</Button>
+      <Row>
+          <Col xs={10} md={11}><h2>{t('Noeud.titre', {nom: nomNoeud})}</h2></Col>
+          <Col xs={2} md={1} className="bouton">
+              <Button onClick={fermer} variant="secondary"><i className='fa fa-remove'/></Button>
+          </Col>
+      </Row>
 
       <Nav variant="tabs" defaultActiveKey="Information" onSelect={setSection}>
         <Nav.Item>
