@@ -1,4 +1,6 @@
 import React, {useState, useEffect, useCallback} from 'react'
+import { useTranslation } from 'react-i18next'
+
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
@@ -16,7 +18,9 @@ import { AlertTimeout, ModalAttente } from '@dugrema/millegrilles.reactjs'
 
 function ConfigurationConsignation(props) {
 
-    const {workers, etatAuthentifie} = props
+    const {workers, etatAuthentifie, fermer} = props
+
+    const { t } = useTranslation()
 
     const [attente, setAttente] = useState(false)
     const [confirmation, setConfirmation] = useState('')
@@ -35,8 +39,15 @@ function ConfigurationConsignation(props) {
   
     return (
         <>
-            <h2>Configuration de consignation des fichiers</h2>
-    
+            <Row>
+                <Col xs={10} md={11}>
+                    <h2>{t('DomaineConsignation.titre')}</h2>
+                </Col>
+                <Col xs={2} md={1} className="bouton">
+                    <Button onClick={fermer} variant="secondary"><i className='fa fa-remove'/></Button>
+                </Col>
+            </Row>
+
             <AlertTimeout variant="danger" titre="Erreur" delay={false} value={error} setValue={setError} />
             <AlertTimeout value={confirmation} setValue={setConfirmation} />
             <ModalAttente show={attente} setAttente={setAttente} />

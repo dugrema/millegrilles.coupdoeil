@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Row, Col, Button, Alert, ProgressBar } from 'react-bootstrap'
+import { Row, Col, Button, Alert } from 'react-bootstrap'
 import { proxy } from 'comlink'
+import { useTranslation } from 'react-i18next'
 
 import { AlertTimeout, ModalChargerCleMillegrille } from '@dugrema/millegrilles.reactjs'
 
@@ -8,7 +9,9 @@ const BATCH_NOMBRE_FETCH = 100       // Nombre cles downloadees a la fois
 
 function DomaineMaitredescles(props) {
 
-  const { workers, certificatMaitreDesCles, cleMillegrilleChargee } = props
+  const { workers, certificatMaitreDesCles, cleMillegrilleChargee, fermer } = props
+
+  const { t } = useTranslation()
 
   const [showModalCle, setShowModalCle] = useState(false)
   const [infoCles, setInfoCles] = useState('')
@@ -32,10 +35,16 @@ function DomaineMaitredescles(props) {
 
   return (
     <div>
-      <h1>Recuperer les cles</h1>
 
-      <AlertTimeout titre="Succes" delay={10000} value={succes} setValue={setSucces} />
-      <AlertTimeout titre="Erreur" variant="danger" delay={30000} value={erreur} setValue={setErreur} />
+      <Row>
+          <Col xs={10} md={11}>
+              <h2>{t('DomaineMaitredescles.titre')}</h2>
+          </Col>
+          <Col xs={2} md={1} className="bouton">
+              <Button onClick={fermer} variant="secondary"><i className='fa fa-remove'/></Button>
+          </Col>
+      </Row>
+
       <Alert variant="danger" show={certificatMaitreDesCles?false:true}>
         <Alert.Heading>Certificat absent</Alert.Heading>
         <p>Le certificat de rechiffrage est absent. Veuillez recharger la page pour reessayer.</p>
@@ -86,6 +95,10 @@ function DomaineMaitredescles(props) {
         show={showModalCle} 
         close={hideModalCleCb} 
         setCle={setCleMillegrille} />
+
+      <AlertTimeout titre="Succes" delay={10000} value={succes} setValue={setSucces} />
+      <AlertTimeout titre="Erreur" variant="danger" delay={30000} value={erreur} setValue={setErreur} />
+
     </div>
   )
 }

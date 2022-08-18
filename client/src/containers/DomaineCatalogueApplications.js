@@ -1,43 +1,89 @@
-import React from 'react'
+import React, {useEffect, useState, useCallback} from 'react'
 import { Row, Col, Form, InputGroup, Button, FormControl, Alert } from 'react-bootstrap'
 import Dropzone from 'react-dropzone'
+import { useTranslation } from 'react-i18next'
 
-class ParametresCataloguesApplications extends React.Component {
+function ParametresCataloguesApplications(props) {
 
-  state = {
-    catalogueApplications: '',
-  }
+  const { workers, etatAuthentifie, fermer } = props
+  const connexion = workers.connexion
 
-  componentDidMount() {
-    this.refresh()
-  }
+  const { t } = useTranslation()
 
-  refresh = _ => {
-    const wsa = this.props.workers.connexion
-    chargerCatalogueApplications(wsa, state=>{this.setState(state)})
-  }
+  const [catalogueApplications, setCatalogueApplications] = useState('')
 
-  render() {
-    const etatConnexion = this.props.etatConnexion,
-          connexion = this.props.workers.connexion
+  const handlerErreur = useCallback((err, message)=>{
+    console.error('%s Erreur : %O', message, err)
+  }, [])
 
-    return (
-      <>
-        <h1>Catalogues d'applications</h1>
+  const refresh = useCallback(()=>{
+    chargerCatalogueApplications(connexion)
+      .then(setCatalogueApplications)
+      .catch(err=>handlerErreur(err, 'ParametresCataloguesApplications chargerCatalogueApplications'))
+  }, [connexion, setCatalogueApplications])
 
-        <Button variant="secondary" onClick={this.props.fermer}>Retour</Button>
-        <FormulaireAjout workers={this.props.workers}
-                         etatAuthentifie={this.props.etatAuthentifie}
-                         refresh={this.refresh} />
+  useEffect(refresh, [refresh])
 
-        <hr />
+  return (
+    <div>
+      <Row>
+          <Col xs={10} md={11}>
+              <h2>{t('DomaineCatalogueApplications.titre')}</h2>
+          </Col>
+          <Col xs={2} md={1} className="bouton">
+              <Button onClick={fermer} variant="secondary"><i className='fa fa-remove'/></Button>
+          </Col>
+      </Row>
 
-        <ListeApplications liste={this.state.catalogueApplications} />
+      <FormulaireAjout 
+        workers={workers}
+        etatAuthentifie={etatAuthentifie}
+        refresh={refresh} />
 
-      </>
-    )
-  }
+      <hr />
+
+      <ListeApplications liste={catalogueApplications} />
+    </div>
+  )
 }
+
+
+// class ParametresCataloguesApplications extends React.Component {
+
+//   state = {
+//     catalogueApplications: '',
+//   }
+
+//   componentDidMount() {
+//     this.refresh()
+//   }
+
+//   refresh = _ => {
+//     const wsa = this.props.workers.connexion
+//     chargerCatalogueApplications(wsa, state=>{this.setState(state)})
+//   }
+
+//   render() {
+//     const etatConnexion = this.props.etatConnexion,
+//           connexion = this.props.workers.connexion
+
+//     return (
+//       <>
+//         <h1>Catalogues d'applications</h1>
+
+//         <Button variant="secondary" onClick={this.props.fermer}>Retour</Button>
+//         <FormulaireAjout workers={this.props.workers}
+//                          etatAuthentifie={this.props.etatAuthentifie}
+//                          refresh={this.refresh} />
+
+//         <hr />
+
+//         <ListeApplications liste={this.state.catalogueApplications} />
+
+//       </>
+//     )
+//   }
+// }
 
 export default ParametresCataloguesApplications
 
@@ -91,7 +137,7 @@ function InfoApplication(props) {
   )
 }
 
-async function chargerCatalogueApplications(wsa, setState) {
+async function chargerCatalogueApplications(wsa) {
   console.debug("Charger catalogue applications")
   var catalogueApplications = await wsa.getCatalogueApplications()
 
@@ -100,7 +146,7 @@ async function chargerCatalogueApplications(wsa, setState) {
 
   console.debug("Catalogue applications charge : %O", catalogueApplications)
 
-  setState({catalogueApplications})
+  return catalogueApplications
 }
 
 class FormulaireAjout extends React.Component {

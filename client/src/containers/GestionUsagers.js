@@ -1,5 +1,6 @@
 import React, {useState, useEffect, useCallback} from 'react'
 import {Row, Col, Button, Alert, Form} from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 
 import { AfficherActivationsUsager, supporteCamera } from '@dugrema/millegrilles.reactjs'
 
@@ -40,14 +41,24 @@ export default function GestionUsagers(props) {
 
 function AfficherListeUsagers(props) {
 
+  const { fermer } = props
+
   const listeUsagers = [...props.listeUsagers]
+
+  const { t } = useTranslation()
+
   listeUsagers.sort(trierUsagers)
 
   return (
     <>
-      <h3>Usagers</h3>
-
-      <Button variant="secondary" onClick={props.fermer}>Fermer</Button>
+      <Row>
+          <Col xs={10} md={11}>
+              <h2>{t('GestionUsagers.titre')}</h2>
+          </Col>
+          <Col xs={2} md={1} className="bouton">
+              <Button onClick={fermer} variant="secondary"><i className='fa fa-remove'/></Button>
+          </Col>
+      </Row>
 
       <Row className="table-header">
         <Col xs={12} sm={6} lg={3}>
@@ -94,7 +105,9 @@ function UsagerRow(props) {
 
 function AfficherUsager(props) {
 
-  const { confirmationCb, erreurCb, etatAuthentifie } = props
+  const { confirmationCb, erreurCb, etatAuthentifie, fermer } = props
+
+  const { t } = useTranslation()
 
   const [usager, setUsager] = useState('')
 
@@ -108,9 +121,14 @@ function AfficherUsager(props) {
 
   return (
     <>
-      <h2>Usager</h2>
-
-      <Button variant="secondary" onClick={props.fermer}>Retour</Button>
+      <Row>
+          <Col xs={10} md={11}>
+              <h2>{t('GestionUsagers.usager-titre')}</h2>
+          </Col>
+          <Col xs={2} md={1} className="bouton">
+              <Button onClick={fermer} variant="secondary"><i className='fa fa-remove'/></Button>
+          </Col>
+      </Row>
 
       <InformationUsager 
         etatAuthentifie={etatAuthentifie}
