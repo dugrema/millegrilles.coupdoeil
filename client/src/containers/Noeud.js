@@ -84,7 +84,7 @@ function AffichageNoeud(props) {
                     serveurUrl={serveurUrl}
                     setPageConfiguration={setPageConfiguration}
                     setErreur={erreurCb}
-                    etatConnexion={etatConnexion}
+                    etatConnexion={etatAuthentifie}
                     etatAuthentifie={etatAuthentifie}
                     usager={usager}
                     workers={workers} 
