@@ -7,7 +7,7 @@ import { Trans } from 'react-i18next'
 
 import { LayoutMillegrilles, ModalErreur, Menu as MenuMillegrilles, DropDownLanguage, ModalInfo } from '@dugrema/millegrilles.reactjs'
 
-import { i18n, useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import '../i18n'
 
 
@@ -234,6 +234,7 @@ function MenuApp(props) {
           case 'instances': setSectionAfficher('instances'); break
           case 'domaines': setSectionAfficher('domaines'); break
           case 'information': setShowModalInfo(true); break
+          case 'portail': window.location = '/millegrilles'; break
           case 'deconnecter': window.location = '/millegrilles/authentification/fermer'; break
           default:
       }
@@ -264,7 +265,10 @@ function MenuApp(props) {
                   <NavDropdown.Item eventKey="en-US">English</NavDropdown.Item>
                   <NavDropdown.Item eventKey="fr-CA">Francais</NavDropdown.Item>
               </DropDownLanguage>
-              <Nav.Link eventKey="deconnecter" title={t('deconnecter')}>
+              <Nav.Link eventKey="portail" title={t('menu.portail')}>
+                  <Trans>menu.portail</Trans>
+              </Nav.Link>
+              <Nav.Link eventKey="deconnecter" title={t('menu.deconnecter')}>
                   <Trans>menu.deconnecter</Trans>
               </Nav.Link>
           </MenuMillegrilles>
