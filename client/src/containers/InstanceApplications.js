@@ -93,6 +93,7 @@ export default ApplicationsInstance
 
 function subscribe(workers, instanceId, securite, cb) {
     const connexion = workers.connexion
+    if(securite === '4.secure') securite = '3.protege'  // Downgrade instance secure
     console.debug("Subscribe %s %s, cb : %O", securite, instanceId, cb)
     connexion.enregistrerCallbackEvenementsApplications(instanceId, securite, cb)
         .catch(err=>console.error("enregistrerCallbackEvenementsApplications : %O", err))
@@ -100,6 +101,7 @@ function subscribe(workers, instanceId, securite, cb) {
 
 function unsubscribe(workers, instanceId, securite, cb) {
     const connexion = workers.connexion
+    if(securite === '4.secure') securite = '3.protege'  // Downgrade instance secure
     console.debug("Unsubscribe %s %s, cb : %O", securite, instanceId, cb)
     connexion.retirerCallbackEvenementsApplications(instanceId, securite, cb)
         .catch(err=>console.error("retirerCallbackEvenementsApplications : %O", err))
@@ -128,7 +130,9 @@ function InstallerApplications(props) {
     const installerApplicationCb = useCallback(event=>{
         console.debug("Installer application %s", applicationInstaller)
         setAttente(true)
-        installerApplication(connexion, instanceId, applicationInstaller, exchange, confirmationCb, erreurCb)
+        let securite = exchange
+        if(securite === '4.secure') securite = '3.protege'  // Downgrade instance secure
+        installerApplication(connexion, instanceId, applicationInstaller, securite, confirmationCb, erreurCb)
     }, [applicationInstaller, connexion, instanceId, exchange, setAttente, confirmationCb, erreurCb])
 
     useEffect(()=>{
@@ -248,11 +252,14 @@ function BoutonsActionApplication(props) {
             const {value, checked} = event.currentTarget
             console.debug("Toggle application value: %s, checked: %O", value, checked)
             setAttente(true)
+            let securiteMessage = securite
+            if(securiteMessage === '4.secure') securiteMessage = '3.protege'  // Downgrade instance secure
+    
             if(checked) {
-                demarrerApplication(connexion, instanceId, event.currentTarget.value, securite, confirmationCb, erreurCb) 
+                demarrerApplication(connexion, instanceId, event.currentTarget.value, securiteMessage, confirmationCb, erreurCb) 
             } else {
                 // desinstallerApplication(connexion, instanceId, event.currentTarget.value, securite, confirmationCb, erreurCb)
-                arreterApplication(connexion, instanceId, event.currentTarget.value, securite, confirmationCb, erreurCb)
+                arreterApplication(connexion, instanceId, event.currentTarget.value, securiteMessage, confirmationCb, erreurCb)
             }
         }, [connexion, instanceId, securite, setAttente]
     )
@@ -261,7 +268,9 @@ function BoutonsActionApplication(props) {
         event=>{
             console.debug("Supprimer application value: %s", app.nom)
             //setAttente(true)
-            supprimerApplication(connexion, instanceId, app.nom, securite, confirmationCb, erreurCb) 
+            let securiteMessage = securite
+            if(securiteMessage === '4.secure') securiteMessage = '3.protege'  // Downgrade instance secure
+            supprimerApplication(connexion, instanceId, app.nom, securiteMessage, confirmationCb, erreurCb) 
         },[connexion, instanceId, securite, setAttente]
     )
 
@@ -355,7 +364,9 @@ function ModalConfigurationApplication(props) {
     }, [setConfigurationMaj])
 
     const appliquer = useCallback(()=>{
-        configurerApplication(workers, instanceId, securite, nom, configurationMaj, confirmationCb, erreurCb)
+        let securiteMessage = securite
+        if(securiteMessage === '4.secure') securiteMessage = '3.protege'  // Downgrade instance secure
+        configurerApplication(workers, instanceId, securiteMessage, nom, configurationMaj, confirmationCb, erreurCb)
             .then(()=>fermer())
             .catch(err=>console.error("Erreur configurerApplication : %O", err))
     }, [workers, instanceId, securite, nom, configurationMaj, confirmationCb, erreurCb])
@@ -434,11 +445,13 @@ async function configurerApplication(workers, instanceId, securite, nom, configu
     try {
         const connexion = workers.connexion
 
+        let securiteMessage = securite
+        if(securiteMessage === '4.secure') securiteMessage = '3.protege'  // Downgrade instance secure
         const reponse = await connexion.configurerApplication({
             nom_application: nom,
             instance_id: instanceId,
             configuration,
-            exchange: securite,
+            exchange: securiteMessage,
         })
 
         console.debug("Reponse configuration %O", reponse)
@@ -480,7 +493,9 @@ async function installerApplication(connexion, instanceId, nomApplication, excha
 
 async function supprimerApplication(connexion, instanceId, nomApplication, securite, confirmationCb, erreurCb) {
     try {
-        const params = { instance_id: instanceId, 'nom_application': nomApplication, exchange: securite }
+        let securiteMessage = securite
+        if(securiteMessage === '4.secure') securiteMessage = '3.protege'  // Downgrade instance secure
+        const params = { instance_id: instanceId, 'nom_application': nomApplication, exchange: securiteMessage }
         console.debug("desinstallerApplication: Transmettre commande %O", params)
     
         const reponse = await connexion.supprimerApplication(params)
@@ -499,9 +514,11 @@ async function supprimerApplication(connexion, instanceId, nomApplication, secur
 
 async function demarrerApplication(connexion, instanceId, nomApplication, securite, confirmationCb, erreurCb) {
     try {
+        let securiteMessage = securite
+        if(securiteMessage === '4.secure') securiteMessage = '3.protege'  // Downgrade instance secure
         console.debug("Demarrer application %s sur instance %s", nomApplication, instanceId)
         const reponse = await connexion.demarrerApplication({
-            nom_application: nomApplication, instance_id: instanceId, exchange: securite
+            nom_application: nomApplication, instance_id: instanceId, exchange: securiteMessage
         })
         if(reponse.err) {
             erreurCb(reponse.err, `Erreur de demarrage de l'application ${nomApplication}`)
@@ -516,7 +533,9 @@ async function demarrerApplication(connexion, instanceId, nomApplication, securi
 
 async function arreterApplication(connexion, instanceId, nomApplication, securite, confirmationCb, erreurCb) {
     try {
-        const params = { instance_id: instanceId, 'nom_application': nomApplication, exchange: securite }
+        let securiteMessage = securite
+        if(securiteMessage === '4.secure') securiteMessage = '3.protege'  // Downgrade instance secure
+        const params = { instance_id: instanceId, 'nom_application': nomApplication, exchange: securiteMessage }
         console.debug("arreterApplication: Transmettre commande %O", params)
     
         const reponse = await connexion.arreterApplication(params)
