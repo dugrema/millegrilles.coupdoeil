@@ -187,7 +187,7 @@ async function fetchInfoCles(workers, erreurCb) {
 //   return certificatForge
 // }
 
-async function rechiffrer(workers, certificatRechiffrage, setNombreClesRechiffrees, setNombreErreurs, erreurCb) {
+async function rechiffrer(workers, certificatsRechiffrage, setNombreClesRechiffrees, setNombreErreurs, erreurCb) {
   const { connexion, chiffrage } = workers
 
   const setNombreClesRechiffreesProxy = proxy(setNombreClesRechiffrees)
@@ -199,7 +199,7 @@ async function rechiffrer(workers, certificatRechiffrage, setNombreClesRechiffre
       batchSize: BATCH_NOMBRE_FETCH,
     }
     await chiffrage.rechiffrerAvecCleMillegrille(
-      connexion, certificatRechiffrage, setNombreClesRechiffreesProxy, setNombreErreursProxy, params)
+      connexion, certificatsRechiffrage, setNombreClesRechiffreesProxy, setNombreErreursProxy, params)
   } catch(err) {
     erreurCb(err, 'Erreur rechiffrage')
   }

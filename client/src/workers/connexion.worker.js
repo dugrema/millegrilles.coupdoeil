@@ -313,12 +313,12 @@ function resetClesNonDechiffrables(commande) {
   )
 }
 
-function rechiffrerClesBatch(commande, partition) {
+function rechiffrerClesBatch(commande) {
   commande = commande || {}
   return connexionClient.emitBlocking(
     'rechiffrerClesBatch', 
     commande, 
-    {domaine: 'MaitreDesCles', action: 'rechiffrerBatch', partition, attacherCertificat: true}
+    {domaine: 'MaitreDesCles', action: 'rechiffrerBatch', attacherCertificat: true}
   )
 }
 
