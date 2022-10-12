@@ -80,9 +80,9 @@ function requeteConfigurationApplication(params) {
 function requeteCompterClesNonDechiffrables() {
   return connexionClient.emitBlocking('coupdoeil/requeteCompterClesNonDechiffrables', {})
 }
-function getCertificatsMaitredescles() {
-  return connexionClient.emitBlocking('coupdoeil/getCertificatsMaitredescles')
-}
+// function getCertificatsMaitredescles() {
+//   return connexionClient.emitBlocking('coupdoeil/getCertificatsMaitredescles')
+// }
 function getUploadsEnCours() {
   return connexionClient.emitBlocking('coupdoeil/getUploadsEnCours')
 }
@@ -398,7 +398,7 @@ comlinkExpose({
   requeteListeNoeuds, requeteListeDomaines, requeteCatalogueDomaines,
   requeteClesNonDechiffrables, getCatalogueApplications, requeteInfoApplications,
   requeteConfigurationApplication, requeteCompterClesNonDechiffrables,
-  getCertificatsMaitredescles, getUploadsEnCours, getDocumentParFuuid,
+  getUploadsEnCours, getDocumentParFuuid,
   restaurationChargerCles, restaurationDomaines, restaurationGrosfichiers,
   backupApplication, restaurerApplication, soumettreCleRechiffree,
   soumettreConfigurationApplication, installerApplication, installerDomaine,

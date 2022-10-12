@@ -60,6 +60,7 @@ async function setUsager(workers, nomUsager, setUsagerState, opts) {
         const certificatPem = fullchain.join('')
 
         // Initialiser le CertificateStore
+        if(workers.connexion) await workers.connexion.initialiserCertificateStore(caPem)
         if(workers.chiffrage) await workers.chiffrage.initialiserCertificateStore(caPem, {isPEM: true, DEBUG: false})
 
         // Initialiser chaque worker avec la cle privee

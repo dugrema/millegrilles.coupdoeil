@@ -107,18 +107,29 @@ export default DomaineMaitredescles
 
 function RechiffrerCles(props) {
 
-  const { workers, nombreClesNonDechiffrables, certificatMaitreDesCles, cleMillegrilleChargee, chargerInfoClesCb, erreurCb } = props
+  const { workers, nombreClesNonDechiffrables, cleMillegrilleChargee, chargerInfoClesCb, erreurCb } = props
 
   const [nombreClesRechiffrees, setNombreClesRechiffrees] = useState(0)
   const [nombreErreurs, setNombreErreurs] = useState(0)
+  const [certificatsMaitredescles, setCertificatsMaitredescles] = useState('')
+
+  useEffect(()=>{
+    const { connexion } = workers
+    connexion.getCertificatsMaitredescles()
+      .then(certificats=>{
+        console.debug("Certificats de maitre des cles recus : ", certificats)
+        setCertificatsMaitredescles(certificats)
+      })
+      .catch(err=>erreurCb(err, "Erreur chargement certificats de chiffrement"))
+  }, [workers, setCertificatsMaitredescles])
   
   const rechiffrerCb = useCallback(()=>{
-    rechiffrer(workers, certificatMaitreDesCles, setNombreClesRechiffrees, setNombreErreurs, erreurCb)
+    rechiffrer(workers, certificatsMaitredescles, setNombreClesRechiffrees, setNombreErreurs, erreurCb)
       .then(chargerInfoClesCb)
       .catch(erreurCb)
-  }, [workers, certificatMaitreDesCles, setNombreClesRechiffrees, setNombreErreurs, chargerInfoClesCb, erreurCb])
+  }, [workers, certificatsMaitredescles, setNombreClesRechiffrees, setNombreErreurs, chargerInfoClesCb, erreurCb])
 
-  if(!(nombreClesNonDechiffrables && certificatMaitreDesCles && cleMillegrilleChargee)) return ''
+  if(!(nombreClesNonDechiffrables && certificatsMaitredescles && cleMillegrilleChargee)) return ''
 
   return (
     <div>
@@ -184,7 +195,7 @@ async function rechiffrer(workers, certificatRechiffrage, setNombreClesRechiffre
 
   try {
     const params = {
-      DEBUG: false,
+      DEBUG: true,
       batchSize: BATCH_NOMBRE_FETCH,
     }
     await chiffrage.rechiffrerAvecCleMillegrille(
