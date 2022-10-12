@@ -340,7 +340,16 @@ export async function prendrePossession(wsa, csr, securite, url, hostMq, portMq)
 }
 
 export async function signerCertificatInstance(wsa, csr, securite) {
-    const commande = {csr_instance: csr, securite, roles: ['instance']}
+  const exchanges = getExchangesPourSecurite(securite)
+  const commande = {csr, securite, roles: ['instance'], exchanges}
     const resultatCertificat = await wsa.genererCertificatNoeud(commande)
     return resultatCertificat
+}
+
+function getExchangesPourSecurite(securite) {
+  const listeExchanges = ['4.secure', '3.protege', '2.prive', '1.public']
+  while(listeExchanges.length > 0 && securite !== listeExchanges[0]) {
+    listeExchanges.shift()
+  }
+  return listeExchanges
 }

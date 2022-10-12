@@ -16,5 +16,16 @@
         "titre-satellites-publics": "Public satellites",
         "titre-associer": "Associate a new satellite",
         "bouton-associer": "Associate"
-    }
+    },
+    "layout-millegrilles": {
+        "modal-info-titre": "MilleGrille Information",
+        "modal-info-application": "Application",
+        "modal-info-nom": "Name",
+        "modal-info-version": "Version",
+        "modal-info-date": "Date",
+        "modal-info-systeme": "System",
+        "idmg": "MilleGrille Identifier (IDMG)",
+        "usager-titre": "User",
+        "usager-nom": "Name"
+    }    
 }
