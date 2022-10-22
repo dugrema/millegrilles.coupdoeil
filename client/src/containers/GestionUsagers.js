@@ -173,7 +173,7 @@ function ActivationUsager(props) {
     connexion.signerRecoveryCsr({userId, csr, activation_tierce: true})
       .then(resultat=>{
         console.debug("Reponse activation : %O", resultat)
-        confirmationCb('Code usager active')
+        // confirmationCb('Code usager active')
       })
       .catch(err=>erreurCb(err))
   }, [workers, usager, csr, confirmationCb])

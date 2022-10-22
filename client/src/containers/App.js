@@ -38,7 +38,10 @@ function ApplicationCoupdoeil(props) {
   // const [confirmation, setConfirmation] = useState('')
   const [erreur, setErreur] = useState('')
   // const confirmationCb = useCallback(confirmation=>setConfirmation(confirmation), [setConfirmation])
-  // const erreurCb = useCallback((err, message)=>{setErreur({err, message})}, [setErreur])
+  const erreurCb = useCallback((err, message)=>{
+    console.error("Erreur ", err)
+    setErreur({err, message})
+  }, [setErreur])
   
   const handlerCloseErreur = () => setErreur(false)
 
@@ -114,6 +117,7 @@ function ApplicationCoupdoeil(props) {
                     setSectionAfficher={setSectionAfficher}
                     certificatMaitreDesCles={certificatMaitreDesCles}
                     cleMillegrilleChargee={cleMillegrilleChargee}
+                    erreurCb={erreurCb}
                   />
               </Suspense>
 
