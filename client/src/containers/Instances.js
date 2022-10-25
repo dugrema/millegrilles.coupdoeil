@@ -284,6 +284,7 @@ function mapperNoeud(noeudInfo, derniereModification) {
       parent_instance_id: noeudInfo.parent_instance_id,
       instance_id: noeudInfo.instance_id,
       ip_detectee: noeudInfo.ip_detectee,
+      onion: noeudInfo.onion,
       fqdn: noeudInfo.fqdn_detecte,
       date: derniereModification,
       domaine: noeudInfo.domaine,
@@ -301,7 +302,7 @@ function mapperNoeud(noeudInfo, derniereModification) {
 function traiterMessageRecu(evenement, instancesParId, setInstancesParId) {
     const message = evenement.message,
           routingKey = evenement.routingKey
-    //console.debug("processMessageNoeudsCb recu : %s : %O", routingKey, message)
+    // console.debug("processMessageNoeudsCb recu : %s : %O", routingKey, message)
     
     const instanceId = message.instance_id
     if(routingKey === 'evenement.CoreTopologie.instanceSupprimee') {

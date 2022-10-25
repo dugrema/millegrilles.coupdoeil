@@ -16,7 +16,7 @@ import { FormatterDate } from '@dugrema/millegrilles.reactjs'
 
 function AffichageNoeud(props) {
 
-  console.debug("AffichageNoeud proppies", props)
+  // console.debug("AffichageNoeud proppies", props)
 
   const { workers, usager, etatConnexion, etatAuthentifie, confirmationCb, attenteCb, fermer } = props
   const instance = props.instance || {}
@@ -153,6 +153,10 @@ function InformationTransactionsNoeud(props) {
           <Row>
             <Col md={3}>Ip</Col>
             <Col>{instance.ip_detectee}</Col>
+          </Row>
+          <Row>
+            <Col md={3}>TOR (.onion)</Col>
+            <Col>{instance.onion}</Col>
           </Row>
           <Row>
             <Col md={3}>Securite</Col>

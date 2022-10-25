@@ -121,6 +121,10 @@ function AfficherInfoConfiguration(props) {
         <Col md={3}>FQDN detecte</Col>
         <Col>{instanceInfo.fqdn_detecte}</Col>
       </Row>
+      <Row>
+        <Col md={3}>Adresse TOR (.onion)</Col>
+        <Col>{instanceInfo.onion}</Col>
+      </Row>
 
       <ConfigurerDomaine
         workers={workers}
@@ -280,7 +284,15 @@ async function verifierAccesNoeud(hostname, idmg, setInstance, erreurCb) {
         return
       }
 
-      setInstance(reponse.data)
+      const onionLocation = reponse.headers['onion-location']
+      const info = {
+        ...reponse.data,
+        onion: onionLocation
+      }
+
+      // console.debug("Info instance ", info)
+
+      setInstance(info)
 
     } else {
       erreurCb(`Mauvais idmg ${idmgReponse}`)
