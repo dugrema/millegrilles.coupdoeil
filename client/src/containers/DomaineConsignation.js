@@ -155,6 +155,16 @@ function ConfigurerConsignation(props) {
                     </Form.Group>
                 </Row>
 
+                <Row>
+                    <Form.Group as={Col}>
+                        <Form.Label>URL instance MilleGrille</Form.Label>
+                        <FormControl id="consignationUrl" aria-describedby="consignationUrl"
+                            placeholder="exemple : https://fichiers:444, https://millegrilles.com:444"
+                            value={consignationUrl}
+                            onChange={event=>setConsignationUrl(event.currentTarget.value)} />
+                    </Form.Group>
+                </Row>
+
                 <br/>
 
                 <Tabs activeKey={typeStore} onSelect={setTypeStore}>
@@ -197,25 +207,13 @@ function formSubmit(event) {
 
 function TabMilleGrille(props) {
 
-    const { appliquerConfiguration, etatAuthentifie, consignationUrl, setConsignationUrl } = props
+    const { appliquerConfiguration, etatAuthentifie } = props
 
     return (
         <div>
             <h2>Consignation MilleGrille</h2>
 
             <p>Les fichiers sont stockes sur une instance de MilleGrille.</p>
-
-            <Row>
-                <Form.Group as={Col}>
-                    <Form.Label>URL instance MilleGrille</Form.Label>
-                    <FormControl id="consignationUrl" aria-describedby="consignationUrl"
-                        placeholder="exemple : https://fichiers:444, https://millegrilles.com:444"
-                        value={consignationUrl}
-                        onChange={event=>setConsignationUrl(event.currentTarget.value)} />
-                </Form.Group>
-            </Row>
-
-            <br />
 
             <Button disabled={!etatAuthentifie} onClick={appliquerConfiguration}>Sauvegarder</Button>
         </div>
