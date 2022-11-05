@@ -12,6 +12,8 @@ import Alert from 'react-bootstrap/Alert'
 
 import { AlertTimeout, ModalAttente } from '@dugrema/millegrilles.reactjs'
 
+const CONST_CONSIGNATION_URL = 'https://fichiers:444'
+
 // Note: Look behind (?<!) pas supporte sur Safari (iOS)
 // RE_DOMAINE = /^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)+[A-Za-z]{2,6}$/
 //const RE_DOMAINE = /^([A-Za-z0-9-]{1,63}\.)+[A-Za-z]{2,6}$/
@@ -72,6 +74,7 @@ function ConfigurerConsignation(props) {
     const [configuration, setConfiguration] = useState('')
     const [typeStore, setTypeStore] = useState('local')
     const [urlDownload, setUrlDownload] = useState('')
+    const [consignationUrl, setConsignationUrl] = useState(CONST_CONSIGNATION_URL)
 
     // Sftp
     const [hostnameSftp, setHostnameSftp] = useState('')
@@ -84,7 +87,7 @@ function ConfigurerConsignation(props) {
         const {connexion} = workers
         if(connexion && etatAuthentifie) {
             // Preparer nouvelle configuration
-            const config = {typeStore, urlDownload, hostnameSftp, usernameSftp, remotePathSftp, keyTypeSftp}
+            const config = {typeStore, urlDownload, consignationUrl, hostnameSftp, usernameSftp, remotePathSftp, keyTypeSftp}
             if(portSftp) config.portSftp = Number.parseInt(portSftp)
 
             // Changer fichier de config stocke local
@@ -102,7 +105,12 @@ function ConfigurerConsignation(props) {
             erreurCb('Erreur de connexion au serveur, veuillez reessayer plus tard')
         }
         
-    }, [workers, etatAuthentifie, typeStore, urlDownload, hostnameSftp, usernameSftp, remotePathSftp, keyTypeSftp, portSftp, confirmationCb, setConfiguration])
+    }, [
+        workers, etatAuthentifie, confirmationCb, setConfiguration,
+        typeStore, urlDownload, 
+        consignationUrl, 
+        hostnameSftp, usernameSftp, remotePathSftp, keyTypeSftp, portSftp,
+    ])
 
     useEffect(()=>{
         if(configuration) return  // Eviter cycle
@@ -121,13 +129,18 @@ function ConfigurerConsignation(props) {
         if(configuration) {
             setTypeStore(configuration.typeStore || 'local')
             setUrlDownload(configuration.urlDownload || '')
+            setConsignationUrl(configuration.consignationUrl || CONST_CONSIGNATION_URL)
             setHostnameSftp(configuration.hostnameSftp || '')
             setPortSftp(configuration.portSftp || '22')
             setUsernameSftp(configuration.usernameSftp || '')
             setRemotePathSftp(configuration.remotePathSftp || '')
             setKeyTypeSftp(configuration.keyTypeSftp || 'ed25519')
         }
-    }, [configuration, setTypeStore, setUrlDownload, setHostnameSftp, setPortSftp, setUsernameSftp, setRemotePathSftp, setKeyTypeSftp])
+    }, [
+        configuration, setTypeStore, setUrlDownload, 
+        setConsignationUrl, 
+        setHostnameSftp, setPortSftp, setUsernameSftp, setRemotePathSftp, setKeyTypeSftp,
+    ])
 
     return (
         <div>
@@ -145,8 +158,12 @@ function ConfigurerConsignation(props) {
                 <br/>
 
                 <Tabs activeKey={typeStore} onSelect={setTypeStore}>
-                    <Tab eventKey="local" title="Local">
-                        <TabLocal etatAuthentifie={etatAuthentifie} appliquerConfiguration={appliquerConfiguration} />
+                    <Tab eventKey="millegrille" title="MilleGrille">
+                        <TabMilleGrille 
+                            etatAuthentifie={etatAuthentifie} 
+                            appliquerConfiguration={appliquerConfiguration} 
+                            consignationUrl={consignationUrl}
+                            setConsignationUrl={setConsignationUrl} />
                     </Tab>
                     <Tab eventKey="sftp" title="sftp">
                         <TabSftp 
@@ -178,17 +195,27 @@ function formSubmit(event) {
     console.debug("Form submit")
 }
 
-function TabLocal(props) {
+function TabMilleGrille(props) {
 
-    const { appliquerConfiguration, etatAuthentifie } = props
+    const { appliquerConfiguration, etatAuthentifie, consignationUrl, setConsignationUrl } = props
 
     return (
         <div>
-            <h2>Consignation locale</h2>
+            <h2>Consignation MilleGrille</h2>
 
-            <p>Les fichiers sont stockes directement sur le disque dur de l'instance.</p>
+            <p>Les fichiers sont stockes sur une instance de MilleGrille.</p>
 
-            <p>Aucuns parametres a configurer.</p>
+            <Row>
+                <Form.Group as={Col}>
+                    <Form.Label>URL instance MilleGrille</Form.Label>
+                    <FormControl id="consignationUrl" aria-describedby="consignationUrl"
+                        placeholder="exemple : https://fichiers:444, https://millegrilles.com:444"
+                        value={consignationUrl}
+                        onChange={event=>setConsignationUrl(event.currentTarget.value)} />
+                </Form.Group>
+            </Row>
+
+            <br />
 
             <Button disabled={!etatAuthentifie} onClick={appliquerConfiguration}>Sauvegarder</Button>
         </div>
