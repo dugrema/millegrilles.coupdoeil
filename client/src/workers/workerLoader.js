@@ -46,15 +46,15 @@ async function wireWorkers(workers) {
     // transfertFichiers.down_setChiffrage(chiffrage).catch(err=>console.error("Erreur chargement transfertFichiers/down worker : %O", err))
     // transfertFichiers.up_setChiffrage(chiffrage).catch(err=>console.error("Erreur chargement transfertFichiers/up worker : %O", err))
 
-    const urlLocal = new URL(window.location.href)
-    urlLocal.pathname = '/collections/fichiers'
-    const downloadHref = urlLocal.href
-    console.debug("Download path : %O", downloadHref)
+    // const urlLocal = new URL(window.location.href)
+    // urlLocal.pathname = '/collections/fichiers'
+    // const downloadHref = urlLocal.href
+    // console.debug("Download path : %O", downloadHref)
     // transfertFichiers.down_setUrlDownload(downloadHref)
     
-    urlLocal.pathname = '/collections/upload'
-    const uploadHref = urlLocal.href
-    console.debug("Upload path : %O", uploadHref)
+    // urlLocal.pathname = '/collections/upload'
+    // const uploadHref = urlLocal.href
+    // console.debug("Upload path : %O", uploadHref)
     // transfertFichiers.up_setPathServeur('/collections/upload')
 
     const location = new URL(window.location)

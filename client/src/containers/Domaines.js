@@ -181,7 +181,7 @@ async function chargerListeDomaines(workers, setDomaines, erreurCb) {
         const connexion = workers.connexion
         const reponseDomaines = await connexion.requeteListeDomaines()
 
-        console.debug("Liste domaines\n%O", reponseDomaines)
+        // console.debug("Liste domaines\n%O", reponseDomaines)
 
         var domaines = reponseDomaines.map(domaine=>{
             const derniereModification = domaine['_mg-derniere-modification']
@@ -192,7 +192,7 @@ async function chargerListeDomaines(workers, setDomaines, erreurCb) {
         // Trier la liste par descriptif, avec Principal en premier
         domaines = trierDomaines(domaines)
 
-        console.debug("Liste domaines preparee : %O", domaines)
+        //console.debug("Liste domaines preparee : %O", domaines)
 
         setDomaines(domaines)
     } catch(err) {

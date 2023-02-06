@@ -1,10 +1,10 @@
 import React, { Suspense, useState, useCallback, useEffect, lazy } from 'react'
 import ErrorBoundary from './ErrorBoundary'
 
-import connecter from './workers/connecter'
-import { setupWorkers, cleanupWorkers } from './workers/workers.load'
+// import connecter from './workers/connecter'
+// import { setupWorkers, cleanupWorkers } from './workers/workers.load'
 
-import useWorkers, {useEtatConnexion, WorkerProvider, useUsager} from './WorkerContext'
+import useWorkers, { WorkerProvider } from './WorkerContext'
 
 // Importer JS global
 import 'react-bootstrap/dist/react-bootstrap.min.js'

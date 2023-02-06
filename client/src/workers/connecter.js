@@ -3,7 +3,7 @@ import { proxy } from 'comlink'
 const CONST_APP_URL = 'coupdoeil/socket.io'
 // const CONST_APP_URL = 'coupdoeil'
 
-async function connecter(workers, setEtatConnexion, setUsagerState, setFormatteurPret, setCleMillegrilleChargee) {
+async function connecter(workers, setUsagerState, setEtatConnexion, setFormatteurPret, setCleMillegrilleChargee) {
     const { connexion, chiffrage } = workers
   
     // console.debug("Set callbacks connexion worker")
@@ -12,18 +12,9 @@ async function connecter(workers, setEtatConnexion, setUsagerState, setFormatteu
     console.info("Connecter a %O", location.href)
 
     // Preparer callbacks
-    const setUsagerCb = proxy( usager => {
-        //console.debug("usager cb : %O", usager)
-        setUsager(workers, usager, setUsagerState)
-    } )
-    const setEtatConnexionCb = proxy(etat => {
-        //console.debug('etat connexion cb %s', etat)
-        setEtatConnexion(etat)
-    })
-    const setFormatteurPretCb = proxy(etat => {
-        // console.debug('formatteur cb %O', etat)
-        setFormatteurPret(etat)
-    })
+    const setUsagerCb = proxy( usager => setUsager(workers, usager, setUsagerState))
+    const setEtatConnexionCb = proxy(etat => setEtatConnexion(etat))
+    const setFormatteurPretCb = proxy(etat => setFormatteurPret(etat))
     const setCallbackCleMillegrilleCb = proxy(setCleMillegrilleChargee)
 
     await connexion.setCallbacks(setEtatConnexionCb, setUsagerCb, setFormatteurPretCb)

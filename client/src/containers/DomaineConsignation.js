@@ -12,6 +12,8 @@ import Alert from 'react-bootstrap/Alert'
 
 import { AlertTimeout, ModalAttente, FormatteurTaille, FormatterDate } from '@dugrema/millegrilles.reactjs'
 
+import useWorkers, { useEtatPret } from '../WorkerContext'
+
 const CONST_CONSIGNATION_URL = 'https://fichiers:444'
 
 // Note: Look behind (?<!) pas supporte sur Safari (iOS)
@@ -20,9 +22,11 @@ const CONST_CONSIGNATION_URL = 'https://fichiers:444'
 
 function ConfigurationConsignation(props) {
 
-    const {workers, etatAuthentifie, fermer} = props
+    const { fermer } = props
 
     const { t } = useTranslation()
+    const workers = useWorkers(),
+          etatPret = useEtatPret()
 
     const [liste, setListe] = useState('')
     const [attente, setAttente] = useState(false)
@@ -41,14 +45,14 @@ function ConfigurationConsignation(props) {
     )
 
     useEffect(()=>{
-        if(!etatAuthentifie) return
+        if(!etatPret) return
         workers.connexion.getConfigurationFichiers()
             .then(reponse=>{
                 console.debug("Liste consignations recue ", reponse)
                 setListe(reponse.liste)
             })
             .catch(err=>setError(''+err))
-    }, [workers, etatAuthentifie, setListe, setError])
+    }, [workers, etatPret, setListe, setError])
   
     return (
         <>

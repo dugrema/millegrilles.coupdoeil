@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next'
 import '../i18n'
 
 import manifest from '../manifest.build'
-import useWorkers, { useUsager, useEtatPret, useCleMillegrilleChargee } from '../WorkerContext'
+import useWorkers, { useUsager, useEtatPret, useCleMillegrilleChargee, useEtatConnexion } from '../WorkerContext'
 
 const SectionContenu = React.lazy(()=>import('./SectionContenu'))
 
@@ -76,7 +76,12 @@ export default ApplicationCoupdoeil
 
 function MenuApp(props) {
 
-  const { i18n, etatConnexion, idmg, setSectionAfficher} = props
+  const { i18n, setSectionAfficher} = props
+
+  const usager = useUsager(),
+        etatConnexion = useEtatConnexion()
+
+  const idmg = usager.idmg?usager.idmg:''
 
   const { t } = useTranslation()
   const [showModalInfo, setShowModalInfo] = useState(false)
@@ -129,7 +134,8 @@ function MenuApp(props) {
               show={showModalInfo} 
               fermer={handlerCloseModalInfo} 
               manifest={manifest} 
-              idmg={idmg} />
+              idmg={idmg} 
+              usager={usager} />
       </>
   )
 }
