@@ -17,7 +17,7 @@ import { pki as forgePki } from '@dugrema/node-forge'
 
 import useWorkers, { useEtatPret } from '../WorkerContext'
 
-import { push as pushConsignation, merge as mergeConsignation } from '../redux/consignationSlice'
+import { push as pushConsignation, merge as mergeConsignation, verifierExpiration } from '../redux/consignationSlice'
 
 const CONST_CONSIGNATION_URL = 'https://fichiers:444'
 
@@ -79,12 +79,14 @@ function ConfigurationConsignation(props) {
             .catch(err=>setError(''+err))
 
         // Enregistrer event listeners
+        const intervalRefreshExpire = setInterval(()=>dispatch(verifierExpiration()), 20_000)
         connexion.enregistrerCallbackEvenementsConsignation(messageConsignationHandlerProxy)
             .catch(err=>console.error("Erreur enregistrement evenements consignation ", err))
         
         return () => {
             connexion.retirerCallbackEvenementsConsignation(messageConsignationHandlerProxy)
                 .catch(err=>console.error("Erreur retrait evenements consignation ", err))
+            clearTimeout(intervalRefreshExpire)
         }
 
     }, [dispatch, workers, etatPret, setError, messageConsignationHandlerProxy])
@@ -138,18 +140,27 @@ function ListeConsignations(props) {
     if(!liste) return 'Chargement encours'
     if(liste.length === 0) return 'Aucune consignation de fichiers presente'
 
+    const epochNow = new Date().getTime() / 1000;
+
     const listeFichiers = liste.map(item=>{
 
         const instance = instancesParId[item.instance_id] || ''
         const nom = instance.domaine || item.instance_id
+        const primaire = item.primaire?true:false
+        const derniereModification = item.derniere_modification,
+              secsDepuisModif = epochNow - derniereModification
+
+        let classNameExpiration = ''
+        if(secsDepuisModif > 1800) classNameExpiration = 'expire-long'
+        else if(secsDepuisModif > 300) classNameExpiration = 'expire-court'
 
         return (
-            <Row key={item.instance_id}>
-                <Col xs={9} lg={4}>
+            <Row key={item.instance_id} className={primaire?'primaire':''}>
+                <Col xs={9} lg={4} className='nom-consignation'>
                     <Button variant="link" onClick={onSelect} value={item.instance_id}>{nom}</Button>
                 </Col>
-                <Col xs={3} lg={2}>{item.primaire?'Primaire':'Secondaire'}</Col>
-                <Col xs={6} lg={3}><FormatterDate value={item.derniere_modification} /></Col>
+                <Col xs={3} lg={2} className='champ-primaire'>{primaire?'Primaire':'Secondaire'}</Col>
+                <Col xs={6} lg={3} className={classNameExpiration}><FormatterDate value={item.derniere_modification} /></Col>
                 <Col xs={3} lg={2}><FormatteurTaille value={item.fichiers_taille} /></Col>
                 <Col xs={3} lg={1}>{item.fichiers_nombre}</Col>
             </Row>

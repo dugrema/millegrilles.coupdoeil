@@ -35,3 +35,16 @@ $xsmall-width: map.get($grid-breakpoints, xs);
     background: #fff;
     padding: 0.3rem;
 }
+
+.primaire .nom-consignation button, 
+.primaire .champ-primaire {
+    font-weight: 700;
+}
+
+.expire-court {
+    color: yellow;
+}
+
+.expire-long {
+    color: red;
+}
