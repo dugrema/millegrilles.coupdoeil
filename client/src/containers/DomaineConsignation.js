@@ -1,4 +1,5 @@
-import React, {useState, useEffect, useCallback} from 'react'
+import React, {useState, useEffect, useCallback, useMemo } from 'react'
+import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 
 import Row from 'react-bootstrap/Row'
@@ -32,8 +33,12 @@ function ConfigurationConsignation(props) {
     const [attente, setAttente] = useState(false)
     const [confirmation, setConfirmation] = useState('')
     const [error, setError] = useState('')
+    const [instanceId, setInstanceId] = useState('')
 
     const confirmationCb = useCallback( confirmation => { setConfirmation(confirmation); setAttente(false) }, [setConfirmation, setAttente]  )
+
+    const setInstanceIdHandler = useCallback( event => setInstanceId(event.currentTarget.value), [setInstanceId])
+    const resetInstanceIdHandler = useCallback( event => setInstanceId(''), [setInstanceId])
 
     const erreurCb = useCallback(
         (err, message) => { 
@@ -53,7 +58,15 @@ function ConfigurationConsignation(props) {
             })
             .catch(err=>setError(''+err))
     }, [workers, etatPret, setListe, setError])
-  
+
+    if(instanceId) return (
+        <ConfigurerConsignationInstance
+            instanceId={instanceId}
+            confirmationCb={confirmationCb}
+            erreurCb={erreurCb}
+            fermer={resetInstanceIdHandler} />
+    )
+
     return (
         <>
             <Row>
@@ -68,18 +81,10 @@ function ConfigurationConsignation(props) {
             <AlertTimeout variant="danger" titre="Erreur" delay={false} value={error} setValue={setError} />
             <AlertTimeout value={confirmation} setValue={setConfirmation} />
             <ModalAttente show={attente} setAttente={setAttente} />
-    
-            <p>Cette page permet de modifier la configuration de consignation des fichiers pour l'instance.</p>
 
             <ListeConsignations 
-                workers={workers}
-                liste={liste} />
-
-            {/* <ConfigurerConsignation
-                workers={workers} 
-                etatAuthentifie={etatAuthentifie}
-                confirmationCb={confirmationCb}
-                erreurCb={erreurCb} /> */}
+                liste={liste} 
+                onSelect={setInstanceIdHandler} />
         </>
     )
 }
@@ -87,19 +92,36 @@ function ConfigurationConsignation(props) {
 export default ConfigurationConsignation
 
 function ListeConsignations(props) {
-    const { workers, liste } = props
+    const { liste, onSelect } = props
+
+    const instances = useSelector(state=>state.instances.listeInstances)
+
+    const instancesParId = useMemo(()=>{
+        if(!instances) return ''
+        const instancesParId = {}
+        instances.forEach(item=>{
+            instancesParId[item.instance_id] = item
+        })
+        return instancesParId
+    }, [instances])
 
     if(!liste) return 'Chargement encours'
     if(liste.length === 0) return 'Aucune consignation de fichiers presente'
 
     const listeFichiers = liste.map(item=>{
+
+        const instance = instancesParId[item.instance_id] || ''
+        const nom = instance.domaine || item.instance_id
+
         return (
             <Row key={item.instance_id}>
-                <Col>{item.primaire?'Primaire':'Secondaire'}</Col>
-                <Col>{item.instance_id}</Col>
-                <Col><FormatterDate value={item.derniere_modification} /></Col>
-                <Col><FormatteurTaille value={item.fichiers_taille} /></Col>
-                <Col>{item.fichiers_nombre}</Col>
+                <Col xs={9} lg={4}>
+                    <Button variant="link" onClick={onSelect} value={item.instance_id}>{nom}</Button>
+                </Col>
+                <Col xs={3} lg={2}>{item.primaire?'Primaire':'Secondaire'}</Col>
+                <Col xs={6} lg={3}><FormatterDate value={item.derniere_modification} /></Col>
+                <Col xs={3} lg={2}><FormatteurTaille value={item.fichiers_taille} /></Col>
+                <Col xs={3} lg={1}>{item.fichiers_nombre}</Col>
             </Row>
         )
     })
@@ -107,11 +129,11 @@ function ListeConsignations(props) {
     return (
         <div>
             <Row>
-                <Col></Col>
-                <Col>Serveur</Col>
-                <Col>Date</Col>
-                <Col>Taille</Col>
-                <Col>Fichiers</Col>
+                <Col lg={4} className='d-none d-lg-block'>Serveur</Col>
+                <Col lg={2} className='d-none d-lg-block'></Col>
+                <Col lg={3} className='d-none d-lg-block'>Derniere presence</Col>
+                <Col lg={2} className='d-none d-lg-block'>Taille</Col>
+                <Col lg={1} className='d-none d-lg-block'>Fichiers</Col>
             </Row>
             {listeFichiers}
         </div>
@@ -119,9 +141,16 @@ function ListeConsignations(props) {
 }
 
 
-function ConfigurerConsignation(props) {
+function ConfigurerConsignationInstance(props) {
 
-    const { workers, etatAuthentifie, confirmationCb, erreurCb } = props
+    const { instanceId, confirmationCb, erreurCb, fermer } = props
+
+    const { t } = useTranslation()
+    const workers = useWorkers(),
+          etatPret = useEtatPret()
+
+    const instances = useSelector(state=>state.instances.listeInstances)
+    const instance = useMemo(()=>instances.filter(item=>item.instance_id === instanceId).pop(), [instances, instanceId])
 
     const [configuration, setConfiguration] = useState('')
     const [typeStore, setTypeStore] = useState('local')
@@ -137,7 +166,7 @@ function ConfigurerConsignation(props) {
 
     const appliquerConfiguration = useCallback(()=>{
         const {connexion} = workers
-        if(connexion && etatAuthentifie) {
+        if(connexion && etatPret) {
             // Preparer nouvelle configuration
             const config = {typeStore, urlDownload, consignationUrl, hostnameSftp, usernameSftp, remotePathSftp, keyTypeSftp}
             if(portSftp) config.portSftp = Number.parseInt(portSftp)
@@ -158,44 +187,59 @@ function ConfigurerConsignation(props) {
         }
         
     }, [
-        workers, etatAuthentifie, confirmationCb, setConfiguration,
+        workers, etatPret, confirmationCb, setConfiguration,
         typeStore, urlDownload, 
         consignationUrl, 
         hostnameSftp, usernameSftp, remotePathSftp, keyTypeSftp, portSftp,
     ])
 
-    useEffect(()=>{
-        if(configuration) return  // Eviter cycle
-        const { connexion } = workers
-        if(connexion && etatAuthentifie) {
-            connexion.getConfigurationConsignation()
-                .then(configuration=>{
-                    console.debug("ConfigurerConsignation configuration = %O", configuration)
-                    setConfiguration(configuration)
-                })
-                .catch(err=>erreurCb(err, 'Erreur chargement configuration de consignation'))
-        }
-    }, [workers, etatAuthentifie, configuration, setConfiguration, erreurCb])
+    // useEffect(()=>{
+    //     if(configuration) return  // Eviter cycle
+    //     const { connexion } = workers
+    //     if(connexion && etatAuthentifie) {
+    //         connexion.getConfigurationConsignation()
+    //             .then(configuration=>{
+    //                 console.debug("ConfigurerConsignation configuration = %O", configuration)
+    //                 setConfiguration(configuration)
+    //             })
+    //             .catch(err=>erreurCb(err, 'Erreur chargement configuration de consignation'))
+    //     }
+    // }, [workers, etatAuthentifie, configuration, setConfiguration, erreurCb])
 
-    useEffect(()=>{
-        if(configuration) {
-            setTypeStore(configuration.typeStore || 'local')
-            setUrlDownload(configuration.urlDownload || '')
-            setConsignationUrl(configuration.consignationUrl || CONST_CONSIGNATION_URL)
-            setHostnameSftp(configuration.hostnameSftp || '')
-            setPortSftp(configuration.portSftp || '22')
-            setUsernameSftp(configuration.usernameSftp || '')
-            setRemotePathSftp(configuration.remotePathSftp || '')
-            setKeyTypeSftp(configuration.keyTypeSftp || 'ed25519')
-        }
-    }, [
-        configuration, setTypeStore, setUrlDownload, 
-        setConsignationUrl, 
-        setHostnameSftp, setPortSftp, setUsernameSftp, setRemotePathSftp, setKeyTypeSftp,
-    ])
+    // useEffect(()=>{
+    //     if(configuration) {
+    //         setTypeStore(configuration.typeStore || 'local')
+    //         setUrlDownload(configuration.urlDownload || '')
+    //         setConsignationUrl(configuration.consignationUrl || CONST_CONSIGNATION_URL)
+    //         setHostnameSftp(configuration.hostnameSftp || '')
+    //         setPortSftp(configuration.portSftp || '22')
+    //         setUsernameSftp(configuration.usernameSftp || '')
+    //         setRemotePathSftp(configuration.remotePathSftp || '')
+    //         setKeyTypeSftp(configuration.keyTypeSftp || 'ed25519')
+    //     }
+    // }, [
+    //     configuration, setTypeStore, setUrlDownload, 
+    //     setConsignationUrl, 
+    //     setHostnameSftp, setPortSftp, setUsernameSftp, setRemotePathSftp, setKeyTypeSftp,
+    // ])
+
+    if(!instanceId) return ''
 
     return (
         <div>
+            <Row>
+                <Col xs={10} md={11}>
+                    <h2>{t('DomaineConsignation.titre')}</h2>
+                </Col>
+                <Col xs={2} md={1} className="bouton">
+                    <Button onClick={fermer} variant="secondary"><i className='fa fa-remove'/></Button>
+                </Col>
+            </Row>
+
+            <h3>{instance.domaine}</h3>
+
+            <p>Cette page permet de modifier la configuration de consignation des fichiers pour l'instance.</p>
+
             <Form onSubmit={formSubmit}>
                 <Row>
                     <Form.Group as={Col}>
@@ -222,7 +266,7 @@ function ConfigurerConsignation(props) {
                 <Tabs activeKey={typeStore} onSelect={setTypeStore}>
                     <Tab eventKey="millegrille" title="MilleGrille">
                         <TabMilleGrille 
-                            etatAuthentifie={etatAuthentifie} 
+                            etatAuthentifie={etatPret} 
                             appliquerConfiguration={appliquerConfiguration} 
                             consignationUrl={consignationUrl}
                             setConsignationUrl={setConsignationUrl} />
@@ -230,7 +274,7 @@ function ConfigurerConsignation(props) {
                     <Tab eventKey="sftp" title="sftp">
                         <TabSftp 
                             workers={workers}
-                            etatAuthentifie={etatAuthentifie}
+                            etatAuthentifie={etatPret}
                             appliquerConfiguration={appliquerConfiguration} 
                             erreurCb={erreurCb}
                             hostnameSftp={hostnameSftp} 
