@@ -13,15 +13,20 @@ import Maitredescles from './DomaineMaitredescles'
 import Usagers from './GestionUsagers'
 import DomaineConsignation from './DomaineConsignation'
 
+import useWorkers, { useEtatPret, useCleMillegrilleChargee } from '../WorkerContext'
+
 function Domaines(props) {
     // console.debug("Domaines proppys : %O", props)
     const { 
-        workers, certificatMaitreDesCles, etatAuthentifie, confirmationCb, 
-        cleMillegrilleChargee, setCleMillegrille, 
+        certificatMaitreDesCles, confirmationCb, 
+        setCleMillegrille, 
         erreurCb 
     } = props
 
     const { t } = useTranslation()
+    const workers = useWorkers(),
+          etatPret = useEtatPret(),
+          cleMillegrilleChargee = useCleMillegrilleChargee()
 
     const [attente, setAttente] = useState('')
     const [domaines, setDomaines] = useState('')
@@ -37,13 +42,13 @@ function Domaines(props) {
     )
 
     useEffect(()=>{
-        if(etatAuthentifie) {
+        if(etatPret) {
             const cb = comlinkProxy(setEvenementDomaine)
             subscribe(workers, cb, erreurCb)
             chargerListeDomaines(workers, setDomaines, erreurCb).catch(err=>erreurCb(err, "Erreur chargement liste domaines."))
             return () => unsubscribe(workers, cb)
         }
-    }, [workers, etatAuthentifie, erreurCb, setEvenementDomaine])
+    }, [workers, etatPret, erreurCb, setEvenementDomaine])
 
     useEffect(()=>{
         if(evenementDomaine && domaines) {
@@ -66,7 +71,7 @@ function Domaines(props) {
         return (
             <Page 
                 workers={workers} 
-                etatAuthentifie={etatAuthentifie}
+                etatAuthentifie={etatPret}
                 certificatMaitreDesCles={certificatMaitreDesCles}
                 cleMillegrilleChargee={cleMillegrilleChargee}
                 confirmationCb={confirmationCb}

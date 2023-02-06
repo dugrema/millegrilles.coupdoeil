@@ -40,13 +40,10 @@ export default ProviderReduxLayer
 
 function ApplicationCoupdoeil(props) {
 
-    const { /* workers, usager, etatAuthentifie, certificatMaitreDesCles, cleMillegrilleChargee */ } = props
-
     const { t, i18n } = useTranslation()
     const workers = useWorkers(),
           usager = useUsager(),
-          etatPret = useEtatPret(),
-          cleMillegrilleChargee = useCleMillegrilleChargee()
+          etatPret = useEtatPret()
 
     const idmg = usager?usager.idmg:''
 
@@ -76,13 +73,10 @@ function ApplicationCoupdoeil(props) {
             <Container className="contenu">
                 <Suspense fallback={<Attente workers={workers} idmg={idmg} etatConnexion={etatPret} />}>
                     <SectionContenu 
-                        workers={workers}
                         usager={usager}
-                        etatAuthentifie={etatPret}
                         sectionAfficher={sectionAfficher}
                         setSectionAfficher={setSectionAfficher}
                         certificatMaitreDesCles={certificatMaitreDesCles}
-                        cleMillegrilleChargee={cleMillegrilleChargee}
                         erreurCb={erreurCb}
                     />
                 </Suspense>
@@ -105,7 +99,7 @@ function InitInstances(props) {
     // Messages, maj liste appareils
     const messageInstanceHandler = useCallback(evenement=>{
         const { routingKey, message } = evenement
-        console.debug("Message instance : ", message)
+        // console.debug("Message instance : ", message)
 
         // Injecter date de derniere modification (estampille)
         const entete = message['en-tete']
@@ -131,7 +125,7 @@ function InitInstances(props) {
         // Charger (recharger) instances
         connexion.requeteListeNoeuds({})
             .then(reponseInstances=>{
-                console.debug("Reponse instances : %O", reponseInstances)
+                // console.debug("Reponse instances : %O", reponseInstances)
                 dispatch(pushInstances({liste: reponseInstances, clear: true}))
             })
             .catch(err=>console.error("Erreur chargement liste noeuds : %O", err))

@@ -12,14 +12,18 @@ import axios from 'axios'
 
 import { AlertTimeout, ModalAttente, FormatterDate } from '@dugrema/millegrilles.reactjs'
 
+import useWorkers, { useUsager, useEtatPret, useEtatConnexion } from '../WorkerContext'
+
 import AfficherInstanceDetail from './Noeud'
 import { Modal } from "react-bootstrap"
 import { useTranslation } from "react-i18next"
 
 function Instances(props) {
 
-    const {workers, etatConnexion, etatAuthentifie, usager} = props
-    // const connexion = workers.connexion
+    const workers = useWorkers(),
+          etatConnexion = useEtatConnexion(),
+          etatPret = useEtatPret(),
+          usager = useUsager()
 
     const instances = useSelector(state=>state.instances.listeInstances)
 
@@ -59,13 +63,13 @@ function Instances(props) {
                 fermer={()=>setShowAssocier(false)}
                 workers={workers} 
                 usager={usager}
-                etatAuthentifie={etatAuthentifie}
+                etatAuthentifie={etatPret}
                 confirmationCb={confirmationCb} />
 
             <Page
                 workers={workers} 
                 etatConnexion={etatConnexion}
-                etatAuthentifie={etatAuthentifie}
+                etatAuthentifie={etatPret}
                 usager={usager}
                 selectionnerInstanceCb={selectionnerInstanceCb}
                 setShowAssocier={setShowAssocier}
