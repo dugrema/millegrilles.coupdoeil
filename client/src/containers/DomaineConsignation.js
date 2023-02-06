@@ -1,6 +1,7 @@
 import React, {useState, useEffect, useCallback, useMemo } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
+import { proxy } from 'comlink'
 
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
@@ -12,8 +13,11 @@ import Tab from 'react-bootstrap/Tab'
 import Alert from 'react-bootstrap/Alert'
 
 import { AlertTimeout, ModalAttente, FormatteurTaille, FormatterDate } from '@dugrema/millegrilles.reactjs'
+import { pki as forgePki } from '@dugrema/node-forge'
 
 import useWorkers, { useEtatPret } from '../WorkerContext'
+
+import { push as pushConsignation, merge as mergeConsignation } from '../redux/consignationSlice'
 
 const CONST_CONSIGNATION_URL = 'https://fichiers:444'
 
@@ -26,10 +30,12 @@ function ConfigurationConsignation(props) {
     const { fermer } = props
 
     const { t } = useTranslation()
-    const workers = useWorkers(),
+    const dispatch = useDispatch(),
+          workers = useWorkers(),
           etatPret = useEtatPret()
 
-    const [liste, setListe] = useState('')
+    const liste = useSelector(state=>state.consignation.liste)
+    // const [liste, setListe] = useState('')
     const [attente, setAttente] = useState(false)
     const [confirmation, setConfirmation] = useState('')
     const [error, setError] = useState('')
@@ -39,6 +45,19 @@ function ConfigurationConsignation(props) {
 
     const setInstanceIdHandler = useCallback( event => setInstanceId(event.currentTarget.value), [setInstanceId])
     const resetInstanceIdHandler = useCallback( event => setInstanceId(''), [setInstanceId])
+
+    const messageConsignationHandler = useCallback(reponse=>{
+        console.debug("messageConsignationHandler Reponse ", reponse)
+        // Extraire instanceId du certificat de l'evenement
+        const entete = reponse.message['en-tete']
+        const certificat = forgePki.certificateFromPem(reponse.message['_certificat'][0])
+        const instance_id = certificat.subject.getField('CN').value
+        const info = { ...reponse.message, instance_id, derniere_modification: entete.estampille }
+        console.debug("Info evenement consignation ", info)
+        dispatch(mergeConsignation(info))
+    }, [dispatch])
+
+    const messageConsignationHandlerProxy = useMemo(()=>proxy(messageConsignationHandler), [messageConsignationHandler])
 
     const erreurCb = useCallback(
         (err, message) => { 
@@ -51,13 +70,24 @@ function ConfigurationConsignation(props) {
 
     useEffect(()=>{
         if(!etatPret) return
-        workers.connexion.getConfigurationFichiers()
+        const { connexion } = workers
+        connexion.getConfigurationFichiers()
             .then(reponse=>{
                 console.debug("Liste consignations recue ", reponse)
-                setListe(reponse.liste)
+                dispatch(pushConsignation({liste: reponse.liste, clear: true}))
             })
             .catch(err=>setError(''+err))
-    }, [workers, etatPret, setListe, setError])
+
+        // Enregistrer event listeners
+        connexion.enregistrerCallbackEvenementsConsignation(messageConsignationHandlerProxy)
+            .catch(err=>console.error("Erreur enregistrement evenements consignation ", err))
+        
+        return () => {
+            connexion.retirerCallbackEvenementsConsignation(messageConsignationHandlerProxy)
+                .catch(err=>console.error("Erreur retrait evenements consignation ", err))
+        }
+
+    }, [dispatch, workers, etatPret, setError, messageConsignationHandlerProxy])
 
     if(instanceId) return (
         <ConfigurerConsignationInstance

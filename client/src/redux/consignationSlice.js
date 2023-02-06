@@ -1,9 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-const SLICE_NAME = 'instances'
+const SLICE_NAME = 'consignation'
 
 const initialState = {
-    listeInstances: null,               // Liste triee d'appareils
+    liste: null,               // Liste triee d'appareils
     instanceId: '',
     sortKeys: {key: 'domaine', ordre: 1},   // Ordre de tri
     mergeVersion: 0,                    // Utilise pour flagger les changements
@@ -14,7 +14,7 @@ const initialState = {
 function setSortKeysAction(state, action) {
     const sortKeys = action.payload
     state.sortKeys = sortKeys
-    if(state.listeInstances) state.listeInstances.sort(genererTriListe(sortKeys))
+    if(state.liste) state.liste.sort(genererTriListe(sortKeys))
 }
 
 function setInstanceIdAction(state, action) {
@@ -26,9 +26,9 @@ function pushAction(state, action) {
     state.mergeVersion++
 
     let {liste: payload, clear} = action.payload
-    if(clear === true) state.listeInstances = []  // Reset liste
+    if(clear === true) state.liste = []  // Reset liste
 
-    let liste = state.listeInstances || []
+    let liste = state.liste || []
     if( Array.isArray(payload) ) {
         const ajouts = payload.map(item=>{return {...item, '_mergeVersion': mergeVersion}})
         // console.debug("pushAction ajouter ", ajouts)
@@ -43,16 +43,16 @@ function pushAction(state, action) {
     liste.sort(genererTriListe(state.sortKeys))
     // console.debug("pushAction liste triee : %O", liste)
 
-    state.listeInstances = liste
+    state.liste = liste
 }
 
 function clearAction(state) {
-    state.listeInstances = null
+    state.liste = null
 }
 
 function verifierExpirationAction(state, action) {
     const expiration = (new Date().getTime() / 1000) - 300  // 5 minutes
-    state.listeInstances.forEach(item=>{
+    state.liste.forEach(item=>{
         if(item.derniere_lecture < expiration) {
             // Modifier pour forcer re-rendering
             item.expiration = expiration
@@ -61,7 +61,7 @@ function verifierExpirationAction(state, action) {
 }
 
 // payload {uuid_appareil, ...data}
-function mergeInstanceAction(state, action) {
+function mergeAction(state, action) {
     const mergeVersion = state.mergeVersion
     state.mergeVersion++
 
@@ -78,7 +78,7 @@ function mergeInstanceAction(state, action) {
         const data = {...(payloadInstance || {})}
         data['_mergeVersion'] = mergeVersion
 
-        const liste = state.listeInstances || []
+        const liste = state.liste || []
         
         let peutAppend = false
         if(data.supprime === true) {
@@ -103,25 +103,25 @@ function mergeInstanceAction(state, action) {
                 retirer = true
             }
 
-            if(retirer) state.listeInstances = liste.filter(item=>item.instance_id !== instance_id)
+            if(retirer) state.liste = liste.filter(item=>item.instance_id !== instance_id)
 
         } else if(peutAppend === true) {
             liste.push(data)
-            state.listeInstances = liste
+            state.liste = liste
         }
     }
 
     // Trier
-    state.listeInstances.sort(genererTriListe(state.sortKeys))
+    state.liste.sort(genererTriListe(state.sortKeys))
 }
 
-const instancesSlice = createSlice({
+const consignationSlice = createSlice({
     name: SLICE_NAME,
     initialState,
     reducers: {
         setInstanceId: setInstanceIdAction,
         push: pushAction, 
-        mergeInstance: mergeInstanceAction,
+        merge: mergeAction,
         clear: clearAction,
         setSortKeys: setSortKeysAction,
         verifierExpiration: verifierExpirationAction,
@@ -129,10 +129,10 @@ const instancesSlice = createSlice({
 })
 
 export const { 
-    setInstanceId, push, mergeInstance, clear, setSortKeys, verifierExpiration,
-} = instancesSlice.actions
+    setInstanceId, push, merge, clear, setSortKeys, verifierExpiration,
+} = consignationSlice.actions
 
-export default instancesSlice.reducer
+export default consignationSlice.reducer
 
 function genererTriListe(sortKeys) {
     

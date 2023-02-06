@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
 import instances from './instancesSlice'
+import consignation from './consignationSlice'
 
 function storeSetup(workers) {
 
@@ -7,7 +8,8 @@ function storeSetup(workers) {
   const store = configureStore({
 
     reducer: { 
-      instances, 
+      instances,
+      consignation,
     },
       
   })

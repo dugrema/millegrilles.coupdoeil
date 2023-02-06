@@ -150,6 +150,13 @@ function configurerEvenements(socket) {
         retirerEvenementsBackup(socket, params, cb)
       }},
 
+      {eventName: 'coupdoeil/ecouterEvenementsConsignation', callback: (params, cb) => {
+        ecouterEvenementsConsignation(socket, params, cb)
+      }},
+      {eventName: 'coupdoeil/retirerEvenementsConsignation', callback: (params, cb) => {
+        retirerEvenementsConsignation(socket, params, cb)
+      }},
+
     ]
   }
 
@@ -819,6 +826,19 @@ function ecouterEvenementsInstances(socket, _params, cb) {
 function retirerEvenementsInstances(socket, _params, cb) {
   const topologie = { routingKeys: RK_TOPOLOGIE_INSTANCES, exchanges: EX_TOPOLOGIE_INSTANCES }
   socket.unsubscribe(topologie, cb)
+}
+
+const RK_FICHIERS_PRESENCE = ['evenement.fichiers.presence'],
+      EX_FICHIERS_INSTANCES = ['2.prive']
+
+function ecouterEvenementsConsignation(socket, _params, cb) {
+  const params = { routingKeys: RK_FICHIERS_PRESENCE, exchanges: EX_FICHIERS_INSTANCES }
+  socket.subscribe(params, cb)
+}
+
+function retirerEvenementsConsignation(socket, _params, cb) {
+  const params = { routingKeys: RK_FICHIERS_PRESENCE, exchanges: EX_FICHIERS_INSTANCES }
+  socket.unsubscribe(params, cb)
 }
 
 function ecouterEvenementsApplications(socket, params, cb) {
