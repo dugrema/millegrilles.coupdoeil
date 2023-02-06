@@ -10,7 +10,7 @@ import Tabs from 'react-bootstrap/Tabs'
 import Tab from 'react-bootstrap/Tab'
 import Alert from 'react-bootstrap/Alert'
 
-import { AlertTimeout, ModalAttente } from '@dugrema/millegrilles.reactjs'
+import { AlertTimeout, ModalAttente, FormatteurTaille, FormatterDate } from '@dugrema/millegrilles.reactjs'
 
 const CONST_CONSIGNATION_URL = 'https://fichiers:444'
 
@@ -24,6 +24,7 @@ function ConfigurationConsignation(props) {
 
     const { t } = useTranslation()
 
+    const [liste, setListe] = useState('')
     const [attente, setAttente] = useState(false)
     const [confirmation, setConfirmation] = useState('')
     const [error, setError] = useState('')
@@ -38,6 +39,16 @@ function ConfigurationConsignation(props) {
         }, 
         [setError, setAttente]
     )
+
+    useEffect(()=>{
+        if(!etatAuthentifie) return
+        workers.connexion.getConfigurationFichiers()
+            .then(reponse=>{
+                console.debug("Liste consignations recue ", reponse)
+                setListe(reponse.liste)
+            })
+            .catch(err=>setError(''+err))
+    }, [workers, etatAuthentifie, setListe, setError])
   
     return (
         <>
@@ -56,16 +67,53 @@ function ConfigurationConsignation(props) {
     
             <p>Cette page permet de modifier la configuration de consignation des fichiers pour l'instance.</p>
 
-            <ConfigurerConsignation
+            <ListeConsignations 
+                workers={workers}
+                liste={liste} />
+
+            {/* <ConfigurerConsignation
                 workers={workers} 
                 etatAuthentifie={etatAuthentifie}
                 confirmationCb={confirmationCb}
-                erreurCb={erreurCb} />
+                erreurCb={erreurCb} /> */}
         </>
     )
 }
 
 export default ConfigurationConsignation
+
+function ListeConsignations(props) {
+    const { workers, liste } = props
+
+    if(!liste) return 'Chargement encours'
+    if(liste.length === 0) return 'Aucune consignation de fichiers presente'
+
+    const listeFichiers = liste.map(item=>{
+        return (
+            <Row key={item.instance_id}>
+                <Col>{item.primaire?'Primaire':'Secondaire'}</Col>
+                <Col>{item.instance_id}</Col>
+                <Col><FormatterDate value={item.derniere_modification} /></Col>
+                <Col><FormatteurTaille value={item.fichiers_taille} /></Col>
+                <Col>{item.fichiers_nombre}</Col>
+            </Row>
+        )
+    })
+
+    return (
+        <div>
+            <Row>
+                <Col></Col>
+                <Col>Serveur</Col>
+                <Col>Date</Col>
+                <Col>Taille</Col>
+                <Col>Fichiers</Col>
+            </Row>
+            {listeFichiers}
+        </div>
+    )
+}
+
 
 function ConfigurerConsignation(props) {
 

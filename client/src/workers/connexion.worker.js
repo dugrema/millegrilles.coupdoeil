@@ -1,25 +1,6 @@
 import {expose as comlinkExpose} from 'comlink'
 
-// import connexionClient from '@dugrema/millegrilles.common/lib/connexionClient'
 import * as connexionClient from '@dugrema/millegrilles.reactjs/src/connexionClient'
-// import '@dugrema/millegrilles.reactjs/src/hachage'  // Init hachage optimise (WASM)
-
-const URL_SOCKET = '/coupdoeil/socket.io'
-
-// function connecter(opts) {
-//   opts = opts || {}
-//   var url = opts.url
-//   if(!url) {
-//     // Utiliser le serveur local mais remplacer le pathname par URL_SOCKET
-//     const urlLocal = new URL(opts.location)
-//     urlLocal.pathname = URL_SOCKET
-//     urlLocal.hash = ''
-//     urlLocal.search = ''
-//     url = urlLocal.href
-//   }
-//   console.debug("Connecter socket.io sur url %s", url)
-//   return connexionClient.connecter(url, opts)
-// }
 
 function testWorker() {
   // console.debug("connexion worker ok")
@@ -322,12 +303,12 @@ function rechiffrerClesBatch(commande) {
   )
 }
 
-function getConfigurationConsignation() {
+function getConfigurationFichiers() {
   const requete = {}
   return connexionClient.emitBlocking(
-    'getConfigurationConsignation',
+    'getConfigurationFichiers',
     requete ,
-    {domaine: 'fichiers', action: 'getConfiguration', attacherCertificat: true}
+    {domaine: 'CoreTopologie', action: 'getConfigurationFichiers', attacherCertificat: true}
   )
 }
 
@@ -411,7 +392,7 @@ comlinkExpose({
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
   majDelegations, requeteRapportBackup, resetBackup, majMonitor, supprimerInstance,
   getConfigurationAcme, configurerDomaineAcme, getRecoveryCsr, signerRecoveryCsr, 
-  resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationConsignation, getPublicKeySsh,
+  resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationFichiers, getPublicKeySsh,
   modifierConfigurationConsignation,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,

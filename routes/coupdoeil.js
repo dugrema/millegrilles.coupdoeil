@@ -12,6 +12,7 @@ function initialiser(amqpdao, opts) {
     next()
   })
   route.get('/info.json', routeInfo)
+  route.get('/initSession', initSession)  
   ajouterStaticRoute(route)
 
   debug("Route /coupdoeil de CoupDoeil est initialisee")
@@ -27,6 +28,10 @@ function initialiser(amqpdao, opts) {
   // Retourner dictionnaire avec route pour server.js
   return route
 
+}
+
+function initSession(req, res) {
+  return res.sendStatus(200)
 }
 
 function ajouterStaticRoute(route) {

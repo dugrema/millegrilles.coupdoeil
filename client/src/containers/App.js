@@ -10,220 +10,69 @@ import { LayoutMillegrilles, ModalErreur, Menu as MenuMillegrilles, DropDownLang
 import { useTranslation } from 'react-i18next'
 import '../i18n'
 
-
-// import { VerificationInfoServeur } from './Authentification'
-// import { SectionContenu } from './SectionContenu'
-// import MenuItems from './Menu'
-
-// import _stylesCommuns from '@dugrema/millegrilles.reactjs/dist/index.css'
-// import './App.css'
-
 import manifest from '../manifest.build'
+import useWorkers, { useUsager, useEtatPret, useCleMillegrilleChargee } from '../WorkerContext'
 
 const SectionContenu = React.lazy(()=>import('./SectionContenu'))
 
 function ApplicationCoupdoeil(props) {
 
-  const { workers, usager, etatAuthentifie, certificatMaitreDesCles, cleMillegrilleChargee } = props
-  const idmg = usager?usager.idmg:''
+    const { /* workers, usager, etatAuthentifie, certificatMaitreDesCles, cleMillegrilleChargee */ } = props
 
-  const { t, i18n } = useTranslation()
+    const { t, i18n } = useTranslation()
+    const workers = useWorkers(),
+          usager = useUsager(),
+          etatPret = useEtatPret(),
+          cleMillegrilleChargee = useCleMillegrilleChargee()
 
-  const [sectionAfficher, setSectionAfficher] = useState('')
+    const idmg = usager?usager.idmg:''
 
-  // Params de pages
-  // const [paramsPage, setParamsPage] = useState('')
+    const [sectionAfficher, setSectionAfficher] = useState('')
+    const [certificatMaitreDesCles, setCertificatMaitreDesCles] = useState('')
 
-  // Alert messages
-  // const [confirmation, setConfirmation] = useState('')
-  const [erreur, setErreur] = useState('')
-  // const confirmationCb = useCallback(confirmation=>setConfirmation(confirmation), [setConfirmation])
-  const erreurCb = useCallback((err, message)=>{
-    console.error("Erreur ", err)
-    setErreur({err, message})
-  }, [setErreur])
+    // Alert messages
+    const [erreur, setErreur] = useState('')
+    const erreurCb = useCallback((err, message)=>{
+        console.error("Erreur ", err)
+        setErreur({err, message})
+    }, [setErreur])
   
-  const handlerCloseErreur = () => setErreur(false)
+    const handlerCloseErreur = () => setErreur(false)
 
-  // const changerPage = eventPage => {
-  //   // Verifier si event ou page
-  //   let pageResultat
-  //   // var paramsPage = null
-  //   if(eventPage.currentTarget) {
-  //     var target = eventPage.currentTarget
-  //     pageResultat = target.value
-  //     var dataset = target.dataset
-
-  //     let pNoeudid = ''
-  //     if(dataset) {
-  //       // paramsPage = {...dataset}
-  //       setParamsPage({...dataset})
-  //     } else {
-  //       setParamsPage('')
-  //     }
-
-  //   } else {
-  //     pageResultat = eventPage
-  //   }
-
-  //   if(pageResultat === page) {
-  //     // Reset de la page
-  //     setPage(pageResultat)
-  //   } else {
-  //     setPage(pageResultat)
-  //   }
-  // }
-
-  // const appProps = {
-  //   ...props,
-  //   page,
-  //   paramsPage,
-  //   changerPage,
-  //   confirmationCb,
-  //   erreurCb,
-  // }
-
-  // return <LayoutCoudpoeil 
-  //           {...appProps} 
-  //           confirmation={confirmation} 
-  //           erreur={erreur}
-  //           setConfirmation={setConfirmation}
-  //           setErreur={setErreur}>
-  //         <Container>
-  //           <SectionContenu {...appProps} />
-  //         </Container>
-  //       </LayoutCoudpoeil>
-
-  const menu = (
+    const menu = (
     <MenuApp 
         i18n={i18n} 
-        etatConnexion={etatAuthentifie} 
+        etatConnexion={etatPret} 
         idmg={idmg}
         workers={workers} 
         setSectionAfficher={setSectionAfficher} />
-  ) 
+    ) 
 
-  return (
-      <LayoutMillegrilles menu={menu}>
+    return (
+        <LayoutMillegrilles menu={menu}>
+            <Container className="contenu">
+                <Suspense fallback={<Attente workers={workers} idmg={idmg} etatConnexion={etatPret} />}>
+                    <SectionContenu 
+                        workers={workers}
+                        usager={usager}
+                        etatAuthentifie={etatPret}
+                        sectionAfficher={sectionAfficher}
+                        setSectionAfficher={setSectionAfficher}
+                        certificatMaitreDesCles={certificatMaitreDesCles}
+                        cleMillegrilleChargee={cleMillegrilleChargee}
+                        erreurCb={erreurCb}
+                    />
+                </Suspense>
+            </Container>
 
-          <Container className="contenu">
+            <ModalErreur show={!!erreur} err={erreur.err} message={erreur.message} titre={t('Erreur.titre')} fermer={handlerCloseErreur} />
 
-              <Suspense fallback={<Attente workers={workers} idmg={idmg} etatConnexion={etatAuthentifie} />}>
-                <SectionContenu 
-                    workers={workers}
-                    usager={usager}
-                    etatAuthentifie={etatAuthentifie}
-                    sectionAfficher={sectionAfficher}
-                    setSectionAfficher={setSectionAfficher}
-                    certificatMaitreDesCles={certificatMaitreDesCles}
-                    cleMillegrilleChargee={cleMillegrilleChargee}
-                    erreurCb={erreurCb}
-                  />
-              </Suspense>
-
-          </Container>
-
-          <ModalErreur show={!!erreur} err={erreur.err} message={erreur.message} titre={t('Erreur.titre')} fermer={handlerCloseErreur} />
-
-      </LayoutMillegrilles>
-  )  
+        </LayoutMillegrilles>
+    )  
 
 }
 
 export default ApplicationCoupdoeil
-
-// function Entete(props) {
-//   return (
-//     <Container>
-//       <Menu {...props} />
-//       <br />
-//       <br />
-//     </Container>
-//   )
-// }
-
-// function LayoutCoudpoeil(props) {
-
-//   const { erreur, confirmation, setErreur, setConfirmation } = props
-
-//   return (
-//     <div className="flex-wrapper">
-//       <div>
-//         <Entete {...props} />
-        
-//         <Container>
-//           <AlertTimeout variant="danger" titre="Erreur" delay={false} value={erreur} setValue={setErreur}/>
-//           <AlertTimeout value={confirmation} setValue={setConfirmation} />
-//         </Container>
-
-//         {props.children}
-
-//       </div>
-//       <Footer {...props} />
-//     </div>
-//   )
-
-// }
-
-// function Footer(props) {
-//   const idmg = props.usager?props.usager.idmg:''
-
-//   return (
-//     <Container fluid className="footer bg-info">
-//       <Row>
-//         <Col sm={2} className="footer-left"></Col>
-//         <Col sm={8} className="footer-center">
-//           <div className="millegrille-footer">
-//             <div>{idmg}</div>
-//             <div>MilleGrilles</div>
-//           </div>
-//         </Col>
-//         <Col sm={2} className="footer-right"></Col>
-//       </Row>
-//     </Container>
-//   )
-// }
-
-// function Menu(props) {
-
-//   const workers = props.workers
-
-//   // let boutonProtege
-//   // if(props.rootProps.modeProtege) {
-//   //   boutonProtege = <i className="fa fa-lg fa-lock protege"/>
-//   // } else {
-//   //   boutonProtege = <i className="fa fa-lg fa-unlock"/>
-//   // }
-
-//   var renderCleMillegrille = ''
-
-//   const clearCleMillegrille = _=>{workers.chiffrage.clearCleMillegrille()}
-//   if(props.cleMillegrilleChargee) {
-//     renderCleMillegrille = (
-//       <Nav className="justify-content-end">
-//         <Nav.Link onClick={clearCleMillegrille}><i className="fa fa-key"/></Nav.Link>
-//       </Nav>
-//     )
-//   }
-
-//   return (
-//     <Navbar collapseOnSelect expand="md" bg="info" variant="dark" fixed="top" className="header-menu">
-//       {/* <Navbar.Brand onClick={_=>{props.changerPage('Instances')}}><i className="fa fa-home"/></Navbar.Brand> */}
-//       <Navbar.Toggle aria-controls="responsive-navbar-menu" />
-//       <Navbar.Collapse id="responsive-navbar-menu">
-
-//         <MenuItems {...props} />
-
-//         {renderCleMillegrille}
-
-//       </Navbar.Collapse>
-//     </Navbar>
-//   )
-// }
-
-// function ChargementEnCours(props) {
-//   return <p>Chargement en cours</p>
-// }
 
 function MenuApp(props) {
 

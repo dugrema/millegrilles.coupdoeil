@@ -63,12 +63,15 @@ async function setUsager(workers, nomUsager, setUsagerState, opts) {
         if(workers.connexion) await workers.connexion.initialiserCertificateStore(caPem)
         if(workers.chiffrage) await workers.chiffrage.initialiserCertificateStore(caPem, {isPEM: true, DEBUG: false})
 
-        // Initialiser chaque worker avec la cle privee
-        await Promise.all(Object.keys(workers).filter(item=>item!=='instances').map(nomWorker=>{
-            const worker = workers[nomWorker]
-            // console.debug("Initialiser formatteur message pour worker %s", nomWorker)
-            return worker.initialiserFormatteurMessage(certificatPem, usager.clePriveePem, {DEBUG: false})
-        }))
+        await workers.chiffrage.initialiserFormatteurMessage(certificatPem, usager.clePriveePem, {DEBUG: false})
+        await workers.connexion.initialiserFormatteurMessage(certificatPem, usager.clePriveePem, {DEBUG: false})
+
+        // // Initialiser chaque worker avec la cle privee
+        // await Promise.all(Object.keys(workers).filter(item=>item!=='instances').map(nomWorker=>{
+        //     const worker = workers[nomWorker]
+        //     // console.debug("Initialiser formatteur message pour worker %s", nomWorker)
+        //     return worker.initialiserFormatteurMessage(certificatPem, usager.clePriveePem, {DEBUG: false})
+        // }))
     
         // console.debug("Charger extensions de %s", fullchain[0])
         const certForge = pki.certificateFromPem(fullchain[0])

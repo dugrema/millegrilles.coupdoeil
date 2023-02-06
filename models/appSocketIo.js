@@ -25,7 +25,7 @@ function configurerEvenements(socket) {
       {eventName: 'coretopologie/supprimerInstance', callback: (params, cb) => { traiter(socket, mqdao.supprimerInstance, {params, cb}) }},
       {eventName: 'resetClesNonDechiffrables', callback: (params, cb) => { traiter(socket, mqdao.resetClesNonDechiffrables, {params, cb}) }},
       {eventName: 'rechiffrerClesBatch', callback: (params, cb) => { traiter(socket, mqdao.rechiffrerClesBatch, {params, cb}) }},
-      {eventName: 'getConfigurationConsignation', callback: (params, cb) => { traiter(socket, mqdao.getConfigurationConsignation, {params, cb}) }},
+      {eventName: 'getConfigurationFichiers', callback: (params, cb) => { traiter(socket, mqdao.getConfigurationFichiers, {params, cb}) }},
       {eventName: 'getPublicKeySsh', callback: (params, cb) => { traiter(socket, mqdao.getPublicKeySsh, {params, cb}) }},
       {eventName: 'modifierConfigurationConsignation', callback: (params, cb) => { traiter(socket, mqdao.modifierConfigurationConsignation, {params, cb}) }},
 
