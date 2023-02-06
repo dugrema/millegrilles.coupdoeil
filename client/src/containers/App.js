@@ -1,4 +1,7 @@
-import React, { Suspense, useState, useCallback } from 'react'
+import React, { Suspense, useState, useEffect, useCallback, useMemo } from 'react'
+import { Provider as ReduxProvider, useDispatch } from 'react-redux'
+import { proxy } from 'comlink'
+
 import Container from 'react-bootstrap/Container'
 import Nav from 'react-bootstrap/Nav'
 import Navbar from 'react-bootstrap/Navbar'
@@ -11,9 +14,29 @@ import { useTranslation } from 'react-i18next'
 import '../i18n'
 
 import manifest from '../manifest.build'
+
+import storeSetup from '../redux/store'
 import useWorkers, { useUsager, useEtatPret, useCleMillegrilleChargee, useEtatConnexion } from '../WorkerContext'
 
+import { push as pushInstances, mergeInstance } from '../redux/instancesSlice'
+
 const SectionContenu = React.lazy(()=>import('./SectionContenu'))
+
+function ProviderReduxLayer(props) {
+    const workers = useWorkers()
+    const store = useMemo(()=>{
+        if(!workers) return
+        return storeSetup(workers)
+    }, [workers])
+  
+    return (
+        <ReduxProvider store={store}>
+            <ApplicationCoupdoeil {...props} />
+        </ReduxProvider>
+    )
+}
+
+export default ProviderReduxLayer
 
 function ApplicationCoupdoeil(props) {
 
@@ -67,12 +90,59 @@ function ApplicationCoupdoeil(props) {
 
             <ModalErreur show={!!erreur} err={erreur.err} message={erreur.message} titre={t('Erreur.titre')} fermer={handlerCloseErreur} />
 
+            <InitInstances />
+
         </LayoutMillegrilles>
     )  
 
 }
 
-export default ApplicationCoupdoeil
+function InitInstances(props) {
+    const dispatch = useDispatch(),
+          workers = useWorkers(),
+          etatPret = useEtatPret()
+
+    // Messages, maj liste appareils
+    const messageInstanceHandler = useCallback(evenement=>{
+        const { routingKey, message } = evenement
+        console.debug("Message instance : ", message)
+
+        // Injecter date de derniere modification (estampille)
+        const entete = message['en-tete']
+        message.date_presence = entete.estampille
+
+        dispatch(mergeInstance(message))
+        // const action = routingKey.split('.').pop()
+        // if(['lectureConfirmee', 'majAppareil'].includes(action)) {
+        //     dispatch(mergeInstance(message))
+        // }
+    }, [dispatch])
+
+    const messageInstanceHandlerProxy = useMemo(()=>{
+        return proxy(messageInstanceHandler)
+    }, [messageInstanceHandler])
+
+    useEffect(()=>{
+        if(!etatPret) return
+        const { connexion } = workers
+        connexion.enregistrerCallbackEvenementsNoeuds(messageInstanceHandlerProxy)
+            .catch(err=>console.error("Erreur enregistrement evenements instances : %O", err))
+
+        // Charger (recharger) instances
+        connexion.requeteListeNoeuds({})
+            .then(reponseInstances=>{
+                console.debug("Reponse instances : %O", reponseInstances)
+                dispatch(pushInstances({liste: reponseInstances, clear: true}))
+            })
+            .catch(err=>console.error("Erreur chargement liste noeuds : %O", err))
+
+        // Cleanup
+        return () => {
+            connexion.retirerCallbackEvenementsNoeuds(messageInstanceHandlerProxy)
+                .catch(err=>console.warn("Erreur enregistrement evenements instances : %O", err))
+            }
+    }, [dispatch, workers, etatPret, messageInstanceHandlerProxy])
+}
 
 function MenuApp(props) {
 

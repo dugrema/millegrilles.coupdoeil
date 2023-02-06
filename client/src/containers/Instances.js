@@ -1,4 +1,6 @@
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useMemo } from "react"
+import { useDispatch, useSelector } from 'react-redux'
+
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
@@ -7,7 +9,6 @@ import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
 
 import axios from 'axios'
-import {proxy as comlinkProxy} from 'comlink'
 
 import { AlertTimeout, ModalAttente, FormatterDate } from '@dugrema/millegrilles.reactjs'
 
@@ -18,22 +19,15 @@ import { useTranslation } from "react-i18next"
 function Instances(props) {
 
     const {workers, etatConnexion, etatAuthentifie, usager} = props
-    const connexion = workers.connexion
+    // const connexion = workers.connexion
 
-    const [instancesParId, setInstancesParId] = useState('')
-    const [evenementRecu, setEvenementRecu] = useState('')
+    const instances = useSelector(state=>state.instances.listeInstances)
+
     const [instanceSelectionnee, setInstanceSelectionnee] = useState('')
     const [showAssocier, setShowAssocier] = useState(false)
     const [confirmation, setConfirmation] = useState('')
     const [attente, setAttente] = useState(false)
-        
-    useEffect(()=>{
-        if(evenementRecu) {
-            traiterMessageRecu(evenementRecu, instancesParId, setInstancesParId)
-        }
-        setEvenementRecu('')
-    }, [instancesParId, setInstancesParId, evenementRecu, setEvenementRecu])
-
+    
     const selectionnerInstanceCb = useCallback(instanceId=>{
         if(instanceId.currentTarget) instanceId = instanceId.currentTarget.value
         setInstanceSelectionnee(instanceId)
@@ -45,37 +39,14 @@ function Instances(props) {
         setConfirmation(confirmation)
     }, [attenteCb, setConfirmation])
 
-    // Chargement data page sur connexion/reconnexion
-    useEffect(()=>{
-        if(etatAuthentifie) {
-            //console.debug("Requete topologie instances")
-            
-            const cb = comlinkProxy(setEvenementRecu)
-            connexion.enregistrerCallbackEvenementsNoeuds(cb)
-                .catch(err=>console.error("Erreur enregistrement evenements presence : %O", err))
-            connexion.enregistrerCallbackEvenementsInstances(cb)
-                .catch(err=>console.error("Erreur enregistrement evenements instances : %O", err))
+    const instance = useMemo(()=>{
+        if(!instanceSelectionnee) return
+        return instances.filter(item=>item.instance_id === instanceSelectionnee).pop()
+    }, [instances, instanceSelectionnee])
 
-            // Charger (recharger) instances
-            chargerListeInstances(connexion, setInstancesParId)
-                .catch(err=>console.error("Erreur chargement liste noeuds : %O", err))
-    
-            // Cleanup
-            return () => {
-                connexion.retirerCallbackEvenementsNoeuds(cb)
-                    .catch(err=>console.warn("Erreur retrait evenements presence : %O", err))
-                connexion.retirerCallbackEvenementsInstances(cb)
-                    .catch(err=>console.warn("Erreur enregistrement evenements instances : %O", err))
-                }
-        }
-    }, [connexion, etatAuthentifie, setEvenementRecu])
-
-    let Page = PageAccueil, instance = null
-    // Afficher l'instance selectionnee (si applicable)
-    if(instanceSelectionnee) {
-        //console.debug("Instance selectionnee : %s", instanceSelectionnee)
+    let Page = PageAccueil
+    if(instance) {
         Page = AfficherInstanceDetail
-        instance = instancesParId[instanceSelectionnee]
     }
 
     // Afficher la liste des instances
@@ -96,7 +67,6 @@ function Instances(props) {
                 etatConnexion={etatConnexion}
                 etatAuthentifie={etatAuthentifie}
                 usager={usager}
-                instancesParId={instancesParId}
                 selectionnerInstanceCb={selectionnerInstanceCb}
                 setShowAssocier={setShowAssocier}
                 instance={instance} 
@@ -112,7 +82,7 @@ export default Instances
 
 function PageAccueil(props) {
 
-    const {workers, instancesParId, selectionnerInstanceCb, setShowAssocier} = props
+    const {selectionnerInstanceCb, setShowAssocier} = props
 
     const { t } = useTranslation()
 
@@ -121,10 +91,7 @@ function PageAccueil(props) {
             <h1>{t('Instances.titre')}</h1>
 
             <h2>{t('Instances.titre-instance-protegee')}</h2>
-            <InstanceProtegee 
-                workers={workers} 
-                instances={instancesParId} 
-                selectionnerInstance={selectionnerInstanceCb} />
+            <InstanceProtegee selectionnerInstance={selectionnerInstanceCb} />
 
             <h2>{t('Instances.titre-satellites')}</h2>
 
@@ -138,22 +105,16 @@ function PageAccueil(props) {
             <h3>{t('Instances.titre-satellites-secures')}</h3>
 
             <ListeInstances 
-                workers={workers} 
-                instances={instancesParId} 
                 securite="4.secure" 
                 selectionnerInstance={selectionnerInstanceCb} />
 
             <h3>{t('Instances.titre-satellites-prives')}</h3>
             <ListeInstances 
-                workers={workers} 
-                instances={instancesParId} 
                 securite="2.prive" 
                 selectionnerInstance={selectionnerInstanceCb} />
 
             <h3>{t('Instances.titre-satellites-publics')}</h3>
             <ListeInstances 
-                workers={workers} 
-                instances={instancesParId} 
                 securite="1.public" 
                 selectionnerInstance={selectionnerInstanceCb} />
         </>
@@ -162,39 +123,39 @@ function PageAccueil(props) {
 
 function InstanceProtegee(props) {
 
-    const { instances, selectionnerInstance } = props
-    if(!instances) return <p>Aucune instance protegee</p>
-    const instancesList = Object.values(instances)
-    if(instancesList.length === 0) return <p>Aucune instance protegee</p>
+    const { selectionnerInstance } = props
+
+    const instances = useSelector(state=>state.instances.listeInstances)
+    const instanceProtege = useMemo(()=>{
+        if(!instances) return ''
+        return instances.filter(item=>item.securite === '3.protege').pop()
+    }, [instances])
+
+    if(!instanceProtege) return <p>Aucune instance protegee</p>
 
     //console.debug("Instances : %O", instancesList)
 
-    const instance = instancesList.filter(item=>item.securite === '3.protege').pop()
-
     return (
-        <InstanceItem key={instance.instance_id} instance={instance} selectionnerInstance={selectionnerInstance} />
+        <InstanceItem 
+            key={instanceProtege.instance_id} 
+            instance={instanceProtege} 
+            selectionnerInstance={selectionnerInstance} />
     )
 }
 
 function ListeInstances(props) {
-    const { instances, securite, selectionnerInstance } = props
+    const { securite, selectionnerInstance } = props
 
-    const [liste, setListe] = useState('')
+    // const [liste, setListe] = useState('')
 
-    useEffect(()=>{
-        //console.debug("Traiter instances : %O", instances)
-        const liste = Object.values(instances).filter(item=>item.securite === securite)
-        if(liste.length > 0) {
-            trierNoeuds(liste)
-            setListe(liste)
-        } else {
-            setListe('')
-        }
-    }, [instances, setListe])
+    const instances = useSelector(state=>state.instances.listeInstances)
+    const liste = useMemo(()=>{
+        if(!instances) return ''
+        return instances.filter(item=>item.securite === securite)
+    }, [instances, securite])
 
-    if(!liste) return <p>Aucunes instances</p>
-
-    //console.debug("Liste instances %s : %O", securite, liste)
+    if(!liste) return <p>Chargement en cours</p>
+    if(liste.length === 0) return <p>Aucunes instances</p>
 
     return liste.map(instance=>(
         <InstanceItem key={instance.instance_id} instance={instance} selectionnerInstance={selectionnerInstance} />
@@ -203,7 +164,7 @@ function ListeInstances(props) {
 
 function InstanceItem(props) {
     const {instance, selectionnerInstance} = props,
-          {descriptif, date} = instance,
+          {descriptif, date_presence} = instance,
           instanceId = instance.instance_id
 
     const nomNoeud = descriptif || instance.hostname || instance.domaine || instanceId
@@ -212,109 +173,13 @@ function InstanceItem(props) {
         <Row key={instanceId}>
             <Col md={6}>{nomNoeud}</Col>
             <Col md={3}>
-                <FormatterDate value={date} />
+                <FormatterDate value={date_presence} />
             </Col>
             <Col>
                 <Button variant="secondary" onClick={selectionnerInstance} value={instanceId}>Configurer</Button>
             </Col>
         </Row>
     )
-}
-
-// Charge la liste courante des noeuds
-async function chargerListeInstances(connexion, setInstancesParNoeudId, setProtege, setPrives, setPublics) {
-    var reponseInstances = await connexion.requeteListeNoeuds({})
-    console.debug("Reponse instances : %O", reponseInstances)
-  
-    if(!reponseInstances) reponseInstances = []
-  
-    let instances = reponseInstances.map(instance=>{
-        const instanceId = instance.instance_id
-        let derniereModification = ''
-        try {
-            derniereModification = new Date(Number(instance.date_presence))
-        } catch(err) {
-            console.warn("chargerListeInstances Derniere modification absente de l'instance : %s", instanceId)
-        }
-        const infoNoeud = mapperNoeud(instance, derniereModification)
-        return infoNoeud
-    })
-
-    const instancesParNoeudId = instances.reduce((acc, item)=>{
-        acc[item.instance_id] = item
-        return acc
-    }, {})
-  
-    setInstancesParNoeudId(instancesParNoeudId)
-}
-
-function trierNoeuds(noeuds) {
-    noeuds.sort((a,b)=>{
-        if(a === b) return 0
-        if(!a || !a.descriptif) return -1
-        if(!b || !b.descriptif) return 1
-        if(a.descriptif === 'Principal') return -1
-        if(b.descriptif === 'Principal') return 1
-        return a.descriptif.localeCompare(b.descriptif)
-    })
-}
-
-function mapperNoeud(noeudInfo, derniereModification) {
-    // console.debug("NOEUD RECU : %O", noeudInfo)
-  
-    var actif = true
-    const epochCourant = new Date().getTime() / 1000
-    if(epochCourant > derniereModification + 60) {
-      actif = false
-    }
-  
-    var principal = false
-    var securite = noeudInfo.securite
-    if(!noeudInfo.parent_instance_id && securite === '3.protege') {
-      principal = true
-    }
-  
-    var descriptif = noeudInfo.hostname || noeudInfo.domaine || noeudInfo.instance_id
-  
-    const mappingNoeud = {
-      descriptif,
-      actif,
-      securite,
-      principal,
-      parent_instance_id: noeudInfo.parent_instance_id,
-      instance_id: noeudInfo.instance_id,
-      ip_detectee: noeudInfo.ip_detectee,
-      onion: noeudInfo.onion,
-      fqdn: noeudInfo.fqdn_detecte,
-      date: derniereModification,
-      domaine: noeudInfo.domaine,
-      hostname: noeudInfo.hostname,
-    }
-  
-    const champsOptionnels = ['services', 'containers', 'consignation_web', 'applications_configurees']
-    champsOptionnels.forEach(champ=>{
-      if(noeudInfo[champ]) mappingNoeud[champ] = noeudInfo[champ]
-    })
-  
-    return mappingNoeud
-}
-
-function traiterMessageRecu(evenement, instancesParId, setInstancesParId) {
-    const message = evenement.message,
-          routingKey = evenement.routingKey
-    // console.debug("processMessageNoeudsCb recu : %s : %O", routingKey, message)
-    
-    const instanceId = message.instance_id
-    if(routingKey === 'evenement.CoreTopologie.instanceSupprimee') {
-        const copieInstances = {...instancesParId}
-        delete copieInstances[instanceId]
-        setInstancesParId(copieInstances)
-    } else {
-        const derniereModification = message['en-tete'].estampille
-        const instance = mapperNoeud(message, derniereModification)
-        const copieInstances = {...instancesParId, [instanceId]: instance}
-        setInstancesParId(copieInstances)
-    }
 }
 
 function AjouterInstanceModal(props) {
@@ -593,4 +458,3 @@ function InformationNoeud(props) {
         erreurCb(err)
     }
 }
-  
