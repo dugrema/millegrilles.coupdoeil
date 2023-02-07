@@ -325,7 +325,7 @@ function modifierConfigurationConsignation(commande) {
   return connexionClient.emitBlocking(
     'modifierConfigurationConsignation',
     commande,
-    {domaine: 'fichiers', action: 'modifierConfiguration', attacherCertificat: true}
+    {domaine: 'CoreTopologie', action: 'configurerConsignation', attacherCertificat: true}
   )
 }
 

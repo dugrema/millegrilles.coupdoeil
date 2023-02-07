@@ -157,7 +157,7 @@ function getPublicKeySsh(socket, requete) {
 
 function modifierConfigurationConsignation(socket, commande) {
     debug("modifierConfigurationConsignation %O", commande)
-    return transmettreCommande(socket, commande, 'modifierConfiguration', {domaine: CONST_DOMAINE_FICHIERS, exchange: '2.prive'})
+    return transmettreCommande(socket, commande, 'configurerConsignation', {domaine: CONST_DOMAINE_TOPOLOGIE, exchange: '3.protege'})
 }
 
 // Fonctions generiques

@@ -84,19 +84,23 @@ function ConfigurationConsignation(props) {
             .catch(err=>console.error("Erreur enregistrement evenements consignation ", err))
         
         return () => {
+            clearInterval(intervalRefreshExpire)
             connexion.retirerCallbackEvenementsConsignation(messageConsignationHandlerProxy)
                 .catch(err=>console.error("Erreur retrait evenements consignation ", err))
-            clearTimeout(intervalRefreshExpire)
         }
 
     }, [dispatch, workers, etatPret, setError, messageConsignationHandlerProxy])
 
     if(instanceId) return (
-        <ConfigurerConsignationInstance
-            instanceId={instanceId}
-            confirmationCb={confirmationCb}
-            erreurCb={erreurCb}
-            fermer={resetInstanceIdHandler} />
+        <>
+            <AlertTimeout variant="danger" titre="Erreur" delay={false} value={error} setValue={setError} />
+            <ModalAttente show={attente} setAttente={setAttente} />
+            <ConfigurerConsignationInstance
+                instanceId={instanceId}
+                confirmationCb={confirmationCb}
+                erreurCb={erreurCb}
+                fermer={resetInstanceIdHandler} />
+        </>
     )
 
     return (
@@ -187,13 +191,16 @@ function ConfigurerConsignationInstance(props) {
     const { instanceId, confirmationCb, erreurCb, fermer } = props
 
     const { t } = useTranslation()
-    const workers = useWorkers(),
+    const dispatch = useDispatch(),
+          workers = useWorkers(),
           etatPret = useEtatPret()
 
-    const instances = useSelector(state=>state.instances.listeInstances)
+    const listeConsignation = useSelector(state=>state.consignation.liste),
+          instances = useSelector(state=>state.instances.listeInstances)
+    // const [consignation, setConsignation] = useState('')
     const instance = useMemo(()=>instances.filter(item=>item.instance_id === instanceId).pop(), [instances, instanceId])
 
-    const [configuration, setConfiguration] = useState('')
+    // const [configuration, setConfiguration] = useState('')
     const [typeStore, setTypeStore] = useState('local')
     const [urlDownload, setUrlDownload] = useState('')
     const [consignationUrl, setConsignationUrl] = useState(CONST_CONSIGNATION_URL)
@@ -209,7 +216,16 @@ function ConfigurerConsignationInstance(props) {
         const {connexion} = workers
         if(connexion && etatPret) {
             // Preparer nouvelle configuration
-            const config = {typeStore, urlDownload, consignationUrl, hostnameSftp, usernameSftp, remotePathSftp, keyTypeSftp}
+            const config = {
+                instance_id: instanceId, 
+                type_store: typeStore, 
+                url_download: urlDownload, 
+                consignation_url: consignationUrl, 
+                hostname_sftp: hostnameSftp, 
+                usename_sftp: usernameSftp, 
+                remote_path_sftp: remotePathSftp, 
+                key_type_sftp: keyTypeSftp,
+            }
             if(portSftp) config.portSftp = Number.parseInt(portSftp)
 
             // Changer fichier de config stocke local
@@ -219,8 +235,10 @@ function ConfigurerConsignationInstance(props) {
                         return erreurCb(resultat.err, "Erreur de sauvegarde de la configuration")
                     }
                     console.debug("Configuration sauvegardee : %O", config)
-                    setConfiguration(config)
+                    // setConfiguration(config)
+                    dispatch(mergeConsignation(config))
                     confirmationCb("Configuration sauvegardee")
+                    fermer()
                 })
                 .catch(err=>erreurCb(err, 'Erreur de sauvegarde de la configuration'))
         } else {
@@ -228,41 +246,40 @@ function ConfigurerConsignationInstance(props) {
         }
         
     }, [
-        workers, etatPret, confirmationCb, setConfiguration,
+        dispatch, workers, erreurCb,
+        instanceId,
+        etatPret, confirmationCb, fermer,
         typeStore, urlDownload, 
         consignationUrl, 
         hostnameSftp, usernameSftp, remotePathSftp, keyTypeSftp, portSftp,
     ])
 
-    // useEffect(()=>{
-    //     if(configuration) return  // Eviter cycle
-    //     const { connexion } = workers
-    //     if(connexion && etatAuthentifie) {
-    //         connexion.getConfigurationConsignation()
-    //             .then(configuration=>{
-    //                 console.debug("ConfigurerConsignation configuration = %O", configuration)
-    //                 setConfiguration(configuration)
-    //             })
-    //             .catch(err=>erreurCb(err, 'Erreur chargement configuration de consignation'))
-    //     }
-    // }, [workers, etatAuthentifie, configuration, setConfiguration, erreurCb])
+    useEffect(()=>{
+        if(!instanceId) {
+            // setConsignation('')
+            return
+        }
 
-    // useEffect(()=>{
-    //     if(configuration) {
-    //         setTypeStore(configuration.typeStore || 'local')
-    //         setUrlDownload(configuration.urlDownload || '')
-    //         setConsignationUrl(configuration.consignationUrl || CONST_CONSIGNATION_URL)
-    //         setHostnameSftp(configuration.hostnameSftp || '')
-    //         setPortSftp(configuration.portSftp || '22')
-    //         setUsernameSftp(configuration.usernameSftp || '')
-    //         setRemotePathSftp(configuration.remotePathSftp || '')
-    //         setKeyTypeSftp(configuration.keyTypeSftp || 'ed25519')
-    //     }
-    // }, [
-    //     configuration, setTypeStore, setUrlDownload, 
-    //     setConsignationUrl, 
-    //     setHostnameSftp, setPortSftp, setUsernameSftp, setRemotePathSftp, setKeyTypeSftp,
-    // ])
+        const consignation = listeConsignation.filter(item=>item.instance_id === instanceId).pop()
+        if(!consignation) return
+        // setConsignation(consignation)
+        console.debug("ConfigurerConsignationInstance Edit consignation ", consignation)
+
+        setTypeStore(consignation.type_store || 'millegrille')
+        setUrlDownload(consignation.url_download || '')
+        setConsignationUrl(consignation.consignation_url || CONST_CONSIGNATION_URL)
+        setHostnameSftp(consignation.hostname_sftp || '')
+        setPortSftp(consignation.port_sftp || '22')
+        setUsernameSftp(consignation.username_sftp || '')
+        setRemotePathSftp(consignation.remote_path_sftp || '')
+        setKeyTypeSftp(consignation.key_type_sftp || 'ed25519')
+    }, [
+        instanceId, listeConsignation, 
+        // setConsignation,
+        setTypeStore, setUrlDownload, 
+        setConsignationUrl, 
+        setHostnameSftp, setPortSftp, setUsernameSftp, setRemotePathSftp, setKeyTypeSftp,
+    ])
 
     if(!instanceId) return ''
 
