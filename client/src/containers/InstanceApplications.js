@@ -9,6 +9,8 @@ import {proxy as comlinkProxy} from 'comlink'
 
 import { AlertTimeout, ModalAttente } from '@dugrema/millegrilles.reactjs'
 
+import useWorkers, { useUsager, useEtatPret } from '../WorkerContext'
+
 function ApplicationsInstance(props) {
     
     const [serveurUrl, setServeurUrl] = useState('https://fichiers:443')
@@ -17,10 +19,12 @@ function ApplicationsInstance(props) {
     const [errorMessage, setErrorMessage] = useState('')
     const [attente, setAttente] = useState('')
 
-    const {workers, etatConnexion} = props
     const instance = props.instance,
           instanceId = instance.instance_id,
           securite = props.instance.securite
+
+    const workers = useWorkers(),
+          etatPret = useEtatPret()
 
     useEffect(()=>{
         // console.debug("ApplicationsInstance proppies %O", props)
@@ -77,12 +81,12 @@ function ApplicationsInstance(props) {
                 setAttente={setAttente}
                 confirmationCb={confirmationCb}
                 erreurCb={erreurCb}
-                etatConnexion={etatConnexion} />
+                etatConnexion={etatPret} />
 
             <h3>Applications installees</h3>
             
             <ListeApplicationsInstallees 
-                workers={workers} instance={instance} etatConnexion={etatConnexion}
+                workers={workers} instance={instance} etatConnexion={etatPret}
                 setAttente={setAttente} confirmationCb={confirmationCb} erreurCb={erreurCb} />
 
         </div>        
@@ -113,10 +117,12 @@ function traiterEvenement(evenement) {
 
 function InstallerApplications(props) {
 
-    const {workers, instance, setAttente, confirmationCb, erreurCb, etatConnexion} = props
+    const {workers, instance, setAttente, confirmationCb, erreurCb} = props
     const connexion = workers.connexion
     const instanceId = instance.instance_id,
           exchange = instance.securite
+
+    const etatPret = useEtatPret()
 
     const [catalogue, setCatalogue] = useState([])
     const [applicationInstaller, setApplicationInstaller] = useState('')
@@ -166,20 +172,22 @@ function InstallerApplications(props) {
             </Col>
             <Col md={2}>
                 <Button variant="secondary" onClick={installerApplicationCb}
-                        disabled={!instance.actif || !etatConnexion}>Installer</Button>
+                        disabled={instance.expire || !etatPret}>Installer</Button>
             </Col>
         </Form.Group>
     )
 }
 
 function ListeApplicationsInstallees(props) {
-    const {workers, instance, confirmationCb, erreurCb, setAttente, etatConnexion} = props
+    const {workers, instance, confirmationCb, erreurCb, setAttente} = props
 
     const [appsConfigurees, setAppsConfigurees] = useState([])
     const [modalApp, setModalApp] = useState('')
 
     const {instance_id, applications_configurees, services, containers, securite} = instance || {}
     const instanceId = instance_id
+
+    const etatPret = useEtatPret()
 
     useEffect(()=>{
         const infoInstance = {instance_id, applications_configurees, services, containers}
@@ -223,8 +231,7 @@ function ListeApplicationsInstallees(props) {
                     <BoutonsActionApplication 
                         workers={workers} app={app} instanceId={instance_id} securite={securite} 
                         configurer={()=>setModalApp(app)}
-                        setAttente={setAttente} confirmationCb={confirmationCb} erreurCb={erreurCb} 
-                        etatConnexion={etatConnexion} />
+                        setAttente={setAttente} confirmationCb={confirmationCb} erreurCb={erreurCb} />
                 </Row>
             ))}
         </>
@@ -240,12 +247,14 @@ function EtatApplication(props) {
 
 function BoutonsActionApplication(props) {
 
-    const {instanceId, securite, setAttente, confirmationCb, erreurCb, configurer, etatConnexion} = props
+    const {instanceId, securite, setAttente, confirmationCb, erreurCb, configurer} = props
     const connexion = props.workers.connexion
     const app = props.app || {}
 
     const appDemarree = app.etat === 'running',
           starting = app.etat === 'starting'
+
+    const etatPret = useEtatPret()
 
     const toggleApplicationCb = useCallback(
         event=>{
@@ -277,7 +286,7 @@ function BoutonsActionApplication(props) {
     return [
         <Col key="switch" md={1}>
             <Form.Check id={"switch_app_" + app.nom} type="switch" 
-                disabled={!etatConnexion || starting} 
+                disabled={!etatPret || starting} 
                 checked={appDemarree || starting}
                 value={app.nom}
                 onChange={toggleApplicationCb}
