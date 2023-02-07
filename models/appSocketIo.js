@@ -28,6 +28,7 @@ function configurerEvenements(socket) {
       {eventName: 'getConfigurationFichiers', callback: (params, cb) => { traiter(socket, mqdao.getConfigurationFichiers, {params, cb}) }},
       {eventName: 'getPublicKeySsh', callback: (params, cb) => { traiter(socket, mqdao.getPublicKeySsh, {params, cb}) }},
       {eventName: 'modifierConfigurationConsignation', callback: (params, cb) => { traiter(socket, mqdao.modifierConfigurationConsignation, {params, cb}) }},
+      {eventName: 'setFichiersPrimaire', callback: (params, cb) => { traiter(socket, mqdao.setFichiersPrimaire, {params, cb}) }},
 
       {eventName: 'coupdoeil/requeteListeNoeuds', callback: (params, cb) => {requeteListeNoeuds(socket, params, cb)}},
       {eventName: 'coupdoeil/requeteListeDomaines', callback: cb => {requeteListeDomaines(socket, cb)}},
@@ -828,7 +829,7 @@ function retirerEvenementsInstances(socket, _params, cb) {
   socket.unsubscribe(topologie, cb)
 }
 
-const RK_FICHIERS_PRESENCE = ['evenement.fichiers.presence'],
+const RK_FICHIERS_PRESENCE = ['evenement.fichiers.presence', 'evenement.CoreTopologie.changementConsignationPrimaire'],
       EX_FICHIERS_INSTANCES = ['2.prive']
 
 function ecouterEvenementsConsignation(socket, _params, cb) {

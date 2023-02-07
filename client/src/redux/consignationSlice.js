@@ -115,6 +115,15 @@ function mergeAction(state, action) {
     state.liste.sort(genererTriListe(state.sortKeys))
 }
 
+function setConsignationPrimaireAction(state, action) {
+    const instance_id = action.payload
+    if(instance_id) {
+        state.liste.forEach(item=>{
+            item.primaire = item.instance_id === instance_id
+        })
+    }
+}
+
 const consignationSlice = createSlice({
     name: SLICE_NAME,
     initialState,
@@ -125,11 +134,12 @@ const consignationSlice = createSlice({
         clear: clearAction,
         setSortKeys: setSortKeysAction,
         verifierExpiration: verifierExpirationAction,
+        setConsignationPrimaire: setConsignationPrimaireAction,
     }
 })
 
 export const { 
-    setInstanceId, push, merge, clear, setSortKeys, verifierExpiration,
+    setInstanceId, push, merge, clear, setSortKeys, verifierExpiration, setConsignationPrimaire,
 } = consignationSlice.actions
 
 export default consignationSlice.reducer

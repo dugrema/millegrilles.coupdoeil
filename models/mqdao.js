@@ -160,6 +160,11 @@ function modifierConfigurationConsignation(socket, commande) {
     return transmettreCommande(socket, commande, 'configurerConsignation', {domaine: CONST_DOMAINE_TOPOLOGIE, exchange: '3.protege'})
 }
 
+function setFichiersPrimaire(socket, commande) {
+    debug("setFichiersPrimaire %O", commande)
+    return transmettreCommande(socket, commande, 'setFichiersPrimaire', {domaine: CONST_DOMAINE_TOPOLOGIE, exchange: '3.protege'})
+}
+
 // Fonctions generiques
 
 async function transmettreRequete(socket, params, action, opts) {
@@ -214,7 +219,7 @@ module.exports = {
     installerApplication, demarrerApplication, arreterApplication, supprimerApplication,
     ajouterCatalogueApplication, requeteConfigurationApplication, configurerApplication, supprimerInstance,
     resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationFichiers, getPublicKeySsh,
-    modifierConfigurationConsignation,
+    modifierConfigurationConsignation, setFichiersPrimaire,
 
     majMonitor, requeteConfigurationAcme, configurerDomaineAcme,
     

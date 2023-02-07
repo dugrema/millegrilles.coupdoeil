@@ -329,6 +329,14 @@ function modifierConfigurationConsignation(commande) {
   )
 }
 
+function setFichiersPrimaire(commande) {
+  return connexionClient.emitBlocking(
+    'setFichiersPrimaire',
+    commande,
+    {domaine: 'CoreTopologie', action: 'setFichiersPrimaire', attacherCertificat: true}
+  )
+}
+
 // Listeners
 function enregistrerCallbackEvenementsPresenceDomaine(cb) { 
   return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceDomaines', cb) 
@@ -401,7 +409,7 @@ comlinkExpose({
   majDelegations, requeteRapportBackup, resetBackup, majMonitor, supprimerInstance,
   getConfigurationAcme, configurerDomaineAcme, getRecoveryCsr, signerRecoveryCsr, 
   resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationFichiers, getPublicKeySsh,
-  modifierConfigurationConsignation,
+  modifierConfigurationConsignation, setFichiersPrimaire,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,

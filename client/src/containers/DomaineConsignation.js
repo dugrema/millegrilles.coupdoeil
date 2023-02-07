@@ -17,7 +17,7 @@ import { pki as forgePki } from '@dugrema/node-forge'
 
 import useWorkers, { useEtatPret } from '../WorkerContext'
 
-import { push as pushConsignation, merge as mergeConsignation, verifierExpiration } from '../redux/consignationSlice'
+import { push as pushConsignation, merge as mergeConsignation, verifierExpiration, setConsignationPrimaire } from '../redux/consignationSlice'
 
 const CONST_CONSIGNATION_URL = 'https://fichiers:444'
 
@@ -50,11 +50,16 @@ function ConfigurationConsignation(props) {
         console.debug("messageConsignationHandler Reponse ", reponse)
         // Extraire instanceId du certificat de l'evenement
         const entete = reponse.message['en-tete']
-        const certificat = forgePki.certificateFromPem(reponse.message['_certificat'][0])
-        const instance_id = certificat.subject.getField('CN').value
-        const info = { ...reponse.message, instance_id, derniere_modification: entete.estampille }
-        console.debug("Info evenement consignation ", info)
-        dispatch(mergeConsignation(info))
+        const action = entete.action
+        if(action === 'presence') {
+            const certificat = forgePki.certificateFromPem(reponse.message['_certificat'][0])
+            const instance_id = certificat.subject.getField('CN').value
+            const info = { ...reponse.message, instance_id, derniere_modification: entete.estampille }
+            console.debug("Info evenement consignation ", info)
+            dispatch(mergeConsignation(info))
+        } else if(action === 'changementConsignationPrimaire') {
+            dispatch(setConsignationPrimaire(reponse.message.instance_id))
+        }
     }, [dispatch])
 
     const messageConsignationHandlerProxy = useMemo(()=>proxy(messageConsignationHandler), [messageConsignationHandler])
@@ -128,7 +133,9 @@ function ConfigurationConsignation(props) {
 export default ConfigurationConsignation
 
 function ListeConsignations(props) {
-    const { liste, onSelect } = props
+    const { liste, onSelect, erreurCb } = props
+
+    const workers = useWorkers()
 
     const instances = useSelector(state=>state.instances.listeInstances)
 
@@ -140,6 +147,17 @@ function ListeConsignations(props) {
         })
         return instancesParId
     }, [instances])
+
+    const changerPrimaireHandler = useCallback(e=>{
+        const instance_id = e.currentTarget.value
+        console.debug("Changer instance primaire pour ", instance_id)
+        const commande = { instance_id }
+        workers.connexion.setFichiersPrimaire(commande)
+            .then(()=>{
+                console.debug("Fichiers primaire change pour ", instance_id)
+            })
+            .catch(erreurCb)
+    }, [workers])
 
     if(!liste) return 'Chargement encours'
     if(liste.length === 0) return 'Aucune consignation de fichiers presente'
@@ -163,7 +181,9 @@ function ListeConsignations(props) {
                 <Col xs={9} lg={4} className='nom-consignation'>
                     <Button variant="link" onClick={onSelect} value={item.instance_id}>{nom}</Button>
                 </Col>
-                <Col xs={3} lg={2} className='champ-primaire'>{primaire?'Primaire':'Secondaire'}</Col>
+                <Col xs={3} lg={2} className='champ-primaire'>
+                    <AfficherChampRole onClick={changerPrimaireHandler} item={item} />
+                </Col>
                 <Col xs={6} lg={3} className={classNameExpiration}><FormatterDate value={item.derniere_modification} /></Col>
                 <Col xs={3} lg={2}><FormatteurTaille value={item.fichiers_taille} /></Col>
                 <Col xs={3} lg={1}>{item.fichiers_nombre}</Col>
@@ -182,6 +202,21 @@ function ListeConsignations(props) {
             </Row>
             {listeFichiers}
         </div>
+    )
+}
+
+function AfficherChampRole(props) {
+    const { item, onClick } = props
+    const primaire = item.primaire?true:false
+    
+    if(primaire === true) {
+        return (
+            <span>Primaire</span>
+        )
+    }
+
+    return (
+        <Button variant='link' onClick={onClick} value={item.instance_id}>Secondaire</Button>
     )
 }
 
