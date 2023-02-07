@@ -222,7 +222,7 @@ function ConfigurerConsignationInstance(props) {
                 url_download: urlDownload, 
                 consignation_url: consignationUrl, 
                 hostname_sftp: hostnameSftp, 
-                usename_sftp: usernameSftp, 
+                username_sftp: usernameSftp, 
                 remote_path_sftp: remotePathSftp, 
                 key_type_sftp: keyTypeSftp,
             }
