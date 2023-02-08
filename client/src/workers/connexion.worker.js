@@ -337,6 +337,14 @@ function setFichiersPrimaire(commande) {
   )
 }
 
+function declencherSync() {
+  return connexionClient.emitBlocking(
+    'declencherSync',
+    {},
+    {domaine: 'fichiers', action: 'declencherSync', attacherCertificat: true}
+  )
+}
+
 // Listeners
 function enregistrerCallbackEvenementsPresenceDomaine(cb) { 
   return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceDomaines', cb) 
@@ -409,7 +417,7 @@ comlinkExpose({
   majDelegations, requeteRapportBackup, resetBackup, majMonitor, supprimerInstance,
   getConfigurationAcme, configurerDomaineAcme, getRecoveryCsr, signerRecoveryCsr, 
   resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationFichiers, getPublicKeySsh,
-  modifierConfigurationConsignation, setFichiersPrimaire,
+  modifierConfigurationConsignation, setFichiersPrimaire, declencherSync,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,

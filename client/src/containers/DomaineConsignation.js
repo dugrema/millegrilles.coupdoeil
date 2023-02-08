@@ -123,6 +123,8 @@ function ConfigurationConsignation(props) {
             <AlertTimeout value={confirmation} setValue={setConfirmation} />
             <ModalAttente show={attente} setAttente={setAttente} />
 
+            <ActionsConsignation />
+
             <ListeConsignations 
                 liste={liste} 
                 onSelect={setInstanceIdHandler} />
@@ -131,6 +133,31 @@ function ConfigurationConsignation(props) {
 }
 
 export default ConfigurationConsignation
+
+function ActionsConsignation(props) {
+
+    const workers = useWorkers(),
+          etatPret = useEtatPret()
+
+    const synchroniserHandler = useCallback(()=>{
+        workers.connexion.declencherSync()
+            .catch(err=>console.error("Erreur declencher synchronization des serveurs de consignation ", err))
+    }, [workers])
+
+    return (
+        <div>
+            <p></p>
+            <h3>Actions de consignation</h3>
+            <Row>
+                <Col>
+                    <Button variant="secondary" disabled={!etatPret} onClick={synchroniserHandler}>Synchroniser</Button>
+                </Col>
+            </Row>
+            <p></p>
+        </div>
+    )
+
+}
 
 function ListeConsignations(props) {
     const { liste, onSelect, erreurCb } = props

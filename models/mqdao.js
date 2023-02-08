@@ -165,6 +165,11 @@ function setFichiersPrimaire(socket, commande) {
     return transmettreCommande(socket, commande, 'setFichiersPrimaire', {domaine: CONST_DOMAINE_TOPOLOGIE, exchange: '3.protege'})
 }
 
+function declencherSync(socket, commande) {
+    debug("declencherSync %O", commande)
+    return transmettreCommande(socket, commande, 'declencherSync', {domaine: CONST_DOMAINE_FICHIERS, exchange: '2.prive'})
+}
+
 // Fonctions generiques
 
 async function transmettreRequete(socket, params, action, opts) {
@@ -219,7 +224,7 @@ module.exports = {
     installerApplication, demarrerApplication, arreterApplication, supprimerApplication,
     ajouterCatalogueApplication, requeteConfigurationApplication, configurerApplication, supprimerInstance,
     resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationFichiers, getPublicKeySsh,
-    modifierConfigurationConsignation, setFichiersPrimaire,
+    modifierConfigurationConsignation, setFichiersPrimaire, declencherSync,
 
     majMonitor, requeteConfigurationAcme, configurerDomaineAcme,
     
