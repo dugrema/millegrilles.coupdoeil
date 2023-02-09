@@ -42,9 +42,9 @@ function getCatalogueApplications() {
 function requeteInfoApplications(params) {
   return connexionClient.emitBlocking('coupdoeil/requeteInfoApplications', params)
 }
-function requeteRapportBackup(params) {
-  return connexionClient.emitBlocking('coupdoeil/requeteRapportBackup', params)
-}
+// function requeteRapportBackup(params) {
+//   return connexionClient.emitBlocking('coupdoeil/requeteRapportBackup', params)
+// }
 function requeteConfigurationApplication(params) {
   return connexionClient.emitBlocking(
     'coupdoeil/requeteConfigurationApplication', 
@@ -115,12 +115,12 @@ function restaurationDomaines(params) {
 function restaurationGrosfichiers(params) {
   return connexionClient.emitBlocking('coupdoeil/restaurationGrosfichiers', params)
 }
-function backupApplication(params) {
-  return connexionClient.emitBlocking('coupdoeil/backupApplication', params)
-}
-function restaurerApplication(params) {
-  return connexionClient.emitBlocking('coupdoeil/restaurerApplication', params)
-}
+// function backupApplication(params) {
+//   return connexionClient.emitBlocking('coupdoeil/backupApplication', params)
+// }
+// function restaurerApplication(params) {
+//   return connexionClient.emitBlocking('coupdoeil/restaurerApplication', params)
+// }
 function soumettreCleRechiffree(commandes) {
   return connexionClient.emitBlocking('coupdoeil/transactionCleRechiffree', commandes)
 }
@@ -155,22 +155,22 @@ function supprimerApplication(commande) {
 function installerDomaine(params) {
   return connexionClient.emit('coupdoeil/installerDomaine', params)
 }
-function lancerBackupSnapshot(params) {
-  const domaine = params.domaine || 'global', action = 'declencherBackupHoraire'
-  return connexionClient.emit(
-    'coupdoeil/lancerBackupSnapshot',
-    params,
-    {domaine, action, ajouterCertificat: true}
-  )
-}
-function resetBackup(params) {
-  let domaine = 'global.resetBackup'
-  if(params.domaine) {
-    domaine = params.domaine + '.resetBackup'
-  }
-  // console.debug("Reset backup domaine = %s : %O", domaine, params)
-  return connexionClient.emitBlocking('coupdoeil/resetBackup', params, {domaine})
-}
+// function lancerBackupSnapshot(params) {
+//   const domaine = params.domaine || 'global', action = 'declencherBackupHoraire'
+//   return connexionClient.emit(
+//     'coupdoeil/lancerBackupSnapshot',
+//     params,
+//     {domaine, action, ajouterCertificat: true}
+//   )
+// }
+// function resetBackup(params) {
+//   let domaine = 'global.resetBackup'
+//   if(params.domaine) {
+//     domaine = params.domaine + '.resetBackup'
+//   }
+//   // console.debug("Reset backup domaine = %s : %O", domaine, params)
+//   return connexionClient.emitBlocking('coupdoeil/resetBackup', params, {domaine})
+// }
 function genererCertificatNoeud(commande) {
   return connexionClient.emitBlocking(
     'coupdoeil/genererCertificatNoeud',
@@ -345,6 +345,14 @@ function declencherSync() {
   )
 }
 
+function demarrerBackupTransactions(commande) {
+  return connexionClient.emitBlocking(
+    'demarrerBackupTransactions',
+    commande,
+    {domaine: 'fichiers', action: 'demarrerBackupTransactions', attacherCertificat: true}
+  )
+}
+
 // Listeners
 function enregistrerCallbackEvenementsPresenceDomaine(cb) { 
   return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceDomaines', cb) 
@@ -405,19 +413,23 @@ comlinkExpose({
   requeteConfigurationApplication, requeteCompterClesNonDechiffrables,
   getUploadsEnCours, getDocumentParFuuid,
   restaurationChargerCles, restaurationDomaines, restaurationGrosfichiers,
-  backupApplication, restaurerApplication, soumettreCleRechiffree,
+  // backupApplication, restaurerApplication, 
+  soumettreCleRechiffree,
   soumettreConfigurationApplication, installerApplication, installerDomaine,
-  lancerBackupSnapshot, genererCertificatNoeud, supprimerApplication,
+  //lancerBackupSnapshot, 
+  genererCertificatNoeud, supprimerApplication,
   configurerApplication, demarrerApplication, arreterApplication, regenererPreviews,
   configurerConsignationWeb, soumettreTransactionMaitredescles, clearFichierPublie,
   uploadCollectionsPubliques, commandeTransmettreCatalogues, commandeSoumettreCatalogueApplication,
 
   regenererDomaine,
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
-  majDelegations, requeteRapportBackup, resetBackup, majMonitor, supprimerInstance,
+  majDelegations, 
+  // requeteRapportBackup, resetBackup, 
+  majMonitor, supprimerInstance,
   getConfigurationAcme, configurerDomaineAcme, getRecoveryCsr, signerRecoveryCsr, 
   resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationFichiers, getPublicKeySsh,
-  modifierConfigurationConsignation, setFichiersPrimaire, declencherSync,
+  modifierConfigurationConsignation, setFichiersPrimaire, declencherSync, demarrerBackupTransactions,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,

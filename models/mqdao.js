@@ -170,6 +170,11 @@ function declencherSync(socket, commande) {
     return transmettreCommande(socket, commande, 'declencherSync', {domaine: CONST_DOMAINE_FICHIERS, exchange: '2.prive'})
 }
 
+function demarrerBackupTransactions(socket, commande) {
+    debug("demarrerBackupTransactions %O", commande)
+    return transmettreCommande(socket, commande, 'demarrerBackupTransactions', {domaine: CONST_DOMAINE_FICHIERS, exchange: '2.prive'})
+}
+
 // Fonctions generiques
 
 async function transmettreRequete(socket, params, action, opts) {
@@ -224,7 +229,7 @@ module.exports = {
     installerApplication, demarrerApplication, arreterApplication, supprimerApplication,
     ajouterCatalogueApplication, requeteConfigurationApplication, configurerApplication, supprimerInstance,
     resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationFichiers, getPublicKeySsh,
-    modifierConfigurationConsignation, setFichiersPrimaire, declencherSync,
+    modifierConfigurationConsignation, setFichiersPrimaire, declencherSync, demarrerBackupTransactions,
 
     majMonitor, requeteConfigurationAcme, configurerDomaineAcme,
     

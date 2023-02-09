@@ -123,7 +123,7 @@ function ConfigurationConsignation(props) {
             <AlertTimeout value={confirmation} setValue={setConfirmation} />
             <ModalAttente show={attente} setAttente={setAttente} />
 
-            <ActionsConsignation />
+            <ActionsConsignation confirmationCb={confirmationCb} />
 
             <ListeConsignations 
                 liste={liste} 
@@ -136,6 +136,8 @@ export default ConfigurationConsignation
 
 function ActionsConsignation(props) {
 
+    const { confirmationCb } = props
+
     const workers = useWorkers(),
           etatPret = useEtatPret()
 
@@ -144,6 +146,15 @@ function ActionsConsignation(props) {
             .catch(err=>console.error("Erreur declencher synchronization des serveurs de consignation ", err))
     }, [workers])
 
+    const demarrerBackupHandler = useCallback(()=>{
+        workers.connexion.demarrerBackupTransactions({complet: true})
+            .then(reponse=>{
+                console.debug("Backup demarre OK ", reponse)
+                confirmationCb('Backup complet demarre')
+            })
+            .catch(err=>console.error("Erreur declencher backup complet ", err))
+    }, [workers, confirmationCb])
+
     return (
         <div>
             <p></p>
@@ -151,6 +162,8 @@ function ActionsConsignation(props) {
             <Row>
                 <Col>
                     <Button variant="secondary" disabled={!etatPret} onClick={synchroniserHandler}>Synchroniser</Button>
+                    {' '}
+                    <Button variant="secondary" disabled={!etatPret} onClick={demarrerBackupHandler}>Backup</Button>
                 </Col>
             </Row>
             <p></p>

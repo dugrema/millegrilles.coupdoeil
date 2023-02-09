@@ -30,13 +30,14 @@ function configurerEvenements(socket) {
       {eventName: 'modifierConfigurationConsignation', callback: (params, cb) => { traiter(socket, mqdao.modifierConfigurationConsignation, {params, cb}) }},
       {eventName: 'setFichiersPrimaire', callback: (params, cb) => { traiter(socket, mqdao.setFichiersPrimaire, {params, cb}) }},
       {eventName: 'declencherSync', callback: (params, cb) => { traiter(socket, mqdao.declencherSync, {params, cb}) }},
-      
+      {eventName: 'demarrerBackupTransactions', callback: (params, cb) => { traiter(socket, mqdao.demarrerBackupTransactions, {params, cb}) }},
+
       {eventName: 'coupdoeil/requeteListeNoeuds', callback: (params, cb) => {requeteListeNoeuds(socket, params, cb)}},
       {eventName: 'coupdoeil/requeteListeDomaines', callback: cb => {requeteListeDomaines(socket, cb)}},
       // {eventName: 'coupdoeil/requeteCatalogueDomaines', callback: cb => {requeteCatalogueDomaines(socket, cb)}},
       {eventName: 'coupdoeil/requeteCatalogueApplications', callback: cb => {requeteCatalogueApplications(socket, cb)}},
       {eventName: 'coupdoeil/requeteInfoApplications', callback: (params, cb) => {requeteInfoApplications(socket, params, cb)}},
-      {eventName: 'coupdoeil/requeteRapportBackup', callback: (params, cb) => {requeteRapportBackup(socket, params, cb)}},
+      // {eventName: 'coupdoeil/requeteRapportBackup', callback: (params, cb) => {requeteRapportBackup(socket, params, cb)}},
       {eventName: 'coupdoeil/getUploadsEnCours', callback: cb => {getUploadsEnCours(socket, cb)}},
       {eventName: 'coupdoeil/getDocumentParFuuid', callback: (params, cb) => {getDocumentParFuuid(socket, params, cb)}},
       {eventName: 'maitrecomptes/requeteListeUsagers', callback: (params, cb) => {requeteListeUsagers(socket, params, cb)}},
@@ -61,21 +62,21 @@ function configurerEvenements(socket) {
       {eventName: 'coupdoeil/restaurationGrosfichiers', callback: (params, cb) => {
         restaurationGrosfichiers(socket, params, cb)
       }},
-      {eventName: 'coupdoeil/backupApplication', callback: (params, cb) => {
-        backupApplication(socket, params, cb)
-      }},
+      // {eventName: 'coupdoeil/backupApplication', callback: (params, cb) => {
+      //   backupApplication(socket, params, cb)
+      // }},
       {eventName: 'coupdoeil/restaurerApplication', callback: (params, cb) => {
         restaurerApplication(socket, params, cb)
       }},
       {eventName: 'coupdoeil/installerDomaine', callback: (params, cb) => {
         installerDomaine(socket, params, cb)
       }},
-      {eventName: 'coupdoeil/lancerBackupSnapshot', callback: params => {
-        lancerBackupSnapshot(socket, params)
-      }},
-      {eventName: 'coupdoeil/resetBackup', callback: params => {
-        resetBackup(socket, params)
-      }},
+      // {eventName: 'coupdoeil/lancerBackupSnapshot', callback: params => {
+      //   lancerBackupSnapshot(socket, params)
+      // }},
+      // {eventName: 'coupdoeil/resetBackup', callback: params => {
+      //   resetBackup(socket, params)
+      // }},
       {eventName: 'coupdoeil/genererCertificatNoeud', callback: (params, cb) => {
         genererCertificatNoeud(socket, params, cb)
       }},
