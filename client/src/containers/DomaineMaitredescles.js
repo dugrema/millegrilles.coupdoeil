@@ -4,15 +4,20 @@ import { proxy } from 'comlink'
 import { useTranslation } from 'react-i18next'
 
 import { AlertTimeout, ModalChargerCleMillegrille } from '@dugrema/millegrilles.reactjs'
+import useWorkers, { useEtatPret, useCleMillegrilleChargee } from '../WorkerContext'
 
 const BATCH_NOMBRE_FETCH = 100       // Nombre cles downloadees a la fois
 
 function DomaineMaitredescles(props) {
 
-  const { workers, certificatMaitreDesCles, cleMillegrilleChargee, fermer } = props
+  const { fermer } = props
 
-  const { t } = useTranslation()
+  const { t } = useTranslation(),
+        workers = useWorkers(),
+        etatPret = useEtatPret(),
+        cleMillegrilleChargee = useCleMillegrilleChargee()
 
+  const [certificatsMaitredescles, setCertificatsMaitredescles] = useState('')
   const [showModalCle, setShowModalCle] = useState(false)
   const [infoCles, setInfoCles] = useState('')
   const [succes, setSucces] = useState('')
@@ -32,6 +37,15 @@ function DomaineMaitredescles(props) {
   }, [workers])
 
   useEffect(chargerInfoClesCb, [chargerInfoClesCb])
+  useEffect(()=>{
+    console.debug("Charger certificat maitre des cles")
+    workers.connexion.getCertificatsMaitredescles()
+      .then(certificats=>{
+        console.debug("Certificats maitredescles ", certificats)
+        if(certificats.length > 0) setCertificatsMaitredescles(certificats)
+      })
+      .catch(err=>console.error("Erreur chargement certificats maitredescles ", err))
+  }, [workers, setCertificatsMaitredescles])
 
   return (
     <div>
@@ -45,7 +59,7 @@ function DomaineMaitredescles(props) {
           </Col>
       </Row>
 
-      <Alert variant="danger" show={certificatMaitreDesCles?false:true}>
+      <Alert variant="danger" show={certificatsMaitredescles?false:true}>
         <Alert.Heading>Certificat absent</Alert.Heading>
         <p>Le certificat de rechiffrage est absent. Veuillez recharger la page pour reessayer.</p>
       </Alert>
@@ -85,7 +99,7 @@ function DomaineMaitredescles(props) {
       <RechiffrerCles 
         workers={workers}
         nombreClesNonDechiffrables={infoCles.nonDechiffrables}
-        certificatMaitreDesCles={certificatMaitreDesCles}
+        certificatsMaitredescles={certificatsMaitredescles}
         cleMillegrilleChargee={cleMillegrilleChargee} 
         chargerInfoClesCb={chargerInfoClesCb}
         confirmationCb={setSucces}
