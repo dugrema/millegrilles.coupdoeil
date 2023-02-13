@@ -296,6 +296,13 @@ function ConfigurerConsignationInstance(props) {
     const [remotePathSftp, setRemotePathSftp] = useState('')
     const [keyTypeSftp, setKeyTypeSftp] = useState('ed25519')
 
+    // AWS S3
+    const [s3AccessKeyId, setS3AccessKeyId] = useState('')
+    const [s3SecretAccessKey, setS3SecretAccessKey] = useState('')
+    const [s3Region, setS3Region] = useState('')
+    const [s3Endpoint, setS3Endpoint] = useState('')
+    const [s3Bucket, setS3Bucket] = useState('')
+
     // Backup
     const [typeBackup, setTypeBackup] = useState('')
     const [hostnameSftpBackup, setHostnameSftpBackup] = useState('')
@@ -324,6 +331,12 @@ function ConfigurerConsignationInstance(props) {
                     username_sftp: usernameSftp, 
                     remote_path_sftp: remotePathSftp, 
                     key_type_sftp: keyTypeSftp,
+
+                    // AWS S3
+                    s3_access_key_id: s3AccessKeyId,
+                    s3_region: s3Region,
+                    s3_endpoint: s3Endpoint,
+                    s3_bucket: s3Bucket,
                     
                     // Backup
                     type_backup: typeBackup, 
@@ -339,7 +352,9 @@ function ConfigurerConsignationInstance(props) {
 
                 let commandeMaitredescles = null
 
-                const dataDechiffre = {'test': 125}
+                const dataDechiffre = {
+                    s3_secret_access_key: s3SecretAccessKey
+                }
 
                 if(cleChiffrage) {
                     const doc = await workers.chiffrage.chiffrage.updateChampsChiffres(dataDechiffre, cleChiffrage.cleSecrete)
@@ -387,6 +402,7 @@ function ConfigurerConsignationInstance(props) {
         typeStore, urlDownload, 
         consignationUrl, syncIntervalle, syncActif,
         hostnameSftp, usernameSftp, remotePathSftp, keyTypeSftp, portSftp,
+        s3AccessKeyId, s3SecretAccessKey, s3Region, s3Endpoint, s3Bucket,
         typeBackup, hostnameSftpBackup, portSftpBackup, usernameSftpBackup, remotePathSftpBackup, keyTypeSftpBackup,
     ])
 
@@ -408,6 +424,12 @@ function ConfigurerConsignationInstance(props) {
         setRemotePathSftp(consignation.remote_path_sftp || '')
         setKeyTypeSftp(consignation.key_type_sftp || 'ed25519')
 
+        // AWS S3
+        setS3AccessKeyId(consignation.s3_access_key_id || '')
+        setS3Region(consignation.s3_region || '')
+        setS3Endpoint(consignation.s3_endpoint || '')
+        setS3Bucket(consignation.s3_bucket || '')
+
         // Backup
         setTypeBackup(consignation.type_backup || '')
         setHostnameSftpBackup(consignation.hostname_sftp_backup || '')
@@ -421,6 +443,7 @@ function ConfigurerConsignationInstance(props) {
             workers.chiffrage.chiffrage.dechiffrerChampsChiffres(consignation.data_chiffre, cleChiffrage)
                 .then(dataDechiffre =>{
                     console.debug("Data dechiffre ", dataDechiffre)
+                    setS3SecretAccessKey(dataDechiffre.s3_secret_access_key || '')
                 })
                 .catch(err=>console.error("Erreur dechiffrage fichier ", err))
         }
@@ -430,6 +453,7 @@ function ConfigurerConsignationInstance(props) {
         setTypeStore, setUrlDownload, 
         setConsignationUrl, setSyncIntervalle, setSyncActif,
         setHostnameSftp, setPortSftp, setUsernameSftp, setRemotePathSftp, setKeyTypeSftp,
+        setS3AccessKeyId, setS3SecretAccessKey, setS3Region, setS3Endpoint, setS3Bucket,
         setTypeBackup, setHostnameSftpBackup, setPortSftpBackup, setUsernameSftpBackup, setRemotePathSftpBackup, setKeyTypeSftpBackup,
     ])
 
@@ -456,59 +480,6 @@ function ConfigurerConsignationInstance(props) {
             setCleChiffrage('')
         }
     }, [workers, consignation, setCleChiffrage])
-
-    // Sample creer cle chiffrage
-    // const sauvegarderGroupeHandler = useCallback(()=>{
-    //     Promise.resolve()
-    //         .then(async () => {
-    //             const metadataDechiffre = {
-    //                 nom_groupe: nomGroupe,
-    //                 securite_groupe: securiteGroupe,
-    //             }
-                
-    //             const commande = {
-    //                 // nom_groupe: nomGroupe,
-    //                 categorie_id: categorieId,
-    //             }
-
-    //             if(groupe.groupe_id) {
-    //                 commande.groupe_id = groupe.groupe_id
-    //             } 
-                
-    //             let commandeMaitrecles = null
-    //             if(!groupe.groupe_id) {
-    //                 // Nouveau groupe - creer la cle
-    //                 const certificatsChiffrage = await workers.connexion.getCertificatsMaitredescles()
-    //                 const identificateurs_document = {'type': 'groupe'}
-
-    //                 const {doc: metadataChiffre, commandeMaitrecles: _commandeMaitrecles} = await workers.chiffrage.chiffrerDocument(
-    //                     metadataDechiffre, 'Documents', certificatsChiffrage, {identificateurs_document, userId, DEBUG: true})
-
-    //                 // Conserver information chiffree
-    //                 Object.assign(commande, metadataChiffre)
-
-    //                 console.debug("Commande maitre des cles : %O", _commandeMaitrecles)
-    //                 commandeMaitrecles = _commandeMaitrecles
-    //             } else if(groupe.ref_hachage_bytes) {
-    //                 commande.groupe_id = groupe.groupe_id
-    //                 commande.ref_hachage_bytes = groupe.ref_hachage_bytes
-
-    //                 // Recuperer cle pour re-chiffrer
-    //                 let cle = await workers.clesDao.getCles(groupe.ref_hachage_bytes)
-    //                 cle = cle[groupe.ref_hachage_bytes]
-
-    //                 const champsChiffres = await workers.chiffrage.chiffrage.updateChampsChiffres(metadataDechiffre, cle.cleSecrete)
-    //                 Object.assign(commande, champsChiffres)
-    //             } else {
-    //                 throw new Error('Cle manquante')
-    //             }
-        
-    //             // console.debug("Sauvegarder groupe : %O, commande maitre des cles : %O", commande, commandeMaitrecles)
-    //             const reponse = await workers.connexion.sauvegarderGroupeUsager(commande, commandeMaitrecles)
-    //             if(reponse.ok === true) fermer()
-    //           })
-    //         .catch(err=>console.error("Erreur sauvegarde groupe : ", err))
-    // }, [workers, userId, groupe, nomGroupe, securiteGroupe, categorieId, fermer])    
 
     if(!consignation) return ''
 
@@ -606,6 +577,16 @@ function ConfigurerConsignationInstance(props) {
                     <Tab eventKey="awss3" title="AWS S3">
                         <TabAwsS3
                             appliquerConfiguration={appliquerConfiguration} 
+                            s3AccessKeyId={s3AccessKeyId}
+                            setS3AccessKeyId={setS3AccessKeyId}
+                            s3SecretAccessKey={s3SecretAccessKey}
+                            setS3SecretAccessKey={setS3SecretAccessKey}
+                            s3Region={s3Region}
+                            setS3Region={setS3Region}
+                            s3Endpoint={s3Endpoint}
+                            setS3Endpoint={setS3Endpoint}
+                            s3Bucket={s3Bucket}
+                            setS3Bucket={setS3Bucket}
                             erreurCb={erreurCb} />
                     </Tab>                    
                 </Tabs>
@@ -749,53 +730,56 @@ function TabSftp(props) {
 }
 
 function TabAwsS3(props) {
+
+    const {
+        s3AccessKeyId, setS3AccessKeyId, s3SecretAccessKey, setS3SecretAccessKey, 
+        s3Region, setS3Region, s3Endpoint, setS3Endpoint, s3Bucket, setS3Bucket
+    } = props
+
     return (
         <div>
-            <p>Les fichiers sont stockes sur un serveur Amazon Web Services S3 (ou compatible S3)</p>
+            <p>Les fichiers sont stockes sur un serveur Amazon Web Services S3 (ou compatible S3 comme Linode)</p>
 
             <p>Le serveur tiers doit exposer les fichiers avec un serveur web statique et les directives CORS.</p>
 
             <h3>Parametres du serveur AWS S3</h3>
-            {/* <Row>
-                <Form.Group as={Col} xs={12} md={6}>
-                    <Form.Label>Hostname</Form.Label>
-                    <FormControl id="hosts3" aria-describedby="hosts3"
-                        placeholder="exemple : serveur.domain.com"
-                        value={hostnameS3}
-                        onChange={event=>setHostnameSftp(event.currentTarget.value)} />
+            <Row>
+                <Form.Group as={Col} xs={12}>
+                    <Form.Label>Access Key ID</Form.Label>
+                    <FormControl id="s3AccessKeyId" aria-describedby="s3AccessKeyId"
+                        placeholder="exemple : PEV36HMR94NVQDJLQ3K8"
+                        value={s3AccessKeyId}
+                        onChange={event=>setS3AccessKeyId(event.currentTarget.value)} />
                 </Form.Group>
-                <Form.Group as={Col} xs={6} md={2}>
-                    <Form.Label>Port</Form.Label>
-                    <FormControl id="portS3" aria-describedby="portS3"
-                        placeholder="exemple : 22"
-                        value={portS3}
-                        onChange={event=>setPortSftp(event.currentTarget.value)} />
+                <Form.Group as={Col} xs={12}>
+                    <Form.Label>Secret Access Key</Form.Label>
+                    <FormControl id="s3SecretAccessKey" aria-describedby="s3SecretAccessKey"
+                        placeholder="exemple : DADI01DEADBEEF02"
+                        value={s3SecretAccessKey}
+                        onChange={event=>setS3SecretAccessKey(event.currentTarget.value)} />
                 </Form.Group>
-                <Form.Group as={Col} xs={6} md={4}>
-                    <Form.Label>Username</Form.Label>
-                    <FormControl id="usernameSftp" aria-describedby="usernameSftp"
-                        placeholder="exemple : bobby"
-                        value={usernameSftp}
-                        onChange={event=>setUsernameSftp(event.currentTarget.value)} />
+                <Form.Group as={Col} xs={12}>
+                    <Form.Label>Endpoint</Form.Label>
+                    <FormControl id="s3Endpoint" aria-describedby="s3Endpoint"
+                        placeholder="exemple : https://us-southeast-1.linodeobjects.com/"
+                        value={s3Endpoint}
+                        onChange={event=>setS3Endpoint(event.currentTarget.value)} />
                 </Form.Group>
-                <Form.Group as={Col} xs={6} md={4}>
-                    <Form.Label>Key</Form.Label>
-                    <FormControl id="usernameSftp" aria-describedby="usernameSftp"
-                        placeholder="exemple : bobby"
-                        value={usernameSftp}
-                        onChange={event=>setUsernameSftp(event.currentTarget.value)} />
+                <Form.Group as={Col} xs={12}>
+                    <Form.Label>Region</Form.Label>
+                    <FormControl id="s3Region" aria-describedby="s3Region"
+                        placeholder="exemple : us-east-1"
+                        value={s3Region}
+                        onChange={event=>setS3Region(event.currentTarget.value)} />
+                </Form.Group>
+                <Form.Group as={Col} xs={12}>
+                    <Form.Label>Bucket</Form.Label>
+                    <FormControl id="s3Bucket" aria-describedby="s3Bucket"
+                        placeholder="exemple : DADI01DEADBEEF02"
+                        value={s3Bucket}
+                        onChange={event=>setS3Bucket(event.currentTarget.value)} />
                 </Form.Group>
             </Row>
-
-            <Row>
-                <Form.Group as={Col}>
-                    <Form.Label>Remote path</Form.Label>
-                    <FormControl id="remotePathSftp" aria-describedby="remotePathSftp"
-                        placeholder="exemple : /usr/share/lib/nginx"
-                        value={remotePathSftp}
-                        onChange={event=>setRemotePathSftp(event.currentTarget.value)} />
-                </Form.Group>
-            </Row> */}
 
         </div>
     )
