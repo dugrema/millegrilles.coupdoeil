@@ -270,15 +270,22 @@ function ConfigurerConsignationInstance(props) {
           workers = useWorkers(),
           etatPret = useEtatPret()
 
+    // Lock instanceId durant edit - evite refresh
+    const instanceIdCourant = useMemo(()=>instanceId, [instanceId])
+
     const listeConsignation = useSelector(state=>state.consignation.liste),
           instances = useSelector(state=>state.instances.listeInstances)
     // const [consignation, setConsignation] = useState('')
-    const instance = useMemo(()=>instances.filter(item=>item.instance_id === instanceId).pop(), [instances, instanceId])
+
+    const instance = useMemo(()=>instances.filter(item=>item.instance_id === instanceIdCourant).pop(), [instances, instanceIdCourant])
+    const consignation = useMemo(()=>listeConsignation.filter(item=>item.instance_id === instanceIdCourant).pop(), [instances, instanceIdCourant])
 
     // const [configuration, setConfiguration] = useState('')
     const [typeStore, setTypeStore] = useState('local')
     const [urlDownload, setUrlDownload] = useState('')
     const [consignationUrl, setConsignationUrl] = useState(CONST_CONSIGNATION_URL)
+    const [syncIntervalle, setSyncIntervalle] = useState('')
+    const [syncActif, setSyncActif] = useState('')
 
     // Sftp
     const [hostnameSftp, setHostnameSftp] = useState('')
@@ -287,19 +294,39 @@ function ConfigurerConsignationInstance(props) {
     const [remotePathSftp, setRemotePathSftp] = useState('')
     const [keyTypeSftp, setKeyTypeSftp] = useState('ed25519')
 
+    // Backup
+    const [typeBackup, setTypeBackup] = useState('')
+    const [hostnameSftpBackup, setHostnameSftpBackup] = useState('')
+    const [portSftpBackup, setPortSftpBackup] = useState(22)
+    const [usernameSftpBackup, setUsernameSftpBackup] = useState('')
+    const [remotePathSftpBackup, setRemotePathSftpBackup] = useState('')
+    const [keyTypeSftpBackup, setKeyTypeSftpBackup] = useState('ed25519')
+
     const appliquerConfiguration = useCallback(()=>{
         const {connexion} = workers
         if(connexion && etatPret) {
             // Preparer nouvelle configuration
             const config = {
-                instance_id: instanceId, 
+                instance_id: instanceIdCourant, 
                 type_store: typeStore, 
                 url_download: urlDownload, 
                 consignation_url: consignationUrl, 
+                sync_intervalle: syncIntervalle,
+                sync_actif: syncActif,
+                
+                // SFTP
                 hostname_sftp: hostnameSftp, 
                 username_sftp: usernameSftp, 
                 remote_path_sftp: remotePathSftp, 
                 key_type_sftp: keyTypeSftp,
+                
+                // Backup
+                type_backup: typeBackup, 
+                hostname_sftp_backup: hostnameSftpBackup, 
+                port_sftp_backup: portSftpBackup, 
+                username_sftp_backup: usernameSftpBackup, 
+                remote_path_sftp_backup: remotePathSftpBackup, 
+                key_type_sftp_backup: keyTypeSftpBackup,
             }
             if(portSftp) config.portSftp = Number.parseInt(portSftp)
 
@@ -322,20 +349,15 @@ function ConfigurerConsignationInstance(props) {
         
     }, [
         dispatch, workers, erreurCb,
-        instanceId,
+        instanceIdCourant,
         etatPret, confirmationCb, fermer,
         typeStore, urlDownload, 
-        consignationUrl, 
+        consignationUrl, syncIntervalle, syncActif,
         hostnameSftp, usernameSftp, remotePathSftp, keyTypeSftp, portSftp,
+        typeBackup, hostnameSftpBackup, portSftpBackup, usernameSftpBackup, remotePathSftpBackup, keyTypeSftpBackup,
     ])
 
     useEffect(()=>{
-        if(!instanceId) {
-            // setConsignation('')
-            return
-        }
-
-        const consignation = listeConsignation.filter(item=>item.instance_id === instanceId).pop()
         if(!consignation) return
         // setConsignation(consignation)
         console.debug("ConfigurerConsignationInstance Edit consignation ", consignation)
@@ -343,37 +365,49 @@ function ConfigurerConsignationInstance(props) {
         setTypeStore(consignation.type_store || 'millegrille')
         setUrlDownload(consignation.url_download || '')
         setConsignationUrl(consignation.consignation_url || CONST_CONSIGNATION_URL)
+        setSyncIntervalle(consignation.sync_intervalle || '')
+        setSyncActif(consignation.sync_actif || '')
+
+        // SFTP
         setHostnameSftp(consignation.hostname_sftp || '')
         setPortSftp(consignation.port_sftp || '22')
         setUsernameSftp(consignation.username_sftp || '')
         setRemotePathSftp(consignation.remote_path_sftp || '')
         setKeyTypeSftp(consignation.key_type_sftp || 'ed25519')
+
+        // Backup
+        setTypeBackup(consignation.type_backup || '')
+        setHostnameSftpBackup(consignation.hostname_sftp_backup || '')
+        setPortSftpBackup(consignation.port_sftp_backup || '22')
+        setUsernameSftpBackup(consignation.username_sftp_backup || '')
+        setRemotePathSftpBackup(consignation.remote_path_sftp_backup || '')
+        setKeyTypeSftpBackup(consignation.key_type_sftp_backup || 'ed25519')
     }, [
-        instanceId, listeConsignation, 
-        // setConsignation,
+        consignation, 
         setTypeStore, setUrlDownload, 
-        setConsignationUrl, 
+        setConsignationUrl, setSyncIntervalle, setSyncActif,
         setHostnameSftp, setPortSftp, setUsernameSftp, setRemotePathSftp, setKeyTypeSftp,
+        setTypeBackup, setHostnameSftpBackup, setPortSftpBackup, setUsernameSftpBackup, setRemotePathSftpBackup, setKeyTypeSftpBackup,
     ])
 
-    if(!instanceId) return ''
+    if(!consignation) return ''
 
     return (
         <div>
             <Row>
                 <Col xs={10} md={11}>
-                    <h2>{t('DomaineConsignation.titre')}</h2>
+                    <h3>Consgination {instance.domaine}</h3>
                 </Col>
                 <Col xs={2} md={1} className="bouton">
                     <Button onClick={fermer} variant="secondary"><i className='fa fa-remove'/></Button>
                 </Col>
             </Row>
 
-            <h3>{instance.domaine}</h3>
-
             <p>Cette page permet de modifier la configuration de consignation des fichiers pour l'instance.</p>
 
             <Form onSubmit={formSubmit}>
+                <h3>Parametres de transfert de fichiers https</h3>
+
                 <Row>
                     <Form.Group as={Col}>
                         <Form.Label>URL d'acces public aux fichiers (optionnel pour local)</Form.Label>
@@ -395,6 +429,34 @@ function ConfigurerConsignationInstance(props) {
                 </Row>
 
                 <br/>
+
+                <h3>Parametres primaire</h3>
+
+                <p>Les parametres suivants ne s'appliquent que si le serveur de consignation est le primaire.</p>
+
+                <Row>
+                    <Form.Group as={Col}>
+                        <Form.Label>Intervalle sync</Form.Label>
+                        <FormControl id="consignationUrl" aria-describedby="consignationUrl"
+                            placeholder="exemple : https://fichiers:444, https://millegrilles.com:444"
+                            value={consignationUrl}
+                            onChange={event=>setConsignationUrl(event.currentTarget.value)} />
+                    </Form.Group>
+                </Row>
+
+                <Row>
+                    <Form.Group as={Col}>
+                        <Form.Label>Synchronisation</Form.Label>
+                        <FormControl id="consignationUrl" aria-describedby="consignationUrl"
+                            placeholder="exemple : https://fichiers:444, https://millegrilles.com:444"
+                            value={consignationUrl}
+                            onChange={event=>setConsignationUrl(event.currentTarget.value)} />
+                    </Form.Group>
+                </Row>
+
+                <br/>
+
+                <h3>Stockage des fichiers</h3>
 
                 <Tabs activeKey={typeStore} onSelect={setTypeStore}>
                     <Tab eventKey="millegrille" title="MilleGrille">
@@ -421,8 +483,27 @@ function ConfigurerConsignationInstance(props) {
                             keyTypeSftp={keyTypeSftp} 
                             setKeyTypeSftp={setKeyTypeSftp} />
                     </Tab>
+                    <Tab eventKey="awss3" title="AWS S3">
+                        <TabAwsS3
+                            appliquerConfiguration={appliquerConfiguration} 
+                            erreurCb={erreurCb} />
+                    </Tab>                    
                 </Tabs>
+
+                <ConfigurerBackupInstance
+                    instanceId={instanceId}
+                    confirmationCb={confirmationCb}
+                    erreurCb={erreurCb} 
+                    typeBackup={typeBackup}
+                    setTypeBackup={setTypeBackup}
+                    />
+
+                <p></p>
+
+                <Button disabled={!etatPret} onClick={appliquerConfiguration}>Sauvegarder</Button>
+
             </Form>
+
         </div>
     )
     
@@ -440,11 +521,12 @@ function TabMilleGrille(props) {
 
     return (
         <div>
-            <h2>Consignation MilleGrille</h2>
-
-            <p>Les fichiers sont stockes sur une instance de MilleGrille.</p>
-
-            <Button disabled={!etatAuthentifie} onClick={appliquerConfiguration}>Sauvegarder</Button>
+            <p>Les fichiers sont stockes localement sur une instance de MilleGrille.</p>
+            <p>
+                Les fichiers sont sur le volume millegrilles-consignation de docker. Par defaut, ce volume
+                se situe a :
+            </p>
+            <p>/var/lib/docker/volumes/millegrilles-consignation/_data</p>
         </div>
     )
 }
@@ -542,8 +624,96 @@ function TabSftp(props) {
                 </Col>
             </Row>
 
-            <br />
-            <Button onClick={appliquerConfiguration} disabled={!etatAuthentifie}>Sauvegarder</Button>
+        </div>
+    )
+}
+
+function TabAwsS3(props) {
+    return (
+        <div>
+            <p>Les fichiers sont stockes sur un serveur Amazon Web Services S3 (ou compatible S3)</p>
+
+            <p>Le serveur tiers doit exposer les fichiers avec un serveur web statique et les directives CORS.</p>
+
+            <h3>Parametres du serveur AWS S3</h3>
+            {/* <Row>
+                <Form.Group as={Col} xs={12} md={6}>
+                    <Form.Label>Hostname</Form.Label>
+                    <FormControl id="hosts3" aria-describedby="hosts3"
+                        placeholder="exemple : serveur.domain.com"
+                        value={hostnameS3}
+                        onChange={event=>setHostnameSftp(event.currentTarget.value)} />
+                </Form.Group>
+                <Form.Group as={Col} xs={6} md={2}>
+                    <Form.Label>Port</Form.Label>
+                    <FormControl id="portS3" aria-describedby="portS3"
+                        placeholder="exemple : 22"
+                        value={portS3}
+                        onChange={event=>setPortSftp(event.currentTarget.value)} />
+                </Form.Group>
+                <Form.Group as={Col} xs={6} md={4}>
+                    <Form.Label>Username</Form.Label>
+                    <FormControl id="usernameSftp" aria-describedby="usernameSftp"
+                        placeholder="exemple : bobby"
+                        value={usernameSftp}
+                        onChange={event=>setUsernameSftp(event.currentTarget.value)} />
+                </Form.Group>
+                <Form.Group as={Col} xs={6} md={4}>
+                    <Form.Label>Key</Form.Label>
+                    <FormControl id="usernameSftp" aria-describedby="usernameSftp"
+                        placeholder="exemple : bobby"
+                        value={usernameSftp}
+                        onChange={event=>setUsernameSftp(event.currentTarget.value)} />
+                </Form.Group>
+            </Row>
+
+            <Row>
+                <Form.Group as={Col}>
+                    <Form.Label>Remote path</Form.Label>
+                    <FormControl id="remotePathSftp" aria-describedby="remotePathSftp"
+                        placeholder="exemple : /usr/share/lib/nginx"
+                        value={remotePathSftp}
+                        onChange={event=>setRemotePathSftp(event.currentTarget.value)} />
+                </Form.Group>
+            </Row> */}
+
+        </div>
+    )
+}
+
+function ConfigurerBackupInstance(props) {
+
+    const {typeBackup, setTypeBackup} = props
+
+    return (
+        <div>
+            <h3>Backup</h3>
+
+            <Tabs activeKey={typeBackup} onSelect={setTypeBackup}>
+                <Tab eventKey="" title="Aucun">
+                    <p>Aucun backup.</p>
+                    <p>Note: Si des consignation secondaires sont configurees, elles agissent implicitement comme backup 
+                        (miroir) et synchronisent automatiquement les fichiers a intervalle regulier.
+                    </p>
+                </Tab>
+                <Tab eventKey="sftp" title="sftp">
+                    {/* <TabSftp 
+                        workers={workers}
+                        etatAuthentifie={etatPret}
+                        appliquerConfiguration={appliquerConfiguration} 
+                        erreurCb={erreurCb}
+                        hostnameSftp={hostnameSftp} 
+                        setHostnameSftp={setHostnameSftp}
+                        portSftp={portSftp}
+                        setPortSftp={setPortSftp} 
+                        usernameSftp={usernameSftp}
+                        setUsernameSftp={setUsernameSftp} 
+                        remotePathSftp={remotePathSftp}
+                        setRemotePathSftp={setRemotePathSftp}
+                        keyTypeSftp={keyTypeSftp} 
+                        setKeyTypeSftp={setKeyTypeSftp} /> */}
+                </Tab>
+            </Tabs>
         </div>
     )
 }
