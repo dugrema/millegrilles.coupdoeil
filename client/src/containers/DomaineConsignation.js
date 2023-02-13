@@ -311,6 +311,8 @@ function ConfigurerConsignationInstance(props) {
     const [remotePathSftpBackup, setRemotePathSftpBackup] = useState('')
     const [keyTypeSftpBackup, setKeyTypeSftpBackup] = useState('ed25519')
 
+    const syncActifChangeHandler = useCallback(e=>setSyncActif(e.currentTarget.checked), [setSyncActif])
+
     const appliquerConfiguration = useCallback(()=>{
         const {connexion, chiffrage} = workers
         if(connexion && etatPret) {
@@ -415,7 +417,7 @@ function ConfigurerConsignationInstance(props) {
         setUrlDownload(consignation.url_download || '')
         setConsignationUrl(consignation.consignation_url || CONST_CONSIGNATION_URL)
         setSyncIntervalle(consignation.sync_intervalle || '')
-        setSyncActif(consignation.sync_actif || '')
+        setSyncActif(consignation.sync_actif!==false)
 
         // SFTP
         setHostnameSftp(consignation.hostname_sftp || '')
@@ -537,11 +539,10 @@ function ConfigurerConsignationInstance(props) {
 
                 <Row>
                     <Form.Group as={Col}>
-                        <Form.Label>Synchronisation</Form.Label>
-                        <FormControl id="syncActif" aria-describedby="syncActif"
-                            placeholder="Actif?"
-                            value={syncActif}
-                            onChange={event=>setSyncActif(event.currentTarget.value)} />
+                        <Form.Check id="syncActif" aria-describedby="syncActif" 
+                            checked={syncActif} 
+                            onChange={syncActifChangeHandler} 
+                            label='Synchronisation active' />
                     </Form.Group>
                 </Row>
 
