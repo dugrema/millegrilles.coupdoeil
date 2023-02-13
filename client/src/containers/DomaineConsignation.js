@@ -280,6 +280,8 @@ function ConfigurerConsignationInstance(props) {
     const instance = useMemo(()=>instances.filter(item=>item.instance_id === instanceIdCourant).pop(), [instances, instanceIdCourant])
     const consignation = useMemo(()=>listeConsignation.filter(item=>item.instance_id === instanceIdCourant).pop(), [instances, instanceIdCourant])
 
+    const [cleChiffrage, setCleChiffrage] = useState('')
+
     // const [configuration, setConfiguration] = useState('')
     const [typeStore, setTypeStore] = useState('local')
     const [urlDownload, setUrlDownload] = useState('')
@@ -303,53 +305,84 @@ function ConfigurerConsignationInstance(props) {
     const [keyTypeSftpBackup, setKeyTypeSftpBackup] = useState('ed25519')
 
     const appliquerConfiguration = useCallback(()=>{
-        const {connexion} = workers
+        const {connexion, chiffrage} = workers
         if(connexion && etatPret) {
-            // Preparer nouvelle configuration
-            const config = {
-                instance_id: instanceIdCourant, 
-                type_store: typeStore, 
-                url_download: urlDownload, 
-                consignation_url: consignationUrl, 
-                sync_intervalle: syncIntervalle,
-                sync_actif: syncActif,
-                
-                // SFTP
-                hostname_sftp: hostnameSftp, 
-                username_sftp: usernameSftp, 
-                remote_path_sftp: remotePathSftp, 
-                key_type_sftp: keyTypeSftp,
-                
-                // Backup
-                type_backup: typeBackup, 
-                hostname_sftp_backup: hostnameSftpBackup, 
-                port_sftp_backup: portSftpBackup, 
-                username_sftp_backup: usernameSftpBackup, 
-                remote_path_sftp_backup: remotePathSftpBackup, 
-                key_type_sftp_backup: keyTypeSftpBackup,
-            }
-            if(portSftp) config.portSftp = Number.parseInt(portSftp)
 
-            // Changer fichier de config stocke local
-            connexion.modifierConfigurationConsignation(config)
-                .then(resultat=>{
-                    if(resultat.ok===false) {
-                        return erreurCb(resultat.err, "Erreur de sauvegarde de la configuration")
-                    }
-                    console.debug("Configuration sauvegardee : %O", config)
-                    // setConfiguration(config)
-                    dispatch(mergeConsignation(config))
-                    confirmationCb("Configuration sauvegardee")
-                    fermer()
-                })
-                .catch(err=>erreurCb(err, 'Erreur de sauvegarde de la configuration'))
+            Promise.resolve().then(async () => {
+
+                // Preparer nouvelle configuration
+                const config = {
+                    instance_id: instanceIdCourant, 
+                    type_store: typeStore, 
+                    url_download: urlDownload, 
+                    consignation_url: consignationUrl, 
+                    sync_intervalle: (syncIntervalle?Number.parseInt(syncIntervalle):null),
+                    sync_actif: (syncActif===true?true:false),
+                    
+                    // SFTP
+                    hostname_sftp: hostnameSftp, 
+                    username_sftp: usernameSftp, 
+                    remote_path_sftp: remotePathSftp, 
+                    key_type_sftp: keyTypeSftp,
+                    
+                    // Backup
+                    type_backup: typeBackup, 
+                    hostname_sftp_backup: hostnameSftpBackup, 
+                    port_sftp_backup: portSftpBackup, 
+                    username_sftp_backup: usernameSftpBackup, 
+                    remote_path_sftp_backup: remotePathSftpBackup, 
+                    key_type_sftp_backup: keyTypeSftpBackup,
+
+                    data_chiffre: {},
+                }
+                if(portSftp) config.portSftp = Number.parseInt(portSftp)
+
+                let commandeMaitredescles = null
+
+                const dataDechiffre = {'test': 125}
+
+                if(cleChiffrage) {
+                    const doc = await workers.chiffrage.chiffrage.updateChampsChiffres(dataDechiffre, cleChiffrage.cleSecrete)
+                    // Copier ref_hachage_bytes
+                    doc.ref_hachage_bytes = cleChiffrage.hachage_bytes
+                    Object.assign(config.data_chiffre, doc)
+                } else {
+                    // Creer nouvelle commande pour maitre des cles
+                    console.debug("Charger certificats maitre des cles")
+                    const certificatsChiffrage = await connexion.getCertificatsMaitredescles()
+                    console.debug("Certificats maitre des cles ", certificatsChiffrage)
+                    const identificateurs_document = {'type': 'consignation'}
+
+                    const {doc, commandeMaitrecles: commande} = await chiffrage.chiffrerDocument(
+                        dataDechiffre, 'CoreTopologie', certificatsChiffrage, {identificateurs_document, DEBUG: true})
+
+                    // Conserver data chiffre dans config
+                    Object.assign(config.data_chiffre, doc)
+
+                    console.debug("Commande maitre des cles : %O", commande)
+                    commandeMaitredescles = commande
+                }
+
+                // Changer fichier de config stocke local
+                const resultat = await connexion.modifierConfigurationConsignation(config, commandeMaitredescles)
+                if(resultat.ok===false) {
+                    return erreurCb(resultat.err, "Erreur de sauvegarde de la configuration")
+                }
+                console.debug("Configuration sauvegardee : %O", config)
+                // setConfiguration(config)
+                dispatch(mergeConsignation(config))
+                confirmationCb("Configuration sauvegardee")
+                fermer()
+            })
+            .catch(err=>console.error("Erreur sauvegarde de la configuration ", err))
+
         } else {
             erreurCb('Erreur de connexion au serveur, veuillez reessayer plus tard')
         }
         
     }, [
         dispatch, workers, erreurCb,
-        instanceIdCourant,
+        instanceIdCourant, cleChiffrage,
         etatPret, confirmationCb, fermer,
         typeStore, urlDownload, 
         consignationUrl, syncIntervalle, syncActif,
@@ -382,13 +415,100 @@ function ConfigurerConsignationInstance(props) {
         setUsernameSftpBackup(consignation.username_sftp_backup || '')
         setRemotePathSftpBackup(consignation.remote_path_sftp_backup || '')
         setKeyTypeSftpBackup(consignation.key_type_sftp_backup || 'ed25519')
+
+        if(cleChiffrage && consignation.data_chiffre) {
+            // Dechiffrer champs secrets
+            workers.chiffrage.chiffrage.dechiffrerChampsChiffres(consignation.data_chiffre, cleChiffrage)
+                .then(dataDechiffre =>{
+                    console.debug("Data dechiffre ", dataDechiffre)
+                })
+                .catch(err=>console.error("Erreur dechiffrage fichier ", err))
+        }
     }, [
-        consignation, 
+        consignation, cleChiffrage,  // Triggers pour recharger champs
+
         setTypeStore, setUrlDownload, 
         setConsignationUrl, setSyncIntervalle, setSyncActif,
         setHostnameSftp, setPortSftp, setUsernameSftp, setRemotePathSftp, setKeyTypeSftp,
         setTypeBackup, setHostnameSftpBackup, setPortSftpBackup, setUsernameSftpBackup, setRemotePathSftpBackup, setKeyTypeSftpBackup,
     ])
+
+    // Charger cle dechiffrage
+    useEffect(()=>{
+        if(!consignation) {
+            setCleChiffrage('')
+            return  // Reset cle
+        }
+
+        console.debug("Charger cle ", consignation)
+        const data_chiffre = consignation.data_chiffre || {},
+              ref_hachage_bytes = data_chiffre.ref_hachage_bytes
+        if(ref_hachage_bytes) {
+            // Recuperer cle pour re-chiffrer
+            workers.clesDao.getCles(ref_hachage_bytes, 'CoreTopologie')
+                .then(cle=>{
+                    console.debug("Cle dechiffrage chargee : ", cle)
+                    setCleChiffrage(cle[ref_hachage_bytes])
+                })
+                .catch(err=>console.error("Erreur chargement cle dechiffrage ", err))
+        } else {
+            // Generer nouvelle cle de chiffrage
+            setCleChiffrage('')
+        }
+    }, [workers, consignation, setCleChiffrage])
+
+    // Sample creer cle chiffrage
+    // const sauvegarderGroupeHandler = useCallback(()=>{
+    //     Promise.resolve()
+    //         .then(async () => {
+    //             const metadataDechiffre = {
+    //                 nom_groupe: nomGroupe,
+    //                 securite_groupe: securiteGroupe,
+    //             }
+                
+    //             const commande = {
+    //                 // nom_groupe: nomGroupe,
+    //                 categorie_id: categorieId,
+    //             }
+
+    //             if(groupe.groupe_id) {
+    //                 commande.groupe_id = groupe.groupe_id
+    //             } 
+                
+    //             let commandeMaitrecles = null
+    //             if(!groupe.groupe_id) {
+    //                 // Nouveau groupe - creer la cle
+    //                 const certificatsChiffrage = await workers.connexion.getCertificatsMaitredescles()
+    //                 const identificateurs_document = {'type': 'groupe'}
+
+    //                 const {doc: metadataChiffre, commandeMaitrecles: _commandeMaitrecles} = await workers.chiffrage.chiffrerDocument(
+    //                     metadataDechiffre, 'Documents', certificatsChiffrage, {identificateurs_document, userId, DEBUG: true})
+
+    //                 // Conserver information chiffree
+    //                 Object.assign(commande, metadataChiffre)
+
+    //                 console.debug("Commande maitre des cles : %O", _commandeMaitrecles)
+    //                 commandeMaitrecles = _commandeMaitrecles
+    //             } else if(groupe.ref_hachage_bytes) {
+    //                 commande.groupe_id = groupe.groupe_id
+    //                 commande.ref_hachage_bytes = groupe.ref_hachage_bytes
+
+    //                 // Recuperer cle pour re-chiffrer
+    //                 let cle = await workers.clesDao.getCles(groupe.ref_hachage_bytes)
+    //                 cle = cle[groupe.ref_hachage_bytes]
+
+    //                 const champsChiffres = await workers.chiffrage.chiffrage.updateChampsChiffres(metadataDechiffre, cle.cleSecrete)
+    //                 Object.assign(commande, champsChiffres)
+    //             } else {
+    //                 throw new Error('Cle manquante')
+    //             }
+        
+    //             // console.debug("Sauvegarder groupe : %O, commande maitre des cles : %O", commande, commandeMaitrecles)
+    //             const reponse = await workers.connexion.sauvegarderGroupeUsager(commande, commandeMaitrecles)
+    //             if(reponse.ok === true) fermer()
+    //           })
+    //         .catch(err=>console.error("Erreur sauvegarde groupe : ", err))
+    // }, [workers, userId, groupe, nomGroupe, securiteGroupe, categorieId, fermer])    
 
     if(!consignation) return ''
 
@@ -437,20 +557,20 @@ function ConfigurerConsignationInstance(props) {
                 <Row>
                     <Form.Group as={Col}>
                         <Form.Label>Intervalle sync</Form.Label>
-                        <FormControl id="consignationUrl" aria-describedby="consignationUrl"
-                            placeholder="exemple : https://fichiers:444, https://millegrilles.com:444"
-                            value={consignationUrl}
-                            onChange={event=>setConsignationUrl(event.currentTarget.value)} />
+                        <FormControl id="syncIntervalle" aria-describedby="syncIntervalle"
+                            placeholder="Mettre le nombre de secondes (e.g. 86400 pour 1 jour)"
+                            value={syncIntervalle}
+                            onChange={event=>setSyncIntervalle(event.currentTarget.value)} />
                     </Form.Group>
                 </Row>
 
                 <Row>
                     <Form.Group as={Col}>
                         <Form.Label>Synchronisation</Form.Label>
-                        <FormControl id="consignationUrl" aria-describedby="consignationUrl"
-                            placeholder="exemple : https://fichiers:444, https://millegrilles.com:444"
-                            value={consignationUrl}
-                            onChange={event=>setConsignationUrl(event.currentTarget.value)} />
+                        <FormControl id="syncActif" aria-describedby="syncActif"
+                            placeholder="Actif?"
+                            value={syncActif}
+                            onChange={event=>setSyncActif(event.currentTarget.value)} />
                     </Form.Group>
                 </Row>
 

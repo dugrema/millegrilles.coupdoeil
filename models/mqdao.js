@@ -155,8 +155,19 @@ function getPublicKeySsh(socket, requete) {
     )
 }
 
-function modifierConfigurationConsignation(socket, commande) {
+async function modifierConfigurationConsignation(socket, commande) {
     debug("modifierConfigurationConsignation %O", commande)
+    const commandeMaitredescles = commande['_commandeMaitredescles']
+    if(commandeMaitredescles) {
+        delete commande['_commandeMaitredescles']  // Cleanup
+        const reponse = await transmettreCommande(
+            socket, commandeMaitredescles, 'sauvegarderCle', 
+            {domaine: 'MaitreDesCles', exchange: '3.protege', partition: commandeMaitredescles['_partition']}
+        )
+        if(reponse.ok !== true) {
+            return reponse
+        }
+    }
     return transmettreCommande(socket, commande, 'configurerConsignation', {domaine: CONST_DOMAINE_TOPOLOGIE, exchange: '3.protege'})
 }
 
@@ -173,6 +184,10 @@ function declencherSync(socket, commande) {
 function demarrerBackupTransactions(socket, commande) {
     debug("demarrerBackupTransactions %O", commande)
     return transmettreCommande(socket, commande, 'demarrerBackupTransactions', {domaine: CONST_DOMAINE_FICHIERS, exchange: '2.prive'})
+}
+
+function getCles(socket, requete) {
+    return transmettreRequete(socket, requete, 'dechiffrage', {domaine: CONST_DOMAINE_MAITREDESCLES, exchange: '2.prive'})
 }
 
 // Fonctions generiques
@@ -231,7 +246,7 @@ module.exports = {
     resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationFichiers, getPublicKeySsh,
     modifierConfigurationConsignation, setFichiersPrimaire, declencherSync, demarrerBackupTransactions,
 
-    majMonitor, requeteConfigurationAcme, configurerDomaineAcme,
+    majMonitor, requeteConfigurationAcme, configurerDomaineAcme, getCles,
     
     // ecouterMajFichiers, ecouterMajCollections, ecouterTranscodageProgres, 
     // retirerTranscodageProgres, 

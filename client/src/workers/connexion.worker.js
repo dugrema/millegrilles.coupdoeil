@@ -321,10 +321,13 @@ function getPublicKeySsh() {
   )
 }
 
-function modifierConfigurationConsignation(commande) {
+async function modifierConfigurationConsignation(commande, commandeMaitredescles) {
   return connexionClient.emitBlocking(
     'modifierConfigurationConsignation',
-    commande,
+    {
+      ...commande, 
+      _commandeMaitredescles: commandeMaitredescles,
+    },
     {domaine: 'CoreTopologie', action: 'configurerConsignation', attacherCertificat: true}
   )
 }
@@ -350,6 +353,15 @@ function demarrerBackupTransactions(commande) {
     'demarrerBackupTransactions',
     commande,
     {domaine: 'fichiers', action: 'demarrerBackupTransactions', attacherCertificat: true}
+  )
+}
+
+function getCles(liste_hachage_bytes, opts) {
+  opts = opts || {}
+  return connexionClient.emitBlocking(
+    'getCles',
+    {liste_hachage_bytes, domaine: opts.domaine},
+    {domaine: 'MaitreDesCles', action: 'dechiffrage', attacherCertificat: true}
   )
 }
 
@@ -430,6 +442,7 @@ comlinkExpose({
   getConfigurationAcme, configurerDomaineAcme, getRecoveryCsr, signerRecoveryCsr, 
   resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationFichiers, getPublicKeySsh,
   modifierConfigurationConsignation, setFichiersPrimaire, declencherSync, demarrerBackupTransactions,
+  getCles,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,

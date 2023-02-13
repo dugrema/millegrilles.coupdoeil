@@ -8,7 +8,7 @@ function configurerEvenements(socket) {
       // {eventName: 'coupdoeil/getCertificatsMaitredescles', callback: cb => {getCertificatsMaitredescles(socket, cb)}}, // obsolete, utiliser getClesChiffrage
     ],
     listenersProteges: [
-      {eventName: 'getClesChiffrage', callback: (params, cb) => traiter(socket, mqdao.getClesChiffrage, {params, cb})},
+      // {eventName: 'getClesChiffrage', callback: (params, cb) => traiter(socket, mqdao.getClesChiffrage, {params, cb})},
 
       {eventName: 'coupdoeil/installerApplication', callback: (params, cb) => traiter(socket, mqdao.installerApplication, {params, cb}) },
       {eventName: 'coupdoeil/demarrerApplication', callback: (params, cb) => { traiter(socket, mqdao.demarrerApplication, {params, cb}) }},
@@ -31,6 +31,7 @@ function configurerEvenements(socket) {
       {eventName: 'setFichiersPrimaire', callback: (params, cb) => { traiter(socket, mqdao.setFichiersPrimaire, {params, cb}) }},
       {eventName: 'declencherSync', callback: (params, cb) => { traiter(socket, mqdao.declencherSync, {params, cb}) }},
       {eventName: 'demarrerBackupTransactions', callback: (params, cb) => { traiter(socket, mqdao.demarrerBackupTransactions, {params, cb}) }},
+      {eventName: 'getCles', callback: (params, cb) => { traiter(socket, mqdao.getCles, {params, cb}) }},
 
       {eventName: 'coupdoeil/requeteListeNoeuds', callback: (params, cb) => {requeteListeNoeuds(socket, params, cb)}},
       {eventName: 'coupdoeil/requeteListeDomaines', callback: cb => {requeteListeDomaines(socket, cb)}},
