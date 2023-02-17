@@ -598,6 +598,16 @@ function ConfigurerConsignationInstance(props) {
                     erreurCb={erreurCb} 
                     typeBackup={typeBackup}
                     setTypeBackup={setTypeBackup}
+                    hostnameSftpBackup={hostnameSftpBackup}
+                    setHostnameSftpBackup={setHostnameSftpBackup}
+                    portSftpBackup={portSftpBackup}
+                    setPortSftpBackup={setPortSftpBackup}
+                    usernameSftpBackup={usernameSftpBackup}
+                    setUsernameSftpBackup ={setUsernameSftpBackup}
+                    remotePathSftpBackup={remotePathSftpBackup}
+                    setRemotePathSftpBackup={setRemotePathSftpBackup}
+                    keyTypeSftpBackup={keyTypeSftpBackup}
+                    setKeyTypeSftpBackup={setKeyTypeSftpBackup}
                     />
 
                 <p></p>
@@ -636,12 +646,15 @@ function TabMilleGrille(props) {
 function TabSftp(props) {
 
     const { 
-        workers, etatAuthentifie, appliquerConfiguration, erreurCb,
+        erreurCb,
         hostnameSftp, setHostnameSftp, portSftp, setPortSftp, usernameSftp, setUsernameSftp,
         remotePathSftp, setRemotePathSftp, keyTypeSftp, setKeyTypeSftp,
     } = props
 
     const changeKeyType = useCallback(event=>setKeyTypeSftp(event.currentTarget.value), [setKeyTypeSftp])
+
+    const workers = useWorkers(),
+          etatAuthentifie = useEtatPret()
 
     const [cleSsh, setCleSsh] = useState('')
     const [infoCles, setInfoCles] = useState('')
@@ -665,13 +678,8 @@ function TabSftp(props) {
 
     return (
         <div>
-            <h2>Consignation via sftp</h2>
+            <h3>Parametres sftp</h3>
 
-            <p>Les fichiers sont stockes sur un serveur tiers. Le contenu est transmis avec sftp.</p>
-
-            <p>Le serveur tiers doit exposer les fichiers avec un serveur web statique et les directives CORS.</p>
-
-            <h3>Parametres du serveur sftp</h3>
             <Row>
                 <Form.Group as={Col} xs={12} md={6}>
                     <Form.Label>Hostname</Form.Label>
@@ -788,7 +796,15 @@ function TabAwsS3(props) {
 
 function ConfigurerBackupInstance(props) {
 
-    const {typeBackup, setTypeBackup} = props
+    const {
+        erreurCb,
+        typeBackup, setTypeBackup,
+        hostnameSftpBackup, setHostnameSftpBackup,
+        portSftpBackup, setPortSftpBackup,
+        usernameSftpBackup, setUsernameSftpBackup,
+        remotePathSftpBackup, setRemotePathSftpBackup,
+        keyTypeSftpBackup, setKeyTypeSftpBackup,
+    } = props
 
     return (
         <div>
@@ -802,21 +818,18 @@ function ConfigurerBackupInstance(props) {
                     </p>
                 </Tab>
                 <Tab eventKey="sftp" title="sftp">
-                    {/* <TabSftp 
-                        workers={workers}
-                        etatAuthentifie={etatPret}
-                        appliquerConfiguration={appliquerConfiguration} 
+                    <TabSftp 
                         erreurCb={erreurCb}
-                        hostnameSftp={hostnameSftp} 
-                        setHostnameSftp={setHostnameSftp}
-                        portSftp={portSftp}
-                        setPortSftp={setPortSftp} 
-                        usernameSftp={usernameSftp}
-                        setUsernameSftp={setUsernameSftp} 
-                        remotePathSftp={remotePathSftp}
-                        setRemotePathSftp={setRemotePathSftp}
-                        keyTypeSftp={keyTypeSftp} 
-                        setKeyTypeSftp={setKeyTypeSftp} /> */}
+                        hostnameSftp={hostnameSftpBackup} 
+                        setHostnameSftp={setHostnameSftpBackup}
+                        portSftp={portSftpBackup}
+                        setPortSftp={setPortSftpBackup} 
+                        usernameSftp={usernameSftpBackup}
+                        setUsernameSftp={setUsernameSftpBackup} 
+                        remotePathSftp={remotePathSftpBackup}
+                        setRemotePathSftp={setRemotePathSftpBackup}
+                        keyTypeSftp={keyTypeSftpBackup} 
+                        setKeyTypeSftp={setKeyTypeSftpBackup} />
                 </Tab>
             </Tabs>
         </div>
