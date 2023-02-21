@@ -12,6 +12,7 @@ import Catalogues from './DomaineCatalogueApplications'
 import Maitredescles from './DomaineMaitredescles'
 import Usagers from './GestionUsagers'
 import DomaineConsignation from './DomaineConsignation'
+import Notifications from './Notifications'
 
 import useWorkers, { useEtatPret, useCleMillegrilleChargee } from '../WorkerContext'
 
@@ -63,6 +64,7 @@ function Domaines(props) {
         case 'Catalogues': Page = Catalogues; break
         case 'Usagers': Page = Usagers; break
         case 'Consignation': Page = DomaineConsignation; break
+        case 'Notifications': Page = Notifications; break
         default:
             Page = null
     }
@@ -85,9 +87,6 @@ function Domaines(props) {
             <ModalAttente show={attente} setAttente={setAttente} />
 
             <h1>{t('Domaines.titre')}</h1>
-
-            <h2>Domaines configures</h2>
-            <ListeDomaines domaines={domaines} />
 
             <h2>Actions</h2>
             <Row>
@@ -123,7 +122,18 @@ function Domaines(props) {
                         <Button variant="secondary" onClick={()=>setDomaineSelectionne('Consignation')}>Fichiers</Button>
                     </Col>
                 </Row>
+                <Row>
+                    <Col>
+                        Notifications des usagers
+                    </Col>
+                    <Col>
+                        <Button variant="secondary" onClick={()=>setDomaineSelectionne('Notifications')}>Notifications</Button>
+                    </Col>
+                </Row>
             </Row>
+
+            <h2>Domaines configures</h2>
+            <ListeDomaines domaines={domaines} />
         </>
     )
 }

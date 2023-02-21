@@ -50,5 +50,10 @@
     },
     "DomaineConsignation": {
         "titre": "Configuration de consignation des fichiers"
+    },
+    "Notifications": {
+        "titre": "Notifications",
+        "titre-email": "Notifications par email",
+        "titre-webpush": "Notifications par web push"
     }
 }
