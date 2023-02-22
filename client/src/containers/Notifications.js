@@ -18,7 +18,10 @@ function Notifications(props) {
     const workers = useWorkers(),
           etatPret = useEtatPret()
 
+    const [cleChiffrage, setCleChiffrage] = useState('')
+
     const [emailFrom, setEmailFrom] = useState('')
+    const [intervalleMin, setIntervalleMin] = useState('')
 
     const [smtpActif, setSmtpActif] = useState(false)
     const [smtpHostname, setSmtpHostname] = useState('')
@@ -31,6 +34,60 @@ function Notifications(props) {
     const [clepriveeWebpush, setClepriveeWebpush] = useState('')
     const [clepubliqueWebpush, setClepubliqueWebpush] = useState('')
     const [iconWebpush, setIconWebpush] = useState('')
+
+    const intervallMinChangeHandler = useCallback(event=>{
+        const valeur = validerNombre(event, 30, 86400)
+        if(valeur !== undefined) setIntervalleMin(valeur)
+    }, [setIntervalleMin])
+
+    const sauvegarderHandler = useCallback( event => {
+
+        const smtpDechiffre = {
+            smtp_password: smtpPassword, 
+        }
+
+        const webpushDechiffre = {
+            webpush_cleprivee: clepriveeWebpush, 
+        }
+
+        const commande = {
+            email_from: emailFrom, 
+            intervalle_min: intervalleMin, 
+            
+            smtp_actif: smtpActif, 
+            smtp_hostname: smtpHostname, 
+            smtp_port: smtpPort, 
+            smtp_username: smtpUsername, 
+            smtp_replyto: smtpReplyto,
+            // smtp_chiffre: smtpChiffre,
+
+            webpush_actif: webpushActif, 
+            webpush_clepublique: clepubliqueWebpush, 
+            webpush_icon: iconWebpush,
+            // webpush_chiffre: webpushChiffre,
+        }
+
+        Promise.resolve()
+            .then(async ()=>{
+                const {documentChiffre: docSmtp, commandeMaitredescles: mcSmtp} = 
+                    await chiffrerChamps(workers, 'config_notif_smtp', cleChiffrage, smtpDechiffre)
+                commande.smtp_chiffre = docSmtp
+
+                const {documentChiffre: docWebpush, commandeMaitredescles: mcWebpush} = 
+                    await chiffrerChamps(workers, 'config_notif_webpush', cleChiffrage, webpushDechiffre)
+                commande.webpush_chiffre = docWebpush
+
+                console.debug("Sauvegarder %O\nCles SMTP : %O\nCles webpush", commande, mcSmtp, mcWebpush)
+            })
+            .catch(err=>{
+                console.error("Erreur sauvegarde configuration : ", err)
+            })
+
+    }, [
+        emailFrom, intervalleMin, smtpActif, smtpHostname, smtpPort, smtpUsername, smtpPassword, smtpReplyto,
+        webpushActif, clepriveeWebpush, clepubliqueWebpush, iconWebpush,
+        cleChiffrage,
+    ])
 
     return (
         <div>
@@ -53,6 +110,17 @@ function Notifications(props) {
                         value={emailFrom}
                         onChange={event=>setEmailFrom(event.currentTarget.value)} />
                     <Form.Text>Note : l'adresse email est utilisee comme reference pour toutes les notifications.</Form.Text>
+                </Form.Group>
+            </Row>
+
+            <Row>
+                <Form.Group as={Col}>
+                    <Form.Label>Intervalle minimal entre notifications (secs)</Form.Label>
+                    <FormControl id="fromSmtp" aria-describedby="fromSmtp"
+                        placeholder="exemple : 120 (pour 2 minutes)"
+                        value={intervalleMin}
+                        onChange={intervallMinChangeHandler} />
+                    <Form.Text>Note : la valeur doit etre entre 30 et 86400 secondes (entre 30 secondes et 1 jour)</Form.Text>
                 </Form.Group>
             </Row>
 
@@ -89,7 +157,7 @@ function Notifications(props) {
 
             <Row>
                 <Col>
-                    <Button>Sauvegarder</Button>
+                    <Button disabled={!etatPret} onClick={sauvegarderHandler}>Sauvegarder</Button>
                     {' '}
                     <Button onClick={fermer} variant='secondary'>Annuler</Button>
                 </Col>
@@ -120,11 +188,8 @@ function ConfigurationEmail(props) {
     }, [setSmtpActif])
 
     const portChangeHandler = useCallback(event=>{
-        const value = event.currentTarget.value
-        if(value === '') return setSmtpPort('')
-        const port = Number.parseInt(event.currentTarget.value)
-        if(isNaN(port)) return  // Ne pas changer la valeur
-        if(port <= 65535) setSmtpPort(port)
+        const valeur = validerNombre(event, 1, 65535)
+        if(valeur !== undefined) setSmtpPort(valeur)
     }, [setSmtpPort])
 
     return (
@@ -276,4 +341,46 @@ function ConfigurationWebPush(props) {
         </div>
     )
 
+}
+
+function validerNombre(event, minValue, maxValue) {
+    const value = event.currentTarget.value
+    if(value === '') return ''
+    const intervalleMin = Number.parseInt(event.currentTarget.value)
+    if(isNaN(intervalleMin)) return  // Ne pas changer la valeur
+    const minLength = (''+minValue).length
+    if(value.length < minLength || intervalleMin <= maxValue) return intervalleMin
+}
+
+async function chiffrerChamps(workers, labelCle, cleChiffrage, champsDechiffres) {
+
+    const { chiffrage, connexion } = workers
+
+    let documentChiffre = null, commandeMaitredescles = null
+
+    if(cleChiffrage) {
+        const doc = await chiffrage.chiffrage.updateChampsChiffres(champsDechiffres, cleChiffrage.cleSecrete)
+        // Copier ref_hachage_bytes
+        doc.ref_hachage_bytes = cleChiffrage.hachage_bytes
+        // Object.assign(config.data_chiffre, doc)
+        documentChiffre = doc
+    } else {
+        // Creer nouvelle commande pour maitre des cles
+        console.debug("Charger certificats maitre des cles")
+        const certificatsChiffrage = await connexion.getCertificatsMaitredescles()
+        console.debug("Certificats maitre des cles ", certificatsChiffrage)
+        const identificateurs_document = {'type': labelCle}
+
+        const {doc, commandeMaitrecles: commande} = await chiffrage.chiffrerDocument(
+            champsDechiffres, 'CoreTopologie', certificatsChiffrage, {identificateurs_document, DEBUG: true})
+
+        // Conserver data chiffre dans config
+        // Object.assign(config.data_chiffre, doc)
+        documentChiffre = doc
+
+        console.debug("Commande maitre des cles : %O", commande)
+        commandeMaitredescles = commande
+    }
+
+    return {documentChiffre, commandeMaitredescles}
 }
