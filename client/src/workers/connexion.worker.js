@@ -365,6 +365,23 @@ function getCles(liste_hachage_bytes, opts) {
   )
 }
 
+function getConfigurationNotifications(opts) {
+  opts = opts || {}
+  return connexionClient.emitBlocking(
+    'getConfigurationNotifications',
+    {inclure_cles: true, ...opts},
+    {domaine: 'Messagerie', action: 'getConfigurationNotifications', attacherCertificat: true}
+  )
+}
+
+function conserverConfigurationNotifications(commande) {
+  return connexionClient.emitBlocking(
+    'conserverConfigurationNotifications',
+    commande,
+    {domaine: 'Messagerie', action: 'conserverConfigurationNotifications', attacherCertificat: true}
+  )
+}
+
 // Listeners
 function enregistrerCallbackEvenementsPresenceDomaine(cb) { 
   return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceDomaines', cb) 
@@ -442,7 +459,7 @@ comlinkExpose({
   getConfigurationAcme, configurerDomaineAcme, getRecoveryCsr, signerRecoveryCsr, 
   resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationFichiers, getPublicKeySsh,
   modifierConfigurationConsignation, setFichiersPrimaire, declencherSync, demarrerBackupTransactions,
-  getCles,
+  getCles, getConfigurationNotifications, conserverConfigurationNotifications,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,

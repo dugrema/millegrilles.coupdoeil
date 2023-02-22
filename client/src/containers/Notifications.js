@@ -18,6 +18,8 @@ function Notifications(props) {
     const workers = useWorkers(),
           etatPret = useEtatPret()
 
+    const [domaineActif, setDomaineActif] = useState('')
+
     const [cleChiffrage, setCleChiffrage] = useState('')
 
     const [emailFrom, setEmailFrom] = useState('')
@@ -54,40 +56,101 @@ function Notifications(props) {
             email_from: emailFrom, 
             intervalle_min: intervalleMin, 
             
-            smtp_actif: smtpActif, 
-            smtp_hostname: smtpHostname, 
-            smtp_port: smtpPort, 
-            smtp_username: smtpUsername, 
-            smtp_replyto: smtpReplyto,
-            // smtp_chiffre: smtpChiffre,
+            smtp: {
+                actif: smtpActif, 
+                hostname: smtpHostname, 
+                port: smtpPort, 
+                username: smtpUsername, 
+                replyto: smtpReplyto,
+                // chiffre: smtpChiffre,
+            },
 
-            webpush_actif: webpushActif, 
-            webpush_clepublique: clepubliqueWebpush, 
-            webpush_icon: iconWebpush,
-            // webpush_chiffre: webpushChiffre,
+            webpush: {
+                actif: webpushActif, 
+                clepublique: clepubliqueWebpush, 
+                icon: iconWebpush,
+                // chiffre: webpushChiffre,
+            }
         }
 
         Promise.resolve()
             .then(async ()=>{
                 const {documentChiffre: docSmtp, commandeMaitredescles: mcSmtp} = 
                     await chiffrerChamps(workers, 'config_notif_smtp', cleChiffrage, smtpDechiffre)
-                commande.smtp_chiffre = docSmtp
+                commande.smtp.chiffre = docSmtp
 
                 const {documentChiffre: docWebpush, commandeMaitredescles: mcWebpush} = 
                     await chiffrerChamps(workers, 'config_notif_webpush', cleChiffrage, webpushDechiffre)
-                commande.webpush_chiffre = docWebpush
+                commande.webpush.chiffre = docWebpush
 
-                console.debug("Sauvegarder %O\nCles SMTP : %O\nCles webpush", commande, mcSmtp, mcWebpush)
+                const cles = {
+                    smtp: mcSmtp,
+                    webpush: mcWebpush,
+                }
+                if(mcSmtp || mcWebpush) commande['_cles'] = cles
+
+                console.debug("Commande sauvegarder ", commande)
+                await workers.connexion.conserverConfigurationNotifications(commande)
+                fermer()
             })
             .catch(err=>{
                 console.error("Erreur sauvegarde configuration : ", err)
             })
 
     }, [
+        workers, fermer,
         emailFrom, intervalleMin, smtpActif, smtpHostname, smtpPort, smtpUsername, smtpPassword, smtpReplyto,
         webpushActif, clepriveeWebpush, clepubliqueWebpush, iconWebpush,
         cleChiffrage,
     ])
+
+    useEffect(()=>{
+        // Detecter si le domaine "Messagerie" est actif en chargeant la configuration des notifications
+        if(etatPret === false || domaineActif !== '') return  // Rien a faire
+        const { connexion } = workers
+        connexion.getConfigurationNotifications()
+            .then(reponse=>{
+                console.debug("Reponse configuration ", reponse)
+                setDomaineActif(true)  // On a eu une reponse
+            })
+            .catch(err=>{
+                console.error("Erreur chargement configuration notifications ", err)
+                setDomaineActif(false)  // Aucune reponse (timeout) ou autre erreur
+            })
+    }, [workers, domaineActif, etatPret, setDomaineActif])
+
+    let messageErreur = useMemo(()=>{
+        if(domaineActif === '') {
+            return (
+                <p>Chargement de la configuration en cours</p>
+            )
+        } else if(domaineActif === false) {
+            return (
+                <Alert variant='warning'>
+                    <Alert.Heading>Notifications non disponible</Alert.Heading>
+                    <p>Il faut installer le domaine Messagerie ou le redemarrer.</p>                
+                </Alert>
+            )
+        }
+    }, [domaineActif])
+
+    if(messageErreur) return (
+        <div>
+            <Row>
+                <Col xs={10} md={11}>
+                    <h2><Trans>Notifications.titre</Trans></h2>
+                </Col>
+                <Col xs={2} md={1} className="bouton">
+                    <Button onClick={fermer} variant="secondary"><i className='fa fa-remove'/></Button>
+                </Col>
+            </Row>
+
+            <p></p>
+
+            {messageErreur}
+
+        </div>
+    )
 
     return (
         <div>
@@ -372,7 +435,7 @@ async function chiffrerChamps(workers, labelCle, cleChiffrage, champsDechiffres)
         const identificateurs_document = {'type': labelCle}
 
         const {doc, commandeMaitrecles: commande} = await chiffrage.chiffrerDocument(
-            champsDechiffres, 'CoreTopologie', certificatsChiffrage, {identificateurs_document, DEBUG: true})
+            champsDechiffres, 'Messagerie', certificatsChiffrage, {identificateurs_document, DEBUG: true})
 
         // Conserver data chiffre dans config
         // Object.assign(config.data_chiffre, doc)

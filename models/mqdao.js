@@ -8,7 +8,8 @@ const DOMAINE_INSTANCE = 'instance',
       CONST_DOMAINE_GROSFICHIERS = 'GrosFichiers',
       CONST_DOMAINE_MAITREDESCLES = 'MaitreDesCles',
       CONST_DOMAINE_FICHIERS = 'fichiers',
-      CONST_DOMAINE_TOPOLOGIE = 'CoreTopologie'
+      CONST_DOMAINE_TOPOLOGIE = 'CoreTopologie',
+      CONST_DOMAINE_MESSAGERIE = 'Messagerie'
 
 const ROUTING_KEYS_FICHIERS = [
     //'evenement.grosfichiers.majFichier',
@@ -190,6 +191,20 @@ function getCles(socket, requete) {
     return transmettreRequete(socket, requete, 'dechiffrage', {domaine: CONST_DOMAINE_MAITREDESCLES, exchange: '2.prive'})
 }
 
+function getConfigurationNotifications(socket, requete) {
+    return transmettreRequete(
+        socket, requete, 'getConfigurationNotifications', 
+        {domaine: CONST_DOMAINE_MESSAGERIE, exchange: '1.public'}
+    )
+}
+
+function conserverConfigurationNotifications(socket, requete) {
+    return transmettreCommande(
+        socket, requete, 'conserverConfigurationNotifications', 
+        {domaine: CONST_DOMAINE_MESSAGERIE, exchange: '3.protege'}
+    )
+}
+
 // Fonctions generiques
 
 async function transmettreRequete(socket, params, action, opts) {
@@ -246,7 +261,8 @@ module.exports = {
     resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationFichiers, getPublicKeySsh,
     modifierConfigurationConsignation, setFichiersPrimaire, declencherSync, demarrerBackupTransactions,
 
-    majMonitor, requeteConfigurationAcme, configurerDomaineAcme, getCles,
+    majMonitor, requeteConfigurationAcme, configurerDomaineAcme, getCles, getConfigurationNotifications,
+    conserverConfigurationNotifications,
     
     // ecouterMajFichiers, ecouterMajCollections, ecouterTranscodageProgres, 
     // retirerTranscodageProgres, 
