@@ -23,7 +23,6 @@ function Notifications(props) {
     const [domaineActif, setDomaineActif] = useState('')
 
     const [cleChiffrageSmtp, setCleChiffrageSmtp] = useState('')
-    const [cleChiffrageWebpush, setCleChiffrageWebpush] = useState('')
 
     const [emailFrom, setEmailFrom] = useState('')
     const [intervalleMin, setIntervalleMin] = useState('')
@@ -51,10 +50,6 @@ function Notifications(props) {
             smtp_password: smtpPassword, 
         }
 
-        // const webpushDechiffre = {
-        //     webpush_cleprivee: clepriveeWebpush, 
-        // }
-
         const commande = {
             email_from: emailFrom, 
             intervalle_min: intervalleMin, 
@@ -65,14 +60,11 @@ function Notifications(props) {
                 port: smtpPort, 
                 username: smtpUsername, 
                 replyto: smtpReplyto,
-                // chiffre: smtpChiffre,
             },
 
             webpush: {
                 actif: webpushActif, 
-                //clepublique: clepubliqueWebpush, 
                 icon: iconWebpush,
-                // chiffre: webpushChiffre,
             }
         }
 
@@ -100,7 +92,6 @@ function Notifications(props) {
         emailFrom, intervalleMin, smtpActif, smtpHostname, smtpPort, smtpUsername, smtpPassword, smtpReplyto,
         webpushActif, iconWebpush,
         cleChiffrageSmtp, 
-        // cleChiffrageWebpush, clepriveeWebpush, clepubliqueWebpush,
     ])
     
     const genererCleWebpushHandler = useCallback(()=>{
