@@ -205,6 +205,13 @@ function conserverConfigurationNotifications(socket, requete) {
     )
 }
 
+function genererClewebpushNotifications(socket, requete) {
+    return transmettreCommande(
+        socket, requete, 'genererClewebpushNotifications', 
+        {domaine: CONST_DOMAINE_MESSAGERIE, exchange: '3.protege'}
+    )
+}
+
 // Fonctions generiques
 
 async function transmettreRequete(socket, params, action, opts) {
@@ -262,7 +269,7 @@ module.exports = {
     modifierConfigurationConsignation, setFichiersPrimaire, declencherSync, demarrerBackupTransactions,
 
     majMonitor, requeteConfigurationAcme, configurerDomaineAcme, getCles, getConfigurationNotifications,
-    conserverConfigurationNotifications,
+    conserverConfigurationNotifications, genererClewebpushNotifications,
     
     // ecouterMajFichiers, ecouterMajCollections, ecouterTranscodageProgres, 
     // retirerTranscodageProgres, 

@@ -18,9 +18,12 @@ function Notifications(props) {
     const workers = useWorkers(),
           etatPret = useEtatPret()
 
+    const [configuration, setConfiguration] = useState('')
+
     const [domaineActif, setDomaineActif] = useState('')
 
-    const [cleChiffrage, setCleChiffrage] = useState('')
+    const [cleChiffrageSmtp, setCleChiffrageSmtp] = useState('')
+    const [cleChiffrageWebpush, setCleChiffrageWebpush] = useState('')
 
     const [emailFrom, setEmailFrom] = useState('')
     const [intervalleMin, setIntervalleMin] = useState('')
@@ -48,9 +51,9 @@ function Notifications(props) {
             smtp_password: smtpPassword, 
         }
 
-        const webpushDechiffre = {
-            webpush_cleprivee: clepriveeWebpush, 
-        }
+        // const webpushDechiffre = {
+        //     webpush_cleprivee: clepriveeWebpush, 
+        // }
 
         const commande = {
             email_from: emailFrom, 
@@ -67,7 +70,7 @@ function Notifications(props) {
 
             webpush: {
                 actif: webpushActif, 
-                clepublique: clepubliqueWebpush, 
+                //clepublique: clepubliqueWebpush, 
                 icon: iconWebpush,
                 // chiffre: webpushChiffre,
             }
@@ -76,18 +79,18 @@ function Notifications(props) {
         Promise.resolve()
             .then(async ()=>{
                 const {documentChiffre: docSmtp, commandeMaitredescles: mcSmtp} = 
-                    await chiffrerChamps(workers, 'config_notif_smtp', cleChiffrage, smtpDechiffre)
+                    await chiffrerChamps(workers, 'config_notif_smtp', cleChiffrageSmtp, smtpDechiffre)
                 commande.smtp.chiffre = docSmtp
 
-                const {documentChiffre: docWebpush, commandeMaitredescles: mcWebpush} = 
-                    await chiffrerChamps(workers, 'config_notif_webpush', cleChiffrage, webpushDechiffre)
-                commande.webpush.chiffre = docWebpush
+                // const {documentChiffre: docWebpush, commandeMaitredescles: mcWebpush} = 
+                //     await chiffrerChamps(workers, 'config_notif_webpush', cleChiffrageWebpush, webpushDechiffre)
+                // commande.webpush.chiffre = docWebpush
 
                 const cles = {
                     smtp: mcSmtp,
-                    webpush: mcWebpush,
+                    // webpush: mcWebpush,
                 }
-                if(mcSmtp || mcWebpush) commande['_cles'] = cles
+                if(mcSmtp /*|| mcWebpush*/) commande['_cles'] = cles
 
                 console.debug("Commande sauvegarder ", commande)
                 await workers.connexion.conserverConfigurationNotifications(commande)
@@ -100,9 +103,19 @@ function Notifications(props) {
     }, [
         workers, fermer,
         emailFrom, intervalleMin, smtpActif, smtpHostname, smtpPort, smtpUsername, smtpPassword, smtpReplyto,
-        webpushActif, clepriveeWebpush, clepubliqueWebpush, iconWebpush,
-        cleChiffrage,
+        webpushActif, iconWebpush,
+        cleChiffrageSmtp, cleChiffrageWebpush,
+        // clepriveeWebpush, clepubliqueWebpush,
     ])
+    
+    const genererCleWebpushHandler = useCallback(()=>{
+        const { connexion } = workers
+        connexion.genererClewebpushNotifications()
+            .then(reponse=>{
+                console.debug("Reponse generer web push ", reponse)
+            })
+            .catch(err=>console.error("Erreur generer cle webpush ", err))
+    }, [workers])
 
     useEffect(()=>{
         // Detecter si le domaine "Messagerie" est actif en chargeant la configuration des notifications
@@ -112,12 +125,98 @@ function Notifications(props) {
             .then(reponse=>{
                 console.debug("Reponse configuration ", reponse)
                 setDomaineActif(true)  // On a eu une reponse
+                // Set configuration
+                if(reponse.ok !== false) {
+                    setConfiguration(reponse)
+                }
             })
             .catch(err=>{
                 console.error("Erreur chargement configuration notifications ", err)
                 setDomaineActif(false)  // Aucune reponse (timeout) ou autre erreur
             })
-    }, [workers, domaineActif, etatPret, setDomaineActif])
+    }, [workers, domaineActif, etatPret, setDomaineActif, setConfiguration])
+
+    useEffect(()=>{
+        console.debug("Appliquer configuration recue : ", configuration)
+
+        // email_from: emailFrom, 
+        // intervalle_min: intervalleMin, 
+        setEmailFrom(configuration.email_from || '')
+        setIntervalleMin(configuration.intervalle_min || '')
+        
+        const { smtp, webpush } = configuration
+        if(smtp) {
+            const dataChiffre = smtp.chiffre
+            if(dataChiffre) {
+                dechiffrer(workers, dataChiffre)
+                    .then(resultat=>{
+                        console.debug("Resultat dechiffrage smtp ", resultat)
+                        if(resultat) {
+                            if(resultat.cle) {
+                                setCleChiffrageSmtp(resultat.cle)
+                            }
+                            const dataDechiffre = resultat.dataDechiffre || {}
+                            if(dataDechiffre.smtp_password) {
+                                setSmtpPassword(dataDechiffre.smtp_password)
+                            }
+                        }
+                    })
+                    .catch(err=>console.error("Erreur dechiffrage cle smtp : ", err))
+            }
+            // smtp: {
+            //     actif: smtpActif, 
+            //     hostname: smtpHostname, 
+            //     port: smtpPort, 
+            //     username: smtpUsername, 
+            //     replyto: smtpReplyto,
+            //     // chiffre: smtpChiffre,
+            // },
+            setSmtpActif(smtp.actif || false)
+            setSmtpHostname(smtp.hostname || '')
+            setSmtpPort(smtp.port || '')
+            setSmtpUsername(smtp.username || '')
+            setSmtpReplyto(smtp.replyto || '')
+
+            // setSmtpPassword(smtp. || '')
+        }
+
+        if(webpush) {
+            // webpush: {
+            //     actif: webpushActif, 
+            //     clepublique: clepubliqueWebpush, 
+            //     icon: iconWebpush,
+            //     // chiffre: webpushChiffre,
+            // }
+            // const dataChiffre = webpush.chiffre
+            // if(dataChiffre) {
+            //     dechiffrer(workers, dataChiffre)
+            //         .then(resultat=>{
+            //             console.debug("Resultat dechiffrage webpush ", resultat)
+            //             if(resultat) {
+            //                 if(resultat.cle) {
+            //                     setCleChiffrageWebpush(resultat.cle)
+            //                 }
+            //                 const dataDechiffre = resultat.dataDechiffre || {}
+            //                 if(dataDechiffre.webpush_cleprivee) {
+            //                     setClepriveeWebpush(dataDechiffre.webpush_cleprivee || '')
+            //                 }
+            //             }
+            //         })
+            //         .catch(err=>console.error("Erreur dechiffrage cle webpush : ", err))
+            // }
+            setWebpushActif(webpush.actif || false)
+            // setClepubliqueWebpush(webpush.clepublique || '')
+            setIconWebpush(webpush.icon || '')
+        }
+
+    }, [
+        configuration, 
+        setCleChiffrageSmtp, setCleChiffrageWebpush,
+        setEmailFrom, setIntervalleMin,
+        setSmtpActif, setSmtpHostname, setSmtpPort, setSmtpUsername, setSmtpPassword, setSmtpReplyto,
+        setWebpushActif, setIconWebpush,
+        // setClepriveeWebpush, setClepubliqueWebpush,
+    ])
 
     let messageErreur = useMemo(()=>{
         if(domaineActif === '') {
@@ -210,11 +309,12 @@ function Notifications(props) {
                 webpushActif={webpushActif}
                 setWebpushActif={setWebpushActif} 
                 clepriveeWebpush={clepriveeWebpush}
-                setClepriveeWebpush={setClepriveeWebpush}
+                // setClepriveeWebpush={setClepriveeWebpush}
                 clepubliqueWebpush={clepubliqueWebpush}
                 setClepubliqueWebpush={setClepubliqueWebpush}
                 iconWebpush={iconWebpush}
-                setIconWebpush={setIconWebpush} />
+                setIconWebpush={setIconWebpush} 
+                genererCleWebpush={genererCleWebpushHandler} />
 
             <p></p>
 
@@ -332,9 +432,12 @@ function ConfigurationWebPush(props) {
 
     const {
         webpushActif, setWebpushActif,
-        clepriveeWebpush, setClepriveeWebpush,
-        clepubliqueWebpush, setClepubliqueWebpush,
+        // clepriveeWebpush, 
+        // setClepriveeWebpush,
+        clepubliqueWebpush, 
+        setClepubliqueWebpush,
         iconWebpush, setIconWebpush,
+        genererCleWebpush,
     } = props
 
     const workers = useWorkers(),
@@ -368,18 +471,18 @@ function ConfigurationWebPush(props) {
                             Generer cles
                         </Col>
                         <Col>
-                            <Button variant='secondary'>Generer</Button>
+                            <Button variant='secondary' disabled={!etatPret} onClick={genererCleWebpush}>Generer</Button>
                         </Col>
                     </Row>
 
-                    <Row>
+                    {/* <Row>
                         <Form.Group as={Col}>
                             <Form.Label>Cle privee</Form.Label>
                             <FormControl id="clepriveeWebpush" aria-describedby="clepriveeWebpush"
                                 value={clepriveeWebpush}
                                 onChange={event=>setClepriveeWebpush(event.currentTarget.value)} />
                         </Form.Group>
-                    </Row>
+                    </Row> */}
 
                     <Row>
                         <Form.Group as={Col}>
@@ -446,4 +549,17 @@ async function chiffrerChamps(workers, labelCle, cleChiffrage, champsDechiffres)
     }
 
     return {documentChiffre, commandeMaitredescles}
+}
+
+async function dechiffrer(workers, dataChiffre) {
+    if(!dataChiffre) return null
+    const ref_hachage_bytes = dataChiffre.ref_hachage_bytes
+    if(ref_hachage_bytes) {
+        // Recuperer cle pour re-chiffrer
+        const cles = await workers.clesDao.getCles(ref_hachage_bytes, 'Messagerie')
+        const cle = cles[ref_hachage_bytes]
+        const dataDechiffre = await workers.chiffrage.chiffrage.dechiffrerChampsChiffres(dataChiffre, cle)
+        console.debug("Data dechiffre ", dataDechiffre)
+        return {cle, dataDechiffre}
+    }
 }

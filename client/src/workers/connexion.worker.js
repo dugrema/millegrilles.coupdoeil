@@ -382,6 +382,15 @@ function conserverConfigurationNotifications(commande) {
   )
 }
 
+function genererClewebpushNotifications(opts) {
+  opts = opts || {}
+  return connexionClient.emitBlocking(
+    'genererClewebpushNotifications',
+    opts,
+    {domaine: 'Messagerie', action: 'genererClewebpushNotifications', attacherCertificat: true}
+  )
+}
+
 // Listeners
 function enregistrerCallbackEvenementsPresenceDomaine(cb) { 
   return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceDomaines', cb) 
@@ -459,7 +468,7 @@ comlinkExpose({
   getConfigurationAcme, configurerDomaineAcme, getRecoveryCsr, signerRecoveryCsr, 
   resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationFichiers, getPublicKeySsh,
   modifierConfigurationConsignation, setFichiersPrimaire, declencherSync, demarrerBackupTransactions,
-  getCles, getConfigurationNotifications, conserverConfigurationNotifications,
+  getCles, getConfigurationNotifications, conserverConfigurationNotifications, genererClewebpushNotifications,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,
