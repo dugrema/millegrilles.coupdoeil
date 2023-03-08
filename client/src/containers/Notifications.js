@@ -52,12 +52,12 @@ function Notifications(props) {
 
         const commande = {
             email_from: emailFrom, 
-            intervalle_min: intervalleMin, 
+            intervalle_min: intervalleMin?intervalleMin:null, 
             
             smtp: {
                 actif: smtpActif, 
                 hostname: smtpHostname, 
-                port: smtpPort, 
+                port: smtpPort?smtpPort:null, 
                 username: smtpUsername, 
                 replyto: smtpReplyto,
             },
@@ -334,7 +334,8 @@ function ConfigurationEmail(props) {
                             <FormControl id="hostnameSmtp" aria-describedby="hostnameSmtp"
                                 placeholder="exemple : smtp.gmail.com"
                                 value={smtpHostname}
-                                onChange={event=>setSmtpHostname(event.currentTarget.value)} />
+                                onChange={event=>setSmtpHostname(event.currentTarget.value)} 
+                                type='text' inputMode='text' />
                         </Form.Group>
                     </Row>
 
@@ -344,7 +345,8 @@ function ConfigurationEmail(props) {
                             <FormControl id="portSmtp" aria-describedby="portSmtp"
                                 placeholder="exemple : 2525"
                                 value={smtpPort?''+smtpPort:''}
-                                onChange={portChangeHandler} />
+                                onChange={portChangeHandler} 
+                                type='text' inputMode='decimal' />
                         </Form.Group>
                     </Row>
 
@@ -354,7 +356,9 @@ function ConfigurationEmail(props) {
                             <FormControl id="usernameSmtp" aria-describedby="usernameSmtp"
                                 placeholder="exemple : user1"
                                 value={smtpUsername}
-                                onChange={event=>setSmtpUsername(event.currentTarget.value)} />
+                                onChange={event=>setSmtpUsername(event.currentTarget.value)} 
+                                type='text' inputMode='text'
+                                autoComplete='false' autoCorrect='false' autoCapitalize='false' spellCheck='false' />
                         </Form.Group>
                     </Row>            
 
@@ -364,7 +368,9 @@ function ConfigurationEmail(props) {
                             <FormControl id="passwordSmtp" aria-describedby="passwordSmtp"
                                 placeholder="exemple : monmotdepasse"
                                 value={smtpPassword}
-                                onChange={event=>setSmtpPassword(event.currentTarget.value)} />
+                                onChange={event=>setSmtpPassword(event.currentTarget.value)} 
+                                type='text' inputMode='text'
+                                autoComplete='false' autoCorrect='false' autoCapitalize='false' spellCheck='false' />
                         </Form.Group>
                     </Row>
 
@@ -374,7 +380,9 @@ function ConfigurationEmail(props) {
                             <FormControl id="replytoSmtp" aria-describedby="replytoSmtp"
                                 placeholder="exemple : reply@myserver.com"
                                 value={smtpReplyto}
-                                onChange={event=>setSmtpReplyto(event.currentTarget.value)} />
+                                onChange={event=>setSmtpReplyto(event.currentTarget.value)} 
+                                type='text' inputMode='email'
+                                autoComplete='false' autoCorrect='false' autoCapitalize='false' spellCheck='false' />
                         </Form.Group>
                     </Row>
                 </>
