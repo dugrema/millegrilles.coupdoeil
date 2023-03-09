@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react'
+import React, {useState, useEffect, useCallback, useMemo} from 'react'
 import { useTranslation } from 'react-i18next'
 
 import Button from 'react-bootstrap/Button'
@@ -7,14 +7,15 @@ import Col from 'react-bootstrap/Col'
 import Alert from 'react-bootstrap/Alert'
 import Nav from 'react-bootstrap/Nav'
 import NavDropdown from 'react-bootstrap/NavDropdown'
+import ProgressBar from 'react-bootstrap/ProgressBar'
 
 import CommandeHttp from './NoeudConfiguration'
 import ConfigurationGenerale from './InstanceConfigurationGenerale'
 import ApplicationsInstance from './InstanceApplications'
 
-import { FormatterDate } from '@dugrema/millegrilles.reactjs'
+import { FormatterDate, FormatteurTaille } from '@dugrema/millegrilles.reactjs'
 
-function AffichageNoeud(props) {
+function AffichageInstance(props) {
 
   // console.debug("AffichageNoeud proppies", props)
 
@@ -97,7 +98,7 @@ function AffichageNoeud(props) {
 
 }
 
-export default AffichageNoeud
+export default AffichageInstance
 
 function PageDocker(props) {
   return (
@@ -136,8 +137,6 @@ function InformationTransactionsNoeud(props) {
 
   return (
       <div>
-          <h2>Information</h2>
-
           <Row>
             <Col md={3}>Instance Id</Col>
             <Col>{instanceId}</Col>
@@ -171,6 +170,16 @@ function InformationTransactionsNoeud(props) {
             <Col>{instance.actif?'Actif':'Inactif'}</Col>
           </Row>
 
+          <h2>Donnees systeme</h2>
+
+          <EtatThermal instance={instance} />
+          <LoadAverage instance={instance} />
+          <EtatStockage instance={instance} />
+          <EtatApc instance={instance} />
+
+          <br/><br/><br/><br/>
+
+          <h3>Actions</h3>
           <Row>
             <Col>Supprimer l'instance</Col>
           </Row>
@@ -182,6 +191,119 @@ function InformationTransactionsNoeud(props) {
       </div>
   )
 
+}
+
+function EtatApc(props) {
+
+  const instance = props.instance || {},
+        apc = instance.apc
+
+  if(!apc) return ''
+
+  return (
+    <div>
+      <h3>APC</h3>
+      <Row><Col xs={6} sm={4} md={3}>Date</Col><Col>{apc.DATE || 'N/D'}</Col></Row>
+      <Row><Col xs={6} sm={4} md={3}>Etat</Col><Col>{apc.STATUS || 'N/D'}</Col></Row>
+      <Row><Col xs={6} sm={4} md={3}>Volt secteur</Col><Col>{apc.LINEV || 'N/D'}</Col></Row>
+      <Row><Col xs={6} sm={4} md={3}>Load courant</Col><Col>{apc.LOADPCT || 'N/D'}</Col></Row>
+      <Row><Col xs={6} sm={4} md={3}>Temps restant</Col><Col>{apc.TIMELEFT || 'N/D'}</Col></Row>
+      <Row><Col xs={6} sm={4} md={3}>Volt batterie</Col><Col>{apc.BATTV || 'N/D'}</Col></Row>
+      <Row><Col xs={6} sm={4} md={3}>Charge batterie</Col><Col>{apc.BCHARGE || 'N/D'}</Col></Row>
+      <Row><Col xs={6} sm={4} md={3}>Dernier transfert</Col><Col>{apc.LASTXFER || 'N/D'}</Col></Row>
+      <Row><Col xs={6} sm={4} md={3}>Sur batterie</Col><Col>{apc.XONBATT || 'N/D'}</Col></Row>
+      <Row><Col xs={6} sm={4} md={3}>Hors batterie</Col><Col>{apc.XOFFBATT || 'N/D'}</Col></Row>
+      <Row><Col xs={6} sm={4} md={3}>Nombre transferts</Col><Col>{apc.NUMXFERS || 'N/D'}</Col></Row>
+    </div>
+  )
+}
+
+function EtatThermal(props) {
+  const instance = props.instance || {},
+        temperatureInfo = instance.system_temperature
+
+  const temperature = useMemo(()=>{
+    // Valeur RPi
+    try {
+      return temperatureInfo.cpu_thermal[0][1]
+    } catch(err) { }
+    return ''
+  }, [temperatureInfo])
+
+  console.debug("Temperature ", temperature)
+
+  if(temperature === '') return ''
+
+  return (
+    <div>
+      <Row><Col xs={6} sm={4} md={3}>Temperature</Col><Col>{temperature}C</Col></Row>
+    </div>
+  )
+}
+
+function LoadAverage(props) {
+
+  const instance = props.instance || {},
+        load = instance.load_average
+
+  if(!load) return ''
+
+  return (
+    <Row>
+      <Col xs={6} sm={4} md={3}>Load average</Col>
+      <Col xs={2} md={1}>{load[0]}</Col>
+      <Col xs={2} md={1}>{load[1]}</Col>
+      <Col xs={2} md={1}>{load[2]}</Col>
+    </Row>
+  )
+}
+
+function EtatStockage(props) {
+
+  const instance = props.instance || {},
+        disk = instance.disk
+
+  const listeDisques = useMemo(()=>{
+    const liste = [...disk]
+    liste.sort((a, b)=>{
+      return a.mountpoint.localeCompare(b.mountpoint)
+    })
+    return liste
+  }, [disk])
+
+  if(!disk) return ''
+
+  return (
+    <div>
+      <h3>Stockage</h3>
+      <Row>
+        <Col md={3}>Mount</Col>
+        <Col md={2}>Total</Col>
+        <Col md={3}>Utilise</Col>
+        <Col md={1}></Col>
+        <Col>Libre</Col>
+      </Row>
+      {listeDisques.map(item=><EtatDisque key={item.mountpoint} value={item} />)}
+    </div>
+  )
+}
+
+function EtatDisque(props) {
+  const value = props.value
+
+  const pctUsed = useMemo(()=>{
+    return Math.round(value.used / value.total * 100)
+  }, [value])
+
+  return (
+    <Row>
+      <Col md={3}>{value.mountpoint}</Col>
+      <Col md={2}><FormatteurTaille value={value.total} /></Col>
+      <Col md={3}><ProgressBar now={pctUsed} /></Col>
+      <Col md={1}>{pctUsed}%</Col>
+      <Col md={2}>(<FormatteurTaille value={value.free} />)</Col>
+    </Row>
+  )
 }
 
 function AfficherServices(props) {

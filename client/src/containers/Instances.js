@@ -14,7 +14,7 @@ import { AlertTimeout, ModalAttente, FormatterDate } from '@dugrema/millegrilles
 
 import useWorkers, { useUsager, useEtatPret, useEtatConnexion } from '../WorkerContext'
 
-import AfficherInstanceDetail from './Noeud'
+import AfficherInstanceDetail from './InstanceDetail'
 import { Modal } from "react-bootstrap"
 import { useTranslation } from "react-i18next"
 
@@ -44,6 +44,7 @@ function Instances(props) {
     }, [attenteCb, setConfirmation])
 
     const instance = useMemo(()=>{
+        console.debug("Instances ", instances)
         if(!instanceSelectionnee) return
         return instances.filter(item=>item.instance_id === instanceSelectionnee).pop()
     }, [instances, instanceSelectionnee])
