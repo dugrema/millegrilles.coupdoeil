@@ -264,6 +264,7 @@ function EtatStockage(props) {
         disk = instance.disk
 
   const listeDisques = useMemo(()=>{
+    if(!disk) return []
     const liste = [...disk]
     liste.sort((a, b)=>{
       return a.mountpoint.localeCompare(b.mountpoint)
@@ -292,8 +293,11 @@ function EtatDisque(props) {
   const value = props.value
 
   const pctUsed = useMemo(()=>{
+    if(!value) return 0
     return Math.round(value.used / value.total * 100)
   }, [value])
+
+  if(!value) return ''
 
   return (
     <Row>
