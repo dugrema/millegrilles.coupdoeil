@@ -292,9 +292,9 @@ function EtatStockage(props) {
 function EtatDisque(props) {
   const value = props.value
 
-  const pctUsed = useMemo(()=>{
-    if(!value) return 0
-    return Math.round(value.used / value.total * 100)
+  const pctFree = useMemo(()=>{
+    if(!value) return 100
+    return Math.round(value.free / value.total * 100)
   }, [value])
 
   if(!value) return ''
@@ -303,8 +303,8 @@ function EtatDisque(props) {
     <Row>
       <Col md={3}>{value.mountpoint}</Col>
       <Col md={2}><FormatteurTaille value={value.total} /></Col>
-      <Col md={3}><ProgressBar now={pctUsed} /></Col>
-      <Col md={1}>{pctUsed}%</Col>
+      <Col md={3}><ProgressBar now={100-pctFree} /></Col>
+      <Col md={1}>{100-pctFree}%</Col>
       <Col md={2}>(<FormatteurTaille value={value.free} />)</Col>
     </Row>
   )
