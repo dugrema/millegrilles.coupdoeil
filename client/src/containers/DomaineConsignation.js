@@ -16,6 +16,7 @@ import { AlertTimeout, ModalAttente, FormatteurTaille, FormatterDate } from '@du
 import { pki as forgePki } from '@dugrema/node-forge'
 
 import useWorkers, { useEtatPret } from '../WorkerContext'
+import { EtatStockage } from './InstanceDetail'
 
 import { push as pushConsignation, merge as mergeConsignation, verifierExpiration, setConsignationPrimaire } from '../redux/consignationSlice'
 
@@ -285,9 +286,11 @@ function ConfigurerConsignationInstance(props) {
     // const [configuration, setConfiguration] = useState('')
     const [typeStore, setTypeStore] = useState('local')
     const [urlDownload, setUrlDownload] = useState('')
+    const [urlArchives, setUrlArchives] = useState('')
     const [consignationUrl, setConsignationUrl] = useState(CONST_CONSIGNATION_URL)
     const [syncIntervalle, setSyncIntervalle] = useState('')
     const [syncActif, setSyncActif] = useState('')
+    const [supporteArchives, setSupporteArchives] = useState('')
 
     // Sftp
     const [hostnameSftp, setHostnameSftp] = useState('')
@@ -312,6 +315,7 @@ function ConfigurerConsignationInstance(props) {
     const [keyTypeSftpBackup, setKeyTypeSftpBackup] = useState('ed25519')
 
     const syncActifChangeHandler = useCallback(e=>setSyncActif(e.currentTarget.checked), [setSyncActif])
+    const supporteArchivesChangeHandler = useCallback(e=>setSupporteArchives(e.currentTarget.checked), [setSupporteArchives])
 
     const appliquerConfiguration = useCallback(()=>{
         const {connexion, chiffrage} = workers
@@ -324,9 +328,11 @@ function ConfigurerConsignationInstance(props) {
                     instance_id: instanceIdCourant, 
                     type_store: typeStore, 
                     url_download: urlDownload, 
+                    url_archives: urlArchives, 
                     consignation_url: consignationUrl, 
                     sync_intervalle: (syncIntervalle?Number.parseInt(syncIntervalle):null),
                     sync_actif: (syncActif===true?true:false),
+                    supporte_archives: (supporteArchives===true?true:false),
                     
                     // SFTP
                     hostname_sftp: hostnameSftp, 
@@ -401,8 +407,8 @@ function ConfigurerConsignationInstance(props) {
         dispatch, workers, erreurCb,
         instanceIdCourant, cleChiffrage,
         etatPret, confirmationCb, fermer,
-        typeStore, urlDownload, 
-        consignationUrl, syncIntervalle, syncActif,
+        typeStore, urlDownload, urlArchives,
+        consignationUrl, syncIntervalle, syncActif, supporteArchives,
         hostnameSftp, usernameSftp, remotePathSftp, keyTypeSftp, portSftp,
         s3AccessKeyId, s3SecretAccessKey, s3Region, s3Endpoint, s3Bucket,
         typeBackup, hostnameSftpBackup, portSftpBackup, usernameSftpBackup, remotePathSftpBackup, keyTypeSftpBackup,
@@ -415,9 +421,11 @@ function ConfigurerConsignationInstance(props) {
 
         setTypeStore(consignation.type_store || 'millegrille')
         setUrlDownload(consignation.url_download || '')
+        setUrlArchives(consignation.url_archives || '')
         setConsignationUrl(consignation.consignation_url || CONST_CONSIGNATION_URL)
         setSyncIntervalle(consignation.sync_intervalle || '')
         setSyncActif(consignation.sync_actif!==false)
+        setSupporteArchives(consignation.supporte_archives!==false)
 
         // SFTP
         setHostnameSftp(consignation.hostname_sftp || '')
@@ -452,8 +460,8 @@ function ConfigurerConsignationInstance(props) {
     }, [
         consignation, cleChiffrage,  // Triggers pour recharger champs
 
-        setTypeStore, setUrlDownload, 
-        setConsignationUrl, setSyncIntervalle, setSyncActif,
+        setTypeStore, setUrlDownload, setUrlArchives,
+        setConsignationUrl, setSyncIntervalle, setSyncActif, setSupporteArchives,
         setHostnameSftp, setPortSftp, setUsernameSftp, setRemotePathSftp, setKeyTypeSftp,
         setS3AccessKeyId, setS3SecretAccessKey, setS3Region, setS3Endpoint, setS3Bucket,
         setTypeBackup, setHostnameSftpBackup, setPortSftpBackup, setUsernameSftpBackup, setRemotePathSftpBackup, setKeyTypeSftpBackup,
@@ -498,18 +506,14 @@ function ConfigurerConsignationInstance(props) {
 
             <p>Cette page permet de modifier la configuration de consignation des fichiers pour l'instance.</p>
 
-            <Form onSubmit={formSubmit}>
-                <h3>Parametres de transfert de fichiers https</h3>
+            <h3>Information courante</h3>
+            <DetailInstance instance={instance} />
 
-                <Row>
-                    <Form.Group as={Col}>
-                        <Form.Label>URL d'acces public aux fichiers (optionnel pour local)</Form.Label>
-                        <FormControl id="urlDownload" aria-describedby="urlDownload"
-                                placeholder="exemple : https://cloudfront.amazon.com/abcd1234"
-                                value={urlDownload}
-                                onChange={event=>setUrlDownload(event.currentTarget.value)} />
-                    </Form.Group>
-                </Row>
+            <br/>
+            <br/>
+
+            <Form onSubmit={formSubmit}>
+                <h3>Communication back-end</h3>
 
                 <Row>
                     <Form.Group as={Col}>
@@ -518,6 +522,29 @@ function ConfigurerConsignationInstance(props) {
                             placeholder="exemple : https://fichiers:444, https://millegrilles.com:444"
                             value={consignationUrl}
                             onChange={event=>setConsignationUrl(event.currentTarget.value)} />
+                    </Form.Group>
+                </Row>
+
+                <br/>
+
+                <h3>Parametres de transfert de fichiers client https</h3>
+
+                <Row>
+                    <Form.Group as={Col}>
+                        <Form.Label>URL d'acces public aux fichiers (optionnel pour local)</Form.Label>
+                        <FormControl id="urlDownload" aria-describedby="urlDownload"
+                                placeholder="exemple : https://cloudfront.amazon.com/c"
+                                value={urlDownload}
+                                onChange={event=>setUrlDownload(event.currentTarget.value)} />
+                    </Form.Group>
+                </Row>
+                <Row>
+                    <Form.Group as={Col}>
+                        <Form.Label>URL d'acces aux archives (optionnel)</Form.Label>
+                        <FormControl id="urlArchives" aria-describedby="urlDownload"
+                                placeholder="exemple : https://cloudfront.amazon.com/a"
+                                value={urlArchives}
+                                onChange={event=>setUrlArchives(event.currentTarget.value)} />
                     </Form.Group>
                 </Row>
 
@@ -549,6 +576,15 @@ function ConfigurerConsignationInstance(props) {
                 <br/>
 
                 <h3>Stockage des fichiers</h3>
+
+                <Row>
+                    <Form.Group as={Col}>
+                        <Form.Check id="supporteArchives" aria-describedby="supporteArchives" 
+                            checked={supporteArchives} 
+                            onChange={supporteArchivesChangeHandler} 
+                            label='Supporte archives' />
+                    </Form.Group>
+                </Row>
 
                 <Tabs activeKey={typeStore} onSelect={setTypeStore}>
                     <Tab eventKey="millegrille" title="MilleGrille">
@@ -619,6 +655,46 @@ function ConfigurerConsignationInstance(props) {
         </div>
     )
     
+}
+
+function DetailInstance(props) {
+    const { instance } = props
+
+    const instanceId = useMemo(()=>instance.instance_id, [instance])
+
+    const listeConsignation = useSelector(state=>state.consignation.liste)
+    const consignation = useMemo(()=>listeConsignation.filter(item=>item.instance_id === instanceId).pop(), [listeConsignation, instanceId])
+
+    useMemo(()=>{
+        console.debug("Instance %O\nConsignation %O", instance, consignation)
+    }, [instance, consignation])
+
+    return (
+        <div>
+            <Row>
+                <Col xs={4} md={2} xl={1}>Instance</Col>
+                <Col>{instance.instance_id}</Col>
+            </Row>
+
+            <Row>
+                <Col xs={4} md={2} xl={1}>Fichiers actifs</Col>
+                <Col xs={3} md={2}>{consignation.fichiers_nombre}</Col>
+                <Col><FormatteurTaille value={consignation.fichiers_taille} /></Col>
+            </Row>
+            <Row>
+                <Col xs={4} md={2} xl={1}>Fichiers archives</Col>
+                <Col xs={3} md={2}>{consignation.archives_nombre}</Col>
+                <Col><FormatteurTaille value={consignation.archives_taille} /></Col>
+            </Row>
+            <Row>
+                <Col xs={4} md={2} xl={1}>Fichiers orphelins</Col>
+                <Col xs={3} md={2}>{consignation.orphelins_nombre}</Col>
+                <Col><FormatteurTaille value={consignation.orphelins_taille} /></Col>
+            </Row>
+
+            <EtatStockage instance={instance} />
+        </div>
+    )
 }
 
 function formSubmit(event) {

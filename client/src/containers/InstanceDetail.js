@@ -258,7 +258,7 @@ function LoadAverage(props) {
   )
 }
 
-function EtatStockage(props) {
+export function EtatStockage(props) {
 
   const instance = props.instance || {},
         disk = instance.disk

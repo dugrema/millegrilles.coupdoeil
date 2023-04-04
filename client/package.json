@@ -1,9 +1,9 @@
 {
   "name": "millegrilles.coupdoeil.client",
-  "version": "2023.2.3",
+  "version": "2023.3.0",
   "private": true,
   "dependencies": {
-    "@dugrema/millegrilles.reactjs": "github:dugrema/millegrilles.reactjs#2023.2",
+    "@dugrema/millegrilles.reactjs": "github:dugrema/millegrilles.reactjs#2023.3",
     "@webauthn/client": "^0.1.3",
     "@wojtekmaj/react-daterange-picker": "^4.0.0",
     "buffer": "^6.0.3",
@@ -31,7 +31,7 @@
     "universal-cookie": "^4.0.4"
   },
   "peerDependencies": {
-    "@dugrema/millegrilles.utiljs": "github:dugrema/millegrilles.utiljs#2023.2",
+    "@dugrema/millegrilles.utiljs": "github:dugrema/millegrilles.utiljs#2023.3",
     "@dugrema/node-forge": "github:dugrema/forge#ed25519",
     "axios": "^1",
     "bootstrap": "^5",
