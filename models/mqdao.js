@@ -1,5 +1,7 @@
 const debug = require('debug')('mqdao')
 
+const { MESSAGE_KINDS } = require('@dugrema/millegrilles.utiljs/src/constantes')
+
 const L2Prive = '2.prive',
       L3Protege = '3.protege'
 
@@ -35,7 +37,7 @@ function challenge(socket, params) {
         nomUsager: socket.nomUsager,
         userId: socket.userId,
     }
-    return socket.amqpdao.pki.formatterMessage(reponse, 'challenge', {ajouterCertificat: true})
+    return socket.amqpdao.pki.formatterMessage(MESSAGE_KINDS.KIND_EVENEMENT, reponse, {domaine: 'challenge', ajouterCertificat: true})
 }
 
 async function getClesChiffrage(socket, params) {
