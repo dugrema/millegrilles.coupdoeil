@@ -733,6 +733,21 @@ async function regenererDomaine(socket, transaction, cb) {
   }
 }
 
+async function executerRequete2(socket, params, cb) {
+  const amqpdao = socket.amqpdao
+  const routage = params.routage || {}
+  const domaine = routage.domaine,
+        action = routage.action
+  try {
+    const reponse = await amqpdao.transmettreRequete(domaine, params, {action, decoder: true, ajouterCertificat: true})
+    cb(reponse)
+  } catch(err) {
+    console.error(new Date() + " executerRequete2 Erreur %O (requete : %O)", err, params)
+    debug("Erreur executerRequete %O\n%O", params.routage, err)
+    if(cb) cb({err: 'Erreur: ' + err})
+  }
+}
+
 async function executerRequete(domaineAction, socket, params, cb) {
   const amqpdao = socket.amqpdao
   try {
@@ -756,7 +771,9 @@ async function executerRequeteAction(domaine, action, socket, params, cb) {
 }
 
 function requeteListeNoeuds(socket, params, cb) {
-  executerRequeteAction('CoreTopologie', 'listeNoeuds', socket, params, cb)
+  // executerRequeteAction('CoreTopologie', 'listeNoeuds', socket, params, cb)
+  if(params.routage.action !== 'listeNoeuds') return cb({ok: false, err: 'Action doit etre listeNoeuds'})
+  executerRequete2(socket, params, cb)
 }
 
 function requeteListeDomaines(socket, cb) {

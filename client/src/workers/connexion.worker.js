@@ -1,6 +1,9 @@
 import {expose as comlinkExpose} from 'comlink'
+import { MESSAGE_KINDS } from '@dugrema/millegrilles.utiljs/src/constantes'
 
 import * as connexionClient from '@dugrema/millegrilles.reactjs/src/connexionClient'
+
+const DOMAINE_CORETOPOLOGIE = 'CoreTopologie'
 
 function testWorker() {
   // console.debug("connexion worker ok")
@@ -11,9 +14,20 @@ function getClesChiffrage() {
   return connexionClient.emitBlocking('getClesChiffrage', {})
 }
 
+// async function traiterContenu(promise) {
+//   const reponse = await promise
+//   console.debug("traiterContenu Reponse ", reponse)
+//   const contenu = JSON.parse(reponse.contenu)
+//   contenu['__original'] = reponse
+//   return contenu
+// }
+
 function requeteListeNoeuds(params) {
   // console.debug("Requete liste noeuds, params : %O", params)
-  return connexionClient.emitBlocking('coupdoeil/requeteListeNoeuds', params)
+  return connexionClient.emitBlocking(
+    'coupdoeil/requeteListeNoeuds', params, 
+    {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: DOMAINE_CORETOPOLOGIE, action: 'listeNoeuds', ajouterCertificat: true}
+  )
 }
 function requeteListeDomaines() {
   return connexionClient.emitBlocking('coupdoeil/requeteListeDomaines')
