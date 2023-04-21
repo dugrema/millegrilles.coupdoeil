@@ -739,7 +739,7 @@ async function executerRequete2(socket, params, cb) {
   const domaine = routage.domaine,
         action = routage.action
   try {
-    const reponse = await amqpdao.transmettreRequete(domaine, params, {action, decoder: true, ajouterCertificat: true})
+    const reponse = await amqpdao.transmettreRequete(domaine, params, {action, decoder: true, noformat: true})
     cb(reponse)
   } catch(err) {
     console.error(new Date() + " executerRequete2 Erreur %O (requete : %O)", err, params)

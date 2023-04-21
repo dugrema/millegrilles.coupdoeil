@@ -4,7 +4,8 @@ import { MESSAGE_KINDS } from '@dugrema/millegrilles.utiljs/src/constantes'
 import * as connexionClient from '@dugrema/millegrilles.reactjs/src/connexionClient'
 
 const DOMAINE_CORETOPOLOGIE = 'CoreTopologie',
-      DOMAINE_CORECATALOGUES = 'CoreCatalogues'
+      DOMAINE_CORECATALOGUES = 'CoreCatalogues',
+      DOMAINE_INSTANCE = 'instance'
 
 function testWorker() {
   // console.debug("connexion worker ok")
@@ -64,7 +65,10 @@ function getCatalogueApplications() {
   )
 }
 function requeteInfoApplications(params) {
-  return connexionClient.emitBlocking('coupdoeil/requeteInfoApplications', params)
+  return connexionClient.emitBlocking(
+    'coupdoeil/requeteInfoApplications', params, 
+    {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: DOMAINE_CORECATALOGUES, action: 'infoApplication', ajouterCertificat: true}
+  )
 }
 // function requeteRapportBackup(params) {
 //   return connexionClient.emitBlocking('coupdoeil/requeteRapportBackup', params)
@@ -153,7 +157,7 @@ function soumettreConfigurationApplication(configuration) {
   return connexionClient.emitBlocking(
     'coupdoeil/ajouterCatalogueApplication', 
     configuration, 
-    {domaine: 'instance', action: 'ajouterCatalogueApplication', partition: configuration.instance_id, exchange: configuration.exchange, ajouterCertificat: true}
+    {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'instance', action: 'ajouterCatalogueApplication', partition: configuration.instance_id, exchange: configuration.exchange, ajouterCertificat: true}
   )
 }
 async function installerApplication(params) {
@@ -161,7 +165,7 @@ async function installerApplication(params) {
     return await connexionClient.emitBlocking(
       'coupdoeil/installerApplication', 
       params, 
-      {domaine: 'instance', action: 'installerApplication', partition: params.instance_id, exchange: params.exchange, ajouterCertificat: true}
+      {kind: MESSAGE_KINDS.KIND_COMMANDE, partition: params.instance_id, domaine: 'instance', action: 'installerApplication', partition: params.instance_id, exchange: params.exchange, ajouterCertificat: true}
     )
   } catch(err) {
     console.error("Erreur InstallerApplication %O", err)

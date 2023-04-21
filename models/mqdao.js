@@ -69,7 +69,7 @@ async function getClesChiffrage(socket, params) {
 
 function installerApplication(socket, commande) {
     debug("Installer application : %O", commande)
-    return transmettreCommande(socket, commande, 'installerApplication', {exchange: commande.exchange})
+    return transmettreCommande(socket, commande, 'installerApplication', {exchange: commande.exchange, noformat: true})
 }
 
 function demarrerApplication(socket, commande) {
@@ -238,7 +238,7 @@ async function transmettreCommande(socket, params, action, opts) {
     const domaine = opts.domaine || DOMAINE_MONITOR
     const exchange = opts.exchange || L3Protege
     const nowait = opts.nowait
-    const partition = opts.partition || params['en-tete'].partition
+    const partition = opts.partition || params.routage.partition
     try {
         verifierMessage(params, domaine, action)
         return await socket.amqpdao.transmettreCommande(
@@ -254,9 +254,9 @@ async function transmettreCommande(socket, params, action, opts) {
 
 /* Fonction de verification pour eviter abus de l'API */
 function verifierMessage(message, domaine, action) {
-    const entete = message['en-tete'] || {},
-          domaineRecu = entete.domaine,
-          actionRecue = entete.action
+    const routage = message.routage || {},
+          domaineRecu = routage.domaine,
+          actionRecue = routage.action
     if(domaineRecu !== domaine) throw new Error(`Mismatch domaine (${domaineRecu} !== ${domaine})"`)
     if(actionRecue !== action) throw new Error(`Mismatch action (${actionRecue} !== ${action})"`)
 }
