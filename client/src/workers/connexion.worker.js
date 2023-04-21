@@ -3,7 +3,8 @@ import { MESSAGE_KINDS } from '@dugrema/millegrilles.utiljs/src/constantes'
 
 import * as connexionClient from '@dugrema/millegrilles.reactjs/src/connexionClient'
 
-const DOMAINE_CORETOPOLOGIE = 'CoreTopologie'
+const DOMAINE_CORETOPOLOGIE = 'CoreTopologie',
+      DOMAINE_CORECATALOGUES = 'CoreCatalogues'
 
 function testWorker() {
   // console.debug("connexion worker ok")
@@ -30,11 +31,17 @@ function requeteListeNoeuds(params) {
   )
 }
 function requeteListeDomaines() {
-  return connexionClient.emitBlocking('coupdoeil/requeteListeDomaines')
+  return connexionClient.emitBlocking(
+    'coupdoeil/requeteListeDomaines', {},
+    {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: DOMAINE_CORETOPOLOGIE, action: 'listeDomaines', ajouterCertificat: true}
+  )
 }
 function requeteListeUsagers(params) {
   params = params || {}
-  return connexionClient.emitBlocking('maitrecomptes/requeteListeUsagers', params)
+  return connexionClient.emitBlocking(
+    'maitrecomptes/requeteListeUsagers', params,
+    {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: DOMAINE_CORETOPOLOGIE, action: 'listeDomaines', ajouterCertificat: true}
+  )
 }
 function requeteUsager(params) {
   return connexionClient.emitBlocking('maitrecomptes/requeteUsager', params)
@@ -51,7 +58,10 @@ function requeteClesNonDechiffrables(tailleBatch, dateCreationMin, excludeHachag
   })
 }
 function getCatalogueApplications() {
-  return connexionClient.emitBlocking('coupdoeil/requeteCatalogueApplications')
+  return connexionClient.emitBlocking(
+    'coupdoeil/requeteCatalogueApplications', {},
+    {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: DOMAINE_CORECATALOGUES, action: 'listeApplications', ajouterCertificat: true}
+  )
 }
 function requeteInfoApplications(params) {
   return connexionClient.emitBlocking('coupdoeil/requeteInfoApplications', params)

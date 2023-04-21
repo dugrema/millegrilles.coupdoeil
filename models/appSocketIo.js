@@ -37,9 +37,9 @@ function configurerEvenements(socket) {
       {eventName: 'genererClewebpushNotifications', callback: (params, cb) => { traiter(socket, mqdao.genererClewebpushNotifications, {params, cb}) }},
 
       {eventName: 'coupdoeil/requeteListeNoeuds', callback: (params, cb) => {requeteListeNoeuds(socket, params, cb)}},
-      {eventName: 'coupdoeil/requeteListeDomaines', callback: cb => {requeteListeDomaines(socket, cb)}},
+      {eventName: 'coupdoeil/requeteListeDomaines', callback: (params, cb) => {requeteListeDomaines(socket, params, cb)}},
       // {eventName: 'coupdoeil/requeteCatalogueDomaines', callback: cb => {requeteCatalogueDomaines(socket, cb)}},
-      {eventName: 'coupdoeil/requeteCatalogueApplications', callback: cb => {requeteCatalogueApplications(socket, cb)}},
+      {eventName: 'coupdoeil/requeteCatalogueApplications', callback: (params, cb) => {requeteCatalogueApplications(socket, params, cb)}},
       {eventName: 'coupdoeil/requeteInfoApplications', callback: (params, cb) => {requeteInfoApplications(socket, params, cb)}},
       // {eventName: 'coupdoeil/requeteRapportBackup', callback: (params, cb) => {requeteRapportBackup(socket, params, cb)}},
       {eventName: 'coupdoeil/getUploadsEnCours', callback: cb => {getUploadsEnCours(socket, cb)}},
@@ -771,21 +771,26 @@ async function executerRequeteAction(domaine, action, socket, params, cb) {
 }
 
 function requeteListeNoeuds(socket, params, cb) {
-  // executerRequeteAction('CoreTopologie', 'listeNoeuds', socket, params, cb)
   if(params.routage.action !== 'listeNoeuds') return cb({ok: false, err: 'Action doit etre listeNoeuds'})
   executerRequete2(socket, params, cb)
 }
 
-function requeteListeDomaines(socket, cb) {
-  executerRequeteAction('CoreTopologie', 'listeDomaines', socket, {}, cb)
+function requeteListeDomaines(socket, params, cb) {
+  // executerRequeteAction('CoreTopologie', 'listeDomaines', socket, {}, cb)
+  if(params.routage.action !== 'listeDomaines') return cb({ok: false, err: 'Action doit etre listeDomaines'})
+  executerRequete2(socket, params, cb)
 }
 
-function requeteCatalogueApplications(socket, cb) {
-  executerRequeteAction('CoreCatalogues', 'listeApplications', socket, {}, cb)
+function requeteCatalogueApplications(socket, params, cb) {
+  // executerRequeteAction('CoreCatalogues', 'listeApplications', socket, {}, cb)
+  if(params.routage.action !== 'listeApplications') return cb({ok: false, err: 'Action doit etre listeApplications'})
+  executerRequete2(socket, params, cb)
 }
 
 function requeteInfoApplications(socket, params, cb) {
-  executerRequeteAction('CoreCatalogues', 'infoApplication', socket, params, cb)
+  // executerRequeteAction('CoreCatalogues', 'infoApplication', socket, params, cb)
+  if(params.routage.action !== 'infoApplication') return cb({ok: false, err: 'Action doit etre infoApplication'})
+  executerRequete2(socket, params, cb)
 }
 
 function requeteRapportBackup(socket, params, cb) {
@@ -793,23 +798,33 @@ function requeteRapportBackup(socket, params, cb) {
 }
 
 function getCertificatsMaitredescles(socket, cb) {
-  executerRequete('MaitreDesCles.certMaitreDesCles', socket, {}, cb)
+  // executerRequete('MaitreDesCles.certMaitreDesCles', socket, {}, cb)
+  if(params.routage.action !== 'certMaitreDesCles') return cb({ok: false, err: 'Action doit etre certMaitreDesCles'})
+  executerRequete2(socket, params, cb)
 }
 
 function getUploadsEnCours(socket, cb) {
-  executerRequete('GrosFichiers.transfertsEnCours', socket, {}, cb)
+  // executerRequete('GrosFichiers.transfertsEnCours', socket, {}, cb)
+  if(params.routage.action !== 'transfertsEnCours') return cb({ok: false, err: 'Action doit etre transfertsEnCours'})
+  executerRequete2(socket, {}, cb)
 }
 
 function getDocumentParFuuid(socket, params, cb) {
-  executerRequete('GrosFichiers.documentsParFuuid', socket, params, cb)
+  // executerRequete('GrosFichiers.documentsParFuuid', socket, params, cb)
+  if(params.routage.action !== 'documentsParFuuid') return cb({ok: false, err: 'Action doit etre documentsParFuuid'})
+  executerRequete2(socket, params, cb)
 }
 
 function requeteListeUsagers(socket, params, cb) {
-  executerRequeteAction('CoreMaitreDesComptes', 'getListeUsagers', socket, params, cb)
+  // executerRequeteAction('CoreMaitreDesComptes', 'getListeUsagers', socket, params, cb)
+  if(params.routage.action !== 'getListeUsagers') return cb({ok: false, err: 'Action doit etre getListeUsagers'})
+  executerRequete2(socket, params, cb)
 }
 
 function requeteUsager(socket, params, cb) {
-  executerRequeteAction('CoreMaitreDesComptes', 'chargerUsager', socket, params, cb)
+  // executerRequeteAction('CoreMaitreDesComptes', 'chargerUsager', socket, params, cb)
+  if(params.routage.action !== 'chargerUsager') return cb({ok: false, err: 'Action doit etre chargerUsager'})
+  executerRequete2(socket, params, cb)
 }
 
 // Enregistrement d'evenements
