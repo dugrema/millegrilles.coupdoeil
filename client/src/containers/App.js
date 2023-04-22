@@ -126,7 +126,7 @@ function InitInstances(props) {
         connexion.requeteListeNoeuds({})
             .then(reponseInstances=>{
                 console.debug("Reponse instances : %O", reponseInstances)
-                dispatch(pushInstances({liste: reponseInstances, clear: true}))
+                dispatch(pushInstances({liste: reponseInstances.resultats, clear: true}))
             })
             .catch(err=>console.error("Erreur chargement liste noeuds : %O", err))
 
