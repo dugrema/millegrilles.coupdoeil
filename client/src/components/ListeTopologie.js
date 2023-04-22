@@ -30,6 +30,7 @@ export function ListeNoeuds(props) {
   }, [modeProtege, connexion, noeud_id])
 
   const processMessageNoeuds = useCallback(comlinkProxy(event => {
+    console.debug("ListeNoeuds.processMessageNoeuds ", event)
     const noeuds = noeudsContexte.noeuds,
           noeud_id = noeudsContexte.noeud_id
 

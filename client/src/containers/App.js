@@ -99,11 +99,10 @@ function InitInstances(props) {
     // Messages, maj liste appareils
     const messageInstanceHandler = useCallback(evenement=>{
         const { routingKey, message } = evenement
-        // console.debug("Message instance : ", message)
+        console.debug("messageInstanceHandler : ", message)
 
         // Injecter date de derniere modification (estampille)
-        const entete = message['en-tete']
-        message.date_presence = entete.estampille
+        message.date_presence = message['__original'].estampille
 
         dispatch(mergeInstance(message))
         // const action = routingKey.split('.').pop()
