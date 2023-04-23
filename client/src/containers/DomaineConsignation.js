@@ -386,6 +386,8 @@ function ConfigurerConsignationInstance(props) {
                     commandeMaitredescles = commande
                 }
 
+                console.debug("appliquerConfiguration config %O, cles %O", config, commandeMaitredescles)
+
                 // Changer fichier de config stocke local
                 const resultat = await connexion.modifierConfigurationConsignation(config, commandeMaitredescles)
                 if(resultat.ok===false) {
