@@ -358,7 +358,10 @@ function getPublicKeySsh() {
 }
 
 async function modifierConfigurationConsignation(commande, commandeMaitredescles) {
-  const attachements = { cle: commandeMaitredescles }
+  let attachements = null
+  if(commandeMaitredescles) {
+    attachements.cle = commandeMaitredescles
+  }
   return connexionClient.emitBlocking(
     'modifierConfigurationConsignation', commande,
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'CoreTopologie', action: 'configurerConsignation', attacherCertificat: true, attachements}
