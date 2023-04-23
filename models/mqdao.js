@@ -1,4 +1,5 @@
 const debug = require('debug')('mqdao')
+const { MESSAGE_KINDS } = require('@dugrema/millegrilles.utiljs/src/constantes')
 
 const { MESSAGE_KINDS } = require('@dugrema/millegrilles.utiljs/src/constantes')
 
@@ -11,6 +12,9 @@ const DOMAINE_INSTANCE = 'instance',
       CONST_DOMAINE_MAITREDESCLES = 'MaitreDesCles',
       CONST_DOMAINE_FICHIERS = 'fichiers',
       CONST_DOMAINE_TOPOLOGIE = 'CoreTopologie',
+      CONST_DOMAINE_CATALOGUES = 'CoreCatalogues',
+      CONST_DOMAINE_COREPKI = 'CorePki',
+      CONST_DOMAINE_MAITREDESCOMPTES = 'CoreMaitreDesComptes',
       CONST_DOMAINE_MESSAGERIE = 'Messagerie'
 
 const ROUTING_KEYS_FICHIERS = [
@@ -37,7 +41,8 @@ function challenge(socket, params) {
         nomUsager: socket.nomUsager,
         userId: socket.userId,
     }
-    return socket.amqpdao.pki.formatterMessage(MESSAGE_KINDS.KIND_EVENEMENT, reponse, {domaine: 'challenge', ajouterCertificat: true})
+
+    return socket.amqpdao.pki.formatterMessage(reponse, 'challenge', {kind: MESSAGE_KINDS.KIND_DOCUMENT, ajouterCertificat: true})
 }
 
 async function getClesChiffrage(socket, params) {
@@ -70,22 +75,26 @@ async function getClesChiffrage(socket, params) {
 
 function installerApplication(socket, commande) {
     debug("Installer application : %O", commande)
-    return transmettreCommande(socket, commande, 'installerApplication', {exchange: commande.exchange})
+    const contenu = JSON.parse(commande.contenu)
+    return transmettreCommande(socket, commande, 'installerApplication', {exchange: contenu.exchange, noformat: true})
 }
 
 function demarrerApplication(socket, commande) {
     debug("Demarrer application : %O", commande)
-    return transmettreCommande(socket, commande, 'demarrerApplication', {exchange: commande.exchange})
+    const contenu = JSON.parse(commande.contenu)
+    return transmettreCommande(socket, commande, 'demarrerApplication', {exchange: contenu.exchange, noformat: true})
 }
 
 function arreterApplication(socket, commande) {
     debug("Arreter application : %O", commande)
-    return transmettreCommande(socket, commande, 'arreterApplication', {exchange: commande.exchange})
+    const contenu = JSON.parse(commande.contenu)
+    return transmettreCommande(socket, commande, 'arreterApplication', {exchange: contenu.exchange, noformat: true})
 }
 
 function supprimerApplication(socket, commande) {
     debug("Supprimer application %O", commande)
-    return transmettreCommande(socket, commande, 'supprimerApplication', {exchange: commande.exchange})
+    const contenu = JSON.parse(commande.contenu)
+    return transmettreCommande(socket, commande, 'supprimerApplication', {exchange: contenu.exchange, noformat: true})
 }  
 
 function requeteConfigurationApplication(socket, requete) {
@@ -214,6 +223,62 @@ function genererClewebpushNotifications(socket, requete) {
     )
 }
 
+function requeteListeNoeuds(socket, params) {
+    return transmettreRequete(socket, params, 'listeNoeuds', {domaine: CONST_DOMAINE_TOPOLOGIE})
+}
+  
+function requeteListeDomaines(socket, params) {
+    return transmettreRequete(socket, params, 'listeDomaines', {domaine: CONST_DOMAINE_TOPOLOGIE})
+}
+
+function requeteCatalogueApplications(socket, params) {
+    return transmettreRequete(socket, params, 'listeApplications', {domaine: CONST_DOMAINE_CATALOGUES})
+}
+
+function requeteInfoApplications(socket, params) {
+    return transmettreRequete(socket, params, 'infoApplication', {domaine: CONST_DOMAINE_CATALOGUES})
+}
+
+function requeteListeUsagers(socket, params) {
+    return transmettreRequete(socket, params, 'getListeUsagers', {domaine: CONST_DOMAINE_MAITREDESCOMPTES})
+}
+
+function requeteUsager(socket, params) {
+    return transmettreRequete(socket, params, 'chargerUsager', {domaine: CONST_DOMAINE_MAITREDESCOMPTES})
+}
+
+function resetWebauthnUsager(socket, params) {
+    return transmettreCommande(socket, params, 'resetWebauthnUsager', {domaine: CONST_DOMAINE_MAITREDESCOMPTES})
+}
+
+function requeteClesNonDechiffrables(socket, params) {
+    return transmettreRequete(socket, params, 'clesNonDechiffrables', {domaine: CONST_DOMAINE_MAITREDESCLES})
+}
+
+function requeteCompterClesNonDechiffrables(socket, params) {
+    return transmettreRequete(socket, params, 'compterClesNonDechiffrables', {domaine: CONST_DOMAINE_MAITREDESCLES})
+}
+
+function commandeCleRechiffree(socket, params) {
+    return transmettreCommande(socket, params, 'sauvegarderCle', {domaine: CONST_DOMAINE_MAITREDESCOMPTES})
+}
+
+function genererCertificatNoeud(socket, params) {
+    return transmettreCommande(socket, params, 'signerCsr', {domaine: CONST_DOMAINE_COREPKI})
+}
+
+function configurerConsignationWeb(socket, params) {
+    return transmettreCommande(socket, params, 'configurerConsignationWeb', {domaine: CONST_DOMAINE_COREPKI})
+}
+
+function majDelegations(socket, params) {
+    return transmettreCommande(socket, params, 'majUsagerDelegations', {domaine: CONST_DOMAINE_MAITREDESCOMPTES})
+}
+
+function majDelegations(socket, params) {
+    return transmettreCommande(socket, params, 'majUsagerDelegations', {domaine: CONST_DOMAINE_MAITREDESCOMPTES})
+}
+
 // Fonctions generiques
 
 async function transmettreRequete(socket, params, action, opts) {
@@ -223,11 +288,13 @@ async function transmettreRequete(socket, params, action, opts) {
     const partition = opts.partition
     try {
         verifierMessage(params, domaine, action)
-        return await socket.amqpdao.transmettreRequete(
+        const reponse = await socket.amqpdao.transmettreRequete(
             domaine, 
             params, 
             {action, partition, exchange, noformat: true, decoder: true}
         )
+        console.debug("!!! REQUETE REPONSE ", reponse)
+        return reponse
     } catch(err) {
         console.error("mqdao.transmettreRequete ERROR : %O", err)
         return {ok: false, err: ''+err}
@@ -239,7 +306,7 @@ async function transmettreCommande(socket, params, action, opts) {
     const domaine = opts.domaine || DOMAINE_MONITOR
     const exchange = opts.exchange || L3Protege
     const nowait = opts.nowait
-    const partition = opts.partition || params['en-tete'].partition
+    const partition = opts.partition || params.routage.partition
     try {
         verifierMessage(params, domaine, action)
         return await socket.amqpdao.transmettreCommande(
@@ -255,9 +322,9 @@ async function transmettreCommande(socket, params, action, opts) {
 
 /* Fonction de verification pour eviter abus de l'API */
 function verifierMessage(message, domaine, action) {
-    const entete = message['en-tete'] || {},
-          domaineRecu = entete.domaine,
-          actionRecue = entete.action
+    const routage = message.routage || {},
+          domaineRecu = routage.domaine,
+          actionRecue = routage.action
     if(domaineRecu !== domaine) throw new Error(`Mismatch domaine (${domaineRecu} !== ${domaine})"`)
     if(actionRecue !== action) throw new Error(`Mismatch action (${actionRecue} !== ${action})"`)
 }
@@ -272,7 +339,12 @@ module.exports = {
 
     majMonitor, requeteConfigurationAcme, configurerDomaineAcme, getCles, getConfigurationNotifications,
     conserverConfigurationNotifications, genererClewebpushNotifications,
-    
+
+    requeteListeNoeuds, requeteListeDomaines, requeteCatalogueApplications, requeteInfoApplications,
+    requeteListeUsagers, requeteUsager, resetWebauthnUsager, 
+    requeteClesNonDechiffrables, requeteCompterClesNonDechiffrables, commandeCleRechiffree,
+    genererCertificatNoeud, configurerConsignationWeb, majDelegations,
+
     // ecouterMajFichiers, ecouterMajCollections, ecouterTranscodageProgres, 
     // retirerTranscodageProgres, 
 }

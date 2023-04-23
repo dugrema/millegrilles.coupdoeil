@@ -50,12 +50,12 @@ function ConfigurationConsignation(props) {
     const messageConsignationHandler = useCallback(reponse=>{
         console.debug("messageConsignationHandler Reponse ", reponse)
         // Extraire instanceId du certificat de l'evenement
-        const entete = reponse.message['en-tete']
-        const action = entete.action
+        const original = reponse.message['__original'].routage
+        const action = original.routage.action
         if(action === 'presence') {
             const certificat = forgePki.certificateFromPem(reponse.message['_certificat'][0])
             const instance_id = certificat.subject.getField('CN').value
-            const info = { ...reponse.message, instance_id, derniere_modification: entete.estampille }
+            const info = { ...reponse.message, instance_id, derniere_modification: original.estampille }
             console.debug("Info evenement consignation ", info)
             dispatch(mergeConsignation(info))
         } else if(action === 'changementConsignationPrimaire') {
@@ -385,6 +385,8 @@ function ConfigurerConsignationInstance(props) {
                     console.debug("Commande maitre des cles : %O", commande)
                     commandeMaitredescles = commande
                 }
+
+                console.debug("appliquerConfiguration config %O, cles %O", config, commandeMaitredescles)
 
                 // Changer fichier de config stocke local
                 const resultat = await connexion.modifierConfigurationConsignation(config, commandeMaitredescles)

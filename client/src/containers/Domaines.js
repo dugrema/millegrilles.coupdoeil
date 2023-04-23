@@ -195,10 +195,11 @@ async function chargerListeDomaines(workers, setDomaines, erreurCb) {
     try {
         const connexion = workers.connexion
         const reponseDomaines = await connexion.requeteListeDomaines()
+        const liste = reponseDomaines.resultats
 
         // console.debug("Liste domaines\n%O", reponseDomaines)
 
-        var domaines = reponseDomaines.map(domaine=>{
+        var domaines = liste.map(domaine=>{
             const derniereModification = domaine['_mg-derniere-modification']
             const infoDomaine = mapperDomaine(domaine, derniereModification)
             return infoDomaine

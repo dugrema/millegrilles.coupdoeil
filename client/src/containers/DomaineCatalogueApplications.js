@@ -139,7 +139,10 @@ function InfoApplication(props) {
 
 async function chargerCatalogueApplications(wsa) {
   console.debug("Charger catalogue applications")
-  var catalogueApplications = await wsa.getCatalogueApplications()
+  var reponse = await wsa.getCatalogueApplications()
+
+  console.debug("chargerCatalogueApplications Reponse ", reponse)
+  const catalogueApplications = reponse.resultats
 
   // Trier liste
   catalogueApplications.sort( (a,b) => { return a.nom.localeCompare(b.nom) } )

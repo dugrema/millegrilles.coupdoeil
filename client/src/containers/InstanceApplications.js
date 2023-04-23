@@ -143,8 +143,9 @@ function InstallerApplications(props) {
 
     useEffect(()=>{
         connexion.getCatalogueApplications()
-            .then(applications=>{
-                console.debug("Liste catalogues applications : %O", applications)
+            .then(reponse=>{
+                console.debug("Liste catalogues applications : %O", reponse)
+                let applications = reponse.resultats
                 applications = applications.sort((a,b)=>{ return a.nom.localeCompare(b.nom) })
                 setCatalogue(applications)
             })
