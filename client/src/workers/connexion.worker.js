@@ -360,7 +360,7 @@ function getPublicKeySsh() {
 async function modifierConfigurationConsignation(commande, commandeMaitredescles) {
   let attachements = null
   if(commandeMaitredescles) {
-    attachements.cle = commandeMaitredescles
+    attachements = {cle: commandeMaitredescles}
   }
   return connexionClient.emitBlocking(
     'modifierConfigurationConsignation', commande,
