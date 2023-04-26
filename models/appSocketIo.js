@@ -973,7 +973,7 @@ async function traiterCompteUsagersDao(socket, methode, {params, cb}) {
     const reponse = await comptesUsagersDao[methode](socket, params)
     if(cb) cb(reponse)
   } catch(err) {
-    debug("traiterCompteUsagersDao ERROR %O", err)
+    console.error(new Date() + " appSocketIo.traiterCompteUsagerDao ERROR traiterCompteUsagersDao ERROR %O", err)
     cb({ok: false, err: "Erreur serveur : " + err})
   }
 }

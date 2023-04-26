@@ -39,7 +39,10 @@ function requeteListeUsagers(params) {
   )
 }
 function requeteUsager(params) {
-  return connexionClient.emitBlocking('maitrecomptes/requeteUsager', params)
+  return connexionClient.emitBlocking(
+    'maitrecomptes/requeteUsager', params,
+    {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: DOMAINE_COREMAITREDESCOMPTES, action: 'chargerUsager', ajouterCertificat: true}
+  )
 }
 function requeteCatalogueDomaines() {
   throw new Error("deprecated")
