@@ -413,11 +413,15 @@ function getConfigurationNotifications(opts) {
   )
 }
 
-function conserverConfigurationNotifications(commande) {
+function conserverConfigurationNotifications(commande, cles) {
   return connexionClient.emitBlocking(
     'conserverConfigurationNotifications',
     commande,
-    {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'Messagerie', action: 'conserverConfigurationNotifications', attacherCertificat: true}
+    {
+      kind: MESSAGE_KINDS.KIND_COMMANDE, 
+      domaine: 'Messagerie', action: 'conserverConfigurationNotifications', 
+      attachements: cles,
+      attacherCertificat: true}
   )
 }
 

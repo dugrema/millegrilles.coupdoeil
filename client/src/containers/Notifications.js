@@ -74,13 +74,11 @@ function Notifications(props) {
                     await chiffrerChamps(workers, 'config_notif_smtp', cleChiffrageSmtp, smtpDechiffre)
                 commande.smtp.chiffre = docSmtp
 
-                const cles = {
-                    smtp: mcSmtp,
-                }
-                if(mcSmtp) commande['_cles'] = cles
+                const cles = {}
+                if(mcSmtp) cles.smtp = mcSmtp
 
                 console.debug("Commande sauvegarder ", commande)
-                await workers.connexion.conserverConfigurationNotifications(commande)
+                await workers.connexion.conserverConfigurationNotifications(commande, cles)
                 fermer()
             })
             .catch(err=>{
