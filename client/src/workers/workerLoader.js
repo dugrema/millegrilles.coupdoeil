@@ -34,6 +34,7 @@ export function setupWorkers() {
     workers.clesDao = clesDao(workers)              // Cles asymetriques
     // workers.uploadFichiersDao = uploadFichiersDao   // IDB upload fichiers
     // workers.downloadFichiersDao = downloadFichiersDao  // IDB download fichiers
+    workers.x509 = chiffrage.proxy
 
     // Wiring
     const ready = wireWorkers(workers)

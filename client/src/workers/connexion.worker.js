@@ -434,6 +434,20 @@ function genererClewebpushNotifications(opts) {
   )
 }
 
+function transmettreCleSymmetrique(commande) {
+  return connexionClient.emitBlocking(
+    'transmettreCleSymmetrique',
+    commande,
+    {
+      kind: MESSAGE_KINDS.KIND_COMMANDE, 
+      domaine: 'MaitreDesCles', 
+      action: 'cleSymmetrique', 
+      partition: commande.fingerprint, 
+      attacherCertificat: true
+    }
+  )
+}
+
 // Listeners
 function enregistrerCallbackEvenementsPresenceDomaine(cb) { 
   return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceDomaines', cb) 
@@ -481,6 +495,16 @@ async function retirerEvenementsAcme(instanceId, securite, cb) {
   return connexionClient.unsubscribe('coupdoeil/retirerEvenementsAcme', cb, {instanceId, exchange: securite})
 }
 
+async function ecouterEvenementsRechiffageCles(params, cb) { 
+  // const commande = await ConnexionClient.formatterMessage(params, 'Messagerie')
+  return connexionClient.subscribe('ecouterEvenementsRechiffageCles', cb, params)
+}
+
+async function retirerEvenementsRechiffageCles(params, cb) {
+  return connexionClient.unsubscribe('retirerEvenementsRechiffageCles', cb, params) 
+}
+
+
 comlinkExpose({
   ...connexionClient,
   // connecter,  // Override de connexionClient.connecter
@@ -512,6 +536,7 @@ comlinkExpose({
   resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationFichiers, getPublicKeySsh,
   modifierConfigurationConsignation, setFichiersPrimaire, declencherSync, demarrerBackupTransactions,
   getCles, getConfigurationNotifications, conserverConfigurationNotifications, genererClewebpushNotifications,
+  transmettreCleSymmetrique,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,
@@ -519,4 +544,5 @@ comlinkExpose({
   enregistrerCallbackEvenementsApplications, retirerCallbackEvenementsApplications,
   enregistrerEvenementsAcme, retirerEvenementsAcme,
   enregistrerCallbackEvenementsConsignation, retirerCallbackEvenementsConsignation,
+  ecouterEvenementsRechiffageCles, retirerEvenementsRechiffageCles,
 })

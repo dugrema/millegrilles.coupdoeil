@@ -57,6 +57,9 @@ function configurerEvenements(socket) {
       {eventName: 'coupdoeil/transactionCleRechiffree', callback: (params, cb) => {
         traiter(socket, mqdao.commandeCleRechiffree, {params, cb})
       }},
+      {eventName: 'transmettreCleSymmetrique', callback: (params, cb) => {
+        traiter(socket, mqdao.transmettreCleSymmetrique, {params, cb})
+      }},
       // {eventName: 'coupdoeil/restaurationChargerCles', callback: (params, cb) => {
       //   restaurationChargerCles(socket, params, cb)
       // }},
@@ -162,6 +165,13 @@ function configurerEvenements(socket) {
       }},
       {eventName: 'coupdoeil/retirerEvenementsConsignation', callback: (params, cb) => {
         retirerEvenementsConsignation(socket, params, cb)
+      }},
+
+      {eventName: 'ecouterEvenementsRechiffageCles', callback: (params, cb) => {
+        ecouterEvenementsRechiffageCles(socket, params, cb)
+      }},
+      {eventName: 'retirerEvenementsRechiffageCles', callback: (params, cb) => {
+        retirerEvenementsRechiffageCles(socket, params, cb)
       }},
 
     ]
@@ -964,6 +974,28 @@ function retirerEvenementsBackup(socket, params, cb) {
   ]
   socket.unsubscribe({routingKeys})
   debug("retirerEvenementsBackup sur %O", params)
+  if(cb) cb(true)
+}
+
+const CONST_ROUTINGKEYS_EVENEMENTS_DECHIFFRAGE = [
+  'evenement.MaitreDesCles.demandeCleSymmetrique',
+]
+
+function ecouterEvenementsRechiffageCles(socket, params, cb) {
+  const opts = {
+    routingKeys: CONST_ROUTINGKEYS_EVENEMENTS_DECHIFFRAGE,
+    exchanges: ['3.protege'],
+  }
+  debug("ecouterEvenementsRechiffageCles Params : %O", params)
+  socket.subscribe(opts, cb)
+}
+
+function retirerEvenementsRechiffageCles(socket, params, cb) {
+  socket.unsubscribe({
+    routingKeys: CONST_ROUTINGKEYS_EVENEMENTS_DECHIFFRAGE,
+    exchanges: ['3.protege'],
+  })
+  debug("retirerEvenementsRechiffageCles sur %O", params)
   if(cb) cb(true)
 }
 

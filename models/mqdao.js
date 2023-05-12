@@ -277,6 +277,10 @@ function majDelegations(socket, params) {
     return transmettreCommande(socket, params, 'majUsagerDelegations', {domaine: CONST_DOMAINE_MAITREDESCOMPTES})
 }
 
+function transmettreCleSymmetrique(socket, params) {
+    return transmettreCommande(socket, params, 'cleSymmetrique', {domaine: CONST_DOMAINE_MAITREDESCLES, exchange: '3.protege'})
+}
+
 // Fonctions generiques
 
 async function transmettreRequete(socket, params, action, opts) {
@@ -342,6 +346,7 @@ module.exports = {
     requeteListeUsagers, requeteUsager, resetWebauthnUsager, 
     requeteClesNonDechiffrables, requeteCompterClesNonDechiffrables, commandeCleRechiffree,
     genererCertificatNoeud, configurerConsignationWeb, majDelegations,
+    transmettreCleSymmetrique,
 
     // ecouterMajFichiers, ecouterMajCollections, ecouterTranscodageProgres, 
     // retirerTranscodageProgres, 
