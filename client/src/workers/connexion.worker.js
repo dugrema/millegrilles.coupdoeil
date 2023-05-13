@@ -333,12 +333,17 @@ function resetClesNonDechiffrables(commande) {
   )
 }
 
-function rechiffrerClesBatch(commande) {
-  commande = commande || {}
+function rechiffrerClesBatch(contenuChiffre, dechiffrage) {
   return connexionClient.emitBlocking(
     'rechiffrerClesBatch', 
-    commande, 
-    {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'MaitreDesCles', action: 'rechiffrerBatch', attacherCertificat: true}
+    contenuChiffre, 
+    {
+      kind: MESSAGE_KINDS.KIND_COMMANDE_INTER_MILLEGRILLE, 
+      domaine: 'MaitreDesCles', 
+      action: 'rechiffrerBatch', 
+      attacherCertificat: true,
+      dechiffrage,
+    }
   )
 }
 

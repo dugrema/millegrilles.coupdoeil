@@ -7,7 +7,6 @@ import { pki as forgePki } from '@dugrema/node-forge'
 import { extraireExtensionsMillegrille } from '@dugrema/millegrilles.utiljs/src/forgecommon'
 import { AlertTimeout, ModalChargerCleMillegrille } from '@dugrema/millegrilles.reactjs'
 import useWorkers, { useEtatPret, useCleMillegrilleChargee } from '../WorkerContext'
-import { base64 } from 'multiformats/bases/base64'
 
 const BATCH_NOMBRE_FETCH = 100       // Nombre cles downloadees a la fois
 
@@ -30,7 +29,10 @@ function DomaineMaitredescles(props) {
 
   const showModalCleCb = useCallback(()=>setShowModalCle(true), [setShowModalCle])
   const hideModalCleCb = useCallback(()=>setShowModalCle(false), [setShowModalCle])
-  const erreurCb = useCallback((err, message) => setErreur({err, message}), [setErreur])
+  const erreurCb = useCallback((err, message) => {
+    console.error("Erreur ", err)
+    setErreur({err, message})
+  }, [setErreur])
   const resetClesNonDechiffrablesCb = useCallback(()=>resetClesNonDechiffrables(workers, setSucces, erreurCb), [workers])
   const chargerInfoClesCb = useCallback(()=>{fetchInfoCles(workers).then(info=>setInfoCles(info)).catch(erreurCb)}, [workers, setInfoCles, erreurCb])
 
