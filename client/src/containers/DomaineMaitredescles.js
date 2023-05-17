@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Row, Col, Button, Alert } from 'react-bootstrap'
 import { proxy } from 'comlink'
 import { useTranslation } from 'react-i18next'
+import pako from 'pako'
 
 import { pki as forgePki } from '@dugrema/node-forge'
 import { extraireExtensionsMillegrille } from '@dugrema/millegrilles.utiljs/src/forgecommon'
