@@ -9,7 +9,7 @@ import { extraireExtensionsMillegrille } from '@dugrema/millegrilles.utiljs/src/
 import { AlertTimeout, ModalChargerCleMillegrille } from '@dugrema/millegrilles.reactjs'
 import useWorkers, { useEtatPret, useCleMillegrilleChargee } from '../WorkerContext'
 
-const BATCH_NOMBRE_FETCH = 100       // Nombre cles downloadees a la fois
+const BATCH_NOMBRE_FETCH = 500       // Nombre cles downloadees a la fois
 
 function DomaineMaitredescles(props) {
 
