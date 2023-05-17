@@ -48,13 +48,14 @@ function requeteCatalogueDomaines() {
   throw new Error("deprecated")
   // return connexionClient.emitBlocking('coupdoeil/requeteCatalogueDomaines')
 }
-function requeteClesNonDechiffrables(tailleBatch, dateCreationMin, excludeHachageBytes) {
+function requeteClesNonDechiffrables(tailleBatch, nombreClesRechiffrees) {
   return connexionClient.emitBlocking(
     'coupdoeil/requeteClesNonDechiffrables', 
     {
       limite: tailleBatch, 
-      date_creation_min: dateCreationMin,
-      exclude_hachage_bytes: excludeHachageBytes,
+      skip: nombreClesRechiffrees,
+      // date_creation_min: dateCreationMin,
+      // exclude_hachage_bytes: excludeHachageBytes,
     },
     {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: DOMAINE_MAITREDESCLES, action: 'clesNonDechiffrables', ajouterCertificat: true}
   )
