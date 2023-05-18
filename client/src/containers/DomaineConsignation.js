@@ -50,10 +50,10 @@ function ConfigurationConsignation(props) {
     const messageConsignationHandler = useCallback(reponse=>{
         console.debug("messageConsignationHandler Reponse ", reponse)
         // Extraire instanceId du certificat de l'evenement
-        const original = reponse.message['__original'].routage
+        const original = reponse.message['__original']
         const action = original.routage.action
         if(action === 'presence') {
-            const certificat = forgePki.certificateFromPem(reponse.message['_certificat'][0])
+            const certificat = forgePki.certificateFromPem(original['certificat'][0])
             const instance_id = certificat.subject.getField('CN').value
             const info = { ...reponse.message, instance_id, derniere_modification: original.estampille }
             console.debug("Info evenement consignation ", info)
