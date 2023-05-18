@@ -114,6 +114,10 @@ function DomaineMaitredescles(props) {
         if(certificats.length > 0) setCertificatsMaitredescles(certificats)
       })
       .catch(err=>console.error("Erreur chargement certificats maitredescles ", err))
+
+    workers.connexion.verifierClesSymmetriques()
+      .catch(err=>console.error("Erreur verification cles symmetriques ", err))
+
   }, [workers, setCertificatsMaitredescles])
 
   // Enregistrer changement de collection
@@ -130,6 +134,11 @@ function DomaineMaitredescles(props) {
             .catch(err=>console.warn("Erreur retirer listeners rechiffrage : %O", err))
     }
   }, [workers, etatPret, evenementRechiffrageCb])
+
+  const showCleMillegrille = useMemo(()=>{
+    if(cleMillegrilleChargee) return false
+    return clesSymmetriques || infoCles.nonDechiffrables > 0
+  }, [clesSymmetriques, infoCles, cleMillegrilleChargee])
 
   return (
     <div>
@@ -168,7 +177,7 @@ function DomaineMaitredescles(props) {
         <p>Il n'y a aucune cle a rechiffrer.</p>
       </Alert>
 
-      <Alert show={(infoCles.nonDechiffrables===0 || cleMillegrilleChargee)?false:true}>
+      <Alert show={showCleMillegrille}>
         <Alert.Heading>Charger la cle de millegrille</Alert.Heading>
         <p>La cle de MilleGrille est requise pour le rechiffrage.</p>
 

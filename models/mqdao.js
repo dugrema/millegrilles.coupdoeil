@@ -281,6 +281,10 @@ function transmettreCleSymmetrique(socket, params) {
     return transmettreCommande(socket, params, 'cleSymmetrique', {domaine: CONST_DOMAINE_MAITREDESCLES, exchange: '3.protege'})
 }
 
+function verifierClesSymmetriques(socket, params) {
+    return transmettreCommande(socket, params, 'verifierCleSymmetrique', {domaine: CONST_DOMAINE_MAITREDESCLES, exchange: '3.protege'})
+}
+
 // Fonctions generiques
 
 async function transmettreRequete(socket, params, action, opts) {
@@ -346,7 +350,7 @@ module.exports = {
     requeteListeUsagers, requeteUsager, resetWebauthnUsager, 
     requeteClesNonDechiffrables, requeteCompterClesNonDechiffrables, commandeCleRechiffree,
     genererCertificatNoeud, configurerConsignationWeb, majDelegations,
-    transmettreCleSymmetrique,
+    transmettreCleSymmetrique, verifierClesSymmetriques,
 
     // ecouterMajFichiers, ecouterMajCollections, ecouterTranscodageProgres, 
     // retirerTranscodageProgres, 

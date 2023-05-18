@@ -60,6 +60,9 @@ function configurerEvenements(socket) {
       {eventName: 'transmettreCleSymmetrique', callback: (params, cb) => {
         traiter(socket, mqdao.transmettreCleSymmetrique, {params, cb})
       }},
+      {eventName: 'verifierClesSymmetriques', callback: (params, cb) => {
+        traiter(socket, mqdao.verifierClesSymmetriques, {params, cb})
+      }},
       // {eventName: 'coupdoeil/restaurationChargerCles', callback: (params, cb) => {
       //   restaurationChargerCles(socket, params, cb)
       // }},

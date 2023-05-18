@@ -136,6 +136,19 @@ function configurerDomaineAcme(commande) {
   )
 }
 
+function verifierClesSymmetriques() {
+  return connexionClient.emitBlocking(
+    'verifierClesSymmetriques', 
+    {},
+    {
+      kind: MESSAGE_KINDS.KIND_COMMANDE, 
+      domaine: 'MaitreDesCles', 
+      action: 'verifierCleSymmetrique', 
+      ajouterCertificat: true
+    }
+  )
+}
+
 // Commandes
 
 function restaurationChargerCles(params) {
@@ -542,7 +555,7 @@ comlinkExpose({
   resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationFichiers, getPublicKeySsh,
   modifierConfigurationConsignation, setFichiersPrimaire, declencherSync, demarrerBackupTransactions,
   getCles, getConfigurationNotifications, conserverConfigurationNotifications, genererClewebpushNotifications,
-  transmettreCleSymmetrique,
+  transmettreCleSymmetrique, verifierClesSymmetriques,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,
