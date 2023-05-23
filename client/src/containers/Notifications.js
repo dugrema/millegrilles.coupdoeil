@@ -472,7 +472,7 @@ async function chiffrerChamps(workers, labelCle, cleChiffrage, champsDechiffres)
     let documentChiffre = null, commandeMaitredescles = null
 
     if(cleChiffrage) {
-        const doc = await chiffrage.chiffrage.updateChampsChiffres(champsDechiffres, cleChiffrage.cleSecrete)
+        const doc = await chiffrage.chiffrage.updateChampsChiffres(champsDechiffres, cleChiffrage.cleSecrete, {lzma: true})
         // Copier ref_hachage_bytes
         doc.ref_hachage_bytes = cleChiffrage.hachage_bytes
         // Object.assign(config.data_chiffre, doc)
@@ -485,7 +485,7 @@ async function chiffrerChamps(workers, labelCle, cleChiffrage, champsDechiffres)
         const identificateurs_document = {'type': labelCle}
 
         const {doc, commandeMaitrecles: commande} = await chiffrage.chiffrerDocument(
-            champsDechiffres, 'Messagerie', certificatsChiffrage, {identificateurs_document, DEBUG: true})
+            champsDechiffres, 'Messagerie', certificatsChiffrage, {identificateurs_document, lzma: true, DEBUG: true})
 
         // Conserver data chiffre dans config
         // Object.assign(config.data_chiffre, doc)
@@ -505,7 +505,7 @@ async function dechiffrer(workers, dataChiffre) {
         // Recuperer cle pour re-chiffrer
         const cles = await workers.clesDao.getCles(ref_hachage_bytes, 'Messagerie')
         const cle = cles[ref_hachage_bytes]
-        const dataDechiffre = await workers.chiffrage.chiffrage.dechiffrerChampsChiffres(dataChiffre, cle)
+        const dataDechiffre = await workers.chiffrage.chiffrage.dechiffrerChampsChiffres(dataChiffre, cle, {lzma: true})
         console.debug("Data dechiffre ", dataDechiffre)
         return {cle, dataDechiffre}
     }
