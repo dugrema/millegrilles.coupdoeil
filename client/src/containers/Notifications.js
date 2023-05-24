@@ -472,6 +472,7 @@ async function chiffrerChamps(workers, labelCle, cleChiffrage, champsDechiffres)
     let documentChiffre = null, commandeMaitredescles = null
 
     if(cleChiffrage) {
+        // console.debug("chiffrerChamps Utiliser cle %O pour %O", cleChiffrage, champsDechiffres)
         const doc = await chiffrage.chiffrage.updateChampsChiffres(champsDechiffres, cleChiffrage.cleSecrete, {lzma: true})
         // Copier ref_hachage_bytes
         doc.ref_hachage_bytes = cleChiffrage.hachage_bytes
@@ -479,9 +480,9 @@ async function chiffrerChamps(workers, labelCle, cleChiffrage, champsDechiffres)
         documentChiffre = doc
     } else {
         // Creer nouvelle commande pour maitre des cles
-        console.debug("Charger certificats maitre des cles")
+        // console.debug("Charger certificats maitre des cles")
         const certificatsChiffrage = await connexion.getCertificatsMaitredescles()
-        console.debug("Certificats maitre des cles ", certificatsChiffrage)
+        // console.debug("Certificats maitre des cles ", certificatsChiffrage)
         const identificateurs_document = {'type': labelCle}
 
         const {doc, commandeMaitrecles: commande} = await chiffrage.chiffrerDocument(
@@ -491,7 +492,7 @@ async function chiffrerChamps(workers, labelCle, cleChiffrage, champsDechiffres)
         // Object.assign(config.data_chiffre, doc)
         documentChiffre = doc
 
-        console.debug("Commande maitre des cles : %O", commande)
+        // console.debug("Commande maitre des cles : %O", commande)
         commandeMaitredescles = commande
     }
 
@@ -506,7 +507,7 @@ async function dechiffrer(workers, dataChiffre) {
         const cles = await workers.clesDao.getCles(ref_hachage_bytes, 'Messagerie')
         const cle = cles[ref_hachage_bytes]
         const dataDechiffre = await workers.chiffrage.chiffrage.dechiffrerChampsChiffres(dataChiffre, cle, {lzma: true})
-        console.debug("Data dechiffre ", dataDechiffre)
+        // console.debug("Data dechiffre ", dataDechiffre)
         return {cle, dataDechiffre}
     }
 }
