@@ -6,8 +6,8 @@ function build(workers) {
 
     return {
         // Recupere une liste de cles, les conserve dans le usagerDao (cache) si applicable
-        getCles(liste_hachage_bytes, opts) {
-            return getCles(workers, liste_hachage_bytes, opts)
+        getCles(liste_hachage_bytes, domaine, opts) {
+            return getCles(workers, domaine, liste_hachage_bytes, opts)
         },
         getCertificatsMaitredescles() {
             if(cacheCertificatsMaitredescles) return cacheCertificatsMaitredescles
@@ -25,10 +25,14 @@ function build(workers) {
 
 export default build
 
-async function getCles(workers, liste_hachage_bytes, opts) {
+async function getCles(workers, domaine, liste_hachage_bytes, opts) {
     opts = opts || {}
 
+    console.debug("getCles param domaine %s, liste_hachage_bytes %O (opts: %O)", domaine, liste_hachage_bytes, opts)
+
+    if(typeof(domaine) !== 'string') throw new Error("Erreur getCles domaine : doit etre string")
     if(typeof(liste_hachage_bytes) === 'string') liste_hachage_bytes = [liste_hachage_bytes]
+    else if(!Arrays.isArray(liste_hachage_bytes)) throw new Error('Erreur param liste_hachages_bytes doit etre string ou Array')
 
     const { connexion, chiffrage, usagerDao } = workers
 
@@ -48,7 +52,7 @@ async function getCles(workers, liste_hachage_bytes, opts) {
     // console.debug("Cles connues : %d, cles manquantes : %d", Object.keys(clesDechiffrees).length, clesManquantes.length)
     if(clesManquantes.length > 0) {
         // Recuperer les cles du serveur
-        const reponseClesChiffrees = await connexion.getCles(liste_hachage_bytes)
+        const reponseClesChiffrees = await connexion.getCles(liste_hachage_bytes, {domaine})
         // console.debug("getCles reponseClesChiffrees ", reponseClesChiffrees)
         for await(const cleHachage_bytes of Object.keys(reponseClesChiffrees.cles)) {
             const infoCle = reponseClesChiffrees.cles[cleHachage_bytes]
