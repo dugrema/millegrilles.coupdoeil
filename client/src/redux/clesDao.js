@@ -32,7 +32,7 @@ async function getCles(workers, domaine, liste_hachage_bytes, opts) {
 
     if(typeof(domaine) !== 'string') throw new Error("Erreur getCles domaine : doit etre string")
     if(typeof(liste_hachage_bytes) === 'string') liste_hachage_bytes = [liste_hachage_bytes]
-    else if(!Arrays.isArray(liste_hachage_bytes)) throw new Error('Erreur param liste_hachages_bytes doit etre string ou Array')
+    else if(!Array.isArray(liste_hachage_bytes)) throw new Error('Erreur param liste_hachages_bytes doit etre string ou Array')
 
     const { connexion, chiffrage, usagerDao } = workers
 
