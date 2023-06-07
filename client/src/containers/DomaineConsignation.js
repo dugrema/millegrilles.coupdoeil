@@ -266,7 +266,7 @@ function ListeConsignations(props) {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant='danger' onClick={changerPrimaireHandler} value={showChangerPrimaire}>Changer</Button>
-                    <Button variant='primary' onClick={changerPrimaireHandler} value={fermerPrimaireModal}>Annuler</Button>
+                    <Button variant='primary' onClick={fermerPrimaireModal}>Annuler</Button>
                 </Modal.Footer>
             </Modal>
         </div>
