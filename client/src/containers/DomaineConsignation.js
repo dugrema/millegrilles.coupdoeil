@@ -11,6 +11,7 @@ import FormControl from 'react-bootstrap/FormControl'
 import Tabs from 'react-bootstrap/Tabs'
 import Tab from 'react-bootstrap/Tab'
 import Alert from 'react-bootstrap/Alert'
+import Modal from 'react-bootstrap/Modal'
 
 import { AlertTimeout, ModalAttente, FormatteurTaille, FormatterDate } from '@dugrema/millegrilles.reactjs'
 import { pki as forgePki } from '@dugrema/node-forge'
@@ -179,6 +180,7 @@ function ListeConsignations(props) {
     const workers = useWorkers()
 
     const instances = useSelector(state=>state.instances.listeInstances)
+    const [showChangerPrimaire, setShowChangerPrimaire] = useState(false)
 
     const instancesParId = useMemo(()=>{
         if(!instances) return ''
@@ -189,16 +191,22 @@ function ListeConsignations(props) {
         return instancesParId
     }, [instances])
 
-    const changerPrimaireHandler = useCallback(e=>{
-        const instance_id = e.currentTarget.value
-        console.debug("Changer instance primaire pour ", instance_id)
-        const commande = { instance_id }
+    const changerPrimaireHandler = useCallback(()=>{
+        console.debug("Changer instance primaire pour ", showChangerPrimaire)
+        const commande = { instance_id: showChangerPrimaire }
         workers.connexion.setFichiersPrimaire(commande)
             .then(()=>{
-                console.debug("Fichiers primaire change pour ", instance_id)
+                console.debug("Fichiers primaire change pour ", showChangerPrimaire)
+                setShowChangerPrimaire(false)
             })
             .catch(erreurCb)
-    }, [workers])
+    }, [workers, showChangerPrimaire])
+
+    const changerPrimaireModal = useCallback(e=>{
+        const instance_id = e.currentTarget.value
+        setShowChangerPrimaire(instance_id)
+    }, [setShowChangerPrimaire])
+    const fermerPrimaireModal = useCallback(()=>setShowChangerPrimaire(false), [setShowChangerPrimaire])
 
     if(!liste) return 'Chargement encours'
     if(liste.length === 0) return 'Aucune consignation de fichiers presente'
@@ -217,31 +225,50 @@ function ListeConsignations(props) {
         if(secsDepuisModif > 1800) classNameExpiration = 'expire-long'
         else if(secsDepuisModif > 300) classNameExpiration = 'expire-court'
 
+        let taille = item.fichiers_taille || 0
+        if(item.archives_taille) taille += item.archives_taille
+        let nombre = item.fichiers_nombre || 0
+        if(item.archives_nombre) nombre += item.archives_nombre
+
         return (
             <Row key={item.instance_id} className={primaire?'primaire':''}>
                 <Col xs={9} lg={4} className='nom-consignation'>
                     <Button variant="link" onClick={onSelect} value={item.instance_id}>{nom}</Button>
                 </Col>
                 <Col xs={3} lg={2} className='champ-primaire'>
-                    <AfficherChampRole onClick={changerPrimaireHandler} item={item} />
+                    <AfficherChampRole onClick={changerPrimaireModal} item={item} />
                 </Col>
                 <Col xs={6} lg={3} className={classNameExpiration}><FormatterDate value={item.derniere_modification} /></Col>
-                <Col xs={3} lg={2}><FormatteurTaille value={item.fichiers_taille} /></Col>
-                <Col xs={3} lg={1}>{item.fichiers_nombre}</Col>
+                <Col xs={3} lg={2}><FormatteurTaille value={taille} /></Col>
+                <Col xs={3} lg={1}>{nombre}</Col>
             </Row>
         )
     })
 
     return (
         <div>
-            <Row>
-                <Col lg={4} className='d-none d-lg-block'>Serveur</Col>
-                <Col lg={2} className='d-none d-lg-block'></Col>
-                <Col lg={3} className='d-none d-lg-block'>Derniere presence</Col>
-                <Col lg={2} className='d-none d-lg-block'>Taille</Col>
-                <Col lg={1} className='d-none d-lg-block'>Fichiers</Col>
-            </Row>
-            {listeFichiers}
+            <div>
+                <Row>
+                    <Col lg={4} className='d-none d-lg-block'>Serveur</Col>
+                    <Col lg={2} className='d-none d-lg-block'></Col>
+                    <Col lg={3} className='d-none d-lg-block'>Derniere presence</Col>
+                    <Col lg={2} className='d-none d-lg-block'>Taille</Col>
+                    <Col lg={1} className='d-none d-lg-block'>Fichiers</Col>
+                </Row>
+                {listeFichiers}
+            </div>
+
+            <Modal show={showChangerPrimaire?true:false} onHide={fermerPrimaireModal}>
+                <Modal.Header closeButton>Confirmer</Modal.Header>
+                <Modal.Body>
+                    <p>Confirmer le changement de primaire.</p>
+                    <p>Cette operation peut avoir un impact de performance sur le systeme et couper des connexions actives.</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant='danger' onClick={changerPrimaireHandler} value={showChangerPrimaire}>Changer</Button>
+                    <Button variant='primary' onClick={changerPrimaireHandler} value={fermerPrimaireModal}>Annuler</Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     )
 }
