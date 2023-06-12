@@ -2,6 +2,7 @@ import React, {useState, useEffect, useCallback} from 'react'
 import {Row, Col, Button, Form, InputGroup, FormControl, Alert} from 'react-bootstrap'
 import axios from 'axios'
 
+import { MESSAGE_KINDS } from '@dugrema/millegrilles.utiljs/src/constantes'
 import { AlertTimeout, ModalAttente } from '@dugrema/millegrilles.reactjs'
 import { pki as forgePki } from '@dugrema/node-forge'
 
@@ -211,7 +212,7 @@ async function renouvellerCertificat(workers, hostname, instance, confirmationCb
     console.debug("URL verification noeud : %s", urlGenerer.href)
 
     const domaine = 'monitor', action = 'genererCsr'
-    const commande = await connexion.formatterMessage({}, domaine, {action, attacherCertificat: true})
+    const commande = await connexion.formatterMessage({}, domaine, {kind: MESSAGE_KINDS.KIND_COMMANDE, action, attacherCertificat: true})
 
     try {
       const reponse = await axios({
@@ -311,7 +312,7 @@ async function changerHostnameInstance(workers, instanceId, hostname, confirmati
       hostname,
     }
     const domaine = 'monitor', action = 'changerDomaine'
-    const commandeSignee = await connexion.formatterMessage(commande, domaine, {action})
+    const commandeSignee = await connexion.formatterMessage(commande, domaine, {kind: MESSAGE_KINDS.KIND_COMMANDE, action})
 
     const url = new URL("https://localhost/installation/api/changerDomaine")
     url.hostname = hostname
@@ -404,7 +405,7 @@ async function configurerMq(workers, hostname, hostMq, portMq, confirmationCb, e
   }
 
   const domaine = 'monitor', action = 'changerConfigurationMq'
-  const commandeSignee = await connexion.formatterMessage(commande, domaine, {action})
+  const commandeSignee = await connexion.formatterMessage(commande, domaine, {kind: MESSAGE_KINDS.KIND_COMMANDE, action})
 
   console.debug("Commande a transmettre : %O", commandeSignee)
   const url = new URL('https://localhost/installation/api/configurerMQ')
