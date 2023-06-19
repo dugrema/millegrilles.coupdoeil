@@ -125,7 +125,7 @@ function ConfigurationConsignation(props) {
             <AlertTimeout value={confirmation} setValue={setConfirmation} />
             <ModalAttente show={attente} setAttente={setAttente} />
 
-            <ActionsConsignation confirmationCb={confirmationCb} />
+            <ActionsConsignation confirmationCb={confirmationCb} erreurCb={erreurCb} />
 
             <ListeConsignations 
                 liste={liste} 
@@ -138,15 +138,18 @@ export default ConfigurationConsignation
 
 function ActionsConsignation(props) {
 
-    const { confirmationCb } = props
+    const { confirmationCb, erreurCb } = props
 
     const workers = useWorkers(),
           etatPret = useEtatPret()
 
     const synchroniserHandler = useCallback(()=>{
         workers.connexion.declencherSync()
-            .catch(err=>console.error("Erreur declencher synchronization des serveurs de consignation ", err))
-    }, [workers])
+            .catch(err=>{
+                console.error("Erreur declencher synchronization des serveurs de consignation ", err)
+                erreurCb('Erreur declencher synchronization des serveurs de consignation. \n' + err)
+            })
+    }, [workers, erreurCb])
 
     const demarrerBackupHandler = useCallback(()=>{
         workers.connexion.demarrerBackupTransactions({complet: true})
@@ -154,8 +157,23 @@ function ActionsConsignation(props) {
                 console.debug("Backup demarre OK ", reponse)
                 confirmationCb('Backup complet demarre')
             })
-            .catch(err=>console.error("Erreur declencher backup complet ", err))
+            .catch(err=>{
+                console.error("Erreur declencher backup complet ", err)
+                erreurCb('Erreur declencher backup complet. \n' + err)
+            })
     }, [workers, confirmationCb])
+
+    const reindexerHandler = useCallback(()=>{
+        workers.connexion.reindexerConsignation()
+            .then(reponse=>{
+                console.debug("Reindexation amorcee : ", reponse)
+                confirmationCb('Reindexation amorcee OK')
+            })
+            .catch(err=>{
+                console.error("Erreur declenchement reindexer consignation ", err)
+                erreurCb('Erreur declencher reindexation de la consignation.\n' + err)
+            })
+    }, [workers, erreurCb])
 
     return (
         <div>
@@ -166,6 +184,8 @@ function ActionsConsignation(props) {
                     <Button variant="secondary" disabled={!etatPret} onClick={synchroniserHandler}>Synchroniser</Button>
                     {' '}
                     <Button variant="secondary" disabled={!etatPret} onClick={demarrerBackupHandler}>Backup</Button>
+                    {' '}
+                    <Button variant="secondary" disabled={!etatPret} onClick={reindexerHandler}>Reindexer</Button>
                 </Col>
             </Row>
             <p></p>

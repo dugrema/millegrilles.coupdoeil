@@ -414,6 +414,15 @@ function demarrerBackupTransactions(commande) {
   )
 }
 
+function reindexerConsignation(commande) {
+  commande = commande || {}
+  return connexionClient.emitBlocking(
+    'reindexerConsignation',
+    commande,
+    {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'GrosFichiers', action: 'reindexerConsignation', attacherCertificat: true}
+  )
+}
+
 function getCles(liste_hachage_bytes, opts) {
   opts = opts || {}
   return connexionClient.emitBlocking(
@@ -556,6 +565,8 @@ comlinkExpose({
   modifierConfigurationConsignation, setFichiersPrimaire, declencherSync, demarrerBackupTransactions,
   getCles, getConfigurationNotifications, conserverConfigurationNotifications, genererClewebpushNotifications,
   transmettreCleSymmetrique, verifierClesSymmetriques,
+  reindexerConsignation,
+
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,

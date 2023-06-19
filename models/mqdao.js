@@ -196,6 +196,11 @@ function demarrerBackupTransactions(socket, commande) {
     return transmettreCommande(socket, commande, 'demarrerBackupTransactions', {domaine: CONST_DOMAINE_FICHIERS, exchange: '2.prive'})
 }
 
+function reindexerConsignation(socket, commande) {
+    debug("reindexerConsignation %O", commande)
+    return transmettreCommande(socket, commande, 'reindexerConsignation', {domaine: CONST_DOMAINE_GROSFICHIERS, exchange: '3.protege'})
+}
+
 function getCles(socket, requete) {
     return transmettreRequete(socket, requete, 'dechiffrage', {domaine: CONST_DOMAINE_MAITREDESCLES, exchange: '2.prive'})
 }
@@ -351,6 +356,7 @@ module.exports = {
     requeteClesNonDechiffrables, requeteCompterClesNonDechiffrables, commandeCleRechiffree,
     genererCertificatNoeud, configurerConsignationWeb, majDelegations,
     transmettreCleSymmetrique, verifierClesSymmetriques,
+    reindexerConsignation,
 
     // ecouterMajFichiers, ecouterMajCollections, ecouterTranscodageProgres, 
     // retirerTranscodageProgres, 
