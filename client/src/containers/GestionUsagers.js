@@ -1,17 +1,22 @@
-import React, {useState, useEffect, useCallback} from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import {Row, Col, Button, Alert, Form} from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 
 import { AfficherActivationsUsager, supporteCamera } from '@dugrema/millegrilles.reactjs'
 
+import useWorkers from '../WorkerContext'
+
 export default function GestionUsagers(props) {
 
-  const { etatAuthentifie, confirmationCb, erreurCb } = props
+  const { etatAuthentifie, confirmationCb, erreurCb, fermer } = props
 
   const [listeUsagers, setListeUsagers] = useState([])
   const [userId, setUserId] = useState('')
-  const {connexion} = props.workers
-  const fermer = props.fermer
+
+
+  const workers = useWorkers()
+
+  const {connexion} = workers
 
   useEffect(_=>{
     if(etatAuthentifie) {
@@ -21,7 +26,6 @@ export default function GestionUsagers(props) {
 
   if(userId) return (
     <AfficherUsager userId={userId}
-                    workers={props.workers} 
                     etatAuthentifie={etatAuthentifie}
                     confirmationCb={confirmationCb}
                     erreurCb={erreurCb}
@@ -105,19 +109,20 @@ function UsagerRow(props) {
 
 function AfficherUsager(props) {
 
-  const { confirmationCb, erreurCb, etatAuthentifie, fermer } = props
+  const { userId, confirmationCb, erreurCb, etatAuthentifie, fermer } = props
 
   const { t } = useTranslation()
+  const workers = useWorkers()
 
   const [usager, setUsager] = useState('')
 
   useEffect(_=>{
-    chargerUsager(props.workers.connexion, {userId: props.userId}, setUsager)
-  }, [])
+    chargerUsager(workers.connexion, userId, setUsager)
+  }, [workers, userId, setUsager])
 
   const reloadUsager = useCallback(_=>{
-    chargerUsager(props.workers.connexion, {userId: props.userId}, setUsager)
-  }, [])
+    chargerUsager(workers.connexion, userId, setUsager)
+  }, [workers, userId, setUsager])
 
   return (
     <>
@@ -133,21 +138,18 @@ function AfficherUsager(props) {
       <InformationUsager 
         etatAuthentifie={etatAuthentifie}
         usager={usager}
-        workers={props.workers}
         setUsager={setUsager}
         setErr={erreurCb} />
 
       <ActivationUsager 
         etatAuthentifie={etatAuthentifie}
         usager={usager}
-        workers={props.workers}
         confirmationCb={confirmationCb}
         erreurCb={erreurCb} />
 
       <GestionWebauthn 
         etatAuthentifie={etatAuthentifie}
         usager={usager}
-        workers={props.workers}
         reloadUsager={reloadUsager} />
 
     </>
@@ -156,10 +158,16 @@ function AfficherUsager(props) {
 
 function ActivationUsager(props) {
 
-  const { workers, usager, confirmationCb, erreurCb, etatAuthentifie } = props
+  const { usager, confirmationCb, erreurCb, etatAuthentifie } = props
+
+  const workers = useWorkers()
 
   const [csr, setCsr] = useState('')
   const [supportCodeQr, setSupportCodeQr] = useState(false)
+
+  const nomUsager = useMemo(()=>{
+    if(usager && usager.compte) return usager.compte.nomUsager
+  }, [usager])
 
   const csrCb = useCallback(csr=>{
     console.debug("Recu csr : %O", csr)
@@ -169,8 +177,19 @@ function ActivationUsager(props) {
   const activerCsr = useCallback(()=>{
     console.debug("Activer CSR pour usager %O\n%O", usager, csr)
     const { connexion } = workers
-    const userId = usager.userId
-    connexion.signerRecoveryCsr({userId, csr, activation_tierce: true})
+    const compte = usager.compte
+    const userId = compte.userId,
+          nomUsager = compte.nomUsager
+
+    const now = Math.floor(new Date().getTime() / 1000)  // Date epoch secs
+    const demandeCertificat = {nomUsager, csr, date: now, activationTierce: true}
+
+    const commande = {
+      userId,
+      demandeCertificat,
+    }
+
+    connexion.signerRecoveryCsrParProprietaire(commande)
       .then(resultat=>{
         console.debug("Reponse activation : %O", resultat)
         // confirmationCb('Code usager active')
@@ -187,8 +206,8 @@ function ActivationUsager(props) {
   return (
     <>
       <AfficherActivationsUsager 
-        nomUsager={usager.nomUsager}
-        workers={props.workers}
+        nomUsager={nomUsager}
+        workers={workers}
         supportCodeQr={supportCodeQr}
         csrCb={csrCb}
         erreurCb={erreurCb} />
@@ -306,7 +325,9 @@ function GestionWebauthn(props) {
         webauthn = usager.webauthn || [],
         userId = usager.userId
 
-  const {connexion} = props.workers
+  const workers = useWorkers()
+  
+  const {connexion} = workers
 
   const [resetWebauthn, setResetWebauthn] = useState(true)
   const [resetActivations, setResetActivations] = useState(false)
@@ -385,7 +406,8 @@ async function chargerListeUsagers(connexion, setListeUsagers) {
 }
 
 async function chargerUsager(connexion, userId, setUsager) {
-  const usager = await connexion.requeteUsager(userId)
+  const params = { userId }
+  const usager = await connexion.requeteUsager(params)
   console.debug("Usager charge : %O", usager)
   setUsager(usager)
 }

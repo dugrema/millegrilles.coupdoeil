@@ -338,6 +338,14 @@ function signerRecoveryCsr(commande) {
   )
 }
 
+function signerRecoveryCsrParProprietaire(commande) {
+  return connexionClient.emitBlocking(
+    'signerRecoveryCsrParProprietaire', 
+    commande, 
+    {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'CoreMaitreDesComptes', action: 'signerCompteParProprietaire', attacherCertificat: true}
+  )
+}
+
 function resetClesNonDechiffrables(commande) {
   commande = commande || {}
   return connexionClient.emitBlocking(
@@ -557,7 +565,7 @@ comlinkExpose({
 
   regenererDomaine,
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
-  majDelegations, 
+  majDelegations, signerRecoveryCsrParProprietaire,
   // requeteRapportBackup, resetBackup, 
   majMonitor, supprimerInstance,
   getConfigurationAcme, configurerDomaineAcme, getRecoveryCsr, signerRecoveryCsr, 

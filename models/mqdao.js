@@ -290,6 +290,10 @@ function verifierClesSymmetriques(socket, params) {
     return transmettreCommande(socket, params, 'verifierCleSymmetrique', {domaine: CONST_DOMAINE_MAITREDESCLES, exchange: '3.protege'})
 }
 
+function signerRecoveryCsrParProprietaire(socket, params) {
+    return transmettreCommande(socket, params, 'signerCompteParProprietaire', {domaine: CONST_DOMAINE_MAITREDESCOMPTES, exchange: '2.prive'})
+}
+
 // Fonctions generiques
 
 async function transmettreRequete(socket, params, action, opts) {
@@ -347,6 +351,8 @@ module.exports = {
     ajouterCatalogueApplication, requeteConfigurationApplication, configurerApplication, supprimerInstance,
     resetClesNonDechiffrables, rechiffrerClesBatch, getConfigurationFichiers, getPublicKeySsh,
     modifierConfigurationConsignation, setFichiersPrimaire, declencherSync, demarrerBackupTransactions,
+    
+    signerRecoveryCsrParProprietaire,
 
     majMonitor, requeteConfigurationAcme, configurerDomaineAcme, getCles, getConfigurationNotifications,
     conserverConfigurationNotifications, genererClewebpushNotifications,

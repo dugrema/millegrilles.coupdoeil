@@ -120,6 +120,7 @@ function configurerEvenements(socket) {
       }},
       {eventName: 'getRecoveryCsr', callback: async (params, cb) => {traiterCompteUsagersDao(socket, 'getRecoveryCsr', {params, cb})}},
       {eventName: 'signerRecoveryCsr', callback: async (params, cb) => {traiterCompteUsagersDao(socket, 'signerRecoveryCsr', {params, cb})}},
+      {eventName: 'signerRecoveryCsrParProprietaire', callback: async (params, cb) => {traiter(socket, mqdao.signerRecoveryCsrParProprietaire, {params, cb})}},
       
       // Listeners evenements
       {eventName: 'coupdoeil/ecouterEvenementsPresenceDomaines', callback: (params, cb) => {
