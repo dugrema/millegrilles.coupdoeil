@@ -220,6 +220,10 @@ function ActivationUsager(props) {
 
 function InformationUsager(props) {
 
+  const { usager, setUsager, setErr } = props
+
+  const workers = useWorkers()
+
   const [delegationGlobale, setDelegationGlobale] = useState('')
   const [comptePrive, setComptePrive] = useState('')
   const [succes, setSucces] = useState(false)
@@ -227,7 +231,7 @@ function InformationUsager(props) {
   const changementPresent = delegationGlobale!=='' || comptePrive!==''
 
   const toggleComptePrive = event => {
-    var valeur = (comptePrive!=='')?comptePrive:props.usager.compte_prive
+    var valeur = (comptePrive!=='')?comptePrive:usager.compte_prive
     setComptePrive(!valeur)
   }
 
@@ -240,11 +244,13 @@ function InformationUsager(props) {
     }
   }
 
-  const sauvegarderChangements = async event => {
+  const sauvegarderChangements = useCallback(async event => {
     setSucces(false)
+    console.debug("Click sauvegarderChangements")
     if(!changementPresent) return
+    const compte = usager.compte
     const transaction = {
-      userId: props.usager.userId
+      userId: compte.userId
     }
     if(delegationGlobale !== '') {
       transaction.delegation_globale = delegationGlobale==='aucune'?null:delegationGlobale
@@ -253,18 +259,19 @@ function InformationUsager(props) {
       transaction.compte_prive = comptePrive
     }
     try {
-      const docResultat = await props.workers.connexion.majDelegations(transaction)
+      console.debug("majDelegations ", transaction)
+      const docResultat = await workers.connexion.majDelegations(transaction)
       if(!docResultat.err) {
-        props.setUsager(docResultat)
+        setUsager(docResultat)
         setSucces(true)
         setTimeout(_=>{setSucces(false)}, 3000)
       } else {
-        props.setErr(docResultat.err)
+        setErr(docResultat.err)
       }
     } catch(err) {
-      props.setErr(''+err)
+      setErr(''+err)
     }
-  }
+  }, [workers, changementPresent, usager, setUsager, setErr])
 
   return (
     <>
@@ -278,7 +285,7 @@ function InformationUsager(props) {
         </Col>
         <Col>
           <Form.Check type="switch"
-                      checked={(comptePrive!=='')?comptePrive:props.usager.compte_prive}
+                      checked={(comptePrive!=='')?comptePrive:usager.compte_prive}
                       onChange={toggleComptePrive}
                       id="switch_compte_prive" />
         </Col>
@@ -293,7 +300,7 @@ function InformationUsager(props) {
               key={item}
               type="radio"
               name="delegationGlobale"
-              checked={((delegationGlobale!=='')?delegationGlobale:props.usager.delegation_globale) === item}
+              checked={((delegationGlobale!=='')?delegationGlobale:usager.delegation_globale) === item}
               onChange={changerChamp}
               label={item}
               value={item}
