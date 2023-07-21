@@ -1,5 +1,6 @@
 import React, {useState, useEffect, useCallback, useMemo} from 'react';
 import { useTranslation } from 'react-i18next'
+import { proxy } from 'comlink'
 
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
@@ -17,6 +18,7 @@ import { pki as forgePki } from '@dugrema/node-forge'
 import { DateTimeAfficher } from '../components/ReactFormatters'
 
 import useWorkers, { useEtatPret } from '../WorkerContext'
+import { ProgressBar } from 'react-bootstrap';
 
 function Backup(props) {
 
@@ -29,6 +31,8 @@ function Backup(props) {
   const [attente, setAttente] = useState(false)
   const [confirmation, setConfirmation] = useState('')
   const [error, setError] = useState('')
+  const [etatBackup, setEtatBackup] = useState('')
+  const [backupActif, setBackupActif] = useState(false)
   
   const confirmationCb = useCallback( confirmation => { setConfirmation(confirmation); setAttente(false) }, [setConfirmation, setAttente]  )
   const erreurCb = useCallback(
@@ -39,6 +43,37 @@ function Backup(props) {
     }, 
     [setError, setAttente]
   )
+
+  const evenementBackupCb = useCallback(e=>{
+    // console.debug("Evenement backup recu : ", e)
+    const { message, routingKey } = e
+    setEtatBackup(message)
+    if(routingKey.endsWith('.succes')) {
+      confirmationCb('Backup complete avec succes')
+      setBackupActif(false)
+    } else if(routingKey.endsWith('.echec')) {
+      setBackupActif(false)
+      erreurCb("Erreur durant l'execution du backup")
+      confirmationCb('')
+    } else {
+      confirmationCb('')
+      setBackupActif(true)
+    }
+
+  }, [workers, setEtatBackup, setBackupActif, confirmationCb, erreurCb])
+  const evenementBackupProxy = useMemo( () => proxy(evenementBackupCb), [evenementBackupCb])
+
+  useEffect(()=>{
+    if(!etatPret) return  // Rien a faire
+    workers.connexion.ecouterEvenementsBackup({}, evenementBackupProxy)
+      .catch(err=>console.error("Erreur activation listener evenements backup : ", err))
+
+    return () => {
+      workers.connexion.retirerEvenementsBackup({}, evenementBackupProxy)
+        .catch(err=>console.error("Erreur desactivation listener evenements backup : ", err))
+    }
+
+  }, [workers, etatPret, evenementBackupCb])
 
   return (
     <div>
@@ -56,6 +91,11 @@ function Backup(props) {
       <ModalAttente show={attente} setAttente={setAttente} />
 
       <ActionsBackup confirmationCb={confirmationCb} erreurCb={erreurCb} />
+
+      <BackupActif value={backupActif} />
+
+      <EtatBackup value={etatBackup} />
+
     </div>
   )
   
@@ -93,5 +133,108 @@ function ActionsBackup(props) {
       </Row>
       <p></p>
     </div>
+  )
+}
+
+function BackupActif(props) {
+
+  const { value } = props
+
+  return (
+    <Alert variant="info" show={value?true:false}>
+      <Alert.Heading>Backup actif</Alert.Heading>
+      <p>Un backup est presentement en cours.</p>
+    </Alert>
+  )
+}
+
+function EtatBackup(props) {
+  const { value } = props
+
+
+  if(!value) return ''  // Rien a afficher
+
+  return (
+    <div>
+      <h3>Etat du backup</h3>
+
+      <Row>
+        <Col>Debut</Col>
+        <Col><FormatterDate value={value.debut} /></Col>
+        <Col>Fin</Col>
+        <Col><FormatterDate value={value.fin} /></Col>
+      </Row>
+
+      <p></p>
+
+      <ListeDomaines value={value.domaines} />
+
+      <p></p>
+
+      <AfficherNotices value={value.notices} />
+
+    </div>
+  )
+}
+
+function ListeDomaines(props) {
+  const { value } = props
+
+  if(!value) return ''  // Rien a afficher
+
+  return (
+    <div>
+      <Row>
+        <Col lg={4}>Domaine</Col>
+        <Col lg={2}>Transactions</Col>
+        <Col lg={4}></Col>
+      </Row>
+
+      {value.map(item=>{
+        return <AfficherLigneDomaineBackup key={item.domaine} value={item} />
+      })}
+    </div>
+  )
+}
+
+function AfficherLigneDomaineBackup(props) {
+  const { value } = props
+
+  const pctProgres = useMemo(()=>{
+    if(!value) return
+
+    const { nombre_transactions, transactions_traitees, transactions_sauvegardees } = value
+    if(nombre_transactions === 0) return 100
+    if(!nombre_transactions) return
+
+    const numerateur = (transactions_traitees?transactions_traitees:0) + (transactions_sauvegardees?transactions_sauvegardees:0)
+    return Math.floor( (100 * numerateur) / (2 * nombre_transactions) )
+  }, [value])
+
+  return (
+    <Row>
+      <Col lg={4}>{value.domaine}</Col>
+      <Col lg={2}>{value.nombre_transactions}</Col>
+      <Col lg={4}><ProgressBar disabled={pctProgres?false:true} now={pctProgres} label={pctProgres+'%'}></ProgressBar></Col>
+    </Row>
+  )
+}
+
+function AfficherNotices(props) {
+  const { value } = props
+
+  return (
+    <Alert variant="warning" show={value?true:false}>
+      <Alert.Heading>Notices emises durant le backup</Alert.Heading>
+
+      {value?value.map((notice, idx)=>{
+        return (
+          <Row key={idx}>
+            <Col lg={2}>{notice.domaine}</Col>
+            <Col>{notice.erreur}</Col>
+          </Row>
+        )
+      }):''}
+    </Alert>
   )
 }

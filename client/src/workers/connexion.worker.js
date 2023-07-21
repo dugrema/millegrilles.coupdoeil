@@ -532,12 +532,19 @@ async function retirerEvenementsAcme(instanceId, securite, cb) {
 }
 
 async function ecouterEvenementsRechiffageCles(params, cb) { 
-  // const commande = await ConnexionClient.formatterMessage(params, 'Messagerie')
   return connexionClient.subscribe('ecouterEvenementsRechiffageCles', cb, params)
 }
 
 async function retirerEvenementsRechiffageCles(params, cb) {
   return connexionClient.unsubscribe('retirerEvenementsRechiffageCles', cb, params) 
+}
+
+async function ecouterEvenementsBackup(params, cb) { 
+  return connexionClient.subscribe('ecouterEvenementsBackup', cb, params)
+}
+
+async function retirerEvenementsBackup(params, cb) {
+  return connexionClient.unsubscribe('retirerEvenementsBackup', cb, params) 
 }
 
 
@@ -583,4 +590,5 @@ comlinkExpose({
   enregistrerEvenementsAcme, retirerEvenementsAcme,
   enregistrerCallbackEvenementsConsignation, retirerCallbackEvenementsConsignation,
   ecouterEvenementsRechiffageCles, retirerEvenementsRechiffageCles,
+  ecouterEvenementsBackup, retirerEvenementsBackup,
 })

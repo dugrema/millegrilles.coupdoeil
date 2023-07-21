@@ -179,6 +179,12 @@ function configurerEvenements(socket) {
         retirerEvenementsRechiffageCles(socket, params, cb)
       }},
 
+      {eventName: 'ecouterEvenementsBackup', callback: (params, cb) => {
+        ecouterEvenementsBackup(socket, params, cb)
+      }},
+      {eventName: 'retirerEvenementsBackup', callback: (params, cb) => {
+        retirerEvenementsBackup(socket, params, cb)
+      }},
     ]
   }
 
@@ -1001,6 +1007,31 @@ function retirerEvenementsRechiffageCles(socket, params, cb) {
     exchanges: ['3.protege'],
   })
   debug("retirerEvenementsRechiffageCles sur %O", params)
+  if(cb) cb(true)
+}
+
+const CONST_ROUTINGKEYS_EVENEMENTS_BACKUP = [
+  'evenement.backup.demarrage',
+  'evenement.backup.maj',
+  'evenement.backup.succes',
+  'evenement.backup.echec',
+]
+
+function ecouterEvenementsBackup(socket, params, cb) {
+  const opts = {
+    routingKeys: CONST_ROUTINGKEYS_EVENEMENTS_BACKUP,
+    exchanges: ['2.prive'],
+  }
+  debug("ecouterEvenementsBackup Params : %O", params)
+  socket.subscribe(opts, cb)
+}
+
+function retirerEvenementsBackup(socket, params, cb) {
+  socket.unsubscribe({
+    routingKeys: CONST_ROUTINGKEYS_EVENEMENTS_BACKUP,
+    exchanges: ['2.prive'],
+  })
+  debug("retirerEvenementsBackup sur %O", params)
   if(cb) cb(true)
 }
 
