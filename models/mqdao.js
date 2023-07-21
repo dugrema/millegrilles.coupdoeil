@@ -9,6 +9,7 @@ const DOMAINE_INSTANCE = 'instance',
       CONST_DOMAINE_GROSFICHIERS = 'GrosFichiers',
       CONST_DOMAINE_MAITREDESCLES = 'MaitreDesCles',
       CONST_DOMAINE_FICHIERS = 'fichiers',
+      CONST_DOMAINE_BACKUP = 'backup',
       CONST_DOMAINE_TOPOLOGIE = 'CoreTopologie',
       CONST_DOMAINE_CATALOGUES = 'CoreCatalogues',
       CONST_DOMAINE_COREPKI = 'CorePki',
@@ -193,7 +194,7 @@ function declencherSync(socket, commande) {
 
 function demarrerBackupTransactions(socket, commande) {
     debug("demarrerBackupTransactions %O", commande)
-    return transmettreCommande(socket, commande, 'demarrerBackupTransactions', {domaine: CONST_DOMAINE_FICHIERS, exchange: '2.prive'})
+    return transmettreCommande(socket, commande, 'demarrerBackupTransactions', {domaine: CONST_DOMAINE_BACKUP, exchange: '2.prive'})
 }
 
 function reindexerConsignation(socket, commande) {

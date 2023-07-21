@@ -418,7 +418,7 @@ function demarrerBackupTransactions(commande) {
   return connexionClient.emitBlocking(
     'demarrerBackupTransactions',
     commande,
-    {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'fichiers', action: 'demarrerBackupTransactions', attacherCertificat: true}
+    {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'backup', action: 'demarrerBackupTransactions', attacherCertificat: true}
   )
 }
 

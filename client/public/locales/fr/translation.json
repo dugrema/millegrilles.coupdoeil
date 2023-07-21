@@ -51,6 +51,9 @@
     "DomaineConsignation": {
         "titre": "Configuration de consignation des fichiers"
     },
+    "Backup": {
+        "titre": "Backup"
+    },
     "Notifications": {
         "titre": "Notifications",
         "titre-email": "Notifications par email",

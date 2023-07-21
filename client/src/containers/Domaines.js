@@ -8,6 +8,7 @@ import Button from 'react-bootstrap/Button'
 
 import { ModalAttente, FormatterDate } from '@dugrema/millegrilles.reactjs'
 
+import Backup from './Backup'
 import Catalogues from './DomaineCatalogueApplications'
 import Maitredescles from './DomaineMaitredescles'
 import Usagers from './GestionUsagers'
@@ -60,6 +61,7 @@ function Domaines(props) {
 
     let Page
     switch(domaineSelectionne) {
+        case 'Backup': Page = Backup; break
         case 'MaitreDesCles': Page = Maitredescles; break
         case 'Catalogues': Page = Catalogues; break
         case 'Usagers': Page = Usagers; break
@@ -120,6 +122,14 @@ function Domaines(props) {
                     </Col>
                     <Col>
                         <Button variant="secondary" onClick={()=>setDomaineSelectionne('Consignation')}>Fichiers</Button>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        Backup
+                    </Col>
+                    <Col>
+                        <Button variant="secondary" onClick={()=>setDomaineSelectionne('Backup')}>Backup</Button>
                     </Col>
                 </Row>
                 <Row>

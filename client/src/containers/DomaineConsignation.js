@@ -151,18 +151,6 @@ function ActionsConsignation(props) {
             })
     }, [workers, erreurCb])
 
-    const demarrerBackupHandler = useCallback(()=>{
-        workers.connexion.demarrerBackupTransactions({complet: true})
-            .then(reponse=>{
-                console.debug("Backup demarre OK ", reponse)
-                confirmationCb('Backup complet demarre')
-            })
-            .catch(err=>{
-                console.error("Erreur declencher backup complet ", err)
-                erreurCb('Erreur declencher backup complet. \n' + err)
-            })
-    }, [workers, confirmationCb])
-
     const reindexerHandler = useCallback(()=>{
         workers.connexion.reindexerConsignation()
             .then(reponse=>{
@@ -182,8 +170,6 @@ function ActionsConsignation(props) {
             <Row>
                 <Col>
                     <Button variant="secondary" disabled={!etatPret} onClick={synchroniserHandler}>Synchroniser</Button>
-                    {' '}
-                    <Button variant="secondary" disabled={!etatPret} onClick={demarrerBackupHandler}>Backup</Button>
                     {' '}
                     <Button variant="secondary" disabled={!etatPret} onClick={reindexerHandler}>Reindexer</Button>
                 </Col>
