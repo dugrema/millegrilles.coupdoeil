@@ -885,8 +885,12 @@ function retirerEvenementsInstances(socket, _params, cb) {
   socket.unsubscribe(topologie, cb)
 }
 
-const RK_FICHIERS_PRESENCE = ['evenement.fichiers.presence', 'evenement.CoreTopologie.changementConsignationPrimaire'],
-      EX_FICHIERS_INSTANCES = ['2.prive']
+const RK_FICHIERS_PRESENCE = [
+  'evenement.fichiers.presence', 
+  'evenement.fichiers.syncPrimaire',
+  'evenement.CoreTopologie.changementConsignationPrimaire',
+]
+const EX_FICHIERS_INSTANCES = ['2.prive']
 
 function ecouterEvenementsConsignation(socket, _params, cb) {
   const params = { routingKeys: RK_FICHIERS_PRESENCE, exchanges: EX_FICHIERS_INSTANCES }

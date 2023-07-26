@@ -42,6 +42,7 @@ function ConfigurationConsignation(props) {
     const [confirmation, setConfirmation] = useState('')
     const [error, setError] = useState('')
     const [instanceId, setInstanceId] = useState('')
+    const [syncPrimaireEnCours, setSyncPrimaireEnCours] = useState(false)
 
     const confirmationCb = useCallback( confirmation => { setConfirmation(confirmation); setAttente(false) }, [setConfirmation, setAttente]  )
 
@@ -61,8 +62,14 @@ function ConfigurationConsignation(props) {
             dispatch(mergeConsignation(info))
         } else if(action === 'changementConsignationPrimaire') {
             dispatch(setConsignationPrimaire(reponse.message.instance_id))
+        } else if(action === 'syncPrimaire') {
+            const certificat = forgePki.certificateFromPem(original['certificat'][0])
+            const instance_id = certificat.subject.getField('CN').value
+            const info = { ...reponse.message, instance_id, derniere_modification: original.estampille }
+            console.debug("Sync primaire ", info)
+            setSyncPrimaireEnCours(info.termine !== true)
         }
-    }, [dispatch])
+    }, [dispatch, setSyncPrimaireEnCours])
 
     const messageConsignationHandlerProxy = useMemo(()=>proxy(messageConsignationHandler), [messageConsignationHandler])
 
@@ -104,6 +111,7 @@ function ConfigurationConsignation(props) {
             <ModalAttente show={attente} setAttente={setAttente} />
             <ConfigurerConsignationInstance
                 instanceId={instanceId}
+                syncPrimaireEnCours={syncPrimaireEnCours}
                 confirmationCb={confirmationCb}
                 erreurCb={erreurCb}
                 fermer={resetInstanceIdHandler} />
@@ -123,12 +131,17 @@ function ConfigurationConsignation(props) {
 
             <AlertTimeout variant="danger" titre="Erreur" delay={false} value={error} setValue={setError} />
             <AlertTimeout value={confirmation} setValue={setConfirmation} />
+            <Alert variant="info" show={syncPrimaireEnCours}>
+                <Alert.Heading>Synchronisation primaire en cours</Alert.Heading>
+                <p>Le serveur de consignation primaire fait une mise a jour de l'etat des fichiers.</p>
+            </Alert>
             <ModalAttente show={attente} setAttente={setAttente} />
 
             <ActionsConsignation confirmationCb={confirmationCb} erreurCb={erreurCb} />
 
             <ListeConsignations 
                 liste={liste} 
+                syncPrimaireEnCours={syncPrimaireEnCours}
                 onSelect={setInstanceIdHandler} />
         </>
     )
@@ -181,7 +194,7 @@ function ActionsConsignation(props) {
 }
 
 function ListeConsignations(props) {
-    const { liste, onSelect, erreurCb } = props
+    const { liste, syncPrimaireEnCours, onSelect, erreurCb } = props
 
     const workers = useWorkers()
 
@@ -306,7 +319,7 @@ function AfficherChampRole(props) {
 
 function ConfigurerConsignationInstance(props) {
 
-    const { instanceId, confirmationCb, erreurCb, fermer } = props
+    const { instanceId, syncPrimaireEnCours, confirmationCb, erreurCb, fermer } = props
 
     const { t } = useTranslation()
     const dispatch = useDispatch(),
@@ -551,6 +564,12 @@ function ConfigurerConsignationInstance(props) {
             <p>Cette page permet de modifier la configuration de consignation des fichiers pour l'instance.</p>
 
             <h3>Information courante</h3>
+
+            <Alert variant="info" show={(consignation.primaire&&syncPrimaireEnCours)?true:false}>
+                <Alert.Heading>Synchronisation primaire en cours</Alert.Heading>
+                <p>Le serveur de consignation primaire fait une mise a jour de l'etat des fichiers.</p>
+            </Alert>
+
             <DetailInstance instance={instance} />
 
             <br/>
