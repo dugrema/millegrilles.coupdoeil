@@ -231,10 +231,19 @@ function ListeConsignations(props) {
         if(secsDepuisModif > 1800) classNameExpiration = 'expire-long'
         else if(secsDepuisModif > 300) classNameExpiration = 'expire-court'
 
-        let taille = item.fichiers_taille || 0
-        if(item.archives_taille) taille += item.archives_taille
-        let nombre = item.fichiers_nombre || 0
-        if(item.archives_nombre) nombre += item.archives_nombre
+        const local = item.local || {},
+              archives = item.archives || {},
+              orphelins = item.orphelins || {}
+        
+        let tailleLocal = local.taille || 0,
+            tailleArchives = archives.taille || 0,
+            tailleOrphelins = orphelins.taille || 0,
+            tailleTotale = tailleLocal + tailleArchives + tailleOrphelins
+
+        let nombreLocal = local.nombre || 0,
+            nombreArchives = archives.nombre || 0,
+            nombreOrphelins = orphelins.nombre || 0,
+            nombreTotal = nombreLocal + nombreArchives + nombreOrphelins
 
         return (
             <Row key={item.instance_id} className={primaire?'primaire':''}>
@@ -245,8 +254,8 @@ function ListeConsignations(props) {
                     <AfficherChampRole onClick={changerPrimaireModal} item={item} />
                 </Col>
                 <Col xs={6} lg={3} className={classNameExpiration}><FormatterDate value={item.derniere_modification} /></Col>
-                <Col xs={3} lg={2}><FormatteurTaille value={taille} /></Col>
-                <Col xs={3} lg={1}>{nombre}</Col>
+                <Col xs={3} lg={2}><FormatteurTaille value={tailleTotale} /></Col>
+                <Col xs={3} lg={1}>{nombreTotal}</Col>
             </Row>
         )
     })
@@ -704,6 +713,13 @@ function DetailInstance(props) {
         console.debug("Instance %O\nConsignation %O", instance, consignation)
     }, [instance, consignation])
 
+    const infoFichiers = useMemo(()=>{
+        const archives = consignation.archives || {},
+              local = consignation.local || {},
+              orphelins = consignation.orphelins || {}
+        return { archives, local, orphelins }
+    }, [consignation])
+
     return (
         <div>
             <Row>
@@ -713,18 +729,18 @@ function DetailInstance(props) {
 
             <Row>
                 <Col xs={4} md={2} xl={1}>Fichiers actifs</Col>
-                <Col xs={3} md={2}>{consignation.fichiers_nombre}</Col>
-                <Col><FormatteurTaille value={consignation.fichiers_taille} /></Col>
+                <Col xs={3} md={2}>{infoFichiers.local.nombre}</Col>
+                <Col><FormatteurTaille value={infoFichiers.local.taille} /></Col>
             </Row>
             <Row>
                 <Col xs={4} md={2} xl={1}>Fichiers archives</Col>
-                <Col xs={3} md={2}>{consignation.archives_nombre}</Col>
-                <Col><FormatteurTaille value={consignation.archives_taille} /></Col>
+                <Col xs={3} md={2}>{infoFichiers.archives.nombre}</Col>
+                <Col><FormatteurTaille value={infoFichiers.archives.taille} /></Col>
             </Row>
             <Row>
                 <Col xs={4} md={2} xl={1}>Fichiers orphelins</Col>
-                <Col xs={3} md={2}>{consignation.orphelins_nombre}</Col>
-                <Col><FormatteurTaille value={consignation.orphelins_taille} /></Col>
+                <Col xs={3} md={2}>{infoFichiers.orphelins.nombre}</Col>
+                <Col><FormatteurTaille value={infoFichiers.orphelins.taille} /></Col>
             </Row>
 
             <EtatStockage instance={instance} />
