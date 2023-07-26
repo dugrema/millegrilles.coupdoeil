@@ -137,7 +137,11 @@ function ConfigurationConsignation(props) {
             </Alert>
             <ModalAttente show={attente} setAttente={setAttente} />
 
-            <ActionsConsignation confirmationCb={confirmationCb} erreurCb={erreurCb} />
+            <ActionsConsignation 
+                syncPrimaireEnCours={syncPrimaireEnCours}
+                setSyncPrimaireEnCours={setSyncPrimaireEnCours}
+                confirmationCb={confirmationCb} 
+                erreurCb={erreurCb} />
 
             <ListeConsignations 
                 liste={liste} 
@@ -151,18 +155,19 @@ export default ConfigurationConsignation
 
 function ActionsConsignation(props) {
 
-    const { confirmationCb, erreurCb } = props
+    const { syncPrimaireEnCours, setSyncPrimaireEnCours, confirmationCb, erreurCb } = props
 
     const workers = useWorkers(),
           etatPret = useEtatPret()
 
     const synchroniserHandler = useCallback(()=>{
+        setSyncPrimaireEnCours(true)
         workers.connexion.declencherSync()
             .catch(err=>{
                 console.error("Erreur declencher synchronization des serveurs de consignation ", err)
                 erreurCb('Erreur declencher synchronization des serveurs de consignation. \n' + err)
             })
-    }, [workers, erreurCb])
+    }, [setSyncPrimaireEnCours, workers, erreurCb])
 
     const reindexerHandler = useCallback(()=>{
         workers.connexion.reindexerConsignation()
@@ -182,7 +187,7 @@ function ActionsConsignation(props) {
             <h3>Actions de consignation</h3>
             <Row>
                 <Col>
-                    <Button variant="secondary" disabled={!etatPret} onClick={synchroniserHandler}>Synchroniser</Button>
+                    <Button variant="secondary" disabled={!etatPret||syncPrimaireEnCours} onClick={synchroniserHandler}>Synchroniser</Button>
                     {' '}
                     <Button variant="secondary" disabled={!etatPret} onClick={reindexerHandler}>Reindexer</Button>
                 </Col>
