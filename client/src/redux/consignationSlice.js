@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { pki as forgePki } from '@dugrema/node-forge'
 
 const SLICE_NAME = 'consignation'
 
@@ -7,6 +8,9 @@ const initialState = {
     instanceId: '',
     sortKeys: {key: 'domaine', ordre: 1},   // Ordre de tri
     mergeVersion: 0,                    // Utilise pour flagger les changements
+    downloadsSecondaires: {},   // Downloads secondaires en cours
+    uploadsSecondaires: {},    // Uploads secondaires en cours
+    pubkeyInstances: {}         // Mapping pubkey -> instance_id
 }
 
 // Actions
@@ -124,6 +128,48 @@ function setConsignationPrimaireAction(state, action) {
     }
 }
 
+function setDownloadSecondaireAction(state, action) {
+    const original = action.payload['__original']
+    
+    // Trouver instance_id
+    const pubkey = original.pubkey
+    let instance_id = state.pubkeyInstances[pubkey]
+    if(!instance_id) {
+        // Parse certificat, utiliser CN comme instance_id
+        const certificat = forgePki.certificateFromPem(original['certificat'][0])
+        instance_id = certificat.subject.getField('CN').value
+        state.pubkeyInstances[pubkey] = instance_id
+    }
+
+    if(instance_id) {
+        state.downloadsSecondaires[instance_id] = action.payload
+    }
+}
+
+function setUploadSecondaireAction(state, action) {
+    const original = action.payload['__original']
+    
+    // Trouver instance_id
+    const pubkey = original.pubkey
+    let instance_id = state.pubkeyInstances[pubkey]
+    if(!instance_id) {
+        // Parse certificat, utiliser CN comme instance_id
+        const certificat = forgePki.certificateFromPem(original['certificat'][0])
+        instance_id = certificat.subject.getField('CN').value
+        state.pubkeyInstances[pubkey] = instance_id
+    }
+
+    if(instance_id) {
+        state.uploadsSecondaires[instance_id] = action.payload
+    }
+}
+
+function clearTransfertsSecondairesAction(state, action) {
+    state.downloadsSecondaires = {}
+    state.uploadsSecondaires = {}
+    state.pubkeyInstances = {}
+}
+
 const consignationSlice = createSlice({
     name: SLICE_NAME,
     initialState,
@@ -135,11 +181,15 @@ const consignationSlice = createSlice({
         setSortKeys: setSortKeysAction,
         verifierExpiration: verifierExpirationAction,
         setConsignationPrimaire: setConsignationPrimaireAction,
+        setDownloadSecondaire: setDownloadSecondaireAction,
+        setUploadSecondaire: setUploadSecondaireAction,
+        clearTransfertsSecondaires: clearTransfertsSecondairesAction,
     }
 })
 
 export const { 
     setInstanceId, push, merge, clear, setSortKeys, verifierExpiration, setConsignationPrimaire,
+    setDownloadSecondaire, setUploadSecondaire, clearTransfertsSecondaires,
 } = consignationSlice.actions
 
 export default consignationSlice.reducer

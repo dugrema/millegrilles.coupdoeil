@@ -888,6 +888,9 @@ function retirerEvenementsInstances(socket, _params, cb) {
 const RK_FICHIERS_PRESENCE = [
   'evenement.fichiers.presence', 
   'evenement.fichiers.syncPrimaire',
+  'evenement.fichiers.syncSecondaire',
+  'evenement.fichiers.syncUpload',
+  'evenement.fichiers.syncDownload',
   'evenement.CoreTopologie.changementConsignationPrimaire',
 ]
 const EX_FICHIERS_INSTANCES = ['2.prive']

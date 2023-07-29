@@ -19,7 +19,9 @@ import { pki as forgePki } from '@dugrema/node-forge'
 import useWorkers, { useEtatPret } from '../WorkerContext'
 import { EtatStockage } from './InstanceDetail'
 
-import { push as pushConsignation, merge as mergeConsignation, verifierExpiration, setConsignationPrimaire } from '../redux/consignationSlice'
+import { push as pushConsignation, merge as mergeConsignation, verifierExpiration, setConsignationPrimaire, 
+    setDownloadSecondaire, setUploadSecondaire, clearTransfertsSecondaires, 
+} from '../redux/consignationSlice'
 
 const CONST_CONSIGNATION_URL = 'https://fichiers:444'
 
@@ -37,12 +39,23 @@ function ConfigurationConsignation(props) {
           etatPret = useEtatPret()
 
     const liste = useSelector(state=>state.consignation.liste)
+    const instances = useSelector(state=>state.instances.listeInstances)
+
     // const [liste, setListe] = useState('')
     const [attente, setAttente] = useState(false)
     const [confirmation, setConfirmation] = useState('')
     const [error, setError] = useState('')
     const [instanceId, setInstanceId] = useState('')
     const [syncPrimaireEnCours, setSyncPrimaireEnCours] = useState(false)
+
+    const instancesParId = useMemo(()=>{
+        if(!instances) return ''
+        const instancesParId = {}
+        instances.forEach(item=>{
+            instancesParId[item.instance_id] = item
+        })
+        return instancesParId
+    }, [instances])
 
     const confirmationCb = useCallback( confirmation => { setConfirmation(confirmation); setAttente(false) }, [setConfirmation, setAttente]  )
 
@@ -68,6 +81,12 @@ function ConfigurationConsignation(props) {
             const info = { ...reponse.message, instance_id, derniere_modification: original.estampille }
             console.debug("Sync primaire ", info)
             setSyncPrimaireEnCours(info.termine !== true)
+        } else if(action === 'syncDownload') {
+            console.debug("Sync download secondaire ", reponse.message)
+            dispatch(setDownloadSecondaire(reponse.message))
+        } else if(action === 'syncUpload') {
+            console.debug("Sync upload secondaire ", reponse.message)
+            dispatch(setUploadSecondaire(reponse.message))
         }
     }, [dispatch, setSyncPrimaireEnCours])
 
@@ -91,6 +110,8 @@ function ConfigurationConsignation(props) {
                 dispatch(pushConsignation({liste: reponse.liste, clear: true}))
             })
             .catch(err=>setError(''+err))
+
+        dispatch(clearTransfertsSecondaires())
 
         // Enregistrer event listeners
         const intervalRefreshExpire = setInterval(()=>dispatch(verifierExpiration()), 20_000)
@@ -144,9 +165,12 @@ function ConfigurationConsignation(props) {
                 erreurCb={erreurCb} />
 
             <ListeConsignations 
+                instancesParId={instancesParId}
                 liste={liste} 
                 syncPrimaireEnCours={syncPrimaireEnCours}
                 onSelect={setInstanceIdHandler} />
+
+            <InformationSyncSecondaire instancesParId={instancesParId} />
         </>
     )
 }
@@ -199,21 +223,11 @@ function ActionsConsignation(props) {
 }
 
 function ListeConsignations(props) {
-    const { liste, syncPrimaireEnCours, onSelect, erreurCb } = props
+    const { instancesParId, liste, syncPrimaireEnCours, onSelect, erreurCb } = props
 
     const workers = useWorkers()
 
-    const instances = useSelector(state=>state.instances.listeInstances)
     const [showChangerPrimaire, setShowChangerPrimaire] = useState(false)
-
-    const instancesParId = useMemo(()=>{
-        if(!instances) return ''
-        const instancesParId = {}
-        instances.forEach(item=>{
-            instancesParId[item.instance_id] = item
-        })
-        return instancesParId
-    }, [instances])
 
     const changerPrimaireHandler = useCallback(()=>{
         console.debug("Changer instance primaire pour ", showChangerPrimaire)
@@ -256,24 +270,27 @@ function ListeConsignations(props) {
         let tailleLocal = local.taille || 0,
             tailleArchives = archives.taille || 0,
             tailleOrphelins = orphelins.taille || 0,
-            tailleTotale = tailleLocal + tailleArchives + tailleOrphelins
+            tailleTotale = tailleLocal + tailleArchives
 
         let nombreLocal = local.nombre || 0,
             nombreArchives = archives.nombre || 0,
             nombreOrphelins = orphelins.nombre || 0,
-            nombreTotal = nombreLocal + nombreArchives + nombreOrphelins
+            nombreTotal = nombreLocal + nombreArchives
 
         return (
             <Row key={item.instance_id} className={primaire?'primaire':''}>
-                <Col xs={9} lg={4} className='nom-consignation'>
+                <Col xs={9} lg={4} xl={4} className='nom-consignation'>
                     <Button variant="link" onClick={onSelect} value={item.instance_id}>{nom}</Button>
                 </Col>
-                <Col xs={3} lg={2} className='champ-primaire'>
+                <Col xs={3} lg={2} xl={2} className='champ-primaire'>
                     <AfficherChampRole onClick={changerPrimaireModal} item={item} />
                 </Col>
-                <Col xs={6} lg={3} className={classNameExpiration}><FormatterDate value={item.derniere_modification} /></Col>
-                <Col xs={3} lg={2}><FormatteurTaille value={tailleTotale} /></Col>
-                <Col xs={3} lg={1}>{nombreTotal}</Col>
+                <Col xs={6} lg={3} xl={2} className={classNameExpiration}><FormatterDate value={item.derniere_modification} /></Col>
+                <Col xs={3} lg={2} xl={1}><FormatteurTaille value={tailleTotale} /></Col>
+                <Col xs={3} lg={1} xl={1}>{nombreTotal}</Col>
+                <Col className='d-none d-xl-block' xl={1}>
+                    {nombreOrphelins} / {nombreOrphelins?<FormatteurTaille value={tailleOrphelins} />:'0 bytes'}
+                </Col>
             </Row>
         )
     })
@@ -282,11 +299,12 @@ function ListeConsignations(props) {
         <div>
             <div>
                 <Row>
-                    <Col lg={4} className='d-none d-lg-block'>Serveur</Col>
-                    <Col lg={2} className='d-none d-lg-block'></Col>
-                    <Col lg={3} className='d-none d-lg-block'>Derniere presence</Col>
-                    <Col lg={2} className='d-none d-lg-block'>Taille</Col>
-                    <Col lg={1} className='d-none d-lg-block'>Fichiers</Col>
+                    <Col lg={4} xl={4} className='d-none d-lg-block'>Serveur</Col>
+                    <Col lg={2} xl={2} className='d-none d-lg-block'></Col>
+                    <Col lg={3} xl={2} className='d-none d-lg-block'>Derniere presence</Col>
+                    <Col lg={2} xl={1} className='d-none d-lg-block'>Taille</Col>
+                    <Col lg={1} xl={1} className='d-none d-lg-block'>Fichiers</Col>
+                    <Col className='d-none d-xl-block' xl={1}>Orphelins</Col>
                 </Row>
                 {listeFichiers}
             </div>
@@ -984,5 +1002,104 @@ function ConfigurerBackupInstance(props) {
                 </Tab>
             </Tabs>
         </div>
+    )
+}
+
+function triInstances(a, b) {
+    const idA = a.instance_id, idB = b.instance_id
+
+    if(idA !== idB) return idA.localeCompare(idB)
+
+    return 0
+}
+
+function InformationSyncSecondaire(props) {
+
+    const { instancesParId } = props
+
+    const downloadsSecondaires = useSelector(state=>state.consignation.downloadsSecondaires),
+          uploadsSecondaires = useSelector(state=>state.consignation.uploadsSecondaires)
+
+    useEffect(()=>{
+        console.debug("Transferts update : ", downloadsSecondaires)
+    }, [downloadsSecondaires])
+
+    const listeServeurs = useMemo(()=>{
+        if(!downloadsSecondaires || !uploadsSecondaires) return
+
+        console.debug("Transferts en cours : %O, %O", downloadsSecondaires, uploadsSecondaires)
+        const setServeurs = new Set([...Object.keys(downloadsSecondaires), ...Object.keys(uploadsSecondaires)])
+        const liste = []
+        for(const instance_id of setServeurs) {
+            const upload = uploadsSecondaires[instance_id] || {}
+            const download = downloadsSecondaires[instance_id] || {}
+            liste.push({instance_id, upload, download})
+        }
+
+        liste.sort(triInstances)
+        console.debug("Liste serveurs : %O", liste)
+        return liste
+    }, [downloadsSecondaires, uploadsSecondaires])
+
+    return (
+        <div>
+            <h3>Transferts en cours</h3>
+
+            <Row>
+                <Col>Serveur</Col>
+                <Col>Upload</Col>
+                <Col>Download</Col>
+            </Row>
+
+            {listeServeurs?
+                listeServeurs.map(item=>{
+                    const instance = instancesParId[item.instance_id]
+                    return (
+                        <ServeurSyncSecondaire key={item.instance_id} instance={instance} value={item} />
+                    )
+                })
+            :''}
+        </div>
+    )
+}
+
+function ServeurSyncSecondaire(props) {
+    const { instance, value } = props
+
+    const upload = value.upload,
+          download = value.download
+
+    return (
+        <Row>
+            <Col>
+                {instance.domaine || value.instance_id}
+            </Col>
+            <Col>
+                {upload.termine?
+                    'Termine'
+                    :
+                    <TransfertInfo value={upload} />
+                }
+            </Col>
+            <Col>
+                {download.termine?
+                    'Termine'
+                    :
+                    <TransfertInfo value={download} />
+                }
+            </Col>
+        </Row>
+    )
+}
+
+function TransfertInfo(props) {
+    const { value } = props
+
+    if(!value || !value.nombre) return 'N/A'
+
+    return (
+        <>
+            {value.nombre} fichiers : <FormatteurTaille value={value.taille} />
+        </>
     )
 }
