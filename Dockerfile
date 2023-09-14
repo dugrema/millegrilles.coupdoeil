@@ -1,4 +1,4 @@
-FROM docker.maple.maceroc.com:5000/millegrilles_webappbase:2023.6.0
+FROM docker.maple.maceroc.com:5000/millegrilles_webappbase:2023.9.0
 
 ENV MG_CONSIGNATION_HTTP=https://fichiers \
     APP_FOLDER=/usr/src/app \
