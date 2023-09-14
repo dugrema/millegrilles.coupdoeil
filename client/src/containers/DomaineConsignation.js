@@ -104,7 +104,7 @@ function ConfigurationConsignation(props) {
     useEffect(()=>{
         if(!etatPret) return
         const { connexion } = workers
-        connexion.getConfigurationFichiers()
+        connexion.getConfigurationFichiers({stats: true})
             .then(reponse=>{
                 console.debug("Liste consignations recue ", reponse)
                 dispatch(pushConsignation({liste: reponse.liste, clear: true}))
@@ -263,19 +263,17 @@ function ListeConsignations(props) {
         if(secsDepuisModif > 1800) classNameExpiration = 'expire-long'
         else if(secsDepuisModif > 300) classNameExpiration = 'expire-court'
 
-        const local = item.local || {},
-              archives = item.archives || {},
-              orphelins = item.orphelins || {}
+        const principal = item.principal || {},
+              orphelins = item.orphelin || {},
+              manquant = item.manquant || {}
         
-        let tailleLocal = local.taille || 0,
-            tailleArchives = archives.taille || 0,
+        let taillePrincipal = principal.taille || 0,
             tailleOrphelins = orphelins.taille || 0,
-            tailleTotale = tailleLocal + tailleArchives
+            tailleTotale = taillePrincipal
 
-        let nombreLocal = local.nombre || 0,
-            nombreArchives = archives.nombre || 0,
+        let nombrePrincipal = principal.nombre || 0,
             nombreOrphelins = orphelins.nombre || 0,
-            nombreTotal = nombreLocal + nombreArchives
+            nombreTotal = nombrePrincipal
 
         return (
             <Row key={item.instance_id} className={primaire?'primaire':''}>
@@ -756,33 +754,32 @@ function DetailInstance(props) {
     }, [instance, consignation])
 
     const infoFichiers = useMemo(()=>{
-        const archives = consignation.archives || {},
-              local = consignation.local || {},
-              orphelins = consignation.orphelins || {}
-        return { archives, local, orphelins }
+        const principal = consignation.principal || {},
+              manquant = consignation.manquant || {},
+              orphelin = consignation.orphelin || {}
+        return { principal, manquant, orphelin }
     }, [consignation])
 
     return (
         <div>
             <Row>
-                <Col xs={4} md={2} xl={1}>Instance</Col>
+                <Col xs={4} md={3} xl={2}>Instance</Col>
                 <Col>{instance.instance_id}</Col>
             </Row>
 
             <Row>
-                <Col xs={4} md={2} xl={1}>Fichiers actifs</Col>
-                <Col xs={3} md={2}>{infoFichiers.local.nombre}</Col>
-                <Col><FormatteurTaille value={infoFichiers.local.taille} /></Col>
+                <Col xs={4} md={3} xl={2}>Fichiers actifs</Col>
+                <Col xs={3} md={2}>{infoFichiers.principal.nombre}</Col>
+                <Col><FormatteurTaille value={infoFichiers.principal.taille} /></Col>
             </Row>
             <Row>
-                <Col xs={4} md={2} xl={1}>Fichiers archives</Col>
-                <Col xs={3} md={2}>{infoFichiers.archives.nombre}</Col>
-                <Col><FormatteurTaille value={infoFichiers.archives.taille} /></Col>
+                <Col xs={4} md={3} xl={2}>Fichiers orphelins</Col>
+                <Col xs={3} md={2}>{infoFichiers.orphelin.nombre}</Col>
+                <Col><FormatteurTaille value={infoFichiers.orphelin.taille} /></Col>
             </Row>
             <Row>
-                <Col xs={4} md={2} xl={1}>Fichiers orphelins</Col>
-                <Col xs={3} md={2}>{infoFichiers.orphelins.nombre}</Col>
-                <Col><FormatteurTaille value={infoFichiers.orphelins.taille} /></Col>
+                <Col xs={4} md={3} xl={1}>Fichiers manquants</Col>
+                <Col xs={3} md={2}>{infoFichiers.manquant.nombre}</Col>
             </Row>
 
             <EtatStockage instance={instance} />
@@ -1045,20 +1042,22 @@ function InformationSyncSecondaire(props) {
         <div>
             <h3>Transferts en cours</h3>
 
-            <Row>
-                <Col>Serveur</Col>
-                <Col>Upload</Col>
-                <Col>Download</Col>
-            </Row>
+            {/* <Row>
+                <Col xs={12} md={4}>Serveur</Col>
+                <Col xs={12} md={3}>Upload</Col>
+                <Col xs={12} md={3}>Download</Col>
+            </Row> */}
 
-            {listeServeurs?
+            {listeServeurs && listeServeurs.length>0?
                 listeServeurs.map(item=>{
                     const instance = instancesParId[item.instance_id]
                     return (
                         <ServeurSyncSecondaire key={item.instance_id} instance={instance} value={item} />
                     )
                 })
-            :''}
+            :
+                <p>Aucuns transferts en cours.</p>
+            }
         </div>
     )
 }
@@ -1066,29 +1065,39 @@ function InformationSyncSecondaire(props) {
 function ServeurSyncSecondaire(props) {
     const { instance, value } = props
 
+    console.debug("ServeurSyncSecondaire instance %O value %O", instance, value)
+
     const upload = value.upload,
           download = value.download
 
     return (
-        <Row>
-            <Col>
-                {instance.domaine || value.instance_id}
-            </Col>
-            <Col>
+        <div>
+            <Row>
+                <Col xs={12}>
+                    {instance.domaine || value.instance_id}
+                </Col>
+            </Row>
+            <Row>
                 {upload.termine?
-                    'Termine'
+                    <Col xs={3}>'Upload Termine'</Col>
                     :
-                    <TransfertInfo value={upload} />
+                    <>
+                        <Col xs={4}>Upload</Col>
+                        <TransfertInfo value={upload} />
+                    </>
                 }
-            </Col>
-            <Col>
+            </Row>
+            <Row>
                 {download.termine?
-                    'Termine'
+                    <Col xs={3}>Download Termine</Col>
                     :
-                    <TransfertInfo value={download} />
+                    <>
+                        <Col xs={4}>Download</Col>
+                        <TransfertInfo value={download} />
+                    </>
                 }
-            </Col>
-        </Row>
+            </Row>
+        </div>
     )
 }
 
@@ -1097,9 +1106,9 @@ function TransfertInfo(props) {
 
     if(!value || !value.nombre) return 'N/A'
 
-    return (
-        <>
-            {value.nombre} fichiers : <FormatteurTaille value={value.taille} />
-        </>
-    )
+    return ([
+        <Col xs={4} md={2} key="nombre">{value.nombre} fichiers</Col>,
+        <Col xs={4} md={2} key="taille"><FormatteurTaille value={value.taille} /></Col>,
+        <Col xs={4} md={2} key="taux"><FormatteurTaille value={value.taux} />/s</Col>
+    ])
 }
