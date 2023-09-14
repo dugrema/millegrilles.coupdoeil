@@ -354,7 +354,10 @@ function ConfigurerConsignationInstance(props) {
           instances = useSelector(state=>state.instances.listeInstances)
     // const [consignation, setConsignation] = useState('')
 
-    const instance = useMemo(()=>instances.filter(item=>item.instance_id === instanceIdCourant).pop(), [instances, instanceIdCourant])
+    const instance = useMemo(()=>{
+        const instance = instances.filter(item=>item.instance_id === instanceIdCourant).pop()
+        return instance || {instance_id: instanceIdCourant}
+    }, [instances, instanceIdCourant])
     const consignation = useMemo(()=>listeConsignation.filter(item=>item.instance_id === instanceIdCourant).pop(), [instances, instanceIdCourant])
 
     const [cleChiffrage, setCleChiffrage] = useState('')
@@ -575,7 +578,7 @@ function ConfigurerConsignationInstance(props) {
         <div>
             <Row>
                 <Col xs={10} md={11}>
-                    <h3>Consgination {instance.domaine}</h3>
+                    <h3>Consgination {instance.domaine || instanceId}</h3>
                 </Col>
                 <Col xs={2} md={1} className="bouton">
                     <Button onClick={fermer} variant="secondary"><i className='fa fa-remove'/></Button>
@@ -747,7 +750,10 @@ function DetailInstance(props) {
     const instanceId = useMemo(()=>instance.instance_id, [instance])
 
     const listeConsignation = useSelector(state=>state.consignation.liste)
-    const consignation = useMemo(()=>listeConsignation.filter(item=>item.instance_id === instanceId).pop(), [listeConsignation, instanceId])
+    const consignation = useMemo(()=>{
+        const consignation = listeConsignation.filter(item=>item.instance_id === instanceId).pop()
+        return consignation || {}
+    }, [listeConsignation, instanceId])
 
     useMemo(()=>{
         console.debug("Instance %O\nConsignation %O", instance, consignation)
@@ -764,7 +770,7 @@ function DetailInstance(props) {
         <div>
             <Row>
                 <Col xs={4} md={3} xl={2}>Instance</Col>
-                <Col>{instance.instance_id}</Col>
+                <Col>{instanceId}</Col>
             </Row>
 
             <Row>
