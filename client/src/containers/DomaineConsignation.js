@@ -273,6 +273,7 @@ function ListeConsignations(props) {
 
         let nombrePrincipal = principal.nombre || 0,
             nombreOrphelins = orphelins.nombre || 0,
+            nombreManquants = manquant.nombre || 0,
             nombreTotal = nombrePrincipal
 
         return (
@@ -284,10 +285,13 @@ function ListeConsignations(props) {
                     <AfficherChampRole onClick={changerPrimaireModal} item={item} />
                 </Col>
                 <Col xs={6} lg={3} xl={2} className={classNameExpiration}><FormatterDate value={item.derniere_modification} /></Col>
-                <Col xs={3} lg={2} xl={1}><FormatteurTaille value={tailleTotale} /></Col>
                 <Col xs={3} lg={1} xl={1}>{nombreTotal}</Col>
+                <Col xs={3} lg={2} xl={1}><FormatteurTaille value={tailleTotale} /></Col>
                 <Col className='d-none d-xl-block' xl={1}>
                     {nombreOrphelins} / {nombreOrphelins?<FormatteurTaille value={tailleOrphelins} />:'0 bytes'}
+                </Col>
+                <Col className='d-none d-xl-block' xl={1}>
+                    {nombreManquants}
                 </Col>
             </Row>
         )
@@ -300,9 +304,10 @@ function ListeConsignations(props) {
                     <Col lg={4} xl={4} className='d-none d-lg-block'>Serveur</Col>
                     <Col lg={2} xl={2} className='d-none d-lg-block'></Col>
                     <Col lg={3} xl={2} className='d-none d-lg-block'>Derniere presence</Col>
-                    <Col lg={2} xl={1} className='d-none d-lg-block'>Taille</Col>
                     <Col lg={1} xl={1} className='d-none d-lg-block'>Fichiers</Col>
+                    <Col lg={2} xl={1} className='d-none d-lg-block'>Taille</Col>
                     <Col className='d-none d-xl-block' xl={1}>Orphelins</Col>
+                    <Col className='d-none d-xl-block' xl={1}>Manquants</Col>
                 </Row>
                 {listeFichiers}
             </div>
@@ -784,7 +789,7 @@ function DetailInstance(props) {
                 <Col><FormatteurTaille value={infoFichiers.orphelin.taille} /></Col>
             </Row>
             <Row>
-                <Col xs={4} md={3} xl={1}>Fichiers manquants</Col>
+                <Col xs={4} md={3} xl={2}>Fichiers manquants</Col>
                 <Col xs={3} md={2}>{infoFichiers.manquant.nombre}</Col>
             </Row>
 
@@ -1085,7 +1090,7 @@ function ServeurSyncSecondaire(props) {
             </Row>
             <Row>
                 {upload.termine?
-                    <Col>'Upload Termine'</Col>
+                    <Col>Upload Termine</Col>
                     :
                     <>
                         <Col xs={3} md={2}>Upload</Col>
@@ -1110,11 +1115,29 @@ function ServeurSyncSecondaire(props) {
 function TransfertInfo(props) {
     const { value } = props
 
+    const [courant, progres] = useMemo(()=>{
+        if(value.position_en_cours && value.taille_en_cours) {
+            const progres = Math.floor(value.position_en_cours / value.taille_en_cours * 100)
+            return [value.taille_en_cours, '' + progres + '%']
+        }
+        return ['', '']
+    }, [value])
+
     if(!value || !value.nombre) return 'N/A'
 
     return ([
         <Col xs={3} md={2}key="nombre">{value.nombre} fichiers</Col>,
         <Col xs={3} md={2} xl={1} key="taille"><FormatteurTaille value={value.taille} /></Col>,
-        <Col xs={3} md={2} xl={2} key="taux"><FormatteurTaille value={value.taux} />/s</Col>
+        <Col xs={3} md={2} xl={2} key="taux">
+            {(value && value.taux > 1000)?
+                <span><FormatteurTaille value={value.taux} />/s</span>
+                :<span>N/A</span>
+            }
+        </Col>,
+        <Col xs={6} md={4} xl={3} key="courantTaille">
+            {courant?
+                <span>Courant <FormatteurTaille value={courant} /> ({progres})</span>
+            :''}
+        </Col>
     ])
 }
