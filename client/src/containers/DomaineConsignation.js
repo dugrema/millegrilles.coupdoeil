@@ -1079,20 +1079,20 @@ function ServeurSyncSecondaire(props) {
             </Row>
             <Row>
                 {upload.termine?
-                    <Col xs={3}>'Upload Termine'</Col>
+                    <Col>'Upload Termine'</Col>
                     :
                     <>
-                        <Col xs={4}>Upload</Col>
+                        <Col xs={3} md={2}>Upload</Col>
                         <TransfertInfo value={upload} />
                     </>
                 }
             </Row>
             <Row>
                 {download.termine?
-                    <Col xs={3}>Download Termine</Col>
+                    <Col>Download Termine</Col>
                     :
                     <>
-                        <Col xs={4}>Download</Col>
+                        <Col xs={3} md={2}>Download</Col>
                         <TransfertInfo value={download} />
                     </>
                 }
@@ -1107,8 +1107,8 @@ function TransfertInfo(props) {
     if(!value || !value.nombre) return 'N/A'
 
     return ([
-        <Col xs={4} md={2} key="nombre">{value.nombre} fichiers</Col>,
-        <Col xs={4} md={2} key="taille"><FormatteurTaille value={value.taille} /></Col>,
-        <Col xs={4} md={2} key="taux"><FormatteurTaille value={value.taux} />/s</Col>
+        <Col xs={3} md={2}key="nombre">{value.nombre} fichiers</Col>,
+        <Col xs={3} md={2} xl={1} key="taille"><FormatteurTaille value={value.taille} /></Col>,
+        <Col xs={3} md={2} xl={2} key="taux"><FormatteurTaille value={value.taux} />/s</Col>
     ])
 }

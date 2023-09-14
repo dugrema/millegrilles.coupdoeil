@@ -238,9 +238,9 @@ function trierDomaines(domaines) {
 function mapperDomaine(domaineInfo) {
     var actif = false
     let date_presence = domaineInfo.date_presence
-    if(!date_presence && domaineInfo['en-tete']) {
+    if(!date_presence && domaineInfo['__original']) {
         // Message confirmation domaine
-        date_presence = domaineInfo['en-tete'].estampille
+        date_presence = domaineInfo['__original'].estampille
     }
     try {
         const epochCourant = new Date().getTime() / 1000
