@@ -295,6 +295,11 @@ function signerRecoveryCsrParProprietaire(socket, params) {
     return transmettreCommande(socket, params, 'signerCompteParProprietaire', {domaine: CONST_DOMAINE_MAITREDESCOMPTES, exchange: '2.prive'})
 }
 
+function setConsignationInstance(socket, params) {
+    return transmettreCommande(socket, params, 'setConsignationInstance', {domaine: CONST_DOMAINE_TOPOLOGIE, exchange: '3.protege'})
+}
+
+
 // Fonctions generiques
 
 async function transmettreRequete(socket, params, action, opts) {
@@ -363,7 +368,7 @@ module.exports = {
     requeteClesNonDechiffrables, requeteCompterClesNonDechiffrables, commandeCleRechiffree,
     genererCertificatNoeud, configurerConsignationWeb, majDelegations,
     transmettreCleSymmetrique, verifierClesSymmetriques,
-    reindexerConsignation,
+    reindexerConsignation, setConsignationInstance,
 
     // ecouterMajFichiers, ecouterMajCollections, ecouterTranscodageProgres, 
     // retirerTranscodageProgres, 

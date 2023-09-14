@@ -10,8 +10,9 @@ import NavDropdown from 'react-bootstrap/NavDropdown'
 import ProgressBar from 'react-bootstrap/ProgressBar'
 
 import CommandeHttp from './NoeudConfiguration'
-import ConfigurationGenerale from './InstanceConfigurationGenerale'
+// import ConfigurationGenerale from './InstanceConfigurationGenerale'
 import ApplicationsInstance from './InstanceApplications'
+import InstanceConfigurationConsignation from './InstanceConfigurationConsignation'
 
 import { FormatterDate, FormatteurTaille } from '@dugrema/millegrilles.reactjs'
 
@@ -44,8 +45,10 @@ function AffichageInstance(props) {
     PageCourante = ApplicationsInstance
   } else if(section === 'Docker') {
     PageCourante = PageDocker
-  } else if(section === 'ConfigurationGenerale') {
-    PageCourante = ConfigurationGenerale
+  // } else if(section === 'ConfigurationGenerale') {
+  //   PageCourante = ConfigurationGenerale
+  } else if(section === 'ConfigurationConsignation') {
+    PageCourante = InstanceConfigurationConsignation
   }
 
   const nomNoeud = instance.domaine || instance.fqdn || instanceId
@@ -70,7 +73,7 @@ function AffichageInstance(props) {
           <Nav.Link eventKey="Information">Information</Nav.Link>
         </Nav.Item>
         <NavDropdown title="Configuration" id="nav-dropdown">
-          <NavDropdown.Item eventKey="ConfigurationGenerale">Generale</NavDropdown.Item>
+          <NavDropdown.Item eventKey="ConfigurationConsignation">Consignation</NavDropdown.Item>
           <NavDropdown.Item eventKey="CommandeHttp">Commande HTTP</NavDropdown.Item>
         </NavDropdown>
         <Nav.Item>

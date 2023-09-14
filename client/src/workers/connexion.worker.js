@@ -484,6 +484,15 @@ function transmettreCleSymmetrique(commande) {
   )
 }
 
+function setConsignationPourInstance(instance_id, consignation_id) {
+  const commande = {instance_id, consignation_id}
+  return connexionClient.emitBlocking(
+    'setConsignationInstance',
+    commande,
+    {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'CoreTopologie', action: 'setConsignationInstance', attacherCertificat: true}
+  )
+}
+
 // Listeners
 function enregistrerCallbackEvenementsPresenceDomaine(cb) { 
   return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceDomaines', cb) 
@@ -580,7 +589,7 @@ comlinkExpose({
   modifierConfigurationConsignation, setFichiersPrimaire, declencherSync, demarrerBackupTransactions,
   getCles, getConfigurationNotifications, conserverConfigurationNotifications, genererClewebpushNotifications,
   transmettreCleSymmetrique, verifierClesSymmetriques,
-  reindexerConsignation,
+  reindexerConsignation, setConsignationPourInstance,
 
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,

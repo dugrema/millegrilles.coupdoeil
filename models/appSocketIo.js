@@ -36,6 +36,7 @@ function configurerEvenements(socket) {
       {eventName: 'getConfigurationNotifications', callback: (params, cb) => { traiter(socket, mqdao.getConfigurationNotifications, {params, cb}) }},
       {eventName: 'conserverConfigurationNotifications', callback: (params, cb) => { traiter(socket, mqdao.conserverConfigurationNotifications, {params, cb}) }},
       {eventName: 'genererClewebpushNotifications', callback: (params, cb) => { traiter(socket, mqdao.genererClewebpushNotifications, {params, cb}) }},
+      {eventName: 'setConsignationInstance', callback: (params, cb) => {traiter(socket, mqdao.setConsignationInstance, {params, cb})}},
 
       {eventName: 'coupdoeil/requeteListeNoeuds', callback: (params, cb) => { traiter(socket, mqdao.requeteListeNoeuds, {params, cb})}},
       {eventName: 'coupdoeil/requeteListeDomaines', callback: (params, cb) => { traiter(socket, mqdao.requeteListeDomaines, {params, cb})}},
