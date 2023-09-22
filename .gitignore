@@ -25,3 +25,4 @@ yarn-error.log*
 /static
 
 .idea
+*/__pycache__/**
