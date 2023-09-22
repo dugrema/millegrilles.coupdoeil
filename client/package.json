@@ -60,6 +60,6 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "https://localhost:3003",
+  "proxy": "https://localhost:4003",
   "homepage": "/coupdoeil"
 }
