@@ -32,7 +32,7 @@ class CoupdoeilAppMain(WebAppMain):
 
     async def configurer_web_server(self):
         self._web_server = WebServerCoupdoeil(self.etat, self._commandes_handler)
-        await self._web_server.setup()
+        await self._web_server.setup(stop_event=self._stop_event)
 
     def exit_gracefully(self, signum=None, frame=None):
         self.__logger.info("Fermer application, signal: %d" % signum)
