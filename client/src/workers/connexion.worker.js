@@ -21,7 +21,7 @@ function getClesChiffrage() {
 function requeteListeNoeuds(params) {
   // console.debug("Requete liste noeuds, params : %O", params)
   return connexionClient.emitBlocking(
-    'coupdoeil/requeteListeNoeuds', params, 
+    'requeteListeNoeuds', params,
     {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: DOMAINE_CORETOPOLOGIE, action: 'listeNoeuds', ajouterCertificat: true}
   )
 }
@@ -503,11 +503,11 @@ function retirerCallbackEvenementsPresenceDomaine(cb) {
 }
 
 function enregistrerCallbackEvenementsNoeuds(cb) { 
-  return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceNoeuds', cb) 
+  return connexionClient.subscribe('ecouterEvenementsPresenceNoeuds', cb)
 }
 
 function retirerCallbackEvenementsNoeuds(cb) { 
-  return connexionClient.unsubscribe('coupdoeil/retirerEvenementsPresenceNoeuds', cb) 
+  return connexionClient.unsubscribe('retirerEvenementsPresenceNoeuds', cb)
 }
 
 function enregistrerCallbackEvenementsInstances(cb) { 
