@@ -18,7 +18,7 @@ class WebServerCoupdoeil(WebServer):
     async def setup_socketio(self):
         """ Wiring socket.io """
         # Utiliser la bonne instance de SocketIoHandler dans une sous-classe
-        self._socket_io_handler = SocketIoCoupdoeilHandler(self)
+        self._socket_io_handler = SocketIoCoupdoeilHandler(self, self._stop_event)
         await self._socket_io_handler.setup()
 
     async def _preparer_routes(self):
