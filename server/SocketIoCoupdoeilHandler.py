@@ -38,7 +38,9 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
 
         exchanges = [Constantes.SECURITE_PUBLIC, Constantes.SECURITE_PRIVE, Constantes.SECURITE_PROTEGE]
         routing_keys = ['evenement.instance.presence']
-        return await self.subscribe(sid, message, routing_keys, exchanges, enveloppe=enveloppe)
+        reponse = await self.subscribe(sid, message, routing_keys, exchanges, enveloppe=enveloppe)
+        reponse_signee = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
+        return reponse_signee
 
     async def retirer_presence_noeuds(self, sid: str, params: dict):
         "coupdoeil/retirerEvenementsPresenceNoeuds"
