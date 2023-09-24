@@ -53,16 +53,14 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         # Consignation
         self._sio.on('getConfigurationFichiers', handler=self.requete_configuration_fichiers)
         self._sio.on('getPublicKeySsh', handler=self.requete_cle_ssh)
-        # self._sio.on('modifierConfigurationConsignation', handler=self.requete_liste_noeuds)
-        # self._sio.on('setFichiersPrimaire', handler=self.requete_liste_noeuds)
-        # self._sio.on('declencherSync', handler=self.requete_liste_noeuds)
-        # self._sio.on('setConsignationInstance', handler=self.requete_liste_noeuds)
+        self._sio.on('modifierConfigurationConsignation', handler=self.configurer_consignation)
+        self._sio.on('setFichiersPrimaire', handler=self.set_fichiers_primaire)
+        self._sio.on('declencherSync', handler=self.declencher_sync)
+        self._sio.on('setConsignationInstance', handler=self.set_consignation_instance)
+        self._sio.on('reindexerConsignation', handler=self.reindexer_consignation)
 
         # Backup
         self._sio.on('demarrerBackupTransactions', handler=self.demarrer_backup)
-
-        # Indexation
-        # self._sio.on('reindexerConsignation', handler=self.requete_liste_noeuds)
 
         # Notifications
         # self._sio.on('getConfigurationNotifications', handler=self.requete_liste_noeuds)
@@ -199,7 +197,24 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         return await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_TOPOLOGIE, 'getConfigurationFichiers')
 
     async def requete_cle_ssh(self, sid: str, message: dict):
-        return await self.executer_commande(sid, message, Constantes.DOMAINE_FICHIERS, 'getPublicKeySsh')
+        return await self.executer_requete(sid, message, Constantes.DOMAINE_FICHIERS, 'getPublicKeySsh',
+                                           exchange=Constantes.SECURITE_PRIVE)
+
+    async def configurer_consignation(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_TOPOLOGIE, 'configurerConsignation')
+
+    async def set_fichiers_primaire(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_FICHIERS, 'setFichiersPrimaire')
+
+    async def declencher_sync(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_FICHIERS, 'declencherSync',
+                                            exchange=Constantes.SECURITE_PRIVE)
+
+    async def reindexer_consignation(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_GROS_FICHIERS, 'reindexerConsignation')
+
+    async def set_consignation_instance(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_FICHIERS, 'setConsignationInstance')
 
     # Backup
 
