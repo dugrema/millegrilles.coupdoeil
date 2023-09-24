@@ -42,15 +42,11 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         reponse_signee = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
         return reponse_signee
 
-    async def retirer_presence_noeuds(self, sid: str, params: dict):
+    async def retirer_presence_noeuds(self, sid: str, message: dict):
         "coupdoeil/retirerEvenementsPresenceNoeuds"
+        exchanges = [Constantes.SECURITE_PUBLIC, Constantes.SECURITE_PRIVE, Constantes.SECURITE_PROTEGE]
+        routing_keys = ['evenement.instance.presence']
+        reponse = await self.unsubscribe(sid, routing_keys, exchanges)
+        reponse_signee = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
+        return reponse_signee
 
-        # const RK_PRESENCE_INSTANCES = ['evenement.instance.presence'],
-        #       EX_PRESENCE_INSTANCES = ['1.public', '2.prive', '3.protege']
-        #
-        # function ecouterEvenementsPresenceNoeuds(socket, _params, cb) {
-        #   const presence = { routingKeys: RK_PRESENCE_INSTANCES, exchanges: EX_PRESENCE_INSTANCES }
-        #   socket.subscribe(presence, cb)
-        # }
-
-        pass
