@@ -17,6 +17,8 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
 
         # Instances
         self._sio.on('requeteListeNoeuds', handler=self.requete_liste_noeuds)
+        # self._sio.on('coretopologie/majMonitor', handler=self.requete_liste_noeuds)
+        # self._sio.on('coretopologie/supprimerInstance', handler=self.requete_liste_noeuds)
 
         # Domaines
         self._sio.on('coupdoeil/requeteListeDomaines', handler=self.requete_liste_domaines)
@@ -30,29 +32,40 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         # self._sio.on('coupdoeil/ajouterCatalogueApplication', handler=self.ajouter_catalogue_application)
         # self._sio.on('coupdoeil/configurerApplication', handler=self.configurer_application)
 
+        # self._sio.on('coupdoeil/requeteInfoApplications', handler=self.requete_liste_noeuds)
         # self._sio.on('coupdoeil/demarrerApplication', handler=self.requete_liste_noeuds)
         # self._sio.on('coupdoeil/arreterApplication', handler=self.requete_liste_noeuds)
         # self._sio.on('coupdoeil/supprimerApplication', handler=self.requete_liste_noeuds)
         # self._sio.on('coupdoeil/requeteConfigurationApplication', handler=self.requete_liste_noeuds)
+
+        # Catalogues
         # self._sio.on('coupdoeil/transmettreCatalogues', handler=self.requete_liste_noeuds)
-        # self._sio.on('coretopologie/majMonitor', handler=self.requete_liste_noeuds)
-        # self._sio.on('coretopologie/supprimerInstance', handler=self.requete_liste_noeuds)
+        # self._sio.on('coupdoeil/requeteCatalogueApplications', handler=self.requete_liste_noeuds)
+
+        # Maitre des cles
         # self._sio.on('resetClesNonDechiffrables', handler=self.requete_liste_noeuds)
         # self._sio.on('rechiffrerClesBatch', handler=self.requete_liste_noeuds)
+        # self._sio.on('getCles', handler=self.requete_liste_noeuds)
+
+        # Consignation
         # self._sio.on('getConfigurationFichiers', handler=self.requete_liste_noeuds)
         # self._sio.on('getPublicKeySsh', handler=self.requete_liste_noeuds)
         # self._sio.on('modifierConfigurationConsignation', handler=self.requete_liste_noeuds)
         # self._sio.on('setFichiersPrimaire', handler=self.requete_liste_noeuds)
         # self._sio.on('declencherSync', handler=self.requete_liste_noeuds)
+        # self._sio.on('setConsignationInstance', handler=self.requete_liste_noeuds)
+
+        # Backup
         # self._sio.on('demarrerBackupTransactions', handler=self.requete_liste_noeuds)
+
+        # Indexation
         # self._sio.on('reindexerConsignation', handler=self.requete_liste_noeuds)
-        # self._sio.on('getCles', handler=self.requete_liste_noeuds)
+
+        # Notifications
         # self._sio.on('getConfigurationNotifications', handler=self.requete_liste_noeuds)
         # self._sio.on('conserverConfigurationNotifications', handler=self.requete_liste_noeuds)
         # self._sio.on('genererClewebpushNotifications', handler=self.requete_liste_noeuds)
-        # self._sio.on('setConsignationInstance', handler=self.requete_liste_noeuds)
-        # self._sio.on('coupdoeil/requeteCatalogueApplications', handler=self.requete_liste_noeuds)
-        # self._sio.on('coupdoeil/requeteInfoApplications', handler=self.requete_liste_noeuds)
+
         # self._sio.on('maitrecomptes/requeteListeUsagers', handler=self.requete_liste_noeuds)
         # self._sio.on('maitrecomptes/requeteUsager', handler=self.requete_liste_noeuds)
         # self._sio.on('maitrecomptes/resetWebauthnUsager', handler=self.requete_liste_noeuds)
