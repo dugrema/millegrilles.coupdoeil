@@ -51,15 +51,15 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         self._sio.on('verifierClesSymmetriques', handler=self.verifier_cles_symmetrique)
 
         # Consignation
-        # self._sio.on('getConfigurationFichiers', handler=self.requete_liste_noeuds)
-        # self._sio.on('getPublicKeySsh', handler=self.requete_liste_noeuds)
+        self._sio.on('getConfigurationFichiers', handler=self.requete_configuration_fichiers)
+        self._sio.on('getPublicKeySsh', handler=self.requete_cle_ssh)
         # self._sio.on('modifierConfigurationConsignation', handler=self.requete_liste_noeuds)
         # self._sio.on('setFichiersPrimaire', handler=self.requete_liste_noeuds)
         # self._sio.on('declencherSync', handler=self.requete_liste_noeuds)
         # self._sio.on('setConsignationInstance', handler=self.requete_liste_noeuds)
 
         # Backup
-        # self._sio.on('demarrerBackupTransactions', handler=self.requete_liste_noeuds)
+        self._sio.on('demarrerBackupTransactions', handler=self.demarrer_backup)
 
         # Indexation
         # self._sio.on('reindexerConsignation', handler=self.requete_liste_noeuds)
@@ -92,6 +92,13 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
 
         self._sio.on('coupdoeil/ecouterEvenementsApplications', handler=self.ecouter_applications)
         self._sio.on('coupdoeil/retirerEvenementsApplications', handler=self.retirer_applications)
+
+        self._sio.on('ecouterEvenementsBackup', handler=self.ecouter_backup)
+        self._sio.on('retirerEvenementsBackup', handler=self.retirer_backup)
+
+        self._sio.on('coupdoeil/ecouterEvenementsConsignation', handler=self.ecouter_consignation)
+        self._sio.on('coupdoeil/retirerEvenementsConsignation', handler=self.retirer_consignation)
+
 
     @property
     def exchange_default(self):
@@ -164,7 +171,6 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
     async def transmettre_catalogues(self, sid: str, message: dict):
         return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_CATALOGUES, 'transmettreCatalogues')
 
-
     # Maitre des cles
     async def requete_cles_non_dechiffrables(self, sid: str, message: dict):
         return await self.executer_requete(sid, message, Constantes.DOMAINE_MAITRE_DES_CLES, 'clesNonDechiffrables')
@@ -187,6 +193,20 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
 
     async def verifier_cles_symmetrique(self, sid: str, message: dict):
         return await self.executer_commande(sid, message, Constantes.DOMAINE_MAITRE_DES_CLES, 'verifierCleSymmetrique')
+
+    # Consignation de fichiers
+    async def requete_configuration_fichiers(self, sid: str, message: dict):
+        return await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_TOPOLOGIE, 'getConfigurationFichiers')
+
+    async def requete_cle_ssh(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_FICHIERS, 'getPublicKeySsh')
+
+    # Backup
+
+    async def demarrer_backup(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_BACKUP,
+                                            'demarrerBackupTransactions', exchange=Constantes.SECURITE_PRIVE)
+
 
     #       {eventName: 'coupdoeil/demarrerApplication', callback: (params, cb) => { traiter(socket, mqdao.demarrerApplication, {params, cb}) }},
     #       {eventName: 'coupdoeil/arreterApplication', callback: (params, cb) => { traiter(socket, mqdao.arreterApplication, {params, cb}) }},
@@ -340,6 +360,66 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
             f'evenement.instance.{instance_id}.erreurDemarrageApplication',
         ]
 
+        reponse = await self.unsubscribe(sid, routing_keys, exchanges)
+        reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
+        return reponse_signee
+
+    async def ecouter_backup(self, sid: str, message: dict):
+        enveloppe = await self.etat.validateur_message.verifier(message)
+        if enveloppe.get_delegation_globale != Constantes.DELEGATION_GLOBALE_PROPRIETAIRE:
+            return {'ok': False, 'err': 'Acces refuse'}
+
+        exchanges = [Constantes.SECURITE_PRIVE]
+        routing_keys = [
+            'evenement.backup.demarrage',
+            'evenement.backup.maj',
+            'evenement.backup.succes',
+            'evenement.backup.echec',
+        ]
+        reponse = await self.subscribe(sid, message, routing_keys, exchanges, enveloppe=enveloppe)
+        reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
+        return reponse_signee
+
+    async def retirer_backup(self, sid: str, message: dict):
+        exchanges = [Constantes.SECURITE_PRIVE]
+        routing_keys = [
+            'evenement.backup.demarrage',
+            'evenement.backup.maj',
+            'evenement.backup.succes',
+            'evenement.backup.echec',
+        ]
+        reponse = await self.unsubscribe(sid, routing_keys, exchanges)
+        reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
+        return reponse_signee
+
+    async def ecouter_consignation(self, sid: str, message: dict):
+        enveloppe = await self.etat.validateur_message.verifier(message)
+        if enveloppe.get_delegation_globale != Constantes.DELEGATION_GLOBALE_PROPRIETAIRE:
+            return {'ok': False, 'err': 'Acces refuse'}
+
+        exchanges = [Constantes.SECURITE_PRIVE]
+        routing_keys = [
+            'evenement.fichiers.presence',
+            'evenement.fichiers.syncPrimaire',
+            'evenement.fichiers.syncSecondaire',
+            'evenement.fichiers.syncUpload',
+            'evenement.fichiers.syncDownload',
+            'evenement.CoreTopologie.changementConsignationPrimaire',
+        ]
+        reponse = await self.subscribe(sid, message, routing_keys, exchanges, enveloppe=enveloppe)
+        reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
+        return reponse_signee
+
+    async def retirer_consignation(self, sid: str, message: dict):
+        exchanges = [Constantes.SECURITE_PRIVE]
+        routing_keys = [
+            'evenement.fichiers.presence',
+            'evenement.fichiers.syncPrimaire',
+            'evenement.fichiers.syncSecondaire',
+            'evenement.fichiers.syncUpload',
+            'evenement.fichiers.syncDownload',
+            'evenement.CoreTopologie.changementConsignationPrimaire',
+        ]
         reponse = await self.unsubscribe(sid, routing_keys, exchanges)
         reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
         return reponse_signee
