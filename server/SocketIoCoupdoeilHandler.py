@@ -18,7 +18,7 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         # Instances
         self._sio.on('requeteListeNoeuds', handler=self.requete_liste_noeuds)
         # self._sio.on('coretopologie/majMonitor', handler=self.requete_liste_noeuds)
-        # self._sio.on('coretopologie/supprimerInstance', handler=self.requete_liste_noeuds)
+        self._sio.on('coretopologie/supprimerInstance', handler=self.supprimer_instance)
 
         # Domaines
         self._sio.on('coupdoeil/requeteListeDomaines', handler=self.requete_liste_domaines)
@@ -108,8 +108,12 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
             return {'ok': False, 'err': 'Acces refuse'}
         return await super().executer_commande(sid, requete, domaine, action, exchange, producer, enveloppe)
 
+    # Instances
     async def requete_liste_noeuds(self, sid: str, message: dict):
         return await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_TOPOLOGIE, 'listeNoeuds')
+
+    async def supprimer_instance(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_TOPOLOGIE, 'supprimerInstance')
 
     async def requete_liste_domaines(self, sid: str, message: dict):
         return await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_TOPOLOGIE, 'listeDomaines')
