@@ -68,14 +68,14 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         # self._sio.on('genererClewebpushNotifications', handler=self.requete_liste_noeuds)
 
         # Usagers
-        # self._sio.on('maitrecomptes/requeteListeUsagers', handler=self.requete_liste_noeuds)
-        # self._sio.on('maitrecomptes/requeteUsager', handler=self.requete_liste_noeuds)
-        # self._sio.on('maitrecomptes/resetWebauthnUsager', handler=self.requete_liste_noeuds)
-        # self._sio.on('getRecoveryCsr', handler=self.requete_liste_noeuds)
-        # self._sio.on('signerRecoveryCsr', handler=self.requete_liste_noeuds)
-        # self._sio.on('signerRecoveryCsrParProprietaire', handler=self.requete_liste_noeuds)
-        # self._sio.on('genererCertificatNavigateur', handler=self.requete_liste_noeuds)
-        # self._sio.on('maitrecomptes/majDelegations', handler=self.requete_liste_noeuds)
+        self._sio.on('maitrecomptes/requeteListeUsagers', handler=self.requete_liste_usagers)
+        self._sio.on('maitrecomptes/requeteUsager', handler=self.requete_charger_usager)
+        self._sio.on('getRecoveryCsr', handler=self.get_recovery_csr)
+        # OBSOLETE? self._sio.on('signerRecoveryCsr', handler=self.requete_liste_noeuds)
+        self._sio.on('signerRecoveryCsrParProprietaire', handler=self.signer_recovery_csr_par_proprietaire)
+        self._sio.on('maitrecomptes/resetWebauthnUsager', handler=self.reset_webauthn_usager)
+        # OBSOLETE? self._sio.on('genererCertificatNavigateur', handler=self.requete_liste_noeuds)
+        self._sio.on('maitrecomptes/majDelegations', handler=self.maj_usager_delegations)
 
         # Listeners
         self._sio.on('ecouterEvenementsPresenceNoeuds', handler=self.ecouter_presence_noeuds)
@@ -221,6 +221,30 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
     async def demarrer_backup(self, sid: str, message: dict):
         return await self.executer_commande(sid, message, Constantes.DOMAINE_BACKUP,
                                             'demarrerBackupTransactions', exchange=Constantes.SECURITE_PRIVE)
+
+
+    # Usagers
+
+    async def requete_liste_usagers(self, sid: str, message: dict):
+        reponse = await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_MAITREDESCOMPTES, 'getListeUsagers')
+        return reponse
+
+    async def requete_charger_usager(self, sid: str, message: dict):
+        reponse = await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_MAITREDESCOMPTES, 'chargerUsager')
+        return reponse
+
+    async def get_recovery_csr(self, sid: str, message: dict):
+        return await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_MAITREDESCOMPTES, 'getCsrRecoveryParcode')
+
+    async def signer_recovery_csr_par_proprietaire(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_MAITREDESCOMPTES,
+                                           'signerCompteParProprietaire', exchange=Constantes.SECURITE_PRIVE)
+
+    async def reset_webauthn_usager(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_MAITREDESCOMPTES,'resetWebauthnUsager')
+
+    async def maj_usager_delegations(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_MAITREDESCOMPTES,'majUsagerDelegations')
 
 
     #       {eventName: 'coupdoeil/demarrerApplication', callback: (params, cb) => { traiter(socket, mqdao.demarrerApplication, {params, cb}) }},
