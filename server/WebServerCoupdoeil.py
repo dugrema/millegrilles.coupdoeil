@@ -24,4 +24,3 @@ class WebServerCoupdoeil(WebServer):
     async def _preparer_routes(self):
         self.__logger.info("Preparer routes WebServerCoupdoeil sous /coupdoeil")
         await super()._preparer_routes()
-        pass
