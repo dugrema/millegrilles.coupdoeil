@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 from typing import Optional
 
@@ -26,22 +27,17 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         # self._sio.on('coupdoeil/regenererDomaine', handler=self.requete_liste_noeuds)
 
         # Applications
-        # self._sio.on('coupdoeil/requeteConfigurationApplication', handler=self.requete_configuration_application)
-        # self._sio.on('coupdoeil/installerApplication', handler=self.installer_application)
-        # self._sio.on('coupdoeil/demarrerApplication', handler=self.demarrer_application)
-        # self._sio.on('coupdoeil/arreterApplication', handler=self.arreter_application)
-        # self._sio.on('coupdoeil/supprimerApplication', handler=self.supprimer_application)
-        # self._sio.on('coupdoeil/configurerApplication', handler=self.configurer_application)
-
-        # self._sio.on('coupdoeil/requeteInfoApplications', handler=self.requete_liste_noeuds)
-        # self._sio.on('coupdoeil/demarrerApplication', handler=self.requete_liste_noeuds)
-        # self._sio.on('coupdoeil/arreterApplication', handler=self.requete_liste_noeuds)
-        # self._sio.on('coupdoeil/supprimerApplication', handler=self.requete_liste_noeuds)
-        # self._sio.on('coupdoeil/requeteConfigurationApplication', handler=self.requete_liste_noeuds)
+        self._sio.on('coupdoeil/requeteConfigurationApplication', handler=self.requete_configuration_application)
+        self._sio.on('coupdoeil/installerApplication', handler=self.installer_application)
+        self._sio.on('coupdoeil/demarrerApplication', handler=self.demarrer_application)
+        self._sio.on('coupdoeil/arreterApplication', handler=self.arreter_application)
+        self._sio.on('coupdoeil/supprimerApplication', handler=self.supprimer_application)
+        self._sio.on('coupdoeil/configurerApplication', handler=self.configurer_application)
 
         # Catalogues
         self._sio.on('coupdoeil/requeteCatalogueApplications', handler=self.requete_catalogues_applications)
         self._sio.on('coupdoeil/transmettreCatalogues', handler=self.transmettre_catalogues)
+        self._sio.on('coupdoeil/requeteInfoApplications', handler=self.requete_info_applications)
         # self._sio.on('coupdoeil/ajouterCatalogueApplication', handler=self.ajouter_catalogue_application)
 
         # Maitre des cles
@@ -51,8 +47,8 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         self._sio.on('resetClesNonDechiffrables', handler=self.reset_cles_non_dechiffrables)
         self._sio.on('rechiffrerClesBatch', handler=self.rechiffrer_cles_batch)
         # OBSOLETE - self._sio.on('coupdoeil/transactionCleRechiffree', handler=self.requete_liste_noeuds)
-        # self._sio.on('transmettreCleSymmetrique', handler=self.requete_liste_noeuds)
-        # self._sio.on('verifierClesSymmetriques', handler=self.requete_liste_noeuds)
+        self._sio.on('transmettreCleSymmetrique', handler=self.transmettre_cles_symmetrique)
+        self._sio.on('verifierClesSymmetriques', handler=self.verifier_cles_symmetrique)
 
         # Consignation
         # self._sio.on('getConfigurationFichiers', handler=self.requete_liste_noeuds)
@@ -94,6 +90,8 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         self._sio.on('coupdoeil/ecouterEvenementsRechiffageCles', handler=self.ecouter_rechiffrage_cles)
         self._sio.on('coupdoeil/retirerEvenementsRechiffageCles', handler=self.retirer_rechiffrage_cles)
 
+        self._sio.on('coupdoeil/ecouterEvenementsApplications', handler=self.ecouter_applications)
+        self._sio.on('coupdoeil/retirerEvenementsApplications', handler=self.retirer_applications)
 
     @property
     def exchange_default(self):
@@ -126,32 +124,46 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
 
     # Applications
     async def installer_application(self, sid: str, message: dict):
-        return await self.executer_commande(sid, message)
+        contenu = json.loads(message['contenu'])
+        exchange = contenu['exchange']
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_INSTANCE, 'installerApplication', exchange=exchange)
 
     async def demarrer_application(self, sid: str, message: dict):
-        return await self.executer_commande(sid, message)
+        contenu = json.loads(message['contenu'])
+        exchange = contenu['exchange']
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_INSTANCE, 'demarrerApplication', exchange=exchange)
 
     async def arreter_application(self, sid: str, message: dict):
-        return await self.executer_commande(sid, message)
+        contenu = json.loads(message['contenu'])
+        exchange = contenu['exchange']
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_INSTANCE, 'arreterApplication', exchange=exchange)
 
     async def supprimer_application(self, sid: str, message: dict):
-        return await self.executer_commande(sid, message)
+        contenu = json.loads(message['contenu'])
+        exchange = contenu['exchange']
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_INSTANCE, 'supprimerApplication', exchange=exchange)
 
     async def requete_configuration_application(self, sid: str, message: dict):
-        return await self.executer_requete(sid, message)
+        return await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_CATALOGUES, 'listeApplications')
 
     async def ajouter_catalogue_application(self, sid: str, message: dict):
         return await self.executer_commande(sid, message)
 
     async def configurer_application(self, sid: str, message: dict):
-        return await self.executer_commande(sid, message)
+        contenu = json.loads(message['contenu'])
+        exchange = contenu['exchange']
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_INSTANCE, 'configurerApplication', exchange=exchange)
 
     # Catalogues
     async def requete_catalogues_applications(self, sid: str, message: dict):
         return await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_CATALOGUES, 'listeApplications')
 
+    async def requete_info_applications(self, sid: str, message: dict):
+        return await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_CATALOGUES, 'infoApplication')
+
     async def transmettre_catalogues(self, sid: str, message: dict):
         return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_CATALOGUES, 'transmettreCatalogues')
+
 
     # Maitre des cles
     async def requete_cles_non_dechiffrables(self, sid: str, message: dict):
@@ -170,6 +182,11 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
     async def rechiffrer_cles_batch(self, sid: str, message: dict):
         return await self.executer_commande(sid, message, Constantes.DOMAINE_MAITRE_DES_CLES, 'rechiffrerBatch')
 
+    async def transmettre_cles_symmetrique(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_MAITRE_DES_CLES, 'cleSymmetrique')
+
+    async def verifier_cles_symmetrique(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_MAITRE_DES_CLES, 'verifierCleSymmetrique')
 
     #       {eventName: 'coupdoeil/demarrerApplication', callback: (params, cb) => { traiter(socket, mqdao.demarrerApplication, {params, cb}) }},
     #       {eventName: 'coupdoeil/arreterApplication', callback: (params, cb) => { traiter(socket, mqdao.arreterApplication, {params, cb}) }},
@@ -287,6 +304,42 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
     async def retirer_rechiffrage_cles(self, sid: str, message: dict):
         exchanges = [Constantes.SECURITE_PROTEGE]
         routing_keys = ['evenement.MaitreDesCles.demandeCleSymmetrique']
+        reponse = await self.unsubscribe(sid, routing_keys, exchanges)
+        reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
+        return reponse_signee
+
+    async def ecouter_applications(self, sid: str, message: dict):
+        enveloppe = await self.etat.validateur_message.verifier(message)
+        if enveloppe.get_delegation_globale != Constantes.DELEGATION_GLOBALE_PROPRIETAIRE:
+            return {'ok': False, 'err': 'Acces refuse'}
+
+        contenu = json.loads(message['contenu'])
+        instance_id = contenu['instanceId']
+        exchange = contenu['exchange']
+
+        exchanges = [exchange]
+        routing_keys = [
+            f'evenement.instance.{instance_id}.applicationDemarree',
+            f'evenement.instance.{instance_id}.applicationArretee',
+            f'evenement.instance.{instance_id}.erreurDemarrageApplication',
+        ]
+
+        reponse = await self.subscribe(sid, message, routing_keys, exchanges, enveloppe=enveloppe)
+        reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
+        return reponse_signee
+
+    async def retirer_applications(self, sid: str, message: dict):
+        contenu = json.loads(message['contenu'])
+        instance_id = contenu['instanceId']
+        exchange = contenu['exchange']
+
+        exchanges = [exchange]
+        routing_keys = [
+            f'evenement.instance.{instance_id}.applicationDemarree',
+            f'evenement.instance.{instance_id}.applicationArretee',
+            f'evenement.instance.{instance_id}.erreurDemarrageApplication',
+        ]
+
         reponse = await self.unsubscribe(sid, routing_keys, exchanges)
         reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
         return reponse_signee
