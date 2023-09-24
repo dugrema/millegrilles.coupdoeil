@@ -14,6 +14,7 @@ from millegrilles_web.Intake import IntakeFichiers
 from millegrilles_web.WebServer import WebServer
 from millegrilles_web.WebAppMain import LOGGING_NAMES as LOGGING_NAMES_WEB, adjust_logging
 from server.WebServerCoupdoeil import WebServerCoupdoeil
+from server.Commandes import CommandCoupdoeilHandler
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,9 @@ class CoupdoeilAppMain(WebAppMain):
     def __init__(self):
         self.__logger = logging.getLogger(__name__ + '.' + self.__class__.__name__)
         super().__init__()
+
+    def init_command_handler(self) -> CommandCoupdoeilHandler:
+        return CommandCoupdoeilHandler(self)
 
     async def configurer(self):
         await super().configurer()
