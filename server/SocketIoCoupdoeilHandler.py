@@ -19,17 +19,18 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         self._sio.on('requeteListeNoeuds', handler=self.requete_liste_noeuds)
         # self._sio.on('coretopologie/majMonitor', handler=self.requete_liste_noeuds)
         self._sio.on('coretopologie/supprimerInstance', handler=self.supprimer_instance)
+        # self._sio.on('coupdoeil/genererCertificatNoeud', handler=self.requete_liste_noeuds)
 
         # Domaines
         self._sio.on('coupdoeil/requeteListeDomaines', handler=self.requete_liste_domaines)
+        # self._sio.on('coupdoeil/regenererDomaine', handler=self.requete_liste_noeuds)
 
         # Applications
+        # self._sio.on('coupdoeil/requeteConfigurationApplication', handler=self.requete_configuration_application)
         # self._sio.on('coupdoeil/installerApplication', handler=self.installer_application)
         # self._sio.on('coupdoeil/demarrerApplication', handler=self.demarrer_application)
         # self._sio.on('coupdoeil/arreterApplication', handler=self.arreter_application)
         # self._sio.on('coupdoeil/supprimerApplication', handler=self.supprimer_application)
-        # self._sio.on('coupdoeil/requeteConfigurationApplication', handler=self.requete_configuration_application)
-        # self._sio.on('coupdoeil/ajouterCatalogueApplication', handler=self.ajouter_catalogue_application)
         # self._sio.on('coupdoeil/configurerApplication', handler=self.configurer_application)
 
         # self._sio.on('coupdoeil/requeteInfoApplications', handler=self.requete_liste_noeuds)
@@ -39,13 +40,19 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         # self._sio.on('coupdoeil/requeteConfigurationApplication', handler=self.requete_liste_noeuds)
 
         # Catalogues
-        # self._sio.on('coupdoeil/transmettreCatalogues', handler=self.requete_liste_noeuds)
-        # self._sio.on('coupdoeil/requeteCatalogueApplications', handler=self.requete_liste_noeuds)
+        self._sio.on('coupdoeil/requeteCatalogueApplications', handler=self.requete_catalogues_applications)
+        self._sio.on('coupdoeil/transmettreCatalogues', handler=self.transmettre_catalogues)
+        # self._sio.on('coupdoeil/ajouterCatalogueApplication', handler=self.ajouter_catalogue_application)
 
         # Maitre des cles
-        # self._sio.on('resetClesNonDechiffrables', handler=self.requete_liste_noeuds)
-        # self._sio.on('rechiffrerClesBatch', handler=self.requete_liste_noeuds)
-        # self._sio.on('getCles', handler=self.requete_liste_noeuds)
+        self._sio.on('getCles', handler=self.requete_get_cles)
+        self._sio.on('coupdoeil/requeteClesNonDechiffrables', handler=self.requete_cles_non_dechiffrables)
+        self._sio.on('coupdoeil/requeteCompterClesNonDechiffrables', handler=self.requete_compter_cles_non_dechiffrables)
+        self._sio.on('resetClesNonDechiffrables', handler=self.reset_cles_non_dechiffrables)
+        self._sio.on('rechiffrerClesBatch', handler=self.rechiffrer_cles_batch)
+        # OBSOLETE - self._sio.on('coupdoeil/transactionCleRechiffree', handler=self.requete_liste_noeuds)
+        # self._sio.on('transmettreCleSymmetrique', handler=self.requete_liste_noeuds)
+        # self._sio.on('verifierClesSymmetriques', handler=self.requete_liste_noeuds)
 
         # Consignation
         # self._sio.on('getConfigurationFichiers', handler=self.requete_liste_noeuds)
@@ -66,21 +73,15 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         # self._sio.on('conserverConfigurationNotifications', handler=self.requete_liste_noeuds)
         # self._sio.on('genererClewebpushNotifications', handler=self.requete_liste_noeuds)
 
+        # Usagers
         # self._sio.on('maitrecomptes/requeteListeUsagers', handler=self.requete_liste_noeuds)
         # self._sio.on('maitrecomptes/requeteUsager', handler=self.requete_liste_noeuds)
         # self._sio.on('maitrecomptes/resetWebauthnUsager', handler=self.requete_liste_noeuds)
-        # self._sio.on('coupdoeil/requeteClesNonDechiffrables', handler=self.requete_liste_noeuds)
-        # self._sio.on('coupdoeil/requeteCompterClesNonDechiffrables', handler=self.requete_liste_noeuds)
-        # self._sio.on('coupdoeil/transactionCleRechiffree', handler=self.requete_liste_noeuds)
-        # self._sio.on('transmettreCleSymmetrique', handler=self.requete_liste_noeuds)
-        # self._sio.on('verifierClesSymmetriques', handler=self.requete_liste_noeuds)
-        # self._sio.on('coupdoeil/genererCertificatNoeud', handler=self.requete_liste_noeuds)
-        # self._sio.on('genererCertificatNavigateur', handler=self.requete_liste_noeuds)
-        # self._sio.on('maitrecomptes/majDelegations', handler=self.requete_liste_noeuds)
-        # self._sio.on('coupdoeil/regenererDomaine', handler=self.requete_liste_noeuds)
         # self._sio.on('getRecoveryCsr', handler=self.requete_liste_noeuds)
         # self._sio.on('signerRecoveryCsr', handler=self.requete_liste_noeuds)
         # self._sio.on('signerRecoveryCsrParProprietaire', handler=self.requete_liste_noeuds)
+        # self._sio.on('genererCertificatNavigateur', handler=self.requete_liste_noeuds)
+        # self._sio.on('maitrecomptes/majDelegations', handler=self.requete_liste_noeuds)
 
         # Listeners
         self._sio.on('ecouterEvenementsPresenceNoeuds', handler=self.ecouter_presence_noeuds)
@@ -88,6 +89,10 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
 
         self._sio.on('coupdoeil/ecouterEvenementsPresenceDomaines', handler=self.ecouter_presence_domaines)
         self._sio.on('coupdoeil/retirerEvenementsPresenceDomaines', handler=self.retirer_presence_domaines)
+
+        # ecouterEvenementsRechiffageCles
+        self._sio.on('coupdoeil/ecouterEvenementsRechiffageCles', handler=self.ecouter_rechiffrage_cles)
+        self._sio.on('coupdoeil/retirerEvenementsRechiffageCles', handler=self.retirer_rechiffrage_cles)
 
 
     @property
@@ -115,9 +120,11 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
     async def supprimer_instance(self, sid: str, message: dict):
         return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_TOPOLOGIE, 'supprimerInstance')
 
+    # Domaines
     async def requete_liste_domaines(self, sid: str, message: dict):
         return await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_TOPOLOGIE, 'listeDomaines')
 
+    # Applications
     async def installer_application(self, sid: str, message: dict):
         return await self.executer_commande(sid, message)
 
@@ -138,6 +145,31 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
 
     async def configurer_application(self, sid: str, message: dict):
         return await self.executer_commande(sid, message)
+
+    # Catalogues
+    async def requete_catalogues_applications(self, sid: str, message: dict):
+        return await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_CATALOGUES, 'listeApplications')
+
+    async def transmettre_catalogues(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_CATALOGUES, 'transmettreCatalogues')
+
+    # Maitre des cles
+    async def requete_cles_non_dechiffrables(self, sid: str, message: dict):
+        return await self.executer_requete(sid, message, Constantes.DOMAINE_MAITRE_DES_CLES, 'clesNonDechiffrables')
+
+    async def requete_compter_cles_non_dechiffrables(self, sid: str, message: dict):
+        return await self.executer_requete(sid, message, Constantes.DOMAINE_MAITRE_DES_CLES, 'compterClesNonDechiffrables')
+
+    async def reset_cles_non_dechiffrables(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_MAITRE_DES_CLES, 'resetNonDechiffrable')
+
+    async def requete_get_cles(self, sid: str, message: dict):
+        return await self.executer_requete(sid, message, Constantes.DOMAINE_MAITRE_DES_CLES, 'dechiffrage',
+                                           exchange=Constantes.SECURITE_PRIVE)
+
+    async def rechiffrer_cles_batch(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_MAITRE_DES_CLES, 'rechiffrerBatch')
+
 
     #       {eventName: 'coupdoeil/demarrerApplication', callback: (params, cb) => { traiter(socket, mqdao.demarrerApplication, {params, cb}) }},
     #       {eventName: 'coupdoeil/arreterApplication', callback: (params, cb) => { traiter(socket, mqdao.arreterApplication, {params, cb}) }},
@@ -237,6 +269,24 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
     async def retirer_presence_domaines(self, sid: str, message: dict):
         exchanges = [Constantes.SECURITE_PROTEGE]
         routing_keys = ['evenement.*.presenceDomaine']
+        reponse = await self.unsubscribe(sid, routing_keys, exchanges)
+        reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
+        return reponse_signee
+
+    async def ecouter_rechiffrage_cles(self, sid: str, message: dict):
+        enveloppe = await self.etat.validateur_message.verifier(message)
+        if enveloppe.get_delegation_globale != Constantes.DELEGATION_GLOBALE_PROPRIETAIRE:
+            return {'ok': False, 'err': 'Acces refuse'}
+
+        exchanges = [Constantes.SECURITE_PROTEGE]
+        routing_keys = ['evenement.MaitreDesCles.demandeCleSymmetrique']
+        reponse = await self.subscribe(sid, message, routing_keys, exchanges, enveloppe=enveloppe)
+        reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
+        return reponse_signee
+
+    async def retirer_rechiffrage_cles(self, sid: str, message: dict):
+        exchanges = [Constantes.SECURITE_PROTEGE]
+        routing_keys = ['evenement.MaitreDesCles.demandeCleSymmetrique']
         reponse = await self.unsubscribe(sid, routing_keys, exchanges)
         reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
         return reponse_signee
