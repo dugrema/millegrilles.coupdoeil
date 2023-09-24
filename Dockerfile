@@ -1,18 +1,19 @@
-FROM docker.maple.maceroc.com:5000/millegrilles_webappbase:2023.9.0
+FROM docker.maple.maceroc.com:5000/millegrilles_web_python:2023.9.0
 
-ENV MG_CONSIGNATION_HTTP=https://fichiers \
-    APP_FOLDER=/usr/src/app \
-    NODE_ENV=production \
-    PORT=443 \
-    MG_MQ_URL=amqps://mq:5673
+ENV CA_PEM=/var/opt/millegrilles/configuration/pki.millegrille.cert \
+    CERT_PEM=/var/opt/millegrilles/secrets/pki.coupdoeil.cert \
+    KEY_PEM=/var/opt/millegrilles/secrets/pki.coupdoeil.cle \
+    MQ_HOSTNAME=mq \
+    MQ_PORT=5673 \
+    REDIS_HOSTNAME=redis \
+    REDIS_PASSWORD_PATH=/var/run/secrets/passwd.redis.txt \
+    WEB_PORT=1443
 
 EXPOSE 80 443
 
 # Creer repertoire app, copier fichiers
 # WORKDIR $APP_FOLDER
 
-COPY . $APP_FOLDER/
-RUN npm install --production && \
-    rm -rf /root/.npm
+RUN python3 ./setup.py install
 
-CMD [ "npm", "run", "server" ]
+CMD ["-m", "server", "--verbose"]
