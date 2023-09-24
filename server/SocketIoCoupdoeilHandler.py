@@ -18,13 +18,11 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
 
         # Instances
         self._sio.on('requeteListeNoeuds', handler=self.requete_liste_noeuds)
-        # self._sio.on('coretopologie/majMonitor', handler=self.requete_liste_noeuds)
         self._sio.on('coretopologie/supprimerInstance', handler=self.supprimer_instance)
-        # self._sio.on('coupdoeil/genererCertificatNoeud', handler=self.requete_liste_noeuds)
+        self._sio.on('coupdoeil/genererCertificatNoeud', handler=self.generer_certificat_noeud)
 
         # Domaines
         self._sio.on('coupdoeil/requeteListeDomaines', handler=self.requete_liste_domaines)
-        # self._sio.on('coupdoeil/regenererDomaine', handler=self.requete_liste_noeuds)
 
         # Applications
         self._sio.on('coupdoeil/requeteConfigurationApplication', handler=self.requete_configuration_application)
@@ -38,7 +36,6 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         self._sio.on('coupdoeil/requeteCatalogueApplications', handler=self.requete_catalogues_applications)
         self._sio.on('coupdoeil/transmettreCatalogues', handler=self.transmettre_catalogues)
         self._sio.on('coupdoeil/requeteInfoApplications', handler=self.requete_info_applications)
-        # self._sio.on('coupdoeil/ajouterCatalogueApplication', handler=self.ajouter_catalogue_application)
 
         # Maitre des cles
         self._sio.on('getCles', handler=self.requete_get_cles)
@@ -46,7 +43,6 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         self._sio.on('coupdoeil/requeteCompterClesNonDechiffrables', handler=self.requete_compter_cles_non_dechiffrables)
         self._sio.on('resetClesNonDechiffrables', handler=self.reset_cles_non_dechiffrables)
         self._sio.on('rechiffrerClesBatch', handler=self.rechiffrer_cles_batch)
-        # OBSOLETE - self._sio.on('coupdoeil/transactionCleRechiffree', handler=self.requete_liste_noeuds)
         self._sio.on('transmettreCleSymmetrique', handler=self.transmettre_cles_symmetrique)
         self._sio.on('verifierClesSymmetriques', handler=self.verifier_cles_symmetrique)
 
@@ -63,18 +59,16 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         self._sio.on('demarrerBackupTransactions', handler=self.demarrer_backup)
 
         # Notifications
-        # self._sio.on('getConfigurationNotifications', handler=self.requete_liste_noeuds)
-        # self._sio.on('conserverConfigurationNotifications', handler=self.requete_liste_noeuds)
-        # self._sio.on('genererClewebpushNotifications', handler=self.requete_liste_noeuds)
+        self._sio.on('getConfigurationNotifications', handler=self.requete_get_configuration_notifications)
+        self._sio.on('conserverConfigurationNotifications', handler=self.conserver_configuration_notifications)
+        self._sio.on('genererClewebpushNotifications', handler=self.generer_cle_webpush_notifications)
 
         # Usagers
         self._sio.on('maitrecomptes/requeteListeUsagers', handler=self.requete_liste_usagers)
         self._sio.on('maitrecomptes/requeteUsager', handler=self.requete_charger_usager)
         self._sio.on('getRecoveryCsr', handler=self.get_recovery_csr)
-        # OBSOLETE? self._sio.on('signerRecoveryCsr', handler=self.requete_liste_noeuds)
         self._sio.on('signerRecoveryCsrParProprietaire', handler=self.signer_recovery_csr_par_proprietaire)
         self._sio.on('maitrecomptes/resetWebauthnUsager', handler=self.reset_webauthn_usager)
-        # OBSOLETE? self._sio.on('genererCertificatNavigateur', handler=self.requete_liste_noeuds)
         self._sio.on('maitrecomptes/majDelegations', handler=self.maj_usager_delegations)
 
         # Listeners
@@ -126,6 +120,9 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
     # Domaines
     async def requete_liste_domaines(self, sid: str, message: dict):
         return await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_TOPOLOGIE, 'listeDomaines')
+
+    async def generer_certificat_noeud(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_PKI, 'signerCsr')
 
     # Applications
     async def installer_application(self, sid: str, message: dict):
@@ -222,7 +219,6 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         return await self.executer_commande(sid, message, Constantes.DOMAINE_BACKUP,
                                             'demarrerBackupTransactions', exchange=Constantes.SECURITE_PRIVE)
 
-
     # Usagers
 
     async def requete_liste_usagers(self, sid: str, message: dict):
@@ -246,68 +242,16 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
     async def maj_usager_delegations(self, sid: str, message: dict):
         return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_MAITREDESCOMPTES,'majUsagerDelegations')
 
+    # Notifications
+    async def requete_get_configuration_notifications(self, sid: str, message: dict):
+        return await self.executer_requete(sid, message, Constantes.DOMAINE_MESSAGERIE,
+                                           'getConfigurationNotifications', exchange=Constantes.SECURITE_PUBLIC)
 
-    #       {eventName: 'coupdoeil/demarrerApplication', callback: (params, cb) => { traiter(socket, mqdao.demarrerApplication, {params, cb}) }},
-    #       {eventName: 'coupdoeil/arreterApplication', callback: (params, cb) => { traiter(socket, mqdao.arreterApplication, {params, cb}) }},
-    #       {eventName: 'coupdoeil/supprimerApplication', callback: (params, cb) => { traiter(socket, mqdao.supprimerApplication, {params, cb}) }},
-    #       {eventName: 'coupdoeil/requeteConfigurationApplication', callback: (params, cb) => { traiter(socket, mqdao.requeteConfigurationApplication, {params, cb}) }},
-    #       {eventName: 'coupdoeil/transmettreCatalogues', callback: (params, cb) => { traiter(socket, mqdao.transmettreCatalogues, {params, cb}) }},
-    #       {eventName: 'coupdoeil/requeteConfigurationAcme', callback: (params, cb) => { traiter(socket, mqdao.requeteConfigurationAcme, {params, cb}) }},
-    #       {eventName: 'coupdoeil/configurerDomaineAcme', callback: (params, cb) => { traiter(socket, mqdao.configurerDomaineAcme, {params, cb}) }},
-    #       {eventName: 'coretopologie/majMonitor', callback: (params, cb) => { traiter(socket, mqdao.majMonitor, {params, cb}) }},
-    #       {eventName: 'coretopologie/supprimerInstance', callback: (params, cb) => { traiter(socket, mqdao.supprimerInstance, {params, cb}) }},
-    #       {eventName: 'resetClesNonDechiffrables', callback: (params, cb) => { traiter(socket, mqdao.resetClesNonDechiffrables, {params, cb}) }},
-    #       {eventName: 'rechiffrerClesBatch', callback: (params, cb) => { traiter(socket, mqdao.rechiffrerClesBatch, {params, cb}) }},
-    #       {eventName: 'getConfigurationFichiers', callback: (params, cb) => { traiter(socket, mqdao.getConfigurationFichiers, {params, cb}) }},
-    #       {eventName: 'getPublicKeySsh', callback: (params, cb) => { traiter(socket, mqdao.getPublicKeySsh, {params, cb}) }},
-    #       {eventName: 'modifierConfigurationConsignation', callback: (params, cb) => { traiter(socket, mqdao.modifierConfigurationConsignation, {params, cb}) }},
-    #       {eventName: 'setFichiersPrimaire', callback: (params, cb) => { traiter(socket, mqdao.setFichiersPrimaire, {params, cb}) }},
-    #       {eventName: 'declencherSync', callback: (params, cb) => { traiter(socket, mqdao.declencherSync, {params, cb}) }},
-    #       {eventName: 'demarrerBackupTransactions', callback: (params, cb) => { traiter(socket, mqdao.demarrerBackupTransactions, {params, cb}) }},
-    #       {eventName: 'reindexerConsignation', callback: (params, cb) => { traiter(socket, mqdao.reindexerConsignation, {params, cb}) }},
-    #       {eventName: 'getCles', callback: (params, cb) => { traiter(socket, mqdao.getCles, {params, cb}) }},
-    #       {eventName: 'getConfigurationNotifications', callback: (params, cb) => { traiter(socket, mqdao.getConfigurationNotifications, {params, cb}) }},
-    #       {eventName: 'conserverConfigurationNotifications', callback: (params, cb) => { traiter(socket, mqdao.conserverConfigurationNotifications, {params, cb}) }},
-    #       {eventName: 'genererClewebpushNotifications', callback: (params, cb) => { traiter(socket, mqdao.genererClewebpushNotifications, {params, cb}) }},
-    #       {eventName: 'setConsignationInstance', callback: (params, cb) => {traiter(socket, mqdao.setConsignationInstance, {params, cb})}},
-    #       {eventName: 'coupdoeil/requeteListeNoeuds', callback: (params, cb) => { traiter(socket, mqdao.requeteListeNoeuds, {params, cb})}},
-    #       {eventName: 'coupdoeil/requeteListeDomaines', callback: (params, cb) => { traiter(socket, mqdao.requeteListeDomaines, {params, cb})}},
-    #       {eventName: 'coupdoeil/requeteCatalogueApplications', callback: (params, cb) => {traiter(socket, mqdao.requeteCatalogueApplications, {params, cb})}},
-    #       {eventName: 'coupdoeil/requeteInfoApplications', callback: (params, cb) => {traiter(socket, mqdao.requeteInfoApplications, {params, cb})}},
-    #       {eventName: 'maitrecomptes/requeteListeUsagers', callback: (params, cb) => {traiter(socket, mqdao.requeteListeUsagers, {params, cb})}},
-    #       {eventName: 'maitrecomptes/requeteUsager', callback: (params, cb) => {traiter(socket, mqdao.requeteUsager, {params, cb})}},
-    #       {eventName: 'maitrecomptes/resetWebauthnUsager', callback: (params, cb) => {traiter(socket, mqdao.resetWebauthn, {params, cb})}},
-    #
-    #       {eventName: 'coupdoeil/requeteClesNonDechiffrables', callback: (params, cb) => {
-    #         traiter(socket, mqdao.requeteClesNonDechiffrables, {params, cb})
-    #       }},
-    #       {eventName: 'coupdoeil/requeteCompterClesNonDechiffrables', callback: (params, cb) => {
-    #         traiter(socket, mqdao.requeteCompterClesNonDechiffrables, {params, cb})
-    #       }},
-    #       {eventName: 'coupdoeil/transactionCleRechiffree', callback: (params, cb) => {
-    #         traiter(socket, mqdao.commandeCleRechiffree, {params, cb})
-    #       }},
-    #       {eventName: 'transmettreCleSymmetrique', callback: (params, cb) => {
-    #         traiter(socket, mqdao.transmettreCleSymmetrique, {params, cb})
-    #       }},
-    #       {eventName: 'verifierClesSymmetriques', callback: (params, cb) => {
-    #         traiter(socket, mqdao.verifierClesSymmetriques, {params, cb})
-    #       }},
-    #       {eventName: 'coupdoeil/genererCertificatNoeud', callback: (params, cb) => {
-    #         traiter(socket, mqdao.genererCertificatNoeud, {params, cb})
-    #       }},
-    #       {eventName: 'genererCertificatNavigateur', callback: (commande, cb) => {
-    #         genererCertificatNavigateurWS(socket, commande, cb)
-    #       }},
-    #       {eventName: 'maitrecomptes/majDelegations', callback: (params, cb) => {
-    #         traiter(socket, mqdao.majDelegations, {params, cb})
-    #       }},
-    #       {eventName: 'coupdoeil/regenererDomaine', callback: (params, cb) => {
-    #         traiter(socket, mqdao.regenererDomaine, {params, cb})
-    #       }},
-    #       {eventName: 'getRecoveryCsr', callback: async (params, cb) => {traiterCompteUsagersDao(socket, 'getRecoveryCsr', {params, cb})}},
-    #       {eventName: 'signerRecoveryCsr', callback: async (params, cb) => {traiterCompteUsagersDao(socket, 'signerRecoveryCsr', {params, cb})}},
-    #       {eventName: 'signerRecoveryCsrParProprietaire', callback: async (params, cb) => {traiter(socket, mqdao.signerRecoveryCsrParProprietaire, {params, cb})}},
+    async def conserver_configuration_notifications(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_MESSAGERIE, 'conserverConfigurationNotifications')
+
+    async def generer_cle_webpush_notifications(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_MESSAGERIE, 'genererClewebpushNotifications')
 
     # Listeners
 
@@ -462,66 +406,3 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         reponse = await self.unsubscribe(sid, routing_keys, exchanges)
         reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
         return reponse_signee
-
-    #       {eventName: 'coupdoeil/ecouterEvenementsPresenceDomaines', callback: (params, cb) => {
-    #         ecouterEvenementsPresenceDomaines(socket, params, cb)
-    #       }},
-    #       {eventName: 'coupdoeil/retirerEvenementsPresenceDomaines', callback: (params, cb) => {
-    #         retirerEvenementsPresenceDomaines(socket, params, cb)
-    #       }},
-    #
-    #       {eventName: 'coupdoeil/ecouterEvenementsPresenceNoeuds', callback: (params, cb) => {
-    #         ecouterEvenementsPresenceNoeuds(socket, params, cb)
-    #       }},
-    #       {eventName: 'coupdoeil/retirerEvenementsPresenceNoeuds', callback: (params, cb) => {
-    #         retirerEvenementsPresenceNoeuds(socket, params, cb)
-    #       }},
-    #
-    #       {eventName: 'coupdoeil/ecouterEvenementsInstances', callback: (params, cb) => {
-    #         ecouterEvenementsInstances(socket, params, cb)
-    #       }},
-    #       {eventName: 'coupdoeil/retirerEvenementsInstances', callback: (params, cb) => {
-    #         retirerEvenementsInstances(socket, params, cb)
-    #       }},
-    #
-    #       {eventName: 'coupdoeil/ecouterEvenementsApplications', callback: (params, cb) => {
-    #         ecouterEvenementsApplications(socket, params, cb)
-    #       }},
-    #       {eventName: 'coupdoeil/retirerEvenementsApplications', callback: (params, cb) => {
-    #         retirerEvenementsApplications(socket, params, cb)
-    #       }},
-    #
-    #       {eventName: 'coupdoeil/ecouterEvenementsAcme', callback: (params, cb) => {
-    #         ecouterEvenementsAcme(socket, params, cb)
-    #       }},
-    #       {eventName: 'coupdoeil/retirerEvenementsAcme', callback: (params, cb) => {
-    #         retirerEvenementsAcme(socket, params, cb)
-    #       }},
-    #
-    #       {eventName: 'coupdoeil/ecouterEvenementsBackup', callback: (params, cb) => {
-    #         ecouterEvenementsBackup(socket, params, cb)
-    #       }},
-    #       {eventName: 'coupdoeil/retirerEvenementsBackup', callback: (params, cb) => {
-    #         retirerEvenementsBackup(socket, params, cb)
-    #       }},
-    #
-    #       {eventName: 'coupdoeil/ecouterEvenementsConsignation', callback: (params, cb) => {
-    #         ecouterEvenementsConsignation(socket, params, cb)
-    #       }},
-    #       {eventName: 'coupdoeil/retirerEvenementsConsignation', callback: (params, cb) => {
-    #         retirerEvenementsConsignation(socket, params, cb)
-    #       }},
-    #
-    #       {eventName: 'ecouterEvenementsRechiffageCles', callback: (params, cb) => {
-    #         ecouterEvenementsRechiffageCles(socket, params, cb)
-    #       }},
-    #       {eventName: 'retirerEvenementsRechiffageCles', callback: (params, cb) => {
-    #         retirerEvenementsRechiffageCles(socket, params, cb)
-    #       }},
-    #
-    #       {eventName: 'ecouterEvenementsBackup', callback: (params, cb) => {
-    #         ecouterEvenementsBackup(socket, params, cb)
-    #       }},
-    #       {eventName: 'retirerEvenementsBackup', callback: (params, cb) => {
-    #         retirerEvenementsBackup(socket, params, cb)
-    #       }},
