@@ -9,11 +9,15 @@ ENV CA_PEM=/var/opt/millegrilles/configuration/pki.millegrille.cert \
     REDIS_PASSWORD_PATH=/var/run/secrets/passwd.redis.txt \
     WEB_PORT=1443
 
-EXPOSE 80 443
+COPY static/ $BUNDLE_FOLDER/static
 
-# Creer repertoire app, copier fichiers
-# WORKDIR $APP_FOLDER
+COPY . $BUILD_FOLDER
 
-RUN python3 ./setup.py install
+RUN cd $BUILD_FOLDER && \
+    python3 ./setup.py install
+
+# UID fichiers = 984
+# GID millegrilles = 980
+USER 984:980
 
 CMD ["-m", "server", "--verbose"]
