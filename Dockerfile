@@ -20,4 +20,5 @@ RUN cd $BUILD_FOLDER && \
 # GID millegrilles = 980
 USER 984:980
 
-CMD ["-m", "server", "--verbose"]
+CMD ["-m", "server_coupdoeil"]
+# CMD ["-m", "server_coupdoeil", "--verbose"]

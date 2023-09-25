@@ -5,7 +5,7 @@ from typing import Optional
 
 from millegrilles_messages.messages import Constantes
 from millegrilles_web.SocketIoHandler import SocketIoHandler
-from server import Constantes as ConstantesCoupdoeil
+from server_coupdoeil import Constantes as ConstantesCoupdoeil
 
 
 class SocketIoCoupdoeilHandler(SocketIoHandler):

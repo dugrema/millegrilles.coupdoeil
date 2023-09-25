@@ -6,8 +6,8 @@ import signal
 from millegrilles_web.WebAppMain import WebAppMain
 
 from millegrilles_web.WebAppMain import LOGGING_NAMES as LOGGING_NAMES_WEB, adjust_logging
-from server.WebServerCoupdoeil import WebServerCoupdoeil
-from server.Commandes import CommandCoupdoeilHandler
+from server_coupdoeil.WebServerCoupdoeil import WebServerCoupdoeil
+from server_coupdoeil.Commandes import CommandCoupdoeilHandler
 
 logger = logging.getLogger(__name__)
 

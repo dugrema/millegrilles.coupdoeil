@@ -2,8 +2,8 @@ import logging
 
 from millegrilles_web.WebServer import WebServer
 
-from server import Constantes as ConstantesCoupdoeil
-from server.SocketIoCoupdoeilHandler import SocketIoCoupdoeilHandler
+from server_coupdoeil import Constantes as ConstantesCoupdoeil
+from server_coupdoeil.SocketIoCoupdoeilHandler import SocketIoCoupdoeilHandler
 
 
 class WebServerCoupdoeil(WebServer):
