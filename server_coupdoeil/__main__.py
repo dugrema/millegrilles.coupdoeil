@@ -11,7 +11,7 @@ from server_coupdoeil.Commandes import CommandCoupdoeilHandler
 
 logger = logging.getLogger(__name__)
 
-LOGGING_NAMES = ['coupdoeil']
+LOGGING_NAMES = ['server_coupdoeil']
 LOGGING_NAMES.extend(LOGGING_NAMES_WEB)
 
 
