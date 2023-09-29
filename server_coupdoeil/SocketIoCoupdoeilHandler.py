@@ -226,11 +226,18 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         return reponse
 
     async def requete_charger_usager(self, sid: str, message: dict):
-        reponse = await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_MAITREDESCOMPTES, 'chargerUsager')
+        reponse = await self.executer_requete(
+            sid, message, Constantes.DOMAINE_CORE_MAITREDESCOMPTES, 'chargerUsager',
+            exchange=Constantes.SECURITE_PUBLIC)
         return reponse
 
     async def get_recovery_csr(self, sid: str, message: dict):
-        return await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_MAITREDESCOMPTES, 'getCsrRecoveryParcode')
+        return await self.executer_requete(
+            sid, message,
+            domaine=Constantes.DOMAINE_CORE_MAITREDESCOMPTES,
+            action='getCsrRecoveryParcode',
+            exchange=Constantes.SECURITE_PRIVE
+        )
 
     async def signer_recovery_csr_par_proprietaire(self, sid: str, message: dict):
         return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_MAITREDESCOMPTES,

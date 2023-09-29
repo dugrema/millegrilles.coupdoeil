@@ -156,7 +156,7 @@ function MenuApp(props) {
           case 'domaines': setSectionAfficher('domaines'); break
           case 'information': setShowModalInfo(true); break
           case 'portail': window.location = '/millegrilles'; break
-          case 'deconnecter': window.location = '/millegrilles/authentification/fermer'; break
+          case 'deconnecter': window.location = '/auth/deconnecter_usager'; break
           default:
       }
   }

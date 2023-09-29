@@ -4,29 +4,28 @@ import { useTranslation } from 'react-i18next'
 
 import { AfficherActivationsUsager, supporteCamera } from '@dugrema/millegrilles.reactjs'
 
-import useWorkers from '../WorkerContext'
+import useWorkers, { useEtatPret } from '../WorkerContext'
 
 export default function GestionUsagers(props) {
 
-  const { etatAuthentifie, confirmationCb, erreurCb, fermer } = props
+  const { confirmationCb, erreurCb, fermer } = props
 
   const [listeUsagers, setListeUsagers] = useState([])
   const [userId, setUserId] = useState('')
 
-
-  const workers = useWorkers()
+  const workers = useWorkers(),
+        etatPret = useEtatPret()
 
   const {connexion} = workers
 
   useEffect(_=>{
-    if(etatAuthentifie) {
+    if(etatPret) {
       chargerListeUsagers(connexion, setListeUsagers).catch(err=>console.error("Erreur chargement liste usagers : %O", err))
     }
-  }, [etatAuthentifie])
+  }, [etatPret])
 
   if(userId) return (
     <AfficherUsager userId={userId}
-                    etatAuthentifie={etatAuthentifie}
                     confirmationCb={confirmationCb}
                     erreurCb={erreurCb}
                     fermer={()=>setUserId('')} />
@@ -37,7 +36,6 @@ export default function GestionUsagers(props) {
       <h2>Gestion usagers</h2>
       <AfficherListeUsagers listeUsagers={listeUsagers}
                             setUserId={setUserId} 
-                            etatAuthentifie={etatAuthentifie}
                             fermer={fermer} />
     </>
   )
@@ -109,7 +107,7 @@ function UsagerRow(props) {
 
 function AfficherUsager(props) {
 
-  const { userId, confirmationCb, erreurCb, etatAuthentifie, fermer } = props
+  const { userId, confirmationCb, erreurCb, fermer } = props
 
   const { t } = useTranslation()
   const workers = useWorkers()
@@ -117,6 +115,7 @@ function AfficherUsager(props) {
   const [usager, setUsager] = useState('')
 
   useEffect(_=>{
+    console.debug("Afficher usager %s", userId)
     chargerUsager(workers.connexion, userId, setUsager)
   }, [workers, userId, setUsager])
 
@@ -136,19 +135,16 @@ function AfficherUsager(props) {
       </Row>
 
       <InformationUsager 
-        etatAuthentifie={etatAuthentifie}
         usager={usager}
         setUsager={setUsager}
         setErr={erreurCb} />
 
       <ActivationUsager 
-        etatAuthentifie={etatAuthentifie}
         usager={usager}
         confirmationCb={confirmationCb}
         erreurCb={erreurCb} />
 
       <GestionWebauthn 
-        etatAuthentifie={etatAuthentifie}
         usager={usager}
         reloadUsager={reloadUsager} />
 
@@ -158,9 +154,10 @@ function AfficherUsager(props) {
 
 function ActivationUsager(props) {
 
-  const { usager, confirmationCb, erreurCb, etatAuthentifie } = props
+  const { usager, confirmationCb, erreurCb } = props
 
-  const workers = useWorkers()
+  const workers = useWorkers(),
+        etatPret = useEtatPret()
 
   const [csr, setCsr] = useState('')
   const [supportCodeQr, setSupportCodeQr] = useState(false)
@@ -212,7 +209,7 @@ function ActivationUsager(props) {
         csrCb={csrCb}
         erreurCb={erreurCb} />
 
-      <Button onClick={activerCsr} disabled={!csr || !etatAuthentifie}>Activer</Button>
+      <Button onClick={activerCsr} disabled={!csr || !etatPret}>Activer</Button>
     </>
   )
 }
