@@ -278,7 +278,7 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         "coupdoeil/retirerEvenementsPresenceNoeuds"
         exchanges = [Constantes.SECURITE_PUBLIC, Constantes.SECURITE_PRIVE, Constantes.SECURITE_PROTEGE]
         routing_keys = ['evenement.instance.presence']
-        reponse = await self.unsubscribe(sid, routing_keys, exchanges)
+        reponse = await self.unsubscribe(sid, message, routing_keys, exchanges)
         reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
         return reponse_signee
 
@@ -296,7 +296,7 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
     async def retirer_presence_domaines(self, sid: str, message: dict):
         exchanges = [Constantes.SECURITE_PROTEGE]
         routing_keys = ['evenement.*.presenceDomaine']
-        reponse = await self.unsubscribe(sid, routing_keys, exchanges)
+        reponse = await self.unsubscribe(sid, message, routing_keys, exchanges)
         reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
         return reponse_signee
 
@@ -314,7 +314,7 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
     async def retirer_rechiffrage_cles(self, sid: str, message: dict):
         exchanges = [Constantes.SECURITE_PROTEGE]
         routing_keys = ['evenement.MaitreDesCles.demandeCleSymmetrique']
-        reponse = await self.unsubscribe(sid, routing_keys, exchanges)
+        reponse = await self.unsubscribe(sid, message, routing_keys, exchanges)
         reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
         return reponse_signee
 
@@ -350,7 +350,7 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
             f'evenement.instance.{instance_id}.erreurDemarrageApplication',
         ]
 
-        reponse = await self.unsubscribe(sid, routing_keys, exchanges)
+        reponse = await self.unsubscribe(sid, message, routing_keys, exchanges)
         reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
         return reponse_signee
 
@@ -378,7 +378,7 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
             'evenement.backup.succes',
             'evenement.backup.echec',
         ]
-        reponse = await self.unsubscribe(sid, routing_keys, exchanges)
+        reponse = await self.unsubscribe(sid, message, routing_keys, exchanges)
         reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
         return reponse_signee
 
@@ -410,6 +410,6 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
             'evenement.fichiers.syncDownload',
             'evenement.CoreTopologie.changementConsignationPrimaire',
         ]
-        reponse = await self.unsubscribe(sid, routing_keys, exchanges)
+        reponse = await self.unsubscribe(sid, message, routing_keys, exchanges)
         reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
         return reponse_signee
