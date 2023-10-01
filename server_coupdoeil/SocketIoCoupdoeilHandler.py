@@ -164,7 +164,7 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         return await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_CATALOGUES, 'infoApplication')
 
     async def transmettre_catalogues(self, sid: str, message: dict):
-        return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_CATALOGUES, 'transmettreCatalogues')
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_INSTANCE, 'transmettreCatalogues')
 
     # Maitre des cles
     async def requete_cles_non_dechiffrables(self, sid: str, message: dict):
