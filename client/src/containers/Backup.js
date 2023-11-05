@@ -45,7 +45,7 @@ function Backup(props) {
   )
 
   const evenementBackupCb = useCallback(e=>{
-    // console.debug("Evenement backup recu : ", e)
+    console.debug("Evenement backup recu : ", e)
     const { message, routingKey } = e
     setEtatBackup(message)
     if(routingKey.endsWith('.succes')) {
@@ -167,7 +167,7 @@ function EtatBackup(props) {
 
       <p></p>
 
-      <ListeDomaines value={value.domaines} />
+      <ListeDomaines value={value.domaines} courant={value.domaine} />
 
       <p></p>
 
@@ -178,9 +178,11 @@ function EtatBackup(props) {
 }
 
 function ListeDomaines(props) {
-  const { value } = props
+  const { value, courant } = props
 
   if(!value) return ''  // Rien a afficher
+
+  const domaineCourant = courant?courant.domaine:''
 
   return (
     <div>
@@ -191,31 +193,60 @@ function ListeDomaines(props) {
       </Row>
 
       {value.map(item=>{
-        return <AfficherLigneDomaineBackup key={item.domaine} value={item} />
+        const courant = item.domaine === domaineCourant
+        return <AfficherLigneDomaineBackup key={item.domaine} value={item} courant={courant} />
       })}
     </div>
   )
 }
 
 function AfficherLigneDomaineBackup(props) {
-  const { value } = props
+  const { value, courant } = props
 
-  const pctProgres = useMemo(()=>{
-    if(!value) return
+  const [pctProgres, label, variantBar, animated] = useMemo(()=>{
+    if(!value) return [100, '', 'primary', false]
 
     const { nombre_transactions, transactions_traitees, transactions_sauvegardees } = value
-    if(nombre_transactions === 0) return 100
-    if(!nombre_transactions) return
+    if(nombre_transactions === 0) return [100, 'success', false]
+    if(!nombre_transactions) {
+      if(courant) return [100, 'Preparation en cours', 'primary', true]
+      else return [100, 'Nombre de transactions inconnu', 'warning', false]
+    }
 
     const numerateur = (transactions_traitees?transactions_traitees:0) + (transactions_sauvegardees?transactions_sauvegardees:0)
-    return Math.floor( (100 * numerateur) / nombre_transactions )
-  }, [value])
+
+    if(courant && numerateur === 0) {
+      return [100, 'Preparation en cours', 'primary', true]  // En preparation
+    }
+
+    const pctProgres = Math.floor( (100 * numerateur) / nombre_transactions )
+    if(pctProgres === 100) {
+      if(!courant) {
+        return [pctProgres, 'Succes', 'success', false]
+      }
+      return [pctProgres, ''+pctProgres+'%', 'primary', false]
+    }
+
+    if(!courant) {
+      // Pct n'est pas 100% et on n'est pas courant, erreur
+      return [pctProgres, ''+pctProgres+'% - interrompu', 'warning', false]
+    }
+
+    return [pctProgres, ''+pctProgres+'%', 'primary', true]
+  }, [value, courant])
 
   return (
     <Row>
       <Col lg={4}>{value.domaine}</Col>
       <Col lg={2}>{value.nombre_transactions}</Col>
-      <Col lg={4}><ProgressBar disabled={pctProgres?false:true} now={pctProgres} label={pctProgres+'%'}></ProgressBar></Col>
+      <Col lg={4}>
+        <ProgressBar 
+          variant={variantBar} 
+          animated={animated}
+          disabled={courant} 
+          now={pctProgres} 
+          label={label} />
+      </Col>
     </Row>
   )
 }
