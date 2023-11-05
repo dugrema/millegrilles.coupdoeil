@@ -45,7 +45,7 @@ function Backup(props) {
   )
 
   const evenementBackupCb = useCallback(e=>{
-    console.debug("Evenement backup recu : ", e)
+    // console.debug("Evenement backup recu : ", e)
     const { message, routingKey } = e
     setEtatBackup(message)
     if(routingKey.endsWith('.succes')) {
@@ -151,6 +151,20 @@ function BackupActif(props) {
 function EtatBackup(props) {
   const { value } = props
 
+  const [domaineCourant, setDomaineCourant] = useState('')
+  
+  useEffect(()=>{
+    if(!value || !value.domaine) return
+    if(value.domaine.backup_complete) {
+      setDomaineCourant('')
+      return
+    }
+
+    const domaineCourant = value.domaine.domaine
+    if(!domaineCourant) return  // On ne change pas, rendre sticky
+
+    setDomaineCourant(domaineCourant)
+  }, [value, setDomaineCourant])
 
   if(!value) return ''  // Rien a afficher
 
@@ -167,7 +181,7 @@ function EtatBackup(props) {
 
       <p></p>
 
-      <ListeDomaines value={value.domaines} courant={value.domaine} />
+      <ListeDomaines value={value.domaines} courant={domaineCourant} />
 
       <p></p>
 
@@ -182,8 +196,6 @@ function ListeDomaines(props) {
 
   if(!value) return ''  // Rien a afficher
 
-  const domaineCourant = courant?courant.domaine:''
-
   return (
     <div>
       <Row>
@@ -193,8 +205,8 @@ function ListeDomaines(props) {
       </Row>
 
       {value.map(item=>{
-        const courant = item.domaine === domaineCourant
-        return <AfficherLigneDomaineBackup key={item.domaine} value={item} courant={courant} />
+        const estCourant = item.domaine === courant
+        return <AfficherLigneDomaineBackup key={item.domaine} value={item} courant={estCourant} />
       })}
     </div>
   )
@@ -221,7 +233,7 @@ function AfficherLigneDomaineBackup(props) {
 
     const pctProgres = Math.floor( (100 * numerateur) / nombre_transactions )
     if(pctProgres === 100) {
-      if(!courant) {
+      if(value.backup_complete) {
         return [pctProgres, 'Succes', 'success', false]
       }
       return [pctProgres, ''+pctProgres+'%', 'primary', false]
