@@ -208,7 +208,7 @@ function AfficherLigneDomaineBackup(props) {
     if(!nombre_transactions) return
 
     const numerateur = (transactions_traitees?transactions_traitees:0) + (transactions_sauvegardees?transactions_sauvegardees:0)
-    return Math.floor( (100 * numerateur) / (2 * nombre_transactions) )
+    return Math.floor( (100 * numerateur) / nombre_transactions )
   }, [value])
 
   return (

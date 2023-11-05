@@ -46,6 +46,7 @@ function ApplicationCoupdoeil(props) {
           etatPret = useEtatPret()
 
     const idmg = usager?usager.idmg:''
+    const hideMenu = false
 
     const [sectionAfficher, setSectionAfficher] = useState('')
     const [certificatMaitreDesCles, setCertificatMaitreDesCles] = useState('')
@@ -70,6 +71,10 @@ function ApplicationCoupdoeil(props) {
 
     return (
         <LayoutMillegrilles menu={menu}>
+            {hideMenu?'':
+                <div className='top-spacer-menu'></div>
+            }
+
             <Container className="contenu">
                 <Suspense fallback={<Attente workers={workers} idmg={idmg} etatConnexion={etatPret} />}>
                     <SectionContenu 
