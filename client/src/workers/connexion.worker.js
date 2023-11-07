@@ -72,6 +72,12 @@ function requeteInfoApplications(params) {
     {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: DOMAINE_CORECATALOGUES, action: 'infoApplication', ajouterCertificat: true}
   )
 }
+function requeteVersionsApplications(params) {
+  return connexionClient.emitBlocking(
+    'listeVersionsApplication', params, 
+    {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: DOMAINE_CORECATALOGUES, action: 'listeVersionsApplication', ajouterCertificat: true}
+  )
+}
 // function requeteRapportBackup(params) {
 //   return connexionClient.emitBlocking('coupdoeil/requeteRapportBackup', params)
 // }
@@ -589,7 +595,7 @@ comlinkExpose({
   modifierConfigurationConsignation, setFichiersPrimaire, declencherSync, demarrerBackupTransactions,
   getCles, getConfigurationNotifications, conserverConfigurationNotifications, genererClewebpushNotifications,
   transmettreCleSymmetrique, verifierClesSymmetriques,
-  reindexerConsignation, setConsignationPourInstance,
+  reindexerConsignation, setConsignationPourInstance, requeteVersionsApplications,
 
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,

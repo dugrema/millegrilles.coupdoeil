@@ -36,6 +36,7 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         self._sio.on('coupdoeil/requeteCatalogueApplications', handler=self.requete_catalogues_applications)
         self._sio.on('coupdoeil/transmettreCatalogues', handler=self.transmettre_catalogues)
         self._sio.on('coupdoeil/requeteInfoApplications', handler=self.requete_info_applications)
+        self._sio.on('listeVersionsApplication', handler=self.requete_liste_versions_applications)
 
         # Maitre des cles
         self._sio.on('getCles', handler=self.requete_get_cles)
@@ -162,6 +163,9 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
 
     async def requete_info_applications(self, sid: str, message: dict):
         return await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_CATALOGUES, 'infoApplication')
+
+    async def requete_liste_versions_applications(self, sid: str, message: dict):
+        return await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_CATALOGUES, 'listeVersionsApplication')
 
     async def transmettre_catalogues(self, sid: str, message: dict):
         return await self.executer_commande(sid, message, Constantes.DOMAINE_INSTANCE, 'transmettreCatalogues')

@@ -2,6 +2,7 @@ import React, {useEffect, useState, useCallback} from 'react'
 import { Row, Col, Form, InputGroup, Button, FormControl, Alert } from 'react-bootstrap'
 import Dropzone from 'react-dropzone'
 import { useTranslation } from 'react-i18next'
+import useWorkers, { useEtatPret } from '../WorkerContext'
 
 function ParametresCataloguesApplications(props) {
 
@@ -11,6 +12,7 @@ function ParametresCataloguesApplications(props) {
   const { t } = useTranslation()
 
   const [catalogueApplications, setCatalogueApplications] = useState('')
+  const [applicationSelectionne, setApplicationSelectionnee] = useState('')
 
   const handlerErreur = useCallback((err, message)=>{
     console.error('%s Erreur : %O', message, err)
@@ -21,6 +23,8 @@ function ParametresCataloguesApplications(props) {
       .then(setCatalogueApplications)
       .catch(err=>handlerErreur(err, 'ParametresCataloguesApplications chargerCatalogueApplications'))
   }, [connexion, setCatalogueApplications])
+
+  const fermerApplicationHandler = useCallback(()=>setApplicationSelectionnee(''), [setApplicationSelectionnee])
 
   useEffect(refresh, [refresh])
 
@@ -42,7 +46,13 @@ function ParametresCataloguesApplications(props) {
 
       <hr />
 
-      <ListeApplications liste={catalogueApplications} />
+      {applicationSelectionne?
+        <ListeVersionsApplication value={applicationSelectionne} fermer={fermerApplicationHandler} />
+      :
+        <ListeApplications liste={catalogueApplications} onSelect={setApplicationSelectionnee} />
+      }
+
+      
     </div>
   )
 }
@@ -88,9 +98,16 @@ function ParametresCataloguesApplications(props) {
 export default ParametresCataloguesApplications
 
 function ListeApplications(props) {
-  if(props.liste) {
-    const liste = props.liste.map(item=>{
-      return <InfoApplication key={item.nom} application={item} />
+  const { liste, onSelect } = props
+
+  const onSelectHandler = useCallback(e=>{
+    const value = e.currentTarget.value
+    onSelect(value)
+  }, [onSelect])
+
+  if(liste) {
+    const listeElems = liste.map(item=>{
+      return <InfoApplication key={item.nom} application={item} onSelect={onSelect?onSelectHandler:null} />
     })
 
     return (
@@ -100,7 +117,7 @@ function ListeApplications(props) {
           <Col md={2}>Version</Col>
           <Col md={6} lg={7}>Images</Col>
         </Row>
-        {liste}
+        {listeElems}
       </>
     )
 
@@ -110,12 +127,18 @@ function ListeApplications(props) {
 
 function InfoApplication(props) {
 
-  const application = props.application
+  const { application, onSelect } = props
 
   return (
     <Row>
       <Col md={4} lg={3}>
-        {application.nom}
+        {onSelect?
+          <Button variant="link" onClick={onSelect} value={application.nom}>
+            {application.nom}
+          </Button>
+        :
+          <span>{application.nom}</span>
+        }
       </Col>
       <Col md={2}>
         {application.version}
@@ -252,4 +275,36 @@ class FormulaireAjout extends React.Component {
       </>
     )
   }
+}
+
+function ListeVersionsApplication(props) {
+
+  const { value: nomApplication, fermer } = props
+
+  const workers = useWorkers()
+
+  const [liste, setListe] = useState('')
+
+  useEffect(()=>{
+    console.debug("Charger liste des versions de l'application %s", nomApplication)
+    workers.connexion.requeteVersionsApplications({nom: nomApplication})
+      .then(reponse=>{
+        console.debug("Reponse versions application ", reponse)
+        setListe(reponse.resultats)
+      })
+      .catch(err=>console.error("Erreur chargement versions catalogue : ", err))
+  }, [nomApplication, setListe])
+
+
+  return (
+    <div>
+      <p>Application {nomApplication}</p>
+
+      <Button onClick={fermer}>Fermer</Button>
+
+      <p>Versions</p>
+
+      <ListeApplications liste={liste} />
+    </div>
+  )
 }
