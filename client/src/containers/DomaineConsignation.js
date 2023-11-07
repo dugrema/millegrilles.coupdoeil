@@ -397,6 +397,8 @@ function ConfigurerConsignationInstance(props) {
     const [usernameSftpBackup, setUsernameSftpBackup] = useState('')
     const [remotePathSftpBackup, setRemotePathSftpBackup] = useState('')
     const [keyTypeSftpBackup, setKeyTypeSftpBackup] = useState('ed25519')
+    const [backupIntervalleSecondes, setBackupIntervalleSecondes] = useState(1200)
+    const [backupLimiteBytes, setBackupLimiteBytes] = useState(500_000_000)
 
     const syncActifChangeHandler = useCallback(e=>setSyncActif(e.currentTarget.checked), [setSyncActif])
     const supporteArchivesChangeHandler = useCallback(e=>setSupporteArchives(e.currentTarget.checked), [setSupporteArchives])
@@ -414,12 +416,13 @@ function ConfigurerConsignationInstance(props) {
                     url_download: urlDownload, 
                     url_archives: urlArchives, 
                     consignation_url: consignationUrl, 
-                    sync_intervalle: (syncIntervalle?Number.parseInt(syncIntervalle):null),
+                    sync_intervalle: toInt(syncIntervalle),
                     sync_actif: (syncActif===true?true:false),
                     supporte_archives: (supporteArchives===true?true:false),
                     
                     // SFTP
                     hostname_sftp: hostnameSftp, 
+                    port_sftp: toInt(portSftp),
                     username_sftp: usernameSftp, 
                     remote_path_sftp: remotePathSftp, 
                     key_type_sftp: keyTypeSftp,
@@ -433,10 +436,12 @@ function ConfigurerConsignationInstance(props) {
                     // Backup
                     type_backup: typeBackup, 
                     hostname_sftp_backup: hostnameSftpBackup, 
-                    port_sftp_backup: portSftpBackup, 
+                    port_sftp_backup: toInt(portSftpBackup), 
                     username_sftp_backup: usernameSftpBackup, 
                     remote_path_sftp_backup: remotePathSftpBackup, 
                     key_type_sftp_backup: keyTypeSftpBackup,
+                    backup_intervalle_secs: toInt(backupIntervalleSecondes),
+                    backup_limit_bytes: toInt(backupLimiteBytes),
 
                     data_chiffre: {},
                 }
@@ -498,6 +503,7 @@ function ConfigurerConsignationInstance(props) {
         hostnameSftp, usernameSftp, remotePathSftp, keyTypeSftp, portSftp,
         s3AccessKeyId, s3SecretAccessKey, s3Region, s3Endpoint, s3Bucket,
         typeBackup, hostnameSftpBackup, portSftpBackup, usernameSftpBackup, remotePathSftpBackup, keyTypeSftpBackup,
+        backupIntervalleSecondes, backupLimiteBytes,
     ])
 
     useEffect(()=>{
@@ -515,7 +521,7 @@ function ConfigurerConsignationInstance(props) {
 
         // SFTP
         setHostnameSftp(consignation.hostname_sftp || '')
-        setPortSftp(consignation.port_sftp || '22')
+        setPortSftp(consignation.port_sftp || 22)
         setUsernameSftp(consignation.username_sftp || '')
         setRemotePathSftp(consignation.remote_path_sftp || '')
         setKeyTypeSftp(consignation.key_type_sftp || 'ed25519')
@@ -529,10 +535,12 @@ function ConfigurerConsignationInstance(props) {
         // Backup
         setTypeBackup(consignation.type_backup || '')
         setHostnameSftpBackup(consignation.hostname_sftp_backup || '')
-        setPortSftpBackup(consignation.port_sftp_backup || '22')
+        setPortSftpBackup(consignation.port_sftp_backup || 22)
         setUsernameSftpBackup(consignation.username_sftp_backup || '')
         setRemotePathSftpBackup(consignation.remote_path_sftp_backup || '')
         setKeyTypeSftpBackup(consignation.key_type_sftp_backup || 'ed25519')
+        setBackupIntervalleSecondes(consignation.backup_intervalle_secs || 1200)
+        setBackupLimiteBytes(consignation.backup_limit_bytes || 500000000)
 
         if(cleChiffrage && consignation.data_chiffre) {
             // Dechiffrer champs secrets
@@ -736,6 +744,10 @@ function ConfigurerConsignationInstance(props) {
                     setRemotePathSftpBackup={setRemotePathSftpBackup}
                     keyTypeSftpBackup={keyTypeSftpBackup}
                     setKeyTypeSftpBackup={setKeyTypeSftpBackup}
+                    backupIntervalleSecondes={backupIntervalleSecondes}
+                    setBackupIntervalleSecondes={setBackupIntervalleSecondes}
+                    backupLimiteBytes={backupLimiteBytes}
+                    setBackupLimiteBytes={setBackupLimiteBytes}
                     />
 
                 <p></p>
@@ -901,6 +913,8 @@ function TabSftp(props) {
                 </Form.Group>
             </Row>
 
+            <TabSftpBackupElems {...props} />
+
             <br/>
             
             <Row>
@@ -912,6 +926,32 @@ function TabSftp(props) {
             </Row>
 
         </div>
+    )
+}
+
+function TabSftpBackupElems(props) {
+
+    const { backupIntervalleSecondes, setBackupIntervalleSecondes, backupLimiteBytes, setBackupLimiteBytes } = props
+
+    if( ! (setBackupIntervalleSecondes && setBackupLimiteBytes) ) return ''
+
+    return (
+        <Row>
+            <Form.Group as={Col} xs={12} md={6}>
+                <Form.Label>Intervalle entre demarrages (secondes)</Form.Label>
+                <FormControl id="backupIntervalleSecondes" aria-describedby="backupIntervalleSecondes"
+                    placeholder="exemple : 3600"
+                    value={backupIntervalleSecondes}
+                    onChange={event=>setBackupIntervalleSecondes(event.currentTarget.value)} />
+            </Form.Group>
+            <Form.Group as={Col} xs={12} md={6}>
+                <Form.Label>Limite de transfert (bytes)</Form.Label>
+                <FormControl id="portsftp" aria-describedby="portsftp"
+                    placeholder="exemple : 500000000"
+                    value={backupLimiteBytes}
+                    onChange={event=>setBackupLimiteBytes(event.currentTarget.value)} />
+            </Form.Group>
+        </Row>
     )
 }
 
@@ -981,6 +1021,8 @@ function ConfigurerBackupInstance(props) {
         usernameSftpBackup, setUsernameSftpBackup,
         remotePathSftpBackup, setRemotePathSftpBackup,
         keyTypeSftpBackup, setKeyTypeSftpBackup,
+        backupIntervalleSecondes, setBackupIntervalleSecondes,
+        backupLimiteBytes, setBackupLimiteBytes,
     } = props
 
     return (
@@ -1006,7 +1048,12 @@ function ConfigurerBackupInstance(props) {
                         remotePathSftp={remotePathSftpBackup}
                         setRemotePathSftp={setRemotePathSftpBackup}
                         keyTypeSftp={keyTypeSftpBackup} 
-                        setKeyTypeSftp={setKeyTypeSftpBackup} />
+                        setKeyTypeSftp={setKeyTypeSftpBackup} 
+                        backupIntervalleSecondes={backupIntervalleSecondes}
+                        setBackupIntervalleSecondes={setBackupIntervalleSecondes}
+                        backupLimiteBytes={backupLimiteBytes}
+                        setBackupLimiteBytes={setBackupLimiteBytes}
+                        />
                 </Tab>
             </Tabs>
         </div>
@@ -1140,4 +1187,10 @@ function TransfertInfo(props) {
             :''}
         </Col>
     ])
+}
+
+function toInt(val) {
+    if(val === '') return null
+    if(typeof(val) === 'string') return Number.parseInt(val)
+    return val
 }
