@@ -142,18 +142,30 @@ function InstallerApplications(props) {
     }, [applicationInstaller, connexion, instanceId, exchange, setAttente, confirmationCb, erreurCb])
 
     useEffect(()=>{
+        const securite = instance.securite
+        let niveaux = ['1.public']
+        if(['2.prive', '3.protege', '4.secure'].includes(securite)) niveaux.push('2.prive')
+        if(['3.protege', '4.secure'].includes(securite)) niveaux.push('3.protege')
+        if(securite === '4.secure') niveaux.push('4.secure')
+
         connexion.getCatalogueApplications()
             .then(reponse=>{
                 console.debug("Liste catalogues applications : %O", reponse)
                 let applications = reponse.resultats
-                applications = applications.sort((a,b)=>{ return a.nom.localeCompare(b.nom) })
+                // Filtrer les niveaux de securite des applications
+                applications = applications.filter(item=>{
+                    if(item.securite) {
+                        return niveaux.includes(item.securite)
+                    }
+                    return true
+                }).sort((a,b)=>{ return a.nom.localeCompare(b.nom) })
                 setCatalogue(applications)
             })
             .catch(err=>{
                 console.error("Erreur chargement catalogues applications : %O", err)
                 erreurCb(err, "Erreur chargement catalogues applications.")
             })
-    }, [connexion])
+    }, [connexion, instance])
 
     return (
         <Form.Group controlId="installer_application" as={Row}>
