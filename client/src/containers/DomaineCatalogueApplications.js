@@ -113,9 +113,10 @@ function ListeApplications(props) {
     return (
       <>
         <Row>
-          <Col md={4} lg={3}>Nom application</Col>
-          <Col md={2}>Version</Col>
-          <Col md={6} lg={7}>Images</Col>
+          <Col xs={4} lg={3}>Nom application</Col>
+          <Col xs={1}>Securite</Col>
+          <Col xs={2}>Version</Col>
+          <Col xs={6} lg={7}>Images</Col>
         </Row>
         {listeElems}
       </>
@@ -131,7 +132,7 @@ function InfoApplication(props) {
 
   return (
     <Row>
-      <Col md={4} lg={3}>
+      <Col xs={4} lg={3}>
         {onSelect?
           <Button variant="link" onClick={onSelect} value={application.nom}>
             {application.nom}
@@ -140,10 +141,13 @@ function InfoApplication(props) {
           <span>{application.nom}</span>
         }
       </Col>
-      <Col md={2}>
-        {application.version}
+      <Col xs={1}>
+        {application.securite}
       </Col>
-      <Col md={6} lg={7}>
+      <Col xs={2}>
+        <div>{application.version}</div>
+      </Col>
+      <Col xs={5} lg={6}>
         <InfoApplicationImages value={application.dependances} />
       </Col>
     </Row>
