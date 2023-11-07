@@ -56,3 +56,9 @@ $xsmall-width: map.get($grid-breakpoints, xs);
     width: 1rem;
     z-index: 0;
 }
+
+.liste-dependances {
+    font-size: smaller;
+    word-wrap: break-word;
+    word-break: break-all;
+}

@@ -96,9 +96,9 @@ function ListeApplications(props) {
     return (
       <>
         <Row>
-          <Col md={4}>Nom application</Col>
-          <Col md={1}>Version</Col>
-          <Col md={7}>Images</Col>
+          <Col md={4} lg={3}>Nom application</Col>
+          <Col md={2}>Version</Col>
+          <Col md={6} lg={7}>Images</Col>
         </Row>
         {liste}
       </>
@@ -112,29 +112,49 @@ function InfoApplication(props) {
 
   const application = props.application
 
-  const images = []
-  for(let nomImage in application.images) {
-    const infoImage = application.images[nomImage]
-    images.push(
-      <div key={nomImage + '.' + infoImage.version}>
-        {nomImage}:{infoImage.version}
-      </div>
-    )
-  }
-
   return (
     <Row>
-      <Col md={4}>
+      <Col md={4} lg={3}>
         {application.nom}
       </Col>
-      <Col md={1}>
+      <Col md={2}>
         {application.version}
       </Col>
-      <Col md={7}>
-        {images}
+      <Col md={6} lg={7}>
+        <InfoApplicationImages value={application.dependances} />
       </Col>
     </Row>
   )
+}
+
+function InfoApplicationImages(props) {
+  const { value } = props
+
+  if(!value || value.length === 0) return <span>N/A</span>
+
+  if(value.length === 1) {
+    const catalogue = value[0]
+    if(!catalogue.image) return <span>N/A</span>
+    return <span className="liste-dependances">{catalogue.image}</span>
+  }
+
+  return (
+    <ul>
+      {value.map(catalogue=>{
+        return (
+          <li>
+            <Row key={catalogue.name}>
+              <Col xs={12}>{catalogue.name}</Col>
+              <Col xs={12} className='liste-dependances'>{catalogue.image}</Col>
+            </Row>
+            </li>
+        )
+      })}
+    </ul>
+  )
+
+  return value.map(catalogue=>{
+  })
 }
 
 async function chargerCatalogueApplications(wsa) {
@@ -160,35 +180,35 @@ class FormulaireAjout extends React.Component {
     confirmation: '',
   }
 
-  changerChamp = event => {
-    const {name, value} = event.currentTarget
-    this.setState({[name]: value})
-  }
+  // changerChamp = event => {
+  //   const {name, value} = event.currentTarget
+  //   this.setState({[name]: value})
+  // }
 
-  upload = acceptedFiles => {
-    acceptedFiles.forEach(item=>{
-      console.debug("Process catalogue : %O", item)
-    })
-  }
+  // upload = acceptedFiles => {
+  //   acceptedFiles.forEach(item=>{
+  //     console.debug("Process catalogue : %O", item)
+  //   })
+  // }
 
-  soumettre = async event => {
-    try {
-      this.setState({erreur: '', confirmation: ''})
-      const transaction = JSON.parse(this.state.json)
-      console.debug("Soumettre configuration : %O", transaction)
+  // soumettre = async event => {
+  //   try {
+  //     this.setState({erreur: '', confirmation: ''})
+  //     const transaction = JSON.parse(this.state.json)
+  //     console.debug("Soumettre configuration : %O", transaction)
 
-      const connexionWorker = this.props.workers.connexion
-      const reponse = await connexionWorker.commandeSoumettreCatalogueApplication({catalogue: transaction})
-      console.debug("Reponse : %O", reponse)
+  //     const connexionWorker = this.props.workers.connexion
+  //     const reponse = await connexionWorker.commandeSoumettreCatalogueApplication({catalogue: transaction})
+  //     console.debug("Reponse : %O", reponse)
 
-      this.setState({erreur: '', confirmation: true}, _=>{
-        this.props.refresh()
-      })
+  //     this.setState({erreur: '', confirmation: true}, _=>{
+  //       this.props.refresh()
+  //     })
 
-    } catch(err) {
-      this.setState({erreur: ''+err, confirmation: ''})
-    }
-  }
+  //   } catch(err) {
+  //     this.setState({erreur: ''+err, confirmation: ''})
+  //   }
+  // }
 
   rechargerCatalogues = async event => {
     try {
@@ -213,8 +233,6 @@ class FormulaireAjout extends React.Component {
 
     return (
       <>
-        <h3>Ajouter nouvelle version application</h3>
-
         <Alert variant="danger" show={this.state.erreur!==''} onClose={this.clearErr} dismissible>
           {this.state.erreur}
         </Alert>
@@ -223,31 +241,9 @@ class FormulaireAjout extends React.Component {
         </Alert>
 
         <Form>
-
-          <InputGroup>
-            <FormControl as="textarea" name="json" value={this.state.json} onChange={this.changerChamp}/>
-          </InputGroup>
-
           <Row>
             <Col>
-              <Dropzone onDrop={this.upload}>
-                {({getRootProps, getInputProps}) => (
-                  <section className="uploadIcon">
-                    <span {...getRootProps()}>
-                      <input {...getInputProps()} />
-                      <span className="fa fa-upload fa-2x"/>
-                    </span>
-                  </section>
-                )}
-              </Dropzone>
-
-              <Button onClick={this.soumettre} disabled={!this.props.etatAuthentifie}>
-                Soumettre
-              </Button>
-              <Button variant="secondary" onClick={this.refresh} disabled={!this.props.etatAuthentifie}>
-                Refresh
-              </Button>
-              <Button variant="secondary" onClick={this.rechargerCatalogues} disabled={!this.props.etatAuthentifie}>
+              <Button variant="primary" onClick={this.rechargerCatalogues} disabled={!this.props.etatAuthentifie}>
                 Recharger
               </Button>
             </Col>
