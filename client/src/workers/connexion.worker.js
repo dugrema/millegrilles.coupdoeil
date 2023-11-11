@@ -562,6 +562,17 @@ async function retirerEvenementsBackup(params, cb) {
   return connexionClient.unsubscribe('retirerEvenementsBackup', cb, params) 
 }
 
+function enregistrerCallbackEvenementsUsager(cb) { 
+  const params = {}
+  return connexionClient.subscribe('ecouterEvenementsUsager', cb, params) 
+}
+
+function retirerCallbackEvenementsUsager(cb) { 
+  const params = {}
+  return connexionClient.unsubscribe('retirerEvenementsUsager', cb, params) 
+}
+
+
 
 comlinkExpose({
   ...connexionClient,
@@ -606,4 +617,5 @@ comlinkExpose({
   enregistrerCallbackEvenementsConsignation, retirerCallbackEvenementsConsignation,
   ecouterEvenementsRechiffageCles, retirerEvenementsRechiffageCles,
   ecouterEvenementsBackup, retirerEvenementsBackup,
+  enregistrerCallbackEvenementsUsager, retirerCallbackEvenementsUsager,
 })

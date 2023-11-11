@@ -1,41 +1,67 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import {Row, Col, Button, Alert, Form} from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
+import { proxy } from 'comlink'
 
 import { AfficherActivationsUsager, supporteCamera } from '@dugrema/millegrilles.reactjs'
 
 import useWorkers, { useEtatPret } from '../WorkerContext'
 
+import { clear, mergeUsager, setUserId } from '../redux/usagersSlice'
+
 export default function GestionUsagers(props) {
 
   const { confirmationCb, erreurCb, fermer } = props
 
-  const [listeUsagers, setListeUsagers] = useState([])
-  const [userId, setUserId] = useState('')
-
   const workers = useWorkers(),
-        etatPret = useEtatPret()
+        etatPret = useEtatPret(),
+        dispatch = useDispatch()
+
+  // const [listeUsagers, setListeUsagers] = useState([])
+  // const [userId, setUserId] = useState('')
+  const userId = useSelector(state=>state.usagers.userIdSelectionne)
 
   const {connexion} = workers
 
+  const fermerUsagerHandler = useCallback(()=>dispatch(setUserId('')), [dispatch])
+
+  const evenementUsagerHandler = useCallback(e=>{
+    console.debug("GestionUsagers message recu ", e)
+    dispatch(mergeUsager(e.message))
+  }, [dispatch])
+
+  const messageInstanceHandlerProxy = useMemo(()=>{
+    return proxy(evenementUsagerHandler)
+  }, [evenementUsagerHandler])
+
   useEffect(_=>{
     if(etatPret) {
-      chargerListeUsagers(connexion, setListeUsagers).catch(err=>console.error("Erreur chargement liste usagers : %O", err))
+      chargerListeUsagers(connexion, dispatch)
+        .catch(err=>console.error("Erreur chargement liste usagers : %O", err))
+
+      // chargerListeUsagers(connexion, setListeUsagers).catch(err=>console.error("Erreur chargement liste usagers : %O", err))
+      workers.connexion.enregistrerCallbackEvenementsUsager(messageInstanceHandlerProxy)
+        .catch(err=>console.warn('GestionUsagers Erreur enregistrement callbacks usagers : ', err))
+
+      return () => {
+        workers.connexion.retirerCallbackEvenementsUsager()
+          .catch(err=>console.warn('GestionUsagers Erreur retrait callbacks usagers : ', err))
+      }
+
     }
-  }, [etatPret])
+  }, [workers, etatPret, messageInstanceHandlerProxy])
 
   if(userId) return (
-    <AfficherUsager userId={userId}
-                    confirmationCb={confirmationCb}
+    <AfficherUsager confirmationCb={confirmationCb}
                     erreurCb={erreurCb}
-                    fermer={()=>setUserId('')} />
+                    fermer={fermerUsagerHandler} />
   )
 
   return (
     <>
       <h2>Gestion usagers</h2>
-      <AfficherListeUsagers listeUsagers={listeUsagers}
-                            setUserId={setUserId} 
+      <AfficherListeUsagers setUserId={setUserId} 
                             fermer={fermer} />
     </>
   )
@@ -45,11 +71,11 @@ function AfficherListeUsagers(props) {
 
   const { fermer } = props
 
-  const listeUsagers = [...props.listeUsagers]
+  const listeUsagers = useSelector(state=>state.usagers.listeUsagers)
 
   const { t } = useTranslation()
 
-  listeUsagers.sort(trierUsagers)
+  // listeUsagers.sort(trierUsagers)
 
   return (
     <>
@@ -70,32 +96,46 @@ function AfficherListeUsagers(props) {
           Securite
         </Col>
       </Row>
-      {listeUsagers.map(usager=>{
+      {listeUsagers?listeUsagers.map(usager=>{
         return <UsagerRow key={usager.userId}
                           usager={usager}
                           selectUser={_=>{props.setUserId(usager.userId)}} />
-      })}
+      }):''}
     </>
   )
 }
 
 function UsagerRow(props) {
 
-  const delegationGlobale = props.usager.delegation_globale,
-        comptePrive = props.usager.compte_prive || false
+  const { usager } = props
 
-  var securite = '1.public'
-  if(delegationGlobale) {
-    securite = `3.protege (${delegationGlobale})`
-  } else if(comptePrive) {
-    securite = '2.prive'
-  }
+  const dispatch = useDispatch()
+
+  const delegationGlobale = usager.delegation_globale,
+        comptePrive = usager.compte_prive || false,
+        nomUsager = usager.nomUsager,
+        userId = usager.userId
+
+  const selectUsagerHandler = useCallback(e=>{
+    const { value: userId } = e.currentTarget
+    console.debug("Set userId : %O", userId)
+    dispatch(setUserId(userId))
+  }, [dispatch])
+
+  const securite = useMemo(()=>{
+    if(delegationGlobale) {
+      return `3.protege (${delegationGlobale})`
+    } else if(comptePrive) {
+      return '2.prive'
+    }
+    return '1.public'
+  }, [delegationGlobale, comptePrive])
 
   return (
     <Row>
       <Col xs={12} sm={6} lg={3}>
-        <Button variant="link" onClick={props.selectUser}>
-          {props.usager.nomUsager}
+        <Button variant="link" onClick={selectUsagerHandler} value={userId}>
+          {nomUsager}
         </Button>
       </Col>
       <Col xs={12} sm={6} lg={3}>
@@ -107,21 +147,27 @@ function UsagerRow(props) {
 
 function AfficherUsager(props) {
 
-  const { userId, confirmationCb, erreurCb, fermer } = props
+  const { confirmationCb, erreurCb, fermer } = props
 
   const { t } = useTranslation()
   const workers = useWorkers()
 
-  const [usager, setUsager] = useState('')
+  // const [usager, setUsager] = useState('')
 
-  useEffect(_=>{
-    console.debug("Afficher usager %s", userId)
-    chargerUsager(workers.connexion, userId, setUsager)
-  }, [workers, userId, setUsager])
+  const userId = useSelector(state=>state.usagers.userIdSelectionne)
+  const listeUsagers = useSelector(state=>state.usagers.listeUsagers)
+  const usager = useMemo(()=>{
+    return listeUsagers.filter(item=>item.userId === userId).pop()
+  }, [listeUsagers, userId])
 
-  const reloadUsager = useCallback(_=>{
-    chargerUsager(workers.connexion, userId, setUsager)
-  }, [workers, userId, setUsager])
+  // useEffect(_=>{
+  //   console.debug("Afficher usager %s", userId)
+  //   chargerUsager(workers.connexion, userId, setUsager)
+  // }, [workers, userId, setUsager])
+
+  // const reloadUsager = useCallback(_=>{
+  //   chargerUsager(workers.connexion, userId, setUsager)
+  // }, [workers, userId, setUsager])
 
   return (
     <>
@@ -136,7 +182,6 @@ function AfficherUsager(props) {
 
       <InformationUsager 
         usager={usager}
-        setUsager={setUsager}
         setErr={erreurCb} />
 
       <ActivationUsager 
@@ -145,8 +190,7 @@ function AfficherUsager(props) {
         erreurCb={erreurCb} />
 
       <GestionWebauthn 
-        usager={usager}
-        reloadUsager={reloadUsager} />
+        usager={usager} />
 
     </>
   )
@@ -219,35 +263,38 @@ function InformationUsager(props) {
 
   const { usager, setUsager, setErr } = props
 
-  const workers = useWorkers()
+  const workers = useWorkers(),
+        dispatch = useDispatch()
 
   const [delegationGlobale, setDelegationGlobale] = useState('')
   const [comptePrive, setComptePrive] = useState('')
   const [succes, setSucces] = useState(false)
+  const [changementPresent, setChangementPresent] = useState(false)
 
-  const changementPresent = delegationGlobale!=='' || comptePrive!==''
+  const toggleComptePrive = useCallback(e => {
+    setChangementPresent(true)
+    setComptePrive(!comptePrive)
+  }, [comptePrive, setComptePrive, setChangementPresent])
 
-  const toggleComptePrive = event => {
-    var valeur = (comptePrive!=='')?comptePrive:usager.compte_prive
-    setComptePrive(!valeur)
-  }
-
-  const changerChamp = event => {
-    const {name, value} = event.currentTarget
+  const changerChamp = useCallback(e => {
+    setChangementPresent(true)
+    const {name, value} = e.currentTarget
     console.debug("Set %s = %s", name, value)
     switch(name) {
       case 'delegationGlobale': setDelegationGlobale(value); break
       default:
     }
-  }
+  }, [setChangementPresent, setDelegationGlobale])
 
   const sauvegarderChangements = useCallback(async event => {
     setSucces(false)
     console.debug("Click sauvegarderChangements")
     if(!changementPresent) return
-    const compte = usager.compte
+    
+    setChangementPresent(false)  // Reset
+
     const transaction = {
-      userId: compte.userId
+      userId: usager.userId
     }
     if(delegationGlobale !== '') {
       transaction.delegation_globale = delegationGlobale==='aucune'?null:delegationGlobale
@@ -255,11 +302,11 @@ function InformationUsager(props) {
     if(comptePrive !== '') {
       transaction.compte_prive = comptePrive
     }
+    
     try {
       console.debug("majDelegations ", transaction)
       const docResultat = await workers.connexion.majDelegations(transaction)
       if(!docResultat.err) {
-        setUsager(docResultat)
         setSucces(true)
         setTimeout(_=>{setSucces(false)}, 3000)
       } else {
@@ -268,7 +315,13 @@ function InformationUsager(props) {
     } catch(err) {
       setErr(''+err)
     }
-  }, [workers, changementPresent, usager, setUsager, setErr])
+  }, [dispatch, workers, changementPresent, usager, comptePrive, delegationGlobale, setChangementPresent, setErr])
+
+  useEffect(()=>{
+    if(changementPresent) return  // Empecher changement a l'ecran durant edit
+    setDelegationGlobale(usager.delegation_globale || 'aucune')
+    setComptePrive(usager.compte_prive || false)
+  }, [changementPresent, usager, setDelegationGlobale, setComptePrive])
 
   return (
     <>
@@ -403,10 +456,12 @@ function GestionWebauthn(props) {
   )
 }
 
-async function chargerListeUsagers(connexion, setListeUsagers) {
+async function chargerListeUsagers(connexion, dispatch) {
   const liste = await connexion.requeteListeUsagers()
   console.debug("Liste usagers : %O", liste)
-  setListeUsagers(liste.usagers)
+  // setListeUsagers(liste.usagers)
+  dispatch(clear())
+  dispatch(mergeUsager(liste.usagers))
 }
 
 async function chargerUsager(connexion, userId, setUsager) {

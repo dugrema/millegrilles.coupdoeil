@@ -92,6 +92,8 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         self._sio.on('coupdoeil/ecouterEvenementsConsignation', handler=self.ecouter_consignation)
         self._sio.on('coupdoeil/retirerEvenementsConsignation', handler=self.retirer_consignation)
 
+        self._sio.on('ecouterEvenementsUsager', handler=self.ecouter_usagers)
+        self._sio.on('retirerEvenementsUsager', handler=self.retirer_usagers)
 
     @property
     def exchange_default(self):
@@ -413,6 +415,32 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
             'evenement.fichiers.syncUpload',
             'evenement.fichiers.syncDownload',
             'evenement.CoreTopologie.changementConsignationPrimaire',
+        ]
+        reponse = await self.unsubscribe(sid, message, routing_keys, exchanges)
+        reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
+        return reponse_signee
+
+    async def ecouter_usagers(self, sid: str, message: dict):
+        enveloppe = await self.etat.validateur_message.verifier(message)
+        if enveloppe.get_delegation_globale != Constantes.DELEGATION_GLOBALE_PROPRIETAIRE:
+            return {'ok': False, 'err': 'Acces refuse'}
+
+        exchanges = [Constantes.SECURITE_PROTEGE]
+        routing_keys = [
+            'evenement.CoreMaitreDesComptes.majCompteUsager',
+            'evenement.CoreMaitreDesComptes.inscrireCompteUsager',
+            'evenement.CoreMaitreDesComptes.supprimerCompteUsager',
+        ]
+        reponse = await self.subscribe(sid, message, routing_keys, exchanges, enveloppe=enveloppe)
+        reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
+        return reponse_signee
+
+    async def retirer_usagers(self, sid: str, message: dict):
+        exchanges = [Constantes.SECURITE_PROTEGE]
+        routing_keys = [
+            'evenement.CoreMaitreDesComptes.majCompteUsager',
+            'evenement.CoreMaitreDesComptes.inscrireCompteUsager',
+            'evenement.CoreMaitreDesComptes.supprimerCompteUsager',
         ]
         reponse = await self.unsubscribe(sid, message, routing_keys, exchanges)
         reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)

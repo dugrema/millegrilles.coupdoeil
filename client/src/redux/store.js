@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 import instances from './instancesSlice'
 import consignation from './consignationSlice'
+import usagers from './usagersSlice'
 
 function storeSetup(workers) {
 
@@ -10,6 +11,7 @@ function storeSetup(workers) {
     reducer: { 
       instances,
       consignation,
+      usagers,
     },
       
   })
