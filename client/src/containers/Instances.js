@@ -44,7 +44,7 @@ function Instances(props) {
     }, [attenteCb, setConfirmation])
 
     const instance = useMemo(()=>{
-        console.debug("Instances ", instances)
+        // console.debug("Instances ", instances)
         if(!instanceSelectionnee) return
         return instances.filter(item=>item.instance_id === instanceSelectionnee).pop()
     }, [instances, instanceSelectionnee])
@@ -91,12 +91,28 @@ function PageAccueil(props) {
 
     const { t } = useTranslation()
 
+    const [dateExpiree, setDateExpiree] = useState('')  // Epoch (secs)
+
+    // Creer interval pour mettre a jour la date d'expiration des instances
+    useEffect(()=>{
+        const setDate = () => {
+            const dateExpiree = Math.floor( (new Date().getTime() - 300_000) / 1_000 )
+            setDateExpiree(dateExpiree)
+        }
+        setDate()  // Premier set
+
+        // Declencher interval d'update
+        const intervalUpdateExpire = setInterval(setDate, 10_000)
+        // Cleanup interval
+        return () => clearInterval(intervalUpdateExpire)
+    }, [setDateExpiree])
+
     return (
         <>
             <h1>{t('Instances.titre')}</h1>
 
             <h2>{t('Instances.titre-instance-protegee')}</h2>
-            <InstanceProtegee selectionnerInstance={selectionnerInstanceCb} />
+            <InstanceProtegee selectionnerInstance={selectionnerInstanceCb} dateExpiree={dateExpiree} />
 
             <h2>{t('Instances.titre-satellites')}</h2>
 
@@ -111,24 +127,27 @@ function PageAccueil(props) {
 
             <ListeInstances 
                 securite="4.secure" 
-                selectionnerInstance={selectionnerInstanceCb} />
+                selectionnerInstance={selectionnerInstanceCb} 
+                dateExpiree={dateExpiree} />
 
             <h3>{t('Instances.titre-satellites-prives')}</h3>
             <ListeInstances 
                 securite="2.prive" 
-                selectionnerInstance={selectionnerInstanceCb} />
+                selectionnerInstance={selectionnerInstanceCb}
+                dateExpiree={dateExpiree} />
 
             <h3>{t('Instances.titre-satellites-publics')}</h3>
             <ListeInstances 
                 securite="1.public" 
-                selectionnerInstance={selectionnerInstanceCb} />
+                selectionnerInstance={selectionnerInstanceCb}
+                dateExpiree={dateExpiree} />
         </>
     )
 }
 
 function InstanceProtegee(props) {
 
-    const { selectionnerInstance } = props
+    const { selectionnerInstance, dateExpiree } = props
 
     const instances = useSelector(state=>state.instances.listeInstances)
     const instanceProtege = useMemo(()=>{
@@ -144,12 +163,13 @@ function InstanceProtegee(props) {
         <InstanceItem 
             key={instanceProtege.instance_id} 
             instance={instanceProtege} 
-            selectionnerInstance={selectionnerInstance} />
+            selectionnerInstance={selectionnerInstance} 
+            dateExpiree={dateExpiree} />
     )
 }
 
 function ListeInstances(props) {
-    const { securite, selectionnerInstance } = props
+    const { securite, selectionnerInstance, dateExpiree } = props
 
     // const [liste, setListe] = useState('')
 
@@ -163,21 +183,30 @@ function ListeInstances(props) {
     if(liste.length === 0) return <p>Aucunes instances</p>
 
     return liste.map(instance=>(
-        <InstanceItem key={instance.instance_id} instance={instance} selectionnerInstance={selectionnerInstance} />
+        <InstanceItem key={instance.instance_id} 
+            instance={instance} 
+            selectionnerInstance={selectionnerInstance} 
+            dateExpiree={dateExpiree} />
     ))
 }
 
 function InstanceItem(props) {
-    const {instance, selectionnerInstance} = props,
+    const {instance, selectionnerInstance, dateExpiree} = props,
           {descriptif, date_presence} = instance,
           instanceId = instance.instance_id
 
     const nomNoeud = descriptif || instance.hostname || instance.domaine || instanceId
 
+    const expireeCss = useMemo(()=>{
+        if(!dateExpiree) return 'date-chargement'
+        if(date_presence < dateExpiree) return 'date-expire'
+        return 'date-actif'
+    }, [date_presence, dateExpiree])
+
     return (
         <Row key={instanceId}>
             <Col md={6}>{nomNoeud}</Col>
-            <Col md={3}>
+            <Col md={3} className={expireeCss}>
                 <FormatterDate value={date_presence} />
             </Col>
             <Col>

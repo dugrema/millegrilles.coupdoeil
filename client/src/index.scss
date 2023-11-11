@@ -62,3 +62,11 @@ $xsmall-width: map.get($grid-breakpoints, xs);
     word-wrap: break-word;
     word-break: break-all;
 }
+
+.date-chargement {
+    color: yellow;
+}
+
+.date-expire {
+    color: red;
+}
