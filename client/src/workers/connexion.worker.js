@@ -294,10 +294,10 @@ function genererCertificatNavigateur(params) {
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'CoreMaitreDesComptes', action: 'signerCompteUsager', attacherCertificat: true}
   )
 }
-function resetWebauthn(userId, resetWebauthn, resetActivations, evictAllSessions) {
+function resetWebauthn(userId, resetWebauthn, evictAllSessions) {
   return connexionClient.emitBlocking(
     'maitrecomptes/resetWebauthnUsager',
-    {userId, resetWebauthn, resetActivations, evictAllSessions},
+    {userId, resetWebauthn, evictAllSessions},
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'CoreMaitreDesComptes', action: 'resetWebauthnUsager', attacherCertificat: true}
   )
 }

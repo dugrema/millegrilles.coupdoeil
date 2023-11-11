@@ -222,12 +222,10 @@ function AfficherUsager(props) {
 
 function ActivationUsager(props) {
 
-  const { usager, confirmationCb, erreurCb } = props
+  const { usager, erreurCb } = props
 
-  const workers = useWorkers(),
-        etatPret = useEtatPret()
+  const workers = useWorkers()
 
-  // const [csr, setCsr] = useState('')
   const [supportCodeQr, setSupportCodeQr] = useState(false)
   const [confirmation, setConfirmation] = useState('')
 
@@ -242,7 +240,6 @@ function ActivationUsager(props) {
 
   const csrCb = useCallback(csr=>{
     console.debug("Recu csr : %O", csr)
-    // setCsr(csr)
 
     console.debug("Activer CSR pour usager %O\n%O", usager, csr)
     const { connexion } = workers
@@ -265,29 +262,6 @@ function ActivationUsager(props) {
       .catch(err=>erreurCb(err))
   }, [workers, usager, confirmationHandler])
 
-  // const activerCsr = useCallback(()=>{
-  //   console.debug("Activer CSR pour usager %O\n%O", usager, csr)
-  //   const { connexion } = workers
-  //   const compte = usager.compte
-  //   const userId = compte.userId,
-  //         nomUsager = compte.nomUsager
-
-  //   const now = Math.floor(new Date().getTime() / 1000)  // Date epoch secs
-  //   const demandeCertificat = {nomUsager, csr, date: now, activationTierce: true}
-
-  //   const commande = {
-  //     userId,
-  //     demandeCertificat,
-  //   }
-
-  //   connexion.signerRecoveryCsrParProprietaire(commande)
-  //     .then(resultat=>{
-  //       console.debug("Reponse activation : %O", resultat)
-  //       // confirmationCb('Code usager active')
-  //     })
-  //     .catch(err=>erreurCb(err))
-  // }, [workers, usager, csr, confirmationCb])
-
   useEffect(()=>{
     supporteCamera()
       .then(support=>setSupportCodeQr(support))
@@ -307,13 +281,6 @@ function ActivationUsager(props) {
         <Alert.Heading>Succes</Alert.Heading>
         {confirmation}
       </Alert>
-
-      {/* <Alert show={!!(csr && etatPret)}>
-        <p>Le code est valide. Cliquer sur activer pour</p>
-        <p>
-          <Button onClick={activerCsr}>Activer</Button>
-        </p>
-      </Alert> */}
     </>
   )
 }
@@ -443,24 +410,26 @@ function GestionWebauthn(props) {
   const {connexion} = workers
 
   const [resetWebauthn, setResetWebauthn] = useState(true)
-  const [resetActivations, setResetActivations] = useState(false)
   const [evictAllSessions, setEvictAllSessions] = useState(false)
 
   const resetWebauthnCb = useCallback(event=>setResetWebauthn(event.currentTarget.checked))
-  const resetActivationsCb = useCallback(event=>setResetActivations(event.currentTarget.checked))
   const evictAllSessionsCb = useCallback(event=>setEvictAllSessions(event.currentTarget.checked))
 
-  const resetCb = async event => {
+  const resetCb = useCallback(async event => {
     try {
-      await connexion.resetWebauthn(userId, resetWebauthn, resetActivations, evictAllSessions)
+      await connexion.resetWebauthn(userId, resetWebauthn, evictAllSessions)
       setConfirmation('Reset webauthn complete')
-      props.reloadUsager()
     } catch(err) {
       setErr(''+err)
     }
-  }
+  }, [connexion])
 
-  const disabledButton = !(resetWebauthn || resetActivations || evictAllSessions)
+  const [disabledButton, cssButton] = useMemo(()=>{
+    const disableButton = !(resetWebauthn || evictAllSessions)
+    let cssButton = 'warning'
+    if(evictAllSessions) cssButton = 'danger'
+    return [disableButton, cssButton]
+  }, [resetWebauthn, evictAllSessions])
 
   return (
     <>
@@ -470,37 +439,57 @@ function GestionWebauthn(props) {
       <Alert variant="success" show={confirmation?true:false}>{confirmation}</Alert>
 
       <Row>
-        <Col lg={3}>Nombre autorisations webauthn (tokens) sur le compte</Col>
-        <Col lg={3}>{webauthn.length}</Col>
+        <Col xs={12} md={8} lg={6}>Nombre autorisations webauthn (tokens) sur le compte</Col>
+        <Col>{webauthn.length}</Col>
       </Row>
+
+      <h3>Resetter les passkeys sur le compte</h3>
 
       <Row>
         <Col lg={6}>
-          <Form.Group id="resetWebauthn">
-            <Form.Check checked={resetWebauthn} onChange={resetWebauthnCb} label="Reset tokens Webauthn"/>
+          <Form.Group>
+            <Form.Check id="resetWebauthn" 
+              checked={resetWebauthn} 
+              onChange={resetWebauthnCb} 
+              label="Reset tokens Webauthn"/>
           </Form.Group>
         </Col>
       </Row>
 
       <Row>
         <Col lg={6}>
-          <Form.Group id="resetActivations">
-            <Form.Check checked={resetActivations} onChange={resetActivationsCb} label="Reset activations de navigateurs"/>
+          <Form.Group>
+            <Form.Check id="evictAllSessions" 
+              checked={evictAllSessions} 
+              onChange={evictAllSessionsCb} 
+              label="Expulser toutes les sessions actives"/>
           </Form.Group>
         </Col>
       </Row>
 
-      <Row>
-        <Col lg={6}>
-          <Form.Group id="evictAllSessions">
-            <Form.Check checked={evictAllSessions} onChange={evictAllSessionsCb} label="Expulser toutes les sessions actives"/>
-          </Form.Group>
-        </Col>
-      </Row>
+      <br />
+
+      <Alert show={!!resetWebauthn} variant="warning">
+        <Alert.Heading>Attention</Alert.Heading>
+        <p>
+          Toutes les methodes d'acces au compte vont etre retirees incluant cles de securite 
+          et activations de navigateurs.
+        </p>
+        <p>
+          L'usager va devoir vous contacter avec un code d'activation.
+        </p>
+      </Alert>
+
+      <Alert show={!!evictAllSessions} variant="danger">
+        <Alert.Heading>Avertissement</Alert.Heading>
+        <p>
+          L'usager va etre immediatement expulse de toutes ses sessions actives. Il risque de perdre des donnees.
+        </p>
+      </Alert>
 
       <Row>
         <Col>
-          <Button variant="danger"
+          <Button variant={cssButton}
                   onClick={resetCb}
                   disabled={disabledButton}>
             Reset
