@@ -20,7 +20,7 @@ async function connecter(workers, setUsagerState, setEtatConnexion, setFormatteu
     await connexion.setCallbacks(setEtatConnexionCb, setUsagerCb, setFormatteurPretCb)
     if(chiffrage) await chiffrage.setCallbackCleMillegrille(setCallbackCleMillegrilleCb)
 
-    const resultat = await connexion.connecter(location.href)
+    const resultat = await connexion.connecter(location.href, {reconnectionDelay: 1_500})
     // console.debug("Resultat connexion : %O", resultat)
 
     return resultat
