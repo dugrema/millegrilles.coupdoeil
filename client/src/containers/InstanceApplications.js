@@ -13,7 +13,6 @@ import useWorkers, { useUsager, useEtatPret } from '../WorkerContext'
 
 function ApplicationsInstance(props) {
     
-    const [serveurUrl, setServeurUrl] = useState('https://fichiers:443')
     const [confirmation, setConfirmation] = useState('')
     const [error, setError] = useState('')
     const [errorMessage, setErrorMessage] = useState('')
@@ -61,17 +60,6 @@ function ApplicationsInstance(props) {
                 message={errorMessage} setMessage={setErrorMessage} err={error} setError={setError} />
             <AlertTimeout message={confirmation} setMessage={setConfirmation} />
             <ModalAttente show={attente} setAttente={setAttente} />
-
-            <h3>Parametres</h3>
-
-            <Form.Group controlId="serveur_backup" as={Row}>
-                <Form.Label column md={3}>Serveur de backup</Form.Label>
-                <Col md={7}>
-                    <Form.Control onChange={setServeurUrl}
-                                  value={serveurUrl}
-                                  placeholder="E.g. https://fichiers:443" />
-                </Col>
-            </Form.Group>
 
             <h3>Installer une nouvelle application</h3>
 
