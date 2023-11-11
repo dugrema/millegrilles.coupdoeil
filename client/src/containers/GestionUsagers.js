@@ -10,6 +10,9 @@ import useWorkers, { useEtatPret } from '../WorkerContext'
 
 import { clear, mergeUsager, setUserId } from '../redux/usagersSlice'
 
+import Tab from 'react-bootstrap/Tab';
+import Tabs from 'react-bootstrap/Tabs';
+
 export default function GestionUsagers(props) {
 
   const { confirmationCb, erreurCb, fermer } = props
@@ -45,6 +48,7 @@ export default function GestionUsagers(props) {
         .catch(err=>console.warn('GestionUsagers Erreur enregistrement callbacks usagers : ', err))
 
       return () => {
+        dispatch(clear())
         workers.connexion.retirerCallbackEvenementsUsager()
           .catch(err=>console.warn('GestionUsagers Erreur retrait callbacks usagers : ', err))
       }
@@ -180,17 +184,37 @@ function AfficherUsager(props) {
           </Col>
       </Row>
 
-      <InformationUsager 
-        usager={usager}
-        setErr={erreurCb} />
+      <br />
 
-      <ActivationUsager 
-        usager={usager}
-        confirmationCb={confirmationCb}
-        erreurCb={erreurCb} />
+      <Row>
+        <Col xs={12} md={2}>Nom usager</Col>
+        <Col>{usager.nomUsager}</Col>
+      </Row>
 
-      <GestionWebauthn 
-        usager={usager} />
+      <Row>
+        <Col xs={12} md={2}>User ID</Col>
+        <Col>{usager.userId}</Col>
+      </Row>
+
+      <br />
+
+      <Tabs>
+        <Tab eventKey='activation' title='Activation'>
+          <ActivationUsager 
+            usager={usager}
+            confirmationCb={confirmationCb}
+            erreurCb={erreurCb} />
+        </Tab>
+        <Tab eventKey='autorisation' title='Autorisation'>
+          <InformationUsager 
+            usager={usager}
+            setErr={erreurCb} />
+        </Tab>
+        <Tab eventKey='passkeys' title='Passkeys'>
+          <GestionWebauthn 
+            usager={usager} />
+        </Tab>
+      </Tabs>
 
     </>
   )
@@ -203,24 +227,27 @@ function ActivationUsager(props) {
   const workers = useWorkers(),
         etatPret = useEtatPret()
 
-  const [csr, setCsr] = useState('')
+  // const [csr, setCsr] = useState('')
   const [supportCodeQr, setSupportCodeQr] = useState(false)
+  const [confirmation, setConfirmation] = useState('')
+
+  const confirmationHandler = useCallback(val=>{
+    setConfirmation(val)
+    setTimeout(()=>setConfirmation(''), 5_000)
+  }, [setConfirmation])
 
   const nomUsager = useMemo(()=>{
-    if(usager && usager.compte) return usager.compte.nomUsager
+    if(usager) return usager.nomUsager
   }, [usager])
 
   const csrCb = useCallback(csr=>{
     console.debug("Recu csr : %O", csr)
-    setCsr(csr)
-  }, [setCsr])
+    // setCsr(csr)
 
-  const activerCsr = useCallback(()=>{
     console.debug("Activer CSR pour usager %O\n%O", usager, csr)
     const { connexion } = workers
-    const compte = usager.compte
-    const userId = compte.userId,
-          nomUsager = compte.nomUsager
+    const userId = usager.userId,
+          nomUsager = usager.nomUsager
 
     const now = Math.floor(new Date().getTime() / 1000)  // Date epoch secs
     const demandeCertificat = {nomUsager, csr, date: now, activationTierce: true}
@@ -233,10 +260,33 @@ function ActivationUsager(props) {
     connexion.signerRecoveryCsrParProprietaire(commande)
       .then(resultat=>{
         console.debug("Reponse activation : %O", resultat)
-        // confirmationCb('Code usager active')
+        confirmationHandler('Code usager active')
       })
       .catch(err=>erreurCb(err))
-  }, [workers, usager, csr, confirmationCb])
+  }, [workers, usager, confirmationHandler])
+
+  // const activerCsr = useCallback(()=>{
+  //   console.debug("Activer CSR pour usager %O\n%O", usager, csr)
+  //   const { connexion } = workers
+  //   const compte = usager.compte
+  //   const userId = compte.userId,
+  //         nomUsager = compte.nomUsager
+
+  //   const now = Math.floor(new Date().getTime() / 1000)  // Date epoch secs
+  //   const demandeCertificat = {nomUsager, csr, date: now, activationTierce: true}
+
+  //   const commande = {
+  //     userId,
+  //     demandeCertificat,
+  //   }
+
+  //   connexion.signerRecoveryCsrParProprietaire(commande)
+  //     .then(resultat=>{
+  //       console.debug("Reponse activation : %O", resultat)
+  //       // confirmationCb('Code usager active')
+  //     })
+  //     .catch(err=>erreurCb(err))
+  // }, [workers, usager, csr, confirmationCb])
 
   useEffect(()=>{
     supporteCamera()
@@ -253,7 +303,17 @@ function ActivationUsager(props) {
         csrCb={csrCb}
         erreurCb={erreurCb} />
 
-      <Button onClick={activerCsr} disabled={!csr || !etatPret}>Activer</Button>
+      <Alert variant="success" show={!!confirmation}>
+        <Alert.Heading>Succes</Alert.Heading>
+        {confirmation}
+      </Alert>
+
+      {/* <Alert show={!!(csr && etatPret)}>
+        <p>Le code est valide. Cliquer sur activer pour</p>
+        <p>
+          <Button onClick={activerCsr}>Activer</Button>
+        </p>
+      </Alert> */}
     </>
   )
 }
@@ -325,10 +385,6 @@ function InformationUsager(props) {
 
   return (
     <>
-      <Row>
-        <Col lg={3}>Nom usager</Col>
-        <Col>{props.usager.nomUsager}</Col>
-      </Row>
       <Row>
         <Col lg={3}>
           <Form.Label htmlFor="switch_compte_prive">Acces prive complet</Form.Label>
