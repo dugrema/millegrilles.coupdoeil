@@ -290,13 +290,13 @@ function ActivationUsager(props) {
 
 function InformationUsager(props) {
 
-  const { usager, setUsager, setErr } = props
+  const { usager, setErr } = props
 
   const workers = useWorkers(),
         dispatch = useDispatch()
 
   const [delegationGlobale, setDelegationGlobale] = useState('')
-  const [comptePrive, setComptePrive] = useState('')
+  const [comptePrive, setComptePrive] = useState(false)
   const [succes, setSucces] = useState(false)
   const [changementPresent, setChangementPresent] = useState(false)
 
@@ -613,10 +613,14 @@ function GestionWebauthn(props) {
   const loadPasskeys = useCallback(()=>{
     workers.connexion.getPasskeysUsager(userId)
       .then(reponse=>{
-        console.debug("Reponse : ", reponse)
-        setPasskeys(reponse.passkeys)
-        setCookies(reponse.cookies)
-        setActivations(reponse.activations)
+        if(reponse.ok === true) {
+          // console.debug("Reponse : ", reponse)
+          setPasskeys(reponse.passkeys)
+          setCookies(reponse.cookies)
+          setActivations(reponse.activations)
+        } else {
+          console.warn("GestionWebauthn Erreur reception reponse getPasskeysUsager : ", reponse)
+        }
       })
       .catch(err=>console.error("Erreur chargement passkeys ", err))
   }, [workers, userId, setPasskeys, setCookies, setActivations])
