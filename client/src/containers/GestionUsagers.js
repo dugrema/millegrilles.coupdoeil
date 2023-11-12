@@ -211,10 +211,10 @@ function AfficherUsager(props) {
             usager={usager}
             setErr={erreurCb} />
         </Tab>
-        <Tab eventKey='passkeys' title='Passkeys'>
+        <Tab eventKey='sessions' title='Sessions'>
           <GestionWebauthn 
             usager={usager} 
-            actif={tab==='passkeys'}/>
+            actif={tab==='sessions'}/>
         </Tab>
       </Tabs>
 
@@ -415,10 +415,16 @@ function ListePasskeys(props) {
     throw new Error('todo')
   }, [])
 
-  if(!passkeys) return ''
+  if(!passkeys || passkeys.length === 0) return (
+    <div>
+      <h4>Passkeys</h4>
+      <p>Aucun passkey.</p>
+    </div>
+  )
 
   return (
     <div>
+      <h4>Passkeys</h4>
       <Row>
         <Col xs={12} md={8} lg={6}>Nombre de passkeys sur le compte</Col>
         <Col>{passkeysTraite.length}</Col>
@@ -438,6 +444,91 @@ function ListePasskeys(props) {
   )
 }
 
+function ListeActivations(props) {
+
+  const { value: activations } = props
+  
+  const activationsTraitees = useMemo(()=>{
+    if(!activations) return []
+    const activationsCopie = [...activations]
+    // passkeysCopie.sort(trierPasskeys)
+    return activationsCopie
+  }, [activations])
+
+  if(!activations || activations.length === 0) return (
+    <div>
+      <h4>Activations de navigateur</h4>
+      <p>Aucune activation.</p>
+    </div>
+  )
+
+  return (
+    <div>
+
+      <h4>Activations de navigateur</h4>
+
+      <p>Note : les activations expirent immediatement apres l'enregistrement d'un passkey ou sinon apres 14 jours.</p>
+
+      <Row>
+        <Col xs={12} md={8} lg={6}>Nombre d'activations sur le compte</Col>
+        <Col>{activationsTraitees.length}</Col>
+      </Row>
+
+      <br />
+
+      <Row className='table-header'>
+        <Col xs={12}>Date creation</Col>
+      </Row>
+
+      {activationsTraitees.map(item=><ActivationInfo key={item.fingerprint_pk} value={item} />)}
+
+      <br />
+
+    </div>    
+  )
+}
+
+function ListeCookies(props) {
+
+  const { value: cookies } = props
+  
+  const cookiesTraites = useMemo(()=>{
+    if(!cookies) return []
+    const cookiesCopie = [...cookies]
+    cookiesCopie.sort(trierPasskeys)
+    return cookiesCopie
+  }, [cookies])
+
+  if(!cookies || cookies.length === 0) return (
+    <div>
+      <h4>Sessions (cookies)</h4>
+      <p>Aucune session active.</p>
+    </div>
+  )
+
+  return (
+    <div>
+      <h4>Sessions (cookies)</h4>
+
+      <Row>
+        <Col xs={12} md={8} lg={6}>Nombre de sessions (cookies) sur le compte</Col>
+        <Col>{cookiesTraites.length}</Col>
+      </Row>
+
+      <br />
+
+      <Row className='table-header'>
+        <Col xs={12} lg={5}>Serveur</Col>
+        <Col xs={5} lg={3}>Date creation</Col>
+        <Col xs={5} lg={3}>Expiration</Col>
+        <Col xs={2} lg={1}></Col>
+      </Row>
+      {cookiesTraites.map((item, idx)=><CookieInfo key={idx} value={item} />)}
+      <br />
+    </div>    
+  )
+}
+
 function PasskeyInfo(props) {
 
   const { value, onDelete } = props
@@ -451,6 +542,32 @@ function PasskeyInfo(props) {
         <Button variant="secondary" disabled={true} onClick={onDelete} value={value.cred_id}>
           <i className='fa fa-remove'/>
         </Button>
+      </Col>
+    </Row>
+  )
+}
+
+function ActivationInfo(props) {
+
+  const { value } = props
+
+  return (
+    <Row>
+      <Col xs={12}><FormatterDate value={value.date_creation} /></Col>
+    </Row>
+  )
+}
+
+function CookieInfo(props) {
+
+  const { value } = props
+
+  return (
+    <Row>
+      <Col xs={12} lg={5}>{value.hostname}</Col>
+      <Col xs={5} lg={3}><FormatterDate value={value.date_creation} /></Col>
+      <Col xs={5} lg={3}><FormatterDate value={value.expiration} /></Col>
+      <Col xs={2} lg={1}>
       </Col>
     </Row>
   )
@@ -476,14 +593,16 @@ function GestionWebauthn(props) {
   const [err, setErr] = useState('')
   const [confirmation, setConfirmation] = useState('')
 
-  const [passkeys, setPasskeys] = useState('')
-
   const usager = props.usager || {},
         userId = usager.userId
 
   const workers = useWorkers()
   
   const {connexion} = workers
+
+  const [passkeys, setPasskeys] = useState('')
+  const [activations, setActivations] = useState('')
+  const [cookies, setCookies] = useState('')
 
   const [resetWebauthn, setResetWebauthn] = useState(false)
   const [evictAllSessions, setEvictAllSessions] = useState(false)
@@ -493,9 +612,14 @@ function GestionWebauthn(props) {
 
   const loadPasskeys = useCallback(()=>{
     workers.connexion.getPasskeysUsager(userId)
-      .then(reponse=>setPasskeys(reponse.passkeys))
+      .then(reponse=>{
+        console.debug("Reponse : ", reponse)
+        setPasskeys(reponse.passkeys)
+        setCookies(reponse.cookies)
+        setActivations(reponse.activations)
+      })
       .catch(err=>console.error("Erreur chargement passkeys ", err))
-  }, [workers, userId, setPasskeys])
+  }, [workers, userId, setPasskeys, setCookies, setActivations])
 
   const resetCb = useCallback(async event => {
     try {
@@ -528,14 +652,14 @@ function GestionWebauthn(props) {
 
   return (
     <>
-      <h3>Passkeys</h3>
-
       <Alert variant="danger" show={err?true:false}>{err}</Alert>
       <Alert variant="success" show={confirmation?true:false}>{confirmation}</Alert>
 
       <ListePasskeys value={passkeys} />
+      <ListeActivations value={activations} />
+      <ListeCookies value={cookies} />
 
-      <h3>Action sur les passkeys du compte</h3>
+      <h3>Action sur le compte</h3>
 
       <Row>
         <Col lg={6}>
