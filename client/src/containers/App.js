@@ -16,7 +16,7 @@ import '../i18n'
 import manifest from '../manifest.build'
 
 import storeSetup from '../redux/store'
-import useWorkers, { useUsager, useEtatPret, useCleMillegrilleChargee, useEtatConnexion } from '../WorkerContext'
+import useWorkers, { useUsager, useEtatPret, useCleMillegrilleChargee, useEtatConnexion, useEtatAuthentifie } from '../WorkerContext'
 
 import { push as pushInstances, mergeInstance } from '../redux/instancesSlice'
 
@@ -99,7 +99,8 @@ function ApplicationCoupdoeil(props) {
 function InitInstances(props) {
     const dispatch = useDispatch(),
           workers = useWorkers(),
-          etatPret = useEtatPret()
+          etatPret = useEtatPret(),
+          etatAuthentifie = useEtatAuthentifie()
 
     // Messages, maj liste appareils
     const messageInstanceHandler = useCallback(evenement=>{
@@ -121,12 +122,14 @@ function InitInstances(props) {
     }, [messageInstanceHandler])
 
     useEffect(()=>{
-        if(!etatPret) return
+        console.debug("InitInstances etatPret %O, etatAuthentifie %O", etatPret, etatAuthentifie)
+        if(!etatPret || !etatAuthentifie) return
         const { connexion } = workers
         connexion.enregistrerCallbackEvenementsNoeuds(messageInstanceHandlerProxy)
             .catch(err=>console.error("Erreur enregistrement evenements instances : %O", err))
 
         // Charger (recharger) instances
+        console.debug("InitInstances Requete liste noeuds")
         connexion.requeteListeNoeuds({})
             .then(reponseInstances=>{
                 console.debug("Reponse instances : %O", reponseInstances)
@@ -139,7 +142,7 @@ function InitInstances(props) {
             connexion.retirerCallbackEvenementsNoeuds(messageInstanceHandlerProxy)
                 .catch(err=>console.warn("Erreur enregistrement evenements instances : %O", err))
             }
-    }, [dispatch, workers, etatPret, messageInstanceHandlerProxy])
+    }, [dispatch, workers, etatPret, etatAuthentifie, messageInstanceHandlerProxy])
 }
 
 function MenuApp(props) {

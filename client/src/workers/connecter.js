@@ -32,6 +32,13 @@ export default connecter
 // Initialise (ou re-initialise) les formatteurs de message de chaque worker
 async function setUsager(workers, nomUsager, setUsagerState, opts) {
     opts = opts || {}
+
+    // Desactiver usager si deja connecte - permet de reauthentifier 
+    // (i.e. useEtatPret === false tant que socket serveur pas pret)
+    await setUsagerState('')
+    
+    if(!nomUsager) return  // Reset de l'usager en cours
+
     // console.debug("connecter setUsager (cb worker) '%s'", nomUsager)
     const { usagerDao, forgecommon, idmg: idmgUtils } = await import('@dugrema/millegrilles.reactjs')
     const { pki } = await import('@dugrema/node-forge')
