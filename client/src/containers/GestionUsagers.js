@@ -157,6 +157,7 @@ function AfficherUsager(props) {
   const workers = useWorkers()
 
   // const [usager, setUsager] = useState('')
+  const [tab, setTab] = useState('activation')
 
   const userId = useSelector(state=>state.usagers.userIdSelectionne)
   const listeUsagers = useSelector(state=>state.usagers.listeUsagers)
@@ -198,7 +199,7 @@ function AfficherUsager(props) {
 
       <br />
 
-      <Tabs>
+      <Tabs activeKey={tab} onSelect={tab=>setTab(tab)}>
         <Tab eventKey='activation' title='Activation'>
           <ActivationUsager 
             usager={usager}
@@ -212,7 +213,8 @@ function AfficherUsager(props) {
         </Tab>
         <Tab eventKey='passkeys' title='Passkeys'>
           <GestionWebauthn 
-            usager={usager} />
+            usager={usager} 
+            actif={tab==='passkeys'}/>
         </Tab>
       </Tabs>
 
@@ -410,6 +412,7 @@ function ListePasskeys(props) {
   const retirerPasskeyHandler = useCallback(e=>{
     const { value } = e.currentTarget
     console.debug("Retirer passkey ", value)
+    throw new Error('todo')
   }, [])
 
   if(!passkeys) return ''
@@ -445,7 +448,9 @@ function PasskeyInfo(props) {
       <Col xs={5} lg={3}><FormatterDate value={value.date_creation} /></Col>
       <Col xs={5} lg={3}><FormatterDate value={value.dernier_auth} /></Col>
       <Col xs={2} lg={1}>
-        <Button variant="secondary" onClick={onDelete} value={value.cred_id}>X</Button>
+        <Button variant="secondary" disabled={true} onClick={onDelete} value={value.cred_id}>
+          <i className='fa fa-remove'/>
+        </Button>
       </Col>
     </Row>
   )
@@ -466,6 +471,8 @@ function trierPasskeys(a, b) {
 
 function GestionWebauthn(props) {
 
+  const { actif } = props
+
   const [err, setErr] = useState('')
   const [confirmation, setConfirmation] = useState('')
 
@@ -484,14 +491,23 @@ function GestionWebauthn(props) {
   const resetWebauthnCb = useCallback(event=>setResetWebauthn(event.currentTarget.checked))
   const evictAllSessionsCb = useCallback(event=>setEvictAllSessions(event.currentTarget.checked))
 
+  const loadPasskeys = useCallback(()=>{
+    workers.connexion.getPasskeysUsager(userId)
+      .then(reponse=>setPasskeys(reponse.passkeys))
+      .catch(err=>console.error("Erreur chargement passkeys ", err))
+  }, [workers, userId, setPasskeys])
+
   const resetCb = useCallback(async event => {
     try {
       await connexion.resetWebauthn(userId, resetWebauthn, evictAllSessions)
-      setConfirmation('Reset webauthn complete')
+      setConfirmation('Action completee')
+      setResetWebauthn(false)
+      setEvictAllSessions(false)
+      loadPasskeys()
     } catch(err) {
       setErr(''+err)
     }
-  }, [connexion])
+  }, [connexion, resetWebauthn, evictAllSessions, loadPasskeys, setResetWebauthn, setEvictAllSessions])
 
   const [disabledButton, cssButton] = useMemo(()=>{
     const disableButton = !(resetWebauthn || evictAllSessions)
@@ -501,14 +517,14 @@ function GestionWebauthn(props) {
     return [disableButton, cssButton]
   }, [resetWebauthn, evictAllSessions])
 
+  // Chargement initial
   useEffect(()=>{
-    workers.connexion.getPasskeysUsager(userId)
-      .then(reponse=>{
-        console.debug("Reponse passkeys : ", reponse)
-        setPasskeys(reponse.passkeys)
-      })
-      .catch(err=>console.error("Erreur chargement passkeys ", err))
-  }, [workers, userId, setPasskeys])
+    if(!actif) return
+    loadPasskeys()
+
+    const interval = setInterval(loadPasskeys, 10_000)
+    return () => clearInterval(interval)
+  }, [actif, loadPasskeys])
 
   return (
     <>
