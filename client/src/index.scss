@@ -70,3 +70,7 @@ $xsmall-width: map.get($grid-breakpoints, xs);
 .date-expire {
     color: red;
 }
+
+.table-header DIV {
+    font-weight: bold;
+}

@@ -71,6 +71,7 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         self._sio.on('signerRecoveryCsrParProprietaire', handler=self.signer_recovery_csr_par_proprietaire)
         self._sio.on('maitrecomptes/resetWebauthnUsager', handler=self.reset_webauthn_usager)
         self._sio.on('maitrecomptes/majDelegations', handler=self.maj_usager_delegations)
+        self._sio.on('getPasskeysUsager', handler=self.requete_get_passkeys_usager)
 
         # Listeners
         self._sio.on('ecouterEvenementsPresenceNoeuds', handler=self.ecouter_presence_noeuds)
@@ -201,6 +202,10 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
 
     async def requete_cle_ssh(self, sid: str, message: dict):
         return await self.executer_requete(sid, message, Constantes.DOMAINE_FICHIERS, 'getPublicKeySsh',
+                                           exchange=Constantes.SECURITE_PRIVE)
+
+    async def requete_get_passkeys_usager(self, sid: str, message: dict):
+        return await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_MAITREDESCOMPTES, 'getPasskeysUsager',
                                            exchange=Constantes.SECURITE_PRIVE)
 
     async def configurer_consignation(self, sid: str, message: dict):

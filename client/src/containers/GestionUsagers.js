@@ -4,7 +4,7 @@ import {Row, Col, Button, Alert, Form} from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { proxy } from 'comlink'
 
-import { AfficherActivationsUsager, supporteCamera } from '@dugrema/millegrilles.reactjs'
+import { AfficherActivationsUsager, FormatterDate, supporteCamera } from '@dugrema/millegrilles.reactjs'
 
 import useWorkers, { useEtatPret } from '../WorkerContext'
 
@@ -396,20 +396,89 @@ function InformationUsager(props) {
   )
 }
 
+function ListePasskeys(props) {
+
+  const { value: passkeys } = props
+  
+  const passkeysTraite = useMemo(()=>{
+    if(!passkeys) return []
+    const passkeysCopie = [...passkeys]
+    passkeysCopie.sort(trierPasskeys)
+    return passkeysCopie
+  }, [passkeys])
+
+  const retirerPasskeyHandler = useCallback(e=>{
+    const { value } = e.currentTarget
+    console.debug("Retirer passkey ", value)
+  }, [])
+
+  if(!passkeys) return ''
+
+  return (
+    <div>
+      <Row>
+        <Col xs={12} md={8} lg={6}>Nombre de passkeys sur le compte</Col>
+        <Col>{passkeysTraite.length}</Col>
+      </Row>
+
+      <br />
+
+      <Row className='table-header'>
+        <Col xs={12} lg={5}>Serveur</Col>
+        <Col xs={5} lg={3}>Date creation</Col>
+        <Col xs={5} lg={3}>Plus recent acces</Col>
+        <Col xs={2} lg={1}></Col>
+      </Row>
+      {passkeysTraite.map(item=><PasskeyInfo key={item.cred_id} value={item} onDelete={retirerPasskeyHandler} />)}
+      <br />
+    </div>    
+  )
+}
+
+function PasskeyInfo(props) {
+
+  const { value, onDelete } = props
+
+  return (
+    <Row>
+      <Col xs={12} lg={5}>{value.hostname}</Col>
+      <Col xs={5} lg={3}><FormatterDate value={value.date_creation} /></Col>
+      <Col xs={5} lg={3}><FormatterDate value={value.dernier_auth} /></Col>
+      <Col xs={2} lg={1}>
+        <Button variant="secondary" onClick={onDelete} value={value.cred_id}>X</Button>
+      </Col>
+    </Row>
+  )
+}
+
+function trierPasskeys(a, b) {
+  if(a === b) return 0
+  if(!a) return 1
+  if(!b) return -1
+
+  const hostA = a.hostname, hostB = b.hostname
+  let compare = hostA.localeCompare(hostB)
+  if(compare !== 0) return compare
+
+  const dcA = a.date_creation, dcB = b.date_creation
+  return dcA - dcB
+}
+
 function GestionWebauthn(props) {
 
   const [err, setErr] = useState('')
   const [confirmation, setConfirmation] = useState('')
 
+  const [passkeys, setPasskeys] = useState('')
+
   const usager = props.usager || {},
-        webauthn = usager.webauthn || [],
         userId = usager.userId
 
   const workers = useWorkers()
   
   const {connexion} = workers
 
-  const [resetWebauthn, setResetWebauthn] = useState(true)
+  const [resetWebauthn, setResetWebauthn] = useState(false)
   const [evictAllSessions, setEvictAllSessions] = useState(false)
 
   const resetWebauthnCb = useCallback(event=>setResetWebauthn(event.currentTarget.checked))
@@ -426,24 +495,31 @@ function GestionWebauthn(props) {
 
   const [disabledButton, cssButton] = useMemo(()=>{
     const disableButton = !(resetWebauthn || evictAllSessions)
-    let cssButton = 'warning'
+    let cssButton = 'secondary'
     if(evictAllSessions) cssButton = 'danger'
+    else if(resetWebauthn) cssButton = 'warning'
     return [disableButton, cssButton]
   }, [resetWebauthn, evictAllSessions])
 
+  useEffect(()=>{
+    workers.connexion.getPasskeysUsager(userId)
+      .then(reponse=>{
+        console.debug("Reponse passkeys : ", reponse)
+        setPasskeys(reponse.passkeys)
+      })
+      .catch(err=>console.error("Erreur chargement passkeys ", err))
+  }, [workers, userId, setPasskeys])
+
   return (
     <>
-      <h3>Authentification et sessions</h3>
+      <h3>Passkeys</h3>
 
       <Alert variant="danger" show={err?true:false}>{err}</Alert>
       <Alert variant="success" show={confirmation?true:false}>{confirmation}</Alert>
 
-      <Row>
-        <Col xs={12} md={8} lg={6}>Nombre autorisations webauthn (tokens) sur le compte</Col>
-        <Col>{webauthn.length}</Col>
-      </Row>
+      <ListePasskeys value={passkeys} />
 
-      <h3>Resetter les passkeys sur le compte</h3>
+      <h3>Action sur les passkeys du compte</h3>
 
       <Row>
         <Col lg={6}>
@@ -451,7 +527,7 @@ function GestionWebauthn(props) {
             <Form.Check id="resetWebauthn" 
               checked={resetWebauthn} 
               onChange={resetWebauthnCb} 
-              label="Reset tokens Webauthn"/>
+              label="Supprimer tous les passkeys"/>
           </Form.Group>
         </Col>
       </Row>
@@ -497,6 +573,8 @@ function GestionWebauthn(props) {
         </Col>
       </Row>
 
+      <br />
+      <br />
     </>
   )
 }

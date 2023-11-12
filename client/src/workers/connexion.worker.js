@@ -393,6 +393,15 @@ function getPublicKeySsh() {
   )
 }
 
+function getPasskeysUsager(userId) {
+  const requete = {userId}
+  return connexionClient.emitBlocking(
+    'getPasskeysUsager',
+    requete ,
+    {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: 'CoreMaitreDesComptes', action: 'getPasskeysUsager', attacherCertificat: true}
+  )
+}
+
 async function modifierConfigurationConsignation(commande, commandeMaitredescles) {
   let attachements = null
   if(commandeMaitredescles) {
@@ -598,6 +607,8 @@ comlinkExpose({
 
   regenererDomaine,
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
+  getPasskeysUsager,
+
   majDelegations, signerRecoveryCsrParProprietaire,
   // requeteRapportBackup, resetBackup, 
   majMonitor, supprimerInstance,
