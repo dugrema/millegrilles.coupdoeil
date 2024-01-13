@@ -205,6 +205,18 @@ function ActionsConsignation(props) {
             })
     }, [workers, erreurCb])
 
+    const resetTransfertsSecondairesHandler = useCallback(()=>{
+        workers.connexion.resetTransfertsSecondaires()
+            .then(reponse=>{
+                console.debug("Reset transferts secondaires emis : ", reponse)
+                confirmationCb('Reset transferts secondaires emis')
+            })
+            .catch(err=>{
+                console.error("Erreur declenchement reset transferts secondaires ", err)
+                erreurCb('Erreur declencher reset transferts secondaires.\n' + err)
+            })
+    }, [workers, erreurCb])
+
     return (
         <div>
             <p></p>
@@ -214,6 +226,8 @@ function ActionsConsignation(props) {
                     <Button variant="secondary" disabled={!etatPret||syncPrimaireEnCours} onClick={synchroniserHandler}>Synchroniser</Button>
                     {' '}
                     <Button variant="secondary" disabled={!etatPret} onClick={reindexerHandler}>Reindexer</Button>
+                    {' '}
+                    <Button variant="secondary" disabled={!etatPret} onClick={resetTransfertsSecondairesHandler}>Reset transferts</Button>
                 </Col>
             </Row>
             <p></p>

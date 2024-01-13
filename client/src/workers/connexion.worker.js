@@ -446,6 +446,15 @@ function reindexerConsignation(commande) {
   )
 }
 
+function resetTransfertsSecondaires(commande) {
+  commande = commande || {}
+  return connexionClient.emitBlocking(
+    'resetTransfertsSecondaires',
+    commande,
+    {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'fichiers', action: 'resetTransfertsSecondaires', attacherCertificat: true}
+  )
+}
+
 function getCles(liste_hachage_bytes, opts) {
   opts = opts || {}
   return connexionClient.emitBlocking(
@@ -617,7 +626,7 @@ comlinkExpose({
   modifierConfigurationConsignation, setFichiersPrimaire, declencherSync, demarrerBackupTransactions,
   getCles, getConfigurationNotifications, conserverConfigurationNotifications, genererClewebpushNotifications,
   transmettreCleSymmetrique, verifierClesSymmetriques,
-  reindexerConsignation, setConsignationPourInstance, requeteVersionsApplications,
+  reindexerConsignation, setConsignationPourInstance, requeteVersionsApplications, resetTransfertsSecondaires,
 
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,

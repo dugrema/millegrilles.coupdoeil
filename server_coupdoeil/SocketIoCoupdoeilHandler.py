@@ -55,6 +55,7 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         self._sio.on('declencherSync', handler=self.declencher_sync)
         self._sio.on('setConsignationInstance', handler=self.set_consignation_instance)
         self._sio.on('reindexerConsignation', handler=self.reindexer_consignation)
+        self._sio.on('resetTransfertsSecondaires', handler=self.reset_transferts_secondaires)
 
         # Backup
         self._sio.on('demarrerBackupTransactions', handler=self.demarrer_backup)
@@ -107,12 +108,12 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
             return {'ok': False, 'err': 'Acces refuse'}
         return await super().executer_requete(sid, requete, domaine, action, exchange, producer, enveloppe)
 
-    async def executer_commande(self, sid: str, requete: dict, domaine: str, action: str, exchange: Optional[str] = None, producer=None, enveloppe=None):
+    async def executer_commande(self, sid: str, requete: dict, domaine: str, action: str, exchange: Optional[str] = None, producer=None, enveloppe=None, nowait=False):
         """ Override pour toujours verifier que l'usager a la delegation proprietaire """
         enveloppe = await self.etat.validateur_message.verifier(requete)
         if enveloppe.get_delegation_globale != Constantes.DELEGATION_GLOBALE_PROPRIETAIRE:
             return {'ok': False, 'err': 'Acces refuse'}
-        return await super().executer_commande(sid, requete, domaine, action, exchange, producer, enveloppe)
+        return await super().executer_commande(sid, requete, domaine, action, exchange, producer, enveloppe, nowait=nowait)
 
     # Instances
     async def requete_liste_noeuds(self, sid: str, message: dict):
@@ -220,6 +221,14 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
 
     async def reindexer_consignation(self, sid: str, message: dict):
         return await self.executer_commande(sid, message, Constantes.DOMAINE_GROS_FICHIERS, 'reindexerConsignation')
+
+    async def reset_transferts_secondaires(self, sid: str, message: dict):
+        await self.executer_commande(sid, message, Constantes.DOMAINE_FICHIERS,
+                                    'resetTransfertsSecondaires',
+                                     exchange=Constantes.SECURITE_PRIVE, nowait=True)
+        # reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, {'ok': True})
+        # return reponse_signee
+        return {'ok': True}
 
     async def set_consignation_instance(self, sid: str, message: dict):
         return await self.executer_commande(sid, message, Constantes.DOMAINE_FICHIERS, 'setConsignationInstance')
