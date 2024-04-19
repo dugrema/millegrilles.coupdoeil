@@ -53,7 +53,7 @@ function requeteClesNonDechiffrables(tailleBatch, nombreClesRechiffrees) {
     'coupdoeil/requeteClesNonDechiffrables', 
     {
       limite: tailleBatch, 
-      skip: nombreClesRechiffrees,
+      // skip: nombreClesRechiffrees,
       // date_creation_min: dateCreationMin,
       // exclude_hachage_bytes: excludeHachageBytes,
     },

@@ -235,10 +235,10 @@ function RechiffrerCles(props) {
   }, [workers, setCertificatsMaitredescles])
   
   const rechiffrerCb = useCallback(()=>{
-    rechiffrer(workers, certificatsMaitredescles, setNombreClesRechiffrees, setNombreErreurs, erreurCb)
+    rechiffrer(workers, certificatsMaitredescles, nombreClesNonDechiffrables, setNombreClesRechiffrees, setNombreErreurs, erreurCb)
       .then(chargerInfoClesCb)
       .catch(erreurCb)
-  }, [workers, certificatsMaitredescles, setNombreClesRechiffrees, setNombreErreurs, chargerInfoClesCb, erreurCb])
+  }, [workers, certificatsMaitredescles, setNombreClesRechiffrees, setNombreErreurs, chargerInfoClesCb, nombreClesNonDechiffrables, erreurCb])
 
   if(!(nombreClesNonDechiffrables && certificatsMaitredescles && cleMillegrilleChargee)) return ''
 
@@ -317,7 +317,10 @@ async function fetchInfoCles(workers, erreurCb) {
   return {nonDechiffrables: compte}
 }
 
-async function rechiffrer(workers, certificatsRechiffrage, setNombreClesRechiffrees, setNombreErreurs, erreurCb) {
+async function rechiffrer(
+  workers, certificatsRechiffrage, nombreClesNonDechiffrables, 
+  setNombreClesRechiffrees, setNombreErreurs, erreurCb
+) {
   const { connexion, chiffrage } = workers
 
   const setNombreClesRechiffreesProxy = proxy(setNombreClesRechiffrees)
@@ -325,8 +328,9 @@ async function rechiffrer(workers, certificatsRechiffrage, setNombreClesRechiffr
 
   try {
     const params = {
-      DEBUG: false,
+      DEBUG: true,
       batchSize: BATCH_NOMBRE_FETCH,
+      nombreClesNonDechiffrables, 
     }
     await chiffrage.rechiffrerAvecCleMillegrille(
       connexion, certificatsRechiffrage, setNombreClesRechiffreesProxy, setNombreErreursProxy, params)
