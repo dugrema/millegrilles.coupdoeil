@@ -185,8 +185,8 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         return await self.executer_commande(sid, message, Constantes.DOMAINE_MAITRE_DES_CLES, 'resetNonDechiffrable')
 
     async def requete_get_cles(self, sid: str, message: dict):
-        return await self.executer_requete(sid, message, Constantes.DOMAINE_MAITRE_DES_CLES, 'dechiffrage',
-                                           exchange=Constantes.SECURITE_PRIVE)
+        return await self.executer_requete(sid, message, Constantes.DOMAINE_MAITRE_DES_CLES, 'dechiffrageV2',
+                                           exchange=Constantes.SECURITE_PROTEGE)
 
     async def rechiffrer_cles_batch(self, sid: str, message: dict):
         return await self.executer_commande(sid, message, Constantes.DOMAINE_MAITRE_DES_CLES, 'rechiffrerBatch')

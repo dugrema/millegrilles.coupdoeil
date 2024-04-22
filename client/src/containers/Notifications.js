@@ -466,48 +466,51 @@ function validerNombre(event, minValue, maxValue) {
 }
 
 async function chiffrerChamps(workers, labelCle, cleChiffrage, champsDechiffres) {
+    throw new Error("fix me -> chiffrage V2")
 
-    const { chiffrage, connexion } = workers
+    // const { chiffrage, connexion } = workers
 
-    let documentChiffre = null, commandeMaitredescles = null
+    // let documentChiffre = null, commandeMaitredescles = null
 
-    if(cleChiffrage) {
-        // console.debug("chiffrerChamps Utiliser cle %O pour %O", cleChiffrage, champsDechiffres)
-        const doc = await chiffrage.chiffrage.updateChampsChiffres(champsDechiffres, cleChiffrage.cleSecrete, {lzma: true})
-        // Copier ref_hachage_bytes
-        doc.ref_hachage_bytes = cleChiffrage.hachage_bytes
-        // Object.assign(config.data_chiffre, doc)
-        documentChiffre = doc
-    } else {
-        // Creer nouvelle commande pour maitre des cles
-        // console.debug("Charger certificats maitre des cles")
-        const certificatsChiffrage = await connexion.getCertificatsMaitredescles()
-        // console.debug("Certificats maitre des cles ", certificatsChiffrage)
-        const identificateurs_document = {'type': labelCle}
+    // if(cleChiffrage) {
+    //     // console.debug("chiffrerChamps Utiliser cle %O pour %O", cleChiffrage, champsDechiffres)
+    //     const doc = await chiffrage.chiffrage.updateChampsChiffres(champsDechiffres, cleChiffrage.cleSecrete, {lzma: true})
+    //     // Copier ref_hachage_bytes
+    //     doc.ref_hachage_bytes = cleChiffrage.hachage_bytes
+    //     // Object.assign(config.data_chiffre, doc)
+    //     documentChiffre = doc
+    // } else {
+    //     // Creer nouvelle commande pour maitre des cles
+    //     // console.debug("Charger certificats maitre des cles")
+    //     const certificatsChiffrage = await connexion.getCertificatsMaitredescles()
+    //     // console.debug("Certificats maitre des cles ", certificatsChiffrage)
+    //     const identificateurs_document = {'type': labelCle}
 
-        const {doc, commandeMaitrecles: commande} = await chiffrage.chiffrerDocument(
-            champsDechiffres, 'Messagerie', certificatsChiffrage, {identificateurs_document, lzma: true, DEBUG: true})
+    //     const {doc, commandeMaitrecles: commande} = await chiffrage.chiffrerDocument(
+    //         champsDechiffres, 'Messagerie', certificatsChiffrage, {identificateurs_document, lzma: true, DEBUG: true})
 
-        // Conserver data chiffre dans config
-        // Object.assign(config.data_chiffre, doc)
-        documentChiffre = doc
+    //     // Conserver data chiffre dans config
+    //     // Object.assign(config.data_chiffre, doc)
+    //     documentChiffre = doc
 
-        // console.debug("Commande maitre des cles : %O", commande)
-        commandeMaitredescles = commande
-    }
+    //     // console.debug("Commande maitre des cles : %O", commande)
+    //     commandeMaitredescles = commande
+    // }
 
-    return {documentChiffre, commandeMaitredescles}
+    // return {documentChiffre, commandeMaitredescles}
 }
 
 async function dechiffrer(workers, dataChiffre) {
-    if(!dataChiffre) return null
-    const ref_hachage_bytes = dataChiffre.ref_hachage_bytes
-    if(ref_hachage_bytes) {
-        // Recuperer cle pour re-chiffrer
-        const cles = await workers.clesDao.getCles(ref_hachage_bytes, 'Messagerie')
-        const cle = cles[ref_hachage_bytes]
-        const dataDechiffre = await workers.chiffrage.chiffrage.dechiffrerChampsChiffres(dataChiffre, cle, {lzma: true})
-        // console.debug("Data dechiffre ", dataDechiffre)
-        return {cle, dataDechiffre}
-    }
+    throw new Error("fix me -> chiffrage V2")
+
+    // if(!dataChiffre) return null
+    // const ref_hachage_bytes = dataChiffre.ref_hachage_bytes
+    // if(ref_hachage_bytes) {
+    //     // Recuperer cle pour re-chiffrer
+    //     const cles = await workers.clesDao.getCles(ref_hachage_bytes, 'Messagerie')
+    //     const cle = cles[ref_hachage_bytes]
+    //     const dataDechiffre = await workers.chiffrage.chiffrage.dechiffrerChampsChiffres(dataChiffre, cle, {lzma: true})
+    //     // console.debug("Data dechiffre ", dataDechiffre)
+    //     return {cle, dataDechiffre}
+    // }
 }

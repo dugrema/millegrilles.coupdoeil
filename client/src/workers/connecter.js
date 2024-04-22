@@ -1,7 +1,7 @@
 import { proxy } from 'comlink'
 
-const CONST_APP_URL = 'coupdoeil/socket.io'
-// const CONST_APP_URL = 'coupdoeil'
+// const CONST_APP_URL = 'coupdoeil/socket.io'
+const CONST_APP_URL = '/coupdoeil/socket.io'
 
 async function connecter(workers, setUsagerState, setEtatConnexion, setFormatteurPret, setCleMillegrilleChargee) {
     const { connexion, chiffrage } = workers
@@ -17,13 +17,18 @@ async function connecter(workers, setUsagerState, setEtatConnexion, setFormatteu
     const setFormatteurPretCb = proxy(etat => setFormatteurPret(etat))
     const setCallbackCleMillegrilleCb = proxy(setCleMillegrilleChargee)
 
-    await connexion.setCallbacks(setEtatConnexionCb, setUsagerCb, setFormatteurPretCb)
+    // await connexion.setCallbacks(setEtatConnexionCb, setUsagerCb, setFormatteurPretCb)
     if(chiffrage) await chiffrage.setCallbackCleMillegrille(setCallbackCleMillegrilleCb)
 
-    const resultat = await connexion.connecter(location.href, {reconnectionDelay: 1_500})
-    // console.debug("Resultat connexion : %O", resultat)
+    // const resultat = await connexion.connecter(location.href, {reconnectionDelay: 1_500})
+    // // console.debug("Resultat connexion : %O", resultat)
 
-    return resultat
+    // return resultat
+
+    await connexion.configurer(location.href, setEtatConnexionCb, setUsagerCb, setFormatteurPretCb, 
+        {DEBUG: true, reconnectionDelay: 5_000})
+
+    return connexion.connecter()    
 }
 
 export default connecter

@@ -468,19 +468,23 @@ function ConfigurerConsignationInstance(props) {
                 }
 
                 if(cleChiffrage) {
-                    const doc = await workers.chiffrage.chiffrage.updateChampsChiffres(dataDechiffre, cleChiffrage.cleSecrete)
+                    console.debug("Conserver config, cleChiffrage: %O, config: %O", cleChiffrage, config)
+                    const cleId = cleChiffrage.hachage_bytes
+                    const doc = await workers.chiffrage.chiffrage.updateChampsChiffres(dataDechiffre, cleChiffrage.cleSecrete, cleId)
                     // Copier ref_hachage_bytes
-                    doc.ref_hachage_bytes = cleChiffrage.hachage_bytes
+                    //doc.ref_hachage_bytes = cleChiffrage.hachage_bytes
                     Object.assign(config.data_chiffre, doc)
                 } else {
                     // Creer nouvelle commande pour maitre des cles
                     console.debug("Charger certificats maitre des cles")
                     const certificatsChiffrage = await connexion.getCertificatsMaitredescles()
                     console.debug("Certificats maitre des cles ", certificatsChiffrage)
-                    const identificateurs_document = {'type': 'consignation'}
+                    // const identificateurs_document = {'type': 'consignation'}
 
-                    const {doc, commandeMaitrecles: commande} = await chiffrage.chiffrerDocument(
-                        dataDechiffre, 'CoreTopologie', certificatsChiffrage, {identificateurs_document, DEBUG: true})
+                    // const {doc, commandeMaitrecles: commande} = await chiffrage.chiffrerDocument(
+                    //     dataDechiffre, 'CoreTopologie', certificatsChiffrage, {identificateurs_document, DEBUG: true})
+                    const { doc, commandeMaitrecles: commande } = await chiffrage.chiffrerChampsV2(
+                        dataDechiffre, 'CoreTopologie', certificatsChiffrage, {DEBUG: false})
 
                     // Conserver data chiffre dans config
                     Object.assign(config.data_chiffre, doc)
@@ -558,7 +562,7 @@ function ConfigurerConsignationInstance(props) {
 
         if(cleChiffrage && consignation.data_chiffre) {
             // Dechiffrer champs secrets
-            workers.chiffrage.chiffrage.dechiffrerChampsChiffres(consignation.data_chiffre, cleChiffrage)
+            workers.chiffrage.chiffrage.dechiffrerChampsV2(consignation.data_chiffre, cleChiffrage.cleSecrete)
                 .then(dataDechiffre =>{
                     console.debug("Data dechiffre ", dataDechiffre)
                     setS3SecretAccessKey(dataDechiffre.s3_secret_access_key || '')
@@ -584,13 +588,13 @@ function ConfigurerConsignationInstance(props) {
 
         console.debug("Charger cle ", consignation)
         const data_chiffre = consignation.data_chiffre || {},
-              ref_hachage_bytes = data_chiffre.ref_hachage_bytes
-        if(ref_hachage_bytes) {
+              cle_id = data_chiffre.cle_id || data_chiffre.ref_hachage_bytes
+        if(cle_id) {
             // Recuperer cle pour re-chiffrer
-            workers.clesDao.getCles(ref_hachage_bytes, 'CoreTopologie')
+            workers.clesDao.getCles(cle_id, 'CoreTopologie')
                 .then(cle=>{
                     console.debug("Cle dechiffrage chargee : ", cle)
-                    setCleChiffrage(cle[ref_hachage_bytes])
+                    setCleChiffrage(cle[cle_id])
                 })
                 .catch(err=>console.error("Erreur chargement cle dechiffrage ", err))
         } else {

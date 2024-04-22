@@ -1,7 +1,8 @@
 import {expose as comlinkExpose} from 'comlink'
 import { MESSAGE_KINDS } from '@dugrema/millegrilles.utiljs/src/constantes'
 
-import * as connexionClient from '@dugrema/millegrilles.reactjs/src/connexionClient'
+// import * as connexionClient from '@dugrema/millegrilles.reactjs/src/connexionClient'
+import connexionClient from '@dugrema/millegrilles.reactjs/src/connexionClientV2'
 
 const DOMAINE_CORETOPOLOGIE = 'CoreTopologie',
       DOMAINE_CORECATALOGUES = 'CoreCatalogues',
@@ -15,41 +16,41 @@ function testWorker() {
 }
 
 function getClesChiffrage() {
-  return connexionClient.emitBlocking('getClesChiffrage', {})
+  return connexionClient.emitWithAck('getClesChiffrage', {})
 }
 
 function requeteListeNoeuds(params) {
   // console.debug("Requete liste noeuds, params : %O", params)
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'requeteListeNoeuds', params,
     {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: DOMAINE_CORETOPOLOGIE, action: 'listeNoeuds', ajouterCertificat: true}
   )
 }
 function requeteListeDomaines() {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'coupdoeil/requeteListeDomaines', {},
     {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: DOMAINE_CORETOPOLOGIE, action: 'listeDomaines', ajouterCertificat: true}
   )
 }
 function requeteListeUsagers(params) {
   params = params || {}
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'maitrecomptes/requeteListeUsagers', params,
     {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: DOMAINE_COREMAITREDESCOMPTES, action: 'getListeUsagers', ajouterCertificat: true}
   )
 }
 function requeteUsager(params) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'maitrecomptes/requeteUsager', params,
     {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: DOMAINE_COREMAITREDESCOMPTES, action: 'chargerUsager', ajouterCertificat: true}
   )
 }
 function requeteCatalogueDomaines() {
   throw new Error("deprecated")
-  // return connexionClient.emitBlocking('coupdoeil/requeteCatalogueDomaines')
+  // return connexionClient.emitWithAck('coupdoeil/requeteCatalogueDomaines')
 }
 function requeteClesNonDechiffrables(tailleBatch, nombreClesRechiffrees) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'coupdoeil/requeteClesNonDechiffrables', 
     {
       limite: tailleBatch, 
@@ -61,28 +62,28 @@ function requeteClesNonDechiffrables(tailleBatch, nombreClesRechiffrees) {
   )
 }
 function getCatalogueApplications() {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'coupdoeil/requeteCatalogueApplications', {},
     {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: DOMAINE_CORECATALOGUES, action: 'listeApplications', ajouterCertificat: true}
   )
 }
 function requeteInfoApplications(params) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'coupdoeil/requeteInfoApplications', params, 
     {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: DOMAINE_CORECATALOGUES, action: 'infoApplication', ajouterCertificat: true}
   )
 }
 function requeteVersionsApplications(params) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'listeVersionsApplication', params, 
     {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: DOMAINE_CORECATALOGUES, action: 'listeVersionsApplication', ajouterCertificat: true}
   )
 }
 // function requeteRapportBackup(params) {
-//   return connexionClient.emitBlocking('coupdoeil/requeteRapportBackup', params)
+//   return connexionClient.emitWithAck('coupdoeil/requeteRapportBackup', params)
 // }
 function requeteConfigurationApplication(params) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'coupdoeil/requeteConfigurationApplication', 
     params, 
     {
@@ -96,24 +97,24 @@ function requeteConfigurationApplication(params) {
   )
 }
 function requeteCompterClesNonDechiffrables() {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'coupdoeil/requeteCompterClesNonDechiffrables', 
     {},
     {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: DOMAINE_MAITREDESCLES, action: 'compterClesNonDechiffrables', ajouterCertificat: true}
   )
 }
 // function getCertificatsMaitredescles() {
-//   return connexionClient.emitBlocking('coupdoeil/getCertificatsMaitredescles')
+//   return connexionClient.emitWithAck('coupdoeil/getCertificatsMaitredescles')
 // }
 function getUploadsEnCours() {
-  return connexionClient.emitBlocking('coupdoeil/getUploadsEnCours')
+  return connexionClient.emitWithAck('coupdoeil/getUploadsEnCours')
 }
 function getDocumentParFuuid(params) {
-  return connexionClient.emitBlocking('coupdoeil/getDocumentParFuuid', params)
+  return connexionClient.emitWithAck('coupdoeil/getDocumentParFuuid', params)
 }
 
 function getConfigurationAcme(instanceId) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'coupdoeil/requeteConfigurationAcme', 
     {instanceId}, 
     {
@@ -129,7 +130,7 @@ function getConfigurationAcme(instanceId) {
 
 function configurerDomaineAcme(commande) {
   const partition = commande.instanceId
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'coupdoeil/configurerDomaineAcme', 
     commande,
     {
@@ -143,7 +144,7 @@ function configurerDomaineAcme(commande) {
 }
 
 function verifierClesSymmetriques() {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'verifierClesSymmetriques', 
     {},
     {
@@ -158,7 +159,7 @@ function verifierClesSymmetriques() {
 // Commandes
 
 function restaurationChargerCles(params) {
-  return connexionClient.emitBlocking('coupdoeil/restaurationChargerCles', params)
+  return connexionClient.emitWithAck('coupdoeil/restaurationChargerCles', params)
 }
 function restaurationDomaines(params) {
   let domaine = 'global.restaurerTransactions'
@@ -166,24 +167,24 @@ function restaurationDomaines(params) {
     domaine = params.domaine + '.restaurerTransactions'
   }
   // console.debug("Demarrer restaurationDomaines domaine = %s : %O", domaine, params)
-  return connexionClient.emitBlocking('coupdoeil/restaurationDomaines', params, {domaine})
+  return connexionClient.emitWithAck('coupdoeil/restaurationDomaines', params, {domaine})
 }
 function restaurationGrosfichiers(params) {
   throw new Error('connexion.worker restaurationGrosfichiers obsolete')
-  // return connexionClient.emitBlocking('coupdoeil/restaurationGrosfichiers', params)
+  // return connexionClient.emitWithAck('coupdoeil/restaurationGrosfichiers', params)
 }
 // function backupApplication(params) {
-//   return connexionClient.emitBlocking('coupdoeil/backupApplication', params)
+//   return connexionClient.emitWithAck('coupdoeil/backupApplication', params)
 // }
 // function restaurerApplication(params) {
-//   return connexionClient.emitBlocking('coupdoeil/restaurerApplication', params)
+//   return connexionClient.emitWithAck('coupdoeil/restaurerApplication', params)
 // }
 function soumettreCleRechiffree(commandes) {
-  return connexionClient.emitBlocking('coupdoeil/transactionCleRechiffree', commandes)
+  return connexionClient.emitWithAck('coupdoeil/transactionCleRechiffree', commandes)
 }
 function soumettreConfigurationApplication(configuration) {
   // return connexionClient.emit('coupdoeil/ajouterCatalogueApplication', configuration)
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'coupdoeil/ajouterCatalogueApplication', 
     configuration, 
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'instance', action: 'ajouterCatalogueApplication', partition: configuration.instance_id, exchange: configuration.exchange, ajouterCertificat: true}
@@ -191,7 +192,7 @@ function soumettreConfigurationApplication(configuration) {
 }
 async function installerApplication(params) {
   try {
-    return await connexionClient.emitBlocking(
+    return await connexionClient.emitWithAck(
       'coupdoeil/installerApplication', 
       params, 
       {kind: MESSAGE_KINDS.KIND_COMMANDE, partition: params.instance_id, domaine: 'instance', action: 'installerApplication', partition: params.instance_id, exchange: params.exchange, ajouterCertificat: true}
@@ -203,7 +204,7 @@ async function installerApplication(params) {
 }
 function supprimerApplication(commande) {
   // console.debug("supprimer application %O", commande)
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'coupdoeil/supprimerApplication', 
     commande, 
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'instance', action: 'supprimerApplication', partition: commande.instance_id, exchange: commande.exchange, ajouterCertificat: true}
@@ -226,94 +227,94 @@ function installerDomaine(params) {
 //     domaine = params.domaine + '.resetBackup'
 //   }
 //   // console.debug("Reset backup domaine = %s : %O", domaine, params)
-//   return connexionClient.emitBlocking('coupdoeil/resetBackup', params, {domaine})
+//   return connexionClient.emitWithAck('coupdoeil/resetBackup', params, {domaine})
 // }
 function genererCertificatNoeud(commande) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'coupdoeil/genererCertificatNoeud',
     commande,
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'CorePki', action: 'signerCsr', attacherCertificat: true}
   )
 }
 function configurerApplication(commande) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'coupdoeil/configurerApplication', 
     commande, 
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'instance', action: 'configurerApplication', partition: commande.instance_id, exchange: commande.exchange, ajouterCertificat: true}
   )
 }
 function demarrerApplication(commande) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'coupdoeil/demarrerApplication', 
     commande, 
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'instance', action: 'demarrerApplication', partition: commande.instance_id, exchange: commande.exchange, ajouterCertificat: true}
   )
 }
 function arreterApplication(commande) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'coupdoeil/arreterApplication', 
     commande, 
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'instance', action: 'arreterApplication', partition: commande.instance_id, exchange: commande.exchange, ajouterCertificat: true}
   )
 }
 function regenererPreviews() {
-  return connexionClient.emitBlocking('coupdoeil/regenererPreviews', {})
+  return connexionClient.emitWithAck('coupdoeil/regenererPreviews', {})
 }
 function configurerConsignationWeb(configuration) {
-  return connexionClient.emitBlocking('coupdoeil/configurerConsignationWeb', configuration)
+  return connexionClient.emitWithAck('coupdoeil/configurerConsignationWeb', configuration)
 }
 function soumettreTransactionMaitredescles(transaction) {
-  return connexionClient.emitBlocking('coupdoeil/soumettreTransactionMaitredescles', transaction)
+  return connexionClient.emitWithAck('coupdoeil/soumettreTransactionMaitredescles', transaction)
 }
 function clearFichierPublie(commande) {
   throw new Error('connexion.worker clearFichierPublie obsolete')
-  // return connexionClient.emitBlocking('coupdoeil/clearFichierPublie', commande)
+  // return connexionClient.emitWithAck('coupdoeil/clearFichierPublie', commande)
 }
 function uploadCollectionsPubliques(commande) {
   throw new Error('connexion.worker uploadCollectionsPubliques obsolete')
-  // return connexionClient.emitBlocking('coupdoeil/uploadCollectionsPubliques', commande)
+  // return connexionClient.emitWithAck('coupdoeil/uploadCollectionsPubliques', commande)
 }
 function commandeTransmettreCatalogues() {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'coupdoeil/transmettreCatalogues', 
     {},
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'instance', action: 'transmettreCatalogues', attacherCertificat: true}
   )
 }
 function commandeSoumettreCatalogueApplication(commande) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'coupdoeil/commandeSoumettreCatalogueApplication', 
     commande,
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'CoreCatalogues', action: 'catalogueApplication', attacherCertificat: true}
   )
 }
 function genererCertificatNavigateur(params) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'genererCertificatNavigateur', 
     params,
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'CoreMaitreDesComptes', action: 'signerCompteUsager', attacherCertificat: true}
   )
 }
 function resetWebauthn(userId, resetWebauthn, evictAllSessions) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'maitrecomptes/resetWebauthnUsager',
     {userId, resetWebauthn, evictAllSessions},
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'CoreMaitreDesComptes', action: 'resetWebauthnUsager', attacherCertificat: true}
   )
 }
 function majDelegations(params) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'maitrecomptes/majDelegations',
     params,
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'CoreMaitreDesComptes', action: 'majUsagerDelegations', attacherCertificat: true}
   )
 }
 function regenererDomaine(domaine) {
-  return connexionClient.emitBlocking('coupdoeil/regenererDomaine', {}, {domaine})
+  return connexionClient.emitWithAck('coupdoeil/regenererDomaine', {}, {domaine})
 }
 
 function majMonitor(params) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'coretopologie/majMonitor',
     params,
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'CoreTopologie', action: 'instance', attacherCertificat: true}
@@ -321,7 +322,7 @@ function majMonitor(params) {
 }
 
 function supprimerInstance(instanceId) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'coretopologie/supprimerInstance',
     {instance_id: instanceId},
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'CoreTopologie', action: 'supprimerInstance', attacherCertificat: true}
@@ -329,7 +330,7 @@ function supprimerInstance(instanceId) {
 }
 
 function getRecoveryCsr(code, nomUsager) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'getRecoveryCsr',
     {nom_usager: nomUsager, code},
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'CoreMaitreDesComptes', action: 'getCsrRecoveryParcode', attacherCertificat: true}
@@ -337,7 +338,7 @@ function getRecoveryCsr(code, nomUsager) {
 }
 
 function signerRecoveryCsr(commande) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'signerRecoveryCsr', 
     commande, 
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'CoreMaitreDesComptes', action: 'signerCompteUsager', attacherCertificat: true}
@@ -345,7 +346,7 @@ function signerRecoveryCsr(commande) {
 }
 
 function signerRecoveryCsrParProprietaire(commande) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'signerRecoveryCsrParProprietaire', 
     commande, 
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'CoreMaitreDesComptes', action: 'signerCompteParProprietaire', attacherCertificat: true}
@@ -354,7 +355,7 @@ function signerRecoveryCsrParProprietaire(commande) {
 
 function resetClesNonDechiffrables(commande) {
   commande = commande || {}
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'resetClesNonDechiffrables', 
     commande, 
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'MaitreDesCles', action: 'resetNonDechiffrable', attacherCertificat: true}
@@ -362,7 +363,7 @@ function resetClesNonDechiffrables(commande) {
 }
 
 function rechiffrerClesBatch(contenuChiffre, dechiffrage) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'rechiffrerClesBatch', 
     contenuChiffre, 
     {
@@ -377,7 +378,7 @@ function rechiffrerClesBatch(contenuChiffre, dechiffrage) {
 
 function getConfigurationFichiers() {
   const requete = {}
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'getConfigurationFichiers',
     requete ,
     {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: 'CoreTopologie', action: 'getConfigurationFichiers', attacherCertificat: true}
@@ -386,7 +387,7 @@ function getConfigurationFichiers() {
 
 function getPublicKeySsh() {
   const requete = {}
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'getPublicKeySsh',
     requete ,
     {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: 'fichiers', action: 'getPublicKeySsh', attacherCertificat: true}
@@ -395,7 +396,7 @@ function getPublicKeySsh() {
 
 function getPasskeysUsager(userId) {
   const requete = {userId}
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'getPasskeysUsager',
     requete ,
     {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: 'CoreMaitreDesComptes', action: 'getPasskeysUsager', attacherCertificat: true}
@@ -407,14 +408,14 @@ async function modifierConfigurationConsignation(commande, commandeMaitredescles
   if(commandeMaitredescles) {
     attachements = {cle: commandeMaitredescles}
   }
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'modifierConfigurationConsignation', commande,
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'CoreTopologie', action: 'configurerConsignation', attacherCertificat: true, attachements}
   )
 }
 
 function setFichiersPrimaire(commande) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'setFichiersPrimaire',
     commande,
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'CoreTopologie', action: 'setFichiersPrimaire', attacherCertificat: true}
@@ -422,7 +423,7 @@ function setFichiersPrimaire(commande) {
 }
 
 function declencherSync() {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'declencherSync',
     {},
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'fichiers', action: 'declencherSync', attacherCertificat: true}
@@ -430,7 +431,7 @@ function declencherSync() {
 }
 
 function demarrerBackupTransactions(commande) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'demarrerBackupTransactions',
     commande,
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'backup', action: 'demarrerBackupTransactions', attacherCertificat: true}
@@ -439,7 +440,7 @@ function demarrerBackupTransactions(commande) {
 
 function reindexerConsignation(commande) {
   commande = commande || {}
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'reindexerConsignation',
     commande,
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'GrosFichiers', action: 'reindexerConsignation', attacherCertificat: true}
@@ -448,7 +449,7 @@ function reindexerConsignation(commande) {
 
 function resetTransfertsSecondaires(commande) {
   commande = commande || {}
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'resetTransfertsSecondaires',
     commande,
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'fichiers', action: 'resetTransfertsSecondaires', attacherCertificat: true}
@@ -457,16 +458,16 @@ function resetTransfertsSecondaires(commande) {
 
 function getCles(liste_hachage_bytes, opts) {
   opts = opts || {}
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'getCles',
-    {liste_hachage_bytes, domaine: opts.domaine},
-    {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'MaitreDesCles', action: 'dechiffrage', attacherCertificat: true}
+    {cle_ids: liste_hachage_bytes, domaine: opts.domaine},
+    {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: 'MaitreDesCles', action: 'dechiffrageV2', attacherCertificat: true}
   )
 }
 
 function getConfigurationNotifications(opts) {
   opts = opts || {}
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'getConfigurationNotifications',
     {inclure_cles: true, ...opts},
     {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: 'Messagerie', action: 'getConfigurationNotifications', attacherCertificat: true}
@@ -474,7 +475,7 @@ function getConfigurationNotifications(opts) {
 }
 
 function conserverConfigurationNotifications(commande, cles) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'conserverConfigurationNotifications',
     commande,
     {
@@ -487,7 +488,7 @@ function conserverConfigurationNotifications(commande, cles) {
 
 function genererClewebpushNotifications(opts) {
   opts = opts || {}
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'genererClewebpushNotifications',
     opts,
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'Messagerie', action: 'genererClewebpushNotifications', attacherCertificat: true}
@@ -495,7 +496,7 @@ function genererClewebpushNotifications(opts) {
 }
 
 function transmettreCleSymmetrique(commande) {
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'transmettreCleSymmetrique',
     commande,
     {
@@ -510,7 +511,7 @@ function transmettreCleSymmetrique(commande) {
 
 function setConsignationPourInstance(instance_id, consignation_id) {
   const commande = {instance_id, consignation_id}
-  return connexionClient.emitBlocking(
+  return connexionClient.emitWithAck(
     'setConsignationInstance',
     commande,
     {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'CoreTopologie', action: 'setConsignationInstance', attacherCertificat: true}
