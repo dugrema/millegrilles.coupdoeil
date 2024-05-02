@@ -1,4 +1,4 @@
-FROM docker.maple.maceroc.com:5000/millegrilles_web_python:2024.3.14
+FROM docker.maple.maceroc.com:5000/millegrilles_web_python:2024.4.17
 
 ENV CA_PEM=/var/opt/millegrilles/configuration/pki.millegrille.cert \
     CERT_PEM=/var/opt/millegrilles/secrets/pki.coupdoeil.cert \
