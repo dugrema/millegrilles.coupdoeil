@@ -221,8 +221,8 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
                                            exchange=Constantes.SECURITE_PROTEGE)
 
     async def sauvegarder_client_hebergement(self, sid: str, message: dict):
-        return await self.executer_requete(sid, message, Constantes.DOMAINE_HEBERGEMENT, 'sauvegarderClient',
-                                           exchange=Constantes.SECURITE_PROTEGE)
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_HEBERGEMENT, 'sauvegarderClient',
+                                            exchange=Constantes.SECURITE_PROTEGE)
 
     async def configurer_consignation(self, sid: str, message: dict):
         return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_TOPOLOGIE, 'configurerConsignation')

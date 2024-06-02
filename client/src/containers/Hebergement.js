@@ -10,6 +10,8 @@ import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
 import Modal from 'react-bootstrap/Modal'
 import Container from 'react-bootstrap/Container'
+import Row from 'react-bootstrap/Row'
+import Col from 'react-bootstrap/Col'
 
 function Hebergement(props) {
 
@@ -93,7 +95,13 @@ function ListeClients(props) {
 
     const {show} = props
     
+    const dispatch = useDispatch()
     const clients = useSelector(item=>item.hebergement.listeClients)
+
+    const idmgClick = useCallback(e=>{
+        const idmg = e.currentTarget.value
+        dispatch(setIdmgClient(idmg))
+    }, [dispatch])
 
     if(!show) return ''
 
@@ -114,6 +122,22 @@ function ListeClients(props) {
     return (
         <div>
             <h2>Clients</h2>
+
+            <Row>
+                <Col>IDMG</Col>
+                <Col>Descriptif</Col>
+            </Row>
+
+            {clients.map(client=>{
+                return (
+                    <Row key={'client-' + client.idmg}>
+                        <Col>
+                            <Button variant="link" onClick={idmgClick} value={client.idmg}>{client.idmg}</Button>
+                        </Col>
+                        <Col>{client.descriptif || 'N/D'}</Col>
+                    </Row>
+                )
+            })}
         </div>
     )
 }
@@ -122,19 +146,58 @@ function DetailClientHebergement(props) {
 
     const {show} = props
 
+   
+    const dispatch = useDispatch()
     const idmgClient = useSelector(item=>item.hebergement.idmgClientSelectionne)
+    const clients = useSelector(item=>item.hebergement.listeClients)
 
-    if(!show) return ''
+    const [editer, setEditer] = useState(false)
+    const ouvrirEditer = useCallback(()=>setEditer(true), [setEditer])
+    const fermerEditer = useCallback(()=>{
+        setEditer(false)
+        if(idmgClient === true) dispatch(setIdmgClient(''))
+    }, [setEditer, idmgClient])
 
-    if(idmgClient === true) {
-        return <EditerClientHebergement />
+    const fermer = useCallback(()=>dispatch(setIdmgClient('')), [dispatch])
+
+    const client = useMemo(()=>{
+        if(!idmgClient) return
+        return clients.filter(item=>item.idmg === idmgClient).pop()
+    }, [idmgClient, clients])
+
+    if(!show || !client) return ''
+
+    if(idmgClient === true || editer) {
+        return <EditerClientHebergement fermer={fermerEditer} />
     }
 
-    return 'Client'
+    return (
+        <div>
+            <p>Idmg : {idmgClient}</p>
+            <Row>
+                <Col>Descriptif</Col>
+                <Col>{client.descriptif}</Col>
+            </Row>
+            <Row>
+                <Col>Roles</Col>
+                <Col>
+                    {client.roles?client.roles.join(', '):''}
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    <Button onClick={ouvrirEditer}>Editer</Button>
+                    <Button variant="secondary" onClick={fermer}>Fermer</Button>
+                </Col>
+            </Row>
+        </div>
+    )
 }
 
 function EditerClientHebergement(props) {
     
+    const {fermer} = props
+
     const workers = useWorkers(),
           dispatch = useDispatch()
 
@@ -147,11 +210,15 @@ function EditerClientHebergement(props) {
     const [refresh, setRefresh] = useState(false)
     const [idmgClientValue, setIdmgClientValue] = useState('')
     const idmgClientValueHandler = useCallback(e=>setIdmgClientValue(e.currentTarget.value), [setIdmgClient])
+    const [descriptif, setDescriptif] = useState('')
+    const descriptifHandler = useCallback(e=>setDescriptif(e.currentTarget.value), [setDescriptif])
+    const [expiration, setExpiration] = useState('')
     const [contact, setContact] = useState('')
     const contactHandler = useCallback(e=>setContact(e.currentTarget.value), [setContact])
     const [information, setInformation] = useState('')
     const informationHandler = useCallback(e=>setInformation(e.currentTarget.value), [setInformation])
     const [roles, setRoles] = useState('')
+    const [domaines, setDomaines] = useState('')
 
     const submitHandler = useCallback(e=>{
         e.preventDefault()
@@ -161,17 +228,27 @@ function EditerClientHebergement(props) {
         setErr('')
         setAttente(true)
 
-        const client = {idmg: idmgClientValue, contact, information, roles}
+        const client = {
+            idmg: idmgClientValue, descriptif, roles, domaines,
+            // contact, information, 
+        }
+        if(contact || information) {
+            const dataDechiffre = {contact, information}
+            // Chiffrer les champs
+            //client.data_chiffre = {}
+        }
+
         workers.connexion.sauvegarderClientHebergement(client)
             .then(()=>{
-                dispatch(setIdmgClient(''))
+                // dispatch(setIdmgClient('')) // Fermer
+                fermer()
             })
             .catch(err=>{
                 console.error("Erreur sauvegarde")
                 setErr(err)
             })
             .finally(()=>setAttente(false))
-    },[workers, dispatch, setAttente, setErr, idmgClientValue, contact, information, roles])
+    },[workers, fermer, dispatch, setAttente, setErr, idmgClientValue, descriptif, contact, information, roles])
 
     const annulerHandler = useCallback(()=>dispatch(setIdmgClient('')), [dispatch])
 
@@ -189,54 +266,73 @@ function EditerClientHebergement(props) {
     // Reload/reset valeurs
     useEffect(()=>{
         if(!refresh) return
-        if(idmgClient) {
+        if(idmgClient && idmgClient !== true) {
             const client = listeClients.filter(item=>item.idmg === idmgClient).pop()
             console.debug("Selection client ", client)
 
             // Set valeurs form
+            setDescriptif(client.descriptif)
+            setRoles(client.roles)
+            setDomaines(client.domaines)
+            setExpiration(client.expiration)
+
+            // Dechiffrer champs
             //contact
             //information
 
         }
-    }, [listeClients, idmgClient, refresh])
+    }, [listeClients, idmgClient, refresh, setDescriptif])
 
     return (
         <>
             <h2>Editer client</h2>
 
             <Form onSubmit={submitHandler}>
+
                 <Form.Group controlId="form.idmg">
                     <Form.Label>IDMG</Form.Label>
                     <Form.Control type="text" placeholder="E.g. zeYncRqEqZ6eTEmUZ8whJFuHG796eSvCTWE4M432izXrp22bAtwGm7Jf" 
                         value={idmgClientValue} onChange={idmgClientValueHandler} 
                         disabled={idmgClient!==true} />
                 </Form.Group>
+                <Form.Group controlId="form.descriptif">
+                    <Form.Label>Descriptif</Form.Label>
+                    <Form.Control type="text" placeholder="E.g. Pizza chez Bob" 
+                        value={descriptif} onChange={descriptifHandler} />
+                </Form.Group>
+
                 <Form.Group controlId="form.contact">
-                    <Form.Label>Contact</Form.Label>
+                    <Form.Label>Contact *</Form.Label>
                     <Form.Control type="text" placeholder="E.g. bob@hotmail.com" 
                         value={contact} onChange={contactHandler} />
                 </Form.Group>
                 <Form.Group controlId="form.information">
-                    <Form.Label>Information</Form.Label>
+                    <Form.Label>Information *</Form.Label>
                     <Form.Control type="test" as="textarea" placeholder="Information sur le client." 
                         value={information} onChange={informationHandler} 
                         rows={6} />
                 </Form.Group>
                 <br/>
+                <p>*les champs contact et information sont chiffrés.</p>
+
                 <p>Roles</p>
                 <EditerRoles value={roles} set={setRoles} />
+                
                 <br/>
                 <p>Quotas</p>
                 <EditerQuotas />
                 <br/>
+
                 <Alert variant="danger" show={!!err}>
                     <Alert.Heading>Erreur</Alert.Heading>
                     <p>{''+err}</p>
                 </Alert>
+
                 <div>
                     <Button type="submit" disabled={!!attente}>Sauvegarder</Button>
                     <Button variant="secondary" onClick={annulerHandler}>Annuler</Button>
                 </div>
+                
                 <br/>
                 <Button variant="danger" disabled={idmgClient===true}>Supprimer</Button>
             </Form>
