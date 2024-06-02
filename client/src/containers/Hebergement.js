@@ -58,7 +58,7 @@ function Hebergement(props) {
             </Alert>
 
             <BoutonsActionTop show={!idmgClient} />
-            <DetailClientHebergement show={idmgClient} />
+            <DetailClientHebergement show={!!idmgClient} />
             <ListeClients show={!idmgClient && !err} />
         </div>
     )
@@ -145,7 +145,6 @@ function ListeClients(props) {
 function DetailClientHebergement(props) {
 
     const {show} = props
-
    
     const dispatch = useDispatch()
     const idmgClient = useSelector(item=>item.hebergement.idmgClientSelectionne)
@@ -165,7 +164,11 @@ function DetailClientHebergement(props) {
         return clients.filter(item=>item.idmg === idmgClient).pop()
     }, [idmgClient, clients])
 
-    if(!show || !client) return ''
+    useEffect(()=>{
+        console.debug("DetailClientHebergement show=%O, client=%O", show, client)
+    }, [show, client])
+
+    if(!show && !client) return ''
 
     if(idmgClient === true || editer) {
         return <EditerClientHebergement fermer={fermerEditer} />
@@ -198,8 +201,7 @@ function EditerClientHebergement(props) {
     
     const {fermer} = props
 
-    const workers = useWorkers(),
-          dispatch = useDispatch()
+    const workers = useWorkers()
 
     const idmgClient = useSelector(item=>item.hebergement.idmgClientSelectionne),
           listeClients = useSelector(item=>item.hebergement.listeClients)
@@ -229,7 +231,10 @@ function EditerClientHebergement(props) {
         setAttente(true)
 
         const client = {
-            idmg: idmgClientValue, descriptif, roles, domaines,
+            idmg: idmgClientValue, 
+            descriptif: descriptif?descriptif:null, 
+            roles: roles?roles:null, 
+            domaines: domaines?domaines:null,
             // contact, information, 
         }
         if(contact || information) {
@@ -237,6 +242,8 @@ function EditerClientHebergement(props) {
             // Chiffrer les champs
             //client.data_chiffre = {}
         }
+
+        console.debug("Submit info client : %O", client)
 
         workers.connexion.sauvegarderClientHebergement(client)
             .then(()=>{
@@ -248,9 +255,9 @@ function EditerClientHebergement(props) {
                 setErr(err)
             })
             .finally(()=>setAttente(false))
-    },[workers, fermer, dispatch, setAttente, setErr, idmgClientValue, descriptif, contact, information, roles])
+    },[workers, fermer, setAttente, setErr, idmgClientValue, descriptif, contact, information, roles])
 
-    const annulerHandler = useCallback(()=>dispatch(setIdmgClient('')), [dispatch])
+    const annulerHandler = useCallback(()=>fermer(), [fermer])
 
     // Reload idmg
     useEffect(()=>{
