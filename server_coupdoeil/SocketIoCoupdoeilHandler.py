@@ -74,6 +74,9 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         self._sio.on('maitrecomptes/majDelegations', handler=self.maj_usager_delegations)
         self._sio.on('getPasskeysUsager', handler=self.requete_get_passkeys_usager)
 
+        # Hebergement
+        self._sio.on('getListeClientsHebergement', handler=self.requete_liste_clients_hebergement)
+
         # Listeners
         self._sio.on('ecouterEvenementsPresenceNoeuds', handler=self.ecouter_presence_noeuds)
         self._sio.on('retirerEvenementsPresenceNoeuds', handler=self.retirer_presence_noeuds)
@@ -96,6 +99,9 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
 
         self._sio.on('ecouterEvenementsUsager', handler=self.ecouter_usagers)
         self._sio.on('retirerEvenementsUsager', handler=self.retirer_usagers)
+
+        self._sio.on('ecouterEvenementsHebergement', handler=self.ecouter_hebergement)
+        self._sio.on('retirerEvenementsHebergement', handler=self.retirer_hebergement)
 
     @property
     def exchange_default(self):
@@ -208,6 +214,10 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
     async def requete_get_passkeys_usager(self, sid: str, message: dict):
         return await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_MAITREDESCOMPTES, 'getPasskeysUsager',
                                            exchange=Constantes.SECURITE_PRIVE)
+
+    async def requete_liste_clients_hebergement(self, sid: str, message: dict):
+        return await self.executer_requete(sid, message, Constantes.DOMAINE_HEBERGEMENT, 'getListeClients',
+                                           exchange=Constantes.SECURITE_PROTEGE)
 
     async def configurer_consignation(self, sid: str, message: dict):
         return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_TOPOLOGIE, 'configurerConsignation')
@@ -455,6 +465,28 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
             'evenement.CoreMaitreDesComptes.majCompteUsager',
             'evenement.CoreMaitreDesComptes.inscrireCompteUsager',
             'evenement.CoreMaitreDesComptes.supprimerCompteUsager',
+        ]
+        reponse = await self.unsubscribe(sid, message, routing_keys, exchanges)
+        reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
+        return reponse_signee
+
+    async def ecouter_hebergement(self, sid: str, message: dict):
+        enveloppe = await self.etat.validateur_message.verifier(message)
+        if enveloppe.get_delegation_globale != Constantes.DELEGATION_GLOBALE_PROPRIETAIRE:
+            return {'ok': False, 'err': 'Acces refuse'}
+
+        exchanges = [Constantes.SECURITE_PROTEGE]
+        routing_keys = [
+            'evenement.Hebergement.majClient',
+        ]
+        reponse = await self.subscribe(sid, message, routing_keys, exchanges, enveloppe=enveloppe)
+        reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
+        return reponse_signee
+
+    async def retirer_hebergement(self, sid: str, message: dict):
+        exchanges = [Constantes.SECURITE_PROTEGE]
+        routing_keys = [
+            'evenement.Hebergement.majClient',
         ]
         reponse = await self.unsubscribe(sid, message, routing_keys, exchanges)
         reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)

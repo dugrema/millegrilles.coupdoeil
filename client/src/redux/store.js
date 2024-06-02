@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import instances from './instancesSlice'
 import consignation from './consignationSlice'
 import usagers from './usagersSlice'
+import hebergement from './hebergementSlice'
 
 function storeSetup(workers) {
 
@@ -12,6 +13,7 @@ function storeSetup(workers) {
       instances,
       consignation,
       usagers,
+      hebergement,
     },
       
   })

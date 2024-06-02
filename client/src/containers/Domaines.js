@@ -14,6 +14,7 @@ import Maitredescles from './DomaineMaitredescles'
 import Usagers from './GestionUsagers'
 import DomaineConsignation from './DomaineConsignation'
 import Notifications from './Notifications'
+import Hebergement from './Hebergement'
 
 import useWorkers, { useEtatPret, useCleMillegrilleChargee } from '../WorkerContext'
 
@@ -67,6 +68,7 @@ function Domaines(props) {
         case 'Usagers': Page = Usagers; break
         case 'Consignation': Page = DomaineConsignation; break
         case 'Notifications': Page = Notifications; break
+        case 'Hebergement': Page = Hebergement; break
         default:
             Page = null
     }
@@ -140,6 +142,14 @@ function Domaines(props) {
                         <Button variant="secondary" onClick={()=>setDomaineSelectionne('Notifications')}>Notifications</Button>
                     </Col>
                 </Row>
+                <Row>
+                    <Col>
+                        Hebergement de millegrilles tierces
+                    </Col>
+                    <Col>
+                        <Button variant="secondary" onClick={()=>setDomaineSelectionne('Hebergement')}>Hébergement</Button>
+                    </Col>
+                </Row>                
             </Row>
 
             <h2>Domaines configures</h2>

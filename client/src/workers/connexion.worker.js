@@ -8,7 +8,8 @@ const DOMAINE_CORETOPOLOGIE = 'CoreTopologie',
       DOMAINE_CORECATALOGUES = 'CoreCatalogues',
       DOMAINE_COREMAITREDESCOMPTES = 'CoreMaitreDesComptes',
       DOMAINE_MAITREDESCLES = 'MaitreDesCles',
-      DOMAINE_INSTANCE = 'instance'
+      DOMAINE_INSTANCE = 'instance',
+      DOMAINE_HEBERGEMENT = 'Hebergement'
 
 function testWorker() {
   // console.debug("connexion worker ok")
@@ -103,6 +104,16 @@ function requeteCompterClesNonDechiffrables() {
     {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: DOMAINE_MAITREDESCLES, action: 'compterClesNonDechiffrables', ajouterCertificat: true}
   )
 }
+
+function requeteListeClientsHebergement() {
+  return connexionClient.emitWithAck(
+    'getListeClientsHebergement', 
+    {},
+    {kind: MESSAGE_KINDS.KIND_REQUETE, domaine: DOMAINE_HEBERGEMENT, action: 'getListeClients', ajouterCertificat: true}
+  )
+}
+
+
 // function getCertificatsMaitredescles() {
 //   return connexionClient.emitWithAck('coupdoeil/getCertificatsMaitredescles')
 // }
@@ -591,6 +602,15 @@ function retirerCallbackEvenementsUsager(cb) {
   return connexionClient.unsubscribe('retirerEvenementsUsager', cb, params) 
 }
 
+function enregistrerCallbackEvenementsHebergement(cb) { 
+  const params = {}
+  return connexionClient.subscribe('ecouterEvenementsHebergement', cb, params) 
+}
+
+function retirerCallbackEvenementsHebergement(cb) { 
+  const params = {}
+  return connexionClient.unsubscribe('retirerEvenementsHebergement', cb, params) 
+}
 
 
 comlinkExpose({
@@ -617,7 +637,10 @@ comlinkExpose({
 
   regenererDomaine,
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
-  getPasskeysUsager,
+  getPasskeysUsager, 
+  
+  requeteListeClientsHebergement, 
+  enregistrerCallbackEvenementsHebergement, retirerCallbackEvenementsHebergement,
 
   majDelegations, signerRecoveryCsrParProprietaire,
   // requeteRapportBackup, resetBackup, 
