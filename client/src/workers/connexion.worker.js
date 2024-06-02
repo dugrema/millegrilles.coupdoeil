@@ -529,6 +529,17 @@ function setConsignationPourInstance(instance_id, consignation_id) {
   )
 }
 
+async function sauvegarderClientHebergement(commande, commandeMaitredescles) {
+  let attachements = null
+  if(commandeMaitredescles) {
+    attachements = {cle: commandeMaitredescles}
+  }
+  return connexionClient.emitWithAck(
+    'sauvegarderClientHebergement', commande,
+    {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'Hebergement', action: 'sauvegarderClient', attacherCertificat: true, attachements}
+  )
+}
+
 // Listeners
 function enregistrerCallbackEvenementsPresenceDomaine(cb) { 
   return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceDomaines', cb) 
@@ -639,7 +650,7 @@ comlinkExpose({
   requeteListeUsagers, requeteUsager, genererCertificatNavigateur, resetWebauthn,
   getPasskeysUsager, 
   
-  requeteListeClientsHebergement, 
+  requeteListeClientsHebergement, sauvegarderClientHebergement,
   enregistrerCallbackEvenementsHebergement, retirerCallbackEvenementsHebergement,
 
   majDelegations, signerRecoveryCsrParProprietaire,
