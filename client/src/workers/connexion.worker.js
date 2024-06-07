@@ -540,6 +540,15 @@ async function sauvegarderClientHebergement(commande, commandeMaitredescles) {
   )
 }
 
+async function ajouterConsignationHebergee(url) {
+  const commande = {url}
+  return connexionClient.emitWithAck(
+    'ajouterConsignationHebergee',
+    commande,
+    {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'CoreTopologie', action: 'ajouterConsignationHebergee', attacherCertificat: true}
+  )
+}
+
 // Listeners
 function enregistrerCallbackEvenementsPresenceDomaine(cb) { 
   return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceDomaines', cb) 
@@ -663,6 +672,7 @@ comlinkExpose({
   transmettreCleSymmetrique, verifierClesSymmetriques,
   reindexerConsignation, setConsignationPourInstance, requeteVersionsApplications, resetTransfertsSecondaires,
 
+  ajouterConsignationHebergee,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,

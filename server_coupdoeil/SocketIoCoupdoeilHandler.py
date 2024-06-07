@@ -77,6 +77,7 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         # Hebergement
         self._sio.on('getListeClientsHebergement', handler=self.requete_liste_clients_hebergement)
         self._sio.on('sauvegarderClientHebergement', handler=self.sauvegarder_client_hebergement)
+        self._sio.on('ajouterConsignationHebergee', handler=self.ajouter_consignation_hebergee)
 
         # Listeners
         self._sio.on('ecouterEvenementsPresenceNoeuds', handler=self.ecouter_presence_noeuds)
@@ -223,6 +224,9 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
     async def sauvegarder_client_hebergement(self, sid: str, message: dict):
         return await self.executer_commande(sid, message, Constantes.DOMAINE_HEBERGEMENT, 'sauvegarderClient',
                                             exchange=Constantes.SECURITE_PROTEGE)
+
+    async def ajouter_consignation_hebergee(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_TOPOLOGIE, 'ajouterConsignationHebergee')
 
     async def configurer_consignation(self, sid: str, message: dict):
         return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_TOPOLOGIE, 'configurerConsignation')

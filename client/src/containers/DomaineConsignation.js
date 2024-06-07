@@ -2,6 +2,7 @@ import React, {useState, useEffect, useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import { proxy } from 'comlink'
+import axios from 'axios'
 
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
@@ -42,6 +43,7 @@ function ConfigurationConsignation(props) {
     const instances = useSelector(state=>state.instances.listeInstances)
 
     // const [liste, setListe] = useState('')
+    const [ajouter, setAjouter] = useState(false)
     const [attente, setAttente] = useState(false)
     const [confirmation, setConfirmation] = useState('')
     const [error, setError] = useState('')
@@ -56,6 +58,9 @@ function ConfigurationConsignation(props) {
         })
         return instancesParId
     }, [instances])
+
+    const ouvrirAjouter = useCallback(()=>setAjouter(true), [setAjouter])
+    const fermerAjouter = useCallback(()=>setAjouter(false), [setAjouter])
 
     const confirmationCb = useCallback( confirmation => { setConfirmation(confirmation); setAttente(false) }, [setConfirmation, setAttente]  )
 
@@ -126,6 +131,18 @@ function ConfigurationConsignation(props) {
 
     }, [dispatch, workers, etatPret, setError, messageConsignationHandlerProxy])
 
+    if(ajouter) return (
+        <>
+            <AlertTimeout variant="danger" titre="Erreur" delay={false} value={error} setValue={setError} />
+            <ModalAttente show={attente} setAttente={setAttente} />
+            <AjouterConsignation 
+                confirmationCb={confirmationCb}
+                erreurCb={erreurCb}
+                setAttente={setAttente}
+                fermer={fermerAjouter} />
+        </>
+    )
+
     if(instanceId) return (
         <>
             <AlertTimeout variant="danger" titre="Erreur" delay={false} value={error} setValue={setError} />
@@ -159,6 +176,7 @@ function ConfigurationConsignation(props) {
             <ModalAttente show={attente} setAttente={setAttente} />
 
             <ActionsConsignation 
+                setAjouter={ouvrirAjouter}
                 syncPrimaireEnCours={syncPrimaireEnCours}
                 setSyncPrimaireEnCours={setSyncPrimaireEnCours}
                 confirmationCb={confirmationCb} 
@@ -179,10 +197,16 @@ export default ConfigurationConsignation
 
 function ActionsConsignation(props) {
 
-    const { syncPrimaireEnCours, setSyncPrimaireEnCours, confirmationCb, erreurCb } = props
+    const { setAjouter, syncPrimaireEnCours, setSyncPrimaireEnCours, confirmationCb, erreurCb } = props
 
     const workers = useWorkers(),
           etatPret = useEtatPret()
+
+    const ajouterHandler = useCallback(()=>{
+        // Ajouter une nouvelle consignation manuellement
+        console.debug("Ajouter consignation manuellement")
+        setAjouter()
+    }, [setAjouter])
 
     const synchroniserHandler = useCallback(()=>{
         setSyncPrimaireEnCours(true)
@@ -223,6 +247,8 @@ function ActionsConsignation(props) {
             <h3>Actions de consignation</h3>
             <Row>
                 <Col>
+                    <Button variant="secondary" disabled={!etatPret} onClick={ajouterHandler}>Ajouter</Button>
+                    {' '}
                     <Button variant="secondary" disabled={!etatPret||syncPrimaireEnCours} onClick={synchroniserHandler}>Synchroniser</Button>
                     {' '}
                     <Button variant="secondary" disabled={!etatPret} onClick={reindexerHandler}>Reindexer</Button>
@@ -356,6 +382,108 @@ function AfficherChampRole(props) {
     )
 }
 
+function AjouterConsignation(props) {
+
+    const {confirmationCb, erreurCb, setAttente, fermer} = props
+
+    const workers = useWorkers()
+
+    const [url, setUrl] = useState('')
+    const urlChangeHandler = useCallback(e=>setUrl(e.currentTarget.value), [setUrl])
+    const [fiche, setFiche] = useState('')
+
+    const verifierUrlHandler = useCallback(()=>{
+        console.debug("Verifier url : %s", url)
+        try {
+            const urlVal = new URL(url)
+            urlVal.pathname = 'fiche.json'
+            setAttente(true)
+            axios({method: 'GET', url: urlVal.href, timeout: 5_000})
+                .then( async reponse=>{
+                    console.debug("Reponse consignation : ", reponse)
+                    const fiche = verifierFicheHebergement(reponse)
+                    if(fiche) {
+                        // Ok
+                        setFiche(fiche)
+                    } else {
+                        erreurCb("Aucun service d'hebergement n'a ete detecte a cette adresse.")
+                        setFiche('')
+                    }
+
+                })
+                .catch(err=>{
+                    console.error("Erreur verification url", err)
+                    setAttente(false)
+                    erreurCb(err, 'Erreur durant la verification de la consignation')
+                })
+        } catch(err) {
+            erreurCb(err, "URL invalide")
+        }
+    }, [url, erreurCb, setFiche, setAttente])
+
+    useEffect(()=>{
+        if(!fiche) return
+        console.debug("Verifier hebergement avec fiche : ", fiche)
+        workers.connexion.ajouterConsignationHebergee(url)
+            .then(resultat=>{
+                console.debug("Resultat ajout consignation", resultat)
+                confirmationCb('Consignation hebergee ajoutee')
+            })
+            .catch(err=>{
+                console.error("Erreur ajout consignation hebergee", err)
+                erreurCb(err, "Erreur ajout consignation hebergee")
+                setFiche('')
+            })
+            .finally(()=>{
+                setAttente(false)
+            })
+    }, [workers, fiche, setFiche, url, erreurCb, setAttente])
+
+    return (
+        <>
+            <h2>Ajouter consignation</h2>
+
+            <p>Ajouter une consignation hébergée sur une MilleGrille différente.</p>
+
+            <p>
+                Entrez l'adresse d'une MilleGrille où votre système a déjà été enregistré par le propriétaire.
+                L'adresse fournie doit avoir la forme https://monserveur.com. Pour savoir si l'adresse est bonne,
+                vous pouvez vérifier qu'elle retourne du contenu pour le fichier fiche.json (e.g. https://monserveur.com/fiche.json).
+            </p>
+
+            <Form>
+                <Form.Group controlId="urlInstance">
+                    <Form.Label>Adresse du serveur</Form.Label>
+                    <Form.Control type="url" value={url} onChange={urlChangeHandler}/>
+                    <Form.Text className="text-muted">
+                        L'adresse devrait être de forme : "https://monserveur.com" ou "https://monserveur.com:1234".
+                    </Form.Text>
+                </Form.Group>
+                <Button variant="secondary" onClick={verifierUrlHandler}>Verifier</Button>
+            </Form>
+
+            {fiche?(
+                <>
+                    <p>Verification de l'hebergement</p>
+                </>
+            ):''}
+
+            <Button variant='secondary' onClick={fermer}>Annuler</Button>
+        </>
+    )
+}
+
+function verifierFicheHebergement(reponse) {
+    const data = reponse.data
+    const fiche = JSON.parse(data.contenu)
+    console.debug("Fiche ", fiche)
+    const applicationsV2 = fiche.applicationsV2 || {}
+    const hebergement = applicationsV2.hebergement_python
+    if(hebergement) {
+        return fiche
+    }
+    return false
+}
 
 function ConfigurerConsignationInstance(props) {
 
