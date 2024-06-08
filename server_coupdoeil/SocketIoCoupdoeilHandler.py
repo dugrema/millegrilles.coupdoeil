@@ -250,7 +250,8 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         return {'ok': True}
 
     async def set_consignation_instance(self, sid: str, message: dict):
-        return await self.executer_commande(sid, message, Constantes.DOMAINE_FICHIERS, 'setConsignationInstance')
+        # return await self.executer_commande(sid, message, Constantes.DOMAINE_FICHIERS, 'setConsignationInstance')
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_TOPOLOGIE, 'setConsignationInstance')
 
     # Backup
 
