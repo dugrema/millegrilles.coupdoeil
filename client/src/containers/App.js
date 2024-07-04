@@ -2,23 +2,26 @@ import React, { Suspense, useState, useEffect, useCallback, useMemo } from 'reac
 import { Provider as ReduxProvider, useDispatch } from 'react-redux'
 import { proxy } from 'comlink'
 
+import { useTranslation } from 'react-i18next'
+import i18n from '../i18n'
+
 import Container from 'react-bootstrap/Container'
 import Nav from 'react-bootstrap/Nav'
 import Navbar from 'react-bootstrap/Navbar'
 import NavDropdown from 'react-bootstrap/NavDropdown'
 import { Trans } from 'react-i18next'
 
-import { LayoutMillegrilles, ModalErreur, Menu as MenuMillegrilles, DropDownLanguage, ModalInfo } from '@dugrema/millegrilles.reactjs'
-
-import { useTranslation } from 'react-i18next'
-import '../i18n'
+import { initI18n, LayoutMillegrilles, ModalErreur, Menu as MenuMillegrilles, DropDownLanguage, ModalInfo } from '@dugrema/millegrilles.reactjs'
 
 import manifest from '../manifest.build'
 
 import storeSetup from '../redux/store'
-import useWorkers, { useUsager, useEtatPret, useCleMillegrilleChargee, useEtatConnexion, useEtatAuthentifie } from '../WorkerContext'
+import useWorkers, { useUsager, useEtatPret, useEtatConnexion, useEtatAuthentifie } from '../WorkerContext'
 
 import { push as pushInstances, mergeInstance } from '../redux/instancesSlice'
+
+// Wire i18n dans module @dugrema/millegrilles.reactjs
+initI18n(i18n)
 
 const SectionContenu = React.lazy(()=>import('./SectionContenu'))
 
