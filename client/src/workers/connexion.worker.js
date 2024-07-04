@@ -549,6 +549,14 @@ async function ajouterConsignationHebergee(url) {
   )
 }
 
+async function ajouterCle(commandeSignee) {
+  return connexionClient.emitWithAck(
+    'ajouterCle',
+    commandeSignee,
+    {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'MaitreDesCles', action: 'ajouterCleDomaines', noformat: true}
+  )
+}
+
 // Listeners
 function enregistrerCallbackEvenementsPresenceDomaine(cb) { 
   return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceDomaines', cb) 
@@ -672,7 +680,7 @@ comlinkExpose({
   transmettreCleSymmetrique, verifierClesSymmetriques,
   reindexerConsignation, setConsignationPourInstance, requeteVersionsApplications, resetTransfertsSecondaires,
 
-  ajouterConsignationHebergee,
+  ajouterConsignationHebergee, ajouterCle,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,

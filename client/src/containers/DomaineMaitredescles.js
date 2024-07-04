@@ -9,6 +9,8 @@ import { extraireExtensionsMillegrille } from '@dugrema/millegrilles.utiljs/src/
 import { AlertTimeout, ModalChargerCleMillegrille } from '@dugrema/millegrilles.reactjs'
 import useWorkers, { useEtatPret, useCleMillegrilleChargee } from '../WorkerContext'
 
+import Form from 'react-bootstrap/Form'
+
 const BATCH_NOMBRE_FETCH = 500       // Nombre cles downloadees a la fois
 
 function DomaineMaitredescles(props) {
@@ -201,6 +203,10 @@ function DomaineMaitredescles(props) {
       <br />
 
       <AfficherClesSymmetriques clesSymmetriques={clesSymmetriques} transmettre={transmettreCleSymmetriqueCb} />
+
+      <br />
+
+      <AjouterCle />
 
       <ModalChargerCleMillegrille 
         show={showModalCle} 
@@ -406,4 +412,51 @@ async function recevoirDemandeCleSymmetrique(workers, demande, properties, ajout
     console.warn("recevoirDemandeCleSymmetrique Certificat recu n'a pas les proprietes pour MaitreDesCles - REFUSE", certificat)
   }
 
+}
+
+function AjouterCle(props) {
+
+  const workers = useWorkers()
+
+  const [cle, setCle] = useState('')
+  const [attente, setAttente] = useState(false)
+
+  const handleCleOnChange = useCallback(e=>setCle(e.currentTarget.value), [setCle])
+
+  const handleSubmit = useCallback(e=>{
+    e.preventDefault()
+    e.stopPropagation()
+    setAttente(true)
+    try {
+      const cleObj = JSON.parse(cle)
+      console.debug("Soumettre cle : ", cleObj)
+      workers.connexion.ajouterCle(cleObj)
+        .then(reponse=>{
+          console.debug("Reponse ajouter cle : %O", reponse)
+        })
+        .catch(err => console.error("Erreur ajouter cle : ", err))
+        .finally(()=>{
+          setAttente(false)
+        })
+    } catch(err) {
+      console.error("Erreur submit cle %s : %O", cle, err)
+      setAttente(false)      
+    }
+  }, [workers, cle])
+
+  return (
+    <>
+      <h3>Ajouter une cle manquante</h3>
+      <p>Collez une cle pour l'inserer dans le maitre des cles.</p>
+      <Form onSubmit={handleSubmit}>
+        <Form.Group controlId="cleManquante.TextArea">
+          <Form.Label>Cle</Form.Label>
+          <Form.Control as="textarea" rows={10} disabled={attente} onChange={handleCleOnChange} />
+        </Form.Group>
+        <Button type="submit" variant="secondary"  disabled={attente}>Ajouter</Button>
+      </Form>
+
+      <p></p><p></p>
+    </>
+  )
 }

@@ -46,6 +46,7 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         self._sio.on('rechiffrerClesBatch', handler=self.rechiffrer_cles_batch)
         self._sio.on('transmettreCleSymmetrique', handler=self.transmettre_cles_symmetrique)
         self._sio.on('verifierClesSymmetriques', handler=self.verifier_cles_symmetrique)
+        self._sio.on('ajouterCle', handler=self.ajouter_cle)
 
         # Consignation
         self._sio.on('getConfigurationFichiers', handler=self.requete_configuration_fichiers)
@@ -204,6 +205,10 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
 
     async def verifier_cles_symmetrique(self, sid: str, message: dict):
         return await self.executer_commande(sid, message, Constantes.DOMAINE_MAITRE_DES_CLES, 'verifierCleSymmetrique')
+
+    async def ajouter_cle(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_MAITRE_DES_CLES, 'ajouterCleDomaines',
+                                            exchange=Constantes.SECURITE_PUBLIC)
 
     # Consignation de fichiers
     async def requete_configuration_fichiers(self, sid: str, message: dict):
