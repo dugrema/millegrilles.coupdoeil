@@ -75,7 +75,7 @@ function ConfigurationConsignation(props) {
         if(action === 'presence') {
             const certificat = forgePki.certificateFromPem(original['certificat'][0])
             const instance_id = certificat.subject.getField('CN').value
-            const info = { ...reponse.message, instance_id, derniere_modification: original.estampille }
+            const info = { ...reponse.message, instance_id, derniere_modification: original.estampille, supprime: false }
             console.debug("Info evenement consignation ", info)
             dispatch(mergeConsignation(info))
         } else if(action === 'changementConsignationPrimaire') {
@@ -92,6 +92,11 @@ function ConfigurationConsignation(props) {
         } else if(action === 'syncUpload') {
             console.debug("Sync upload secondaire ", reponse.message)
             dispatch(setUploadSecondaire(reponse.message))
+        } else if(action === 'instanceConsignationSupprimee') {
+            const instance_id = reponse.message.instance_id
+            const info = { instance_id, supprime: true }
+            console.debug("Supprimer consignation ", info)
+            dispatch(mergeConsignation(info))
         }
     }, [dispatch, setSyncPrimaireEnCours])
 
@@ -291,7 +296,7 @@ function ListeConsignations(props) {
 
     const epochNow = new Date().getTime() / 1000;
 
-    const listeFichiers = liste.map(item=>{
+    const listeFichiers = liste.filter(item=>item.supprime !== true).map(item=>{
 
         const instance = instancesParId[item.instance_id] || ''
         const nom = instance.domaine || item.instance_id
@@ -316,6 +321,8 @@ function ListeConsignations(props) {
             nombreManquants = manquant.nombre || 0,
             nombreTotal = nombrePrincipal
 
+        const dernierePresence = item.derniere_modification || item['_mg-derniere-modification']
+
         return (
             <Row key={item.instance_id} className={primaire?'primaire':''}>
                 <Col xs={9} lg={4} xl={4} className='nom-consignation'>
@@ -324,7 +331,7 @@ function ListeConsignations(props) {
                 <Col xs={3} lg={2} xl={2} className='champ-primaire'>
                     <AfficherChampRole onClick={changerPrimaireModal} item={item} />
                 </Col>
-                <Col xs={6} lg={3} xl={2} className={classNameExpiration}><FormatterDate value={item.derniere_modification} /></Col>
+                <Col xs={6} lg={3} xl={2} className={classNameExpiration}><FormatterDate value={dernierePresence} /></Col>
                 <Col xs={3} lg={1} xl={1}>{nombreTotal}</Col>
                 <Col xs={3} lg={2} xl={1}><FormatteurTaille value={tailleTotale} /></Col>
                 <Col className='d-none d-xl-block' xl={1}>
@@ -541,6 +548,31 @@ function ConfigurerConsignationInstance(props) {
     const [keyTypeSftpBackup, setKeyTypeSftpBackup] = useState('ed25519')
     const [backupIntervalleSecondes, setBackupIntervalleSecondes] = useState(1200)
     const [backupLimiteBytes, setBackupLimiteBytes] = useState(500_000_000)
+
+    // Supprimer
+    const [attenteSupprimer, setAttenteSupprime] = useState(false)
+
+    const handleSupprimer = useCallback(()=>{
+        setAttenteSupprime(true)
+        try {
+            workers.connexion.supprimerConsignation(instanceIdCourant)
+                .then(reponse=>{
+                    console.debug("Reponse supprimer %s : %O", instanceIdCourant, reponse)
+                    if(reponse.ok === true) {
+                        fermer()
+                    } else {
+                        console.error("Erreur supprimer consignation, reponse : %O", reponse)
+                    }
+                })
+                .catch(err=>console.error("Erreur supprimer consignation : %O", err))
+                .finally(()=>{
+                    setAttenteSupprime(false)
+                })
+        } catch(err) {
+            console.error("Erreur supprimer consignation : ", err)
+            setAttenteSupprime(false)
+        }
+    }, [workers, fermer, setAttenteSupprime, instanceIdCourant])
 
     const syncActifChangeHandler = useCallback(e=>setSyncActif(e.currentTarget.checked), [setSyncActif])
     const supporteArchivesChangeHandler = useCallback(e=>setSupporteArchives(e.currentTarget.checked), [setSupporteArchives])
@@ -901,6 +933,13 @@ function ConfigurerConsignationInstance(props) {
                 <Button disabled={!etatPret} onClick={appliquerConfiguration}>Sauvegarder</Button>
 
             </Form>
+
+            <br/>
+
+            <hr />
+            <p>Supprimer le serveur. En pratique le retire de la liste mais conserve la configuration.</p>
+            <Button variant="danger" onClick={handleSupprimer} disabled={attenteSupprimer}>Supprimer</Button>
+            <br /><br /><br />
 
         </div>
     )

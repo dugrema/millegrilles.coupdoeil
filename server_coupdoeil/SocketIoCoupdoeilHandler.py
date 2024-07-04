@@ -57,6 +57,7 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         self._sio.on('setConsignationInstance', handler=self.set_consignation_instance)
         self._sio.on('reindexerConsignation', handler=self.reindexer_consignation)
         self._sio.on('resetTransfertsSecondaires', handler=self.reset_transferts_secondaires)
+        self._sio.on('supprimerConsignation', handler=self.supprimer_consignation)
 
         # Backup
         self._sio.on('demarrerBackupTransactions', handler=self.demarrer_backup)
@@ -254,6 +255,9 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         # return reponse_signee
         return {'ok': True}
 
+    async def supprimer_consignation(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_TOPOLOGIE, 'supprimerConsignation')
+
     async def set_consignation_instance(self, sid: str, message: dict):
         # return await self.executer_commande(sid, message, Constantes.DOMAINE_FICHIERS, 'setConsignationInstance')
         return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_TOPOLOGIE, 'setConsignationInstance')
@@ -440,6 +444,7 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
             'evenement.fichiers.syncUpload',
             'evenement.fichiers.syncDownload',
             'evenement.CoreTopologie.changementConsignationPrimaire',
+            'evenement.CoreTopologie.instanceConsignationSupprimee',
         ]
         reponse = await self.subscribe(sid, message, routing_keys, exchanges, enveloppe=enveloppe)
         reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
@@ -454,6 +459,7 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
             'evenement.fichiers.syncUpload',
             'evenement.fichiers.syncDownload',
             'evenement.CoreTopologie.changementConsignationPrimaire',
+            'evenement.CoreTopologie.instanceConsignationSupprimee',
         ]
         reponse = await self.unsubscribe(sid, message, routing_keys, exchanges)
         reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)

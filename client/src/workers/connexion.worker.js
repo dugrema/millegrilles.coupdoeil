@@ -557,6 +557,15 @@ async function ajouterCle(commandeSignee) {
   )
 }
 
+async function supprimerConsignation(instance_id) {
+  const commande = {instance_id}
+  return connexionClient.emitWithAck(
+    'supprimerConsignation',
+    commande,
+    {kind: MESSAGE_KINDS.KIND_COMMANDE, domaine: 'CoreTopologie', action: 'supprimerConsignation', attacherCertificat: true}
+  )
+}
+
 // Listeners
 function enregistrerCallbackEvenementsPresenceDomaine(cb) { 
   return connexionClient.subscribe('coupdoeil/ecouterEvenementsPresenceDomaines', cb) 
@@ -680,7 +689,7 @@ comlinkExpose({
   transmettreCleSymmetrique, verifierClesSymmetriques,
   reindexerConsignation, setConsignationPourInstance, requeteVersionsApplications, resetTransfertsSecondaires,
 
-  ajouterConsignationHebergee, ajouterCle,
+  ajouterConsignationHebergee, ajouterCle, supprimerConsignation,
 
   enregistrerCallbackEvenementsPresenceDomaine, retirerCallbackEvenementsPresenceDomaine,
   enregistrerCallbackEvenementsNoeuds, retirerCallbackEvenementsNoeuds,
