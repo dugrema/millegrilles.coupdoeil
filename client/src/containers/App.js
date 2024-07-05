@@ -13,7 +13,7 @@ import { Trans } from 'react-i18next'
 
 import { initI18n, LayoutMillegrilles, ModalErreur, Menu as MenuMillegrilles, DropDownLanguage, ModalInfo } from '@dugrema/millegrilles.reactjs'
 
-import manifest from '../manifest.build'
+import manifest from '../manifest.build.js'
 
 import storeSetup from '../redux/store'
 import useWorkers, { useUsager, useEtatPret, useEtatConnexion, useEtatAuthentifie } from '../WorkerContext'
