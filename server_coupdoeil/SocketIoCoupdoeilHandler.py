@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 
 from typing import Optional
 
@@ -12,6 +13,7 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
 
     def __init__(self, app, stop_event: asyncio.Event):
         super().__init__(app, stop_event)
+        self.__logger = logging.getLogger(__name__ + '.' + self.__class__.__name__)
 
     async def _preparer_socketio_events(self):
         await super()._preparer_socketio_events()
@@ -137,7 +139,7 @@ class SocketIoCoupdoeilHandler(SocketIoHandler):
         return await self.executer_requete(sid, message, Constantes.DOMAINE_CORE_TOPOLOGIE, 'listeDomaines')
 
     async def generer_certificat_noeud(self, sid: str, message: dict):
-        return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_PKI, 'signerCsr')
+        return await self.executer_commande(sid, message, Constantes.DOMAINE_CORE_PKI, 'signerCsr', exchange=Constantes.SECURITE_PUBLIC)
 
     # Applications
     async def installer_application(self, sid: str, message: dict):

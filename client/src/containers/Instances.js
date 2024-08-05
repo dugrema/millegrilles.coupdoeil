@@ -448,6 +448,7 @@ function InformationNoeud(props) {
         try {
             var resultatCertificat = await connexion.genererCertificatNoeud(commande)
         } catch(err) {
+            console.error("Erreur creation certificat ", err);
             erreurCb(err, 'Erreur creation certificat')
             return
         }
