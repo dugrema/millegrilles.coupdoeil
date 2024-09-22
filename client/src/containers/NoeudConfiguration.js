@@ -2,7 +2,7 @@ import React, {useState, useEffect, useCallback} from 'react'
 import {Row, Col, Button, Form, InputGroup, FormControl, Alert} from 'react-bootstrap'
 import axios from 'axios'
 
-import { MESSAGE_KINDS } from '@dugrema/millegrilles.utiljs/src/constantes'
+import { MESSAGE_KINDS, KIND_COMMANDE } from '@dugrema/millegrilles.utiljs/src/constantes'
 import { AlertTimeout, ModalAttente } from '@dugrema/millegrilles.reactjs'
 import { pki as forgePki } from '@dugrema/node-forge'
 
@@ -127,6 +127,8 @@ function AfficherInfoConfiguration(props) {
         <Col>{instanceInfo.onion}</Col>
       </Row>
 
+      <br/>
+
       <ConfigurerDomaine
         workers={workers}
         instanceId={instanceId}
@@ -135,6 +137,9 @@ function AfficherInfoConfiguration(props) {
         etatAuthentifie={etatAuthentifie}
         confirmationCb={confirmationCb} 
         erreurCb={erreurCb} />
+
+      <br/>
+      <br/>
 
       <h3>Certificat</h3>
       <AfficherExpirationCertificat pem={instanceInfo.certificat || ''}/>
@@ -145,12 +150,16 @@ function AfficherInfoConfiguration(props) {
         </Col>
       </Row>
 
+      <br/>
+
       <ConfigurerMQ 
         workers={workers}
         hostname={hostname}
         etatAuthentifie={etatAuthentifie}
         erreurCb={erreurCb}
         confirmationCb={confirmationCb} />
+
+      <br/><br/>
     </>
   )
 }
@@ -405,7 +414,8 @@ async function configurerMq(workers, hostname, hostMq, portMq, confirmationCb, e
   }
 
   const domaine = 'monitor', action = 'changerConfigurationMq'
-  const commandeSignee = await connexion.formatterMessage(commande, domaine, {kind: MESSAGE_KINDS.KIND_COMMANDE, action})
+  // const commandeSignee = await connexion.formatterMessage(commande, domaine, {kind: MESSAGE_KINDS.KIND_COMMANDE, action})
+  const commandeSignee = await connexion.formatterMessage(KIND_COMMANDE, commande, {domaine, action})
 
   console.debug("Commande a transmettre : %O", commandeSignee)
   const url = new URL('https://localhost/installation/api/configurerMQ')
