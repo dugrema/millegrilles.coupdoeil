@@ -415,7 +415,7 @@ async function configurerMq(workers, hostname, hostMq, portMq, confirmationCb, e
 
   const domaine = 'monitor', action = 'changerConfigurationMq'
   // const commandeSignee = await connexion.formatterMessage(commande, domaine, {kind: MESSAGE_KINDS.KIND_COMMANDE, action})
-  const commandeSignee = await connexion.formatterMessage(KIND_COMMANDE, commande, {domaine, action})
+  const commandeSignee = await connexion.formatterMessage(KIND_COMMANDE, commande, {domaine, action, ajouterCertificat: true})
 
   console.debug("Commande a transmettre : %O", commandeSignee)
   const url = new URL('https://localhost/installation/api/configurerMQ')
